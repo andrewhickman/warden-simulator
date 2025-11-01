@@ -1,0 +1,11 @@
+[package]
+name = "wdn-ui"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = { version = "0.17.2", default-features = false }
+wdn-physics = { version = "0.1.0", path = "../wdn-physics" }
+wdn-render = { version = "0.1.0", path = "../wdn-render" }
+wdn-save = { version = "0.1.0", path = "../wdn-save" }
+wdn-tasks = { version = "0.1.0", path = "../wdn-tasks" }
