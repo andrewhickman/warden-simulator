@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-pub struct WdnRenderPlugin;
+pub struct RenderPlugin;
 
-impl Plugin for WdnRenderPlugin {
+impl Plugin for RenderPlugin {
     fn build(&self, _: &mut App) {}
 }

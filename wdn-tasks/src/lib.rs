@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-pub struct WdnTasksPlugin;
+pub struct TasksPlugin;
 
-impl Plugin for WdnTasksPlugin {
+impl Plugin for TasksPlugin {
     fn build(&self, _: &mut App) {}
 }

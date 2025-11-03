@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-pub struct WdnUiPlugin;
+pub struct UiPlugin;
 
-impl Plugin for WdnUiPlugin {
+impl Plugin for UiPlugin {
     fn build(&self, _: &mut App) {}
 }

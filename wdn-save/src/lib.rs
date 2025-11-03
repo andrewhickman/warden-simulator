@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-pub struct WdnSavePlugin;
+pub struct SavePlugin;
 
-impl Plugin for WdnSavePlugin {
+impl Plugin for SavePlugin {
     fn build(&self, _: &mut App) {}
 }

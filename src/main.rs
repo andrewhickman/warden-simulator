@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 
-use wdn_physics::WdnPhysicsPlugin;
-use wdn_render::WdnRenderPlugin;
-use wdn_save::WdnSavePlugin;
-use wdn_tasks::WdnTasksPlugin;
-use wdn_ui::WdnUiPlugin;
+use wdn_physics::PhysicsPlugin as WdnPhysicsPlugin;
+use wdn_render::RenderPlugin as WdnRenderPlugin;
+use wdn_save::SavePlugin as WdnSavePlugin;
+use wdn_tasks::TasksPlugin as WdnTasksPlugin;
+use wdn_ui::UiPlugin as WdnUiPlugin;
 
 fn main() {
     App::new()

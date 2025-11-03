@@ -1,7 +1,13 @@
+pub mod tile;
+
 use bevy::prelude::*;
 
-pub struct WdnPhysicsPlugin;
+use crate::tile::TilePlugin;
 
-impl Plugin for WdnPhysicsPlugin {
-    fn build(&self, _: &mut App) {}
+pub struct PhysicsPlugin;
+
+impl Plugin for PhysicsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(TilePlugin);
+    }
 }
