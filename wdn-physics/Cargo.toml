@@ -7,3 +7,7 @@ edition = "2024"
 bevy = { version = "0.17.2", default-features = false, features = ["libm"] }
 parking_lot = "0.12.5"
 smallvec = { version = "1.15.1", features = ["union"] }
+
+[dev-dependencies]
+approx = "0.5.1"
+bevy_math = { version = "0.17.2", default-features = false, features = ["approx"] }
