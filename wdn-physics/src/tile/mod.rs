@@ -1,5 +1,5 @@
 pub mod index;
-pub mod map;
+pub mod storage;
 #[cfg(test)]
 mod tests;
 
@@ -11,7 +11,12 @@ use bevy::{
 };
 use parking_lot::Mutex;
 
-use crate::tile::index::{TileChanged, TileIndex};
+use crate::tile::{
+    index::{TileChanged, TileIndex},
+    storage::TileChunkOffset,
+};
+
+pub const CHUNK_SIZE: usize = 32;
 
 pub struct TilePlugin;
 
@@ -96,6 +101,10 @@ impl Tile {
 
     pub fn y(&self) -> i32 {
         self.position.y
+    }
+
+    pub fn chunk(&self) -> TileChunkOffset {
+        TileChunkOffset::from_position(self.position)
     }
 
     pub fn neighborhood(&self) -> [Tile; 9] {

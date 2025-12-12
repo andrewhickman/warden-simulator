@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-bevy = { version = "0.17.2", default-features = false }
+bevy = { version = "0.17.2", "features" = [
+    "bevy_image",
+    "bevy_sprite_render",
+    "png", 
+    "trace",
+], default-features = false }
 wdn-physics = { version = "0.1.0", path = "../wdn-physics" }
 wdn-tasks = { version = "0.1.0", path = "../wdn-tasks" }
