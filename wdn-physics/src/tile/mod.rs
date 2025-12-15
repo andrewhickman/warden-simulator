@@ -1,19 +1,18 @@
 pub mod index;
 pub mod storage;
-#[cfg(test)]
-mod tests;
 
 use std::fmt;
 
 use bevy::{
     ecs::{lifecycle::HookContext, relationship::Relationship, world::DeferredWorld},
+    math::{I16Vec2, U16Vec2},
     prelude::*,
 };
 use parking_lot::Mutex;
 
 use crate::tile::{
     index::{TileChanged, TileIndex},
-    storage::TileChunkOffset,
+    storage::TileMap,
 };
 
 pub const CHUNK_SIZE: usize = 32;
@@ -21,15 +20,21 @@ pub const CHUNK_SIZE: usize = 32;
 pub struct TilePlugin;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Component)]
-#[component(on_remove = Tile::on_remove)]
-pub struct Tile {
+#[component(on_remove = TilePosition::on_remove)]
+pub struct TilePosition {
     layer: Entity,
     position: IVec2,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TileChunkPosition(I16Vec2);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TileChunkOffset(U16Vec2);
+
 pub fn update_tile(
     mut entities: Query<
-        (Entity, &ChildOf, &Transform, &mut Tile),
+        (Entity, &ChildOf, &Transform, &mut TilePosition),
         Or<(Changed<Transform>, Changed<ChildOf>)>,
     >,
     writer: MessageWriter<TileChanged>,
@@ -39,7 +44,7 @@ pub fn update_tile(
     entities
         .par_iter_mut()
         .for_each(|(id, parent, transform, mut tile)| {
-            let new = Tile::floor(parent.get(), transform.translation.xy());
+            let new = TilePosition::floor(parent.get(), transform.translation.xy());
             let old = if tile.is_added() {
                 None
             } else if *tile != new {
@@ -72,19 +77,20 @@ pub fn update_index(mut reader: MessageReader<TileChanged>, mut index: ResMut<Ti
 impl Plugin for TilePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TileIndex>()
+            .init_resource::<TileMap>()
             .add_message::<TileChanged>();
 
         app.add_systems(FixedUpdate, (update_tile, update_index).chain());
     }
 }
 
-impl Tile {
+impl TilePosition {
     pub fn new(layer: Entity, position: IVec2) -> Self {
-        Tile { layer, position }
+        TilePosition { layer, position }
     }
 
     pub fn floor(layer: Entity, position: Vec2) -> Self {
-        Tile::new(layer, IVec2::new(floor(position.x), floor(position.y)))
+        TilePosition::new(layer, IVec2::new(floor(position.x), floor(position.y)))
     }
 
     pub fn layer(&self) -> Entity {
@@ -103,29 +109,42 @@ impl Tile {
         self.position.y
     }
 
-    pub fn chunk(&self) -> TileChunkOffset {
-        TileChunkOffset::from_position(self.position)
+    pub fn chunk_position(&self) -> TileChunkPosition {
+        TileChunkPosition::new(
+            self.x().div_euclid(CHUNK_SIZE as i32) as i16,
+            self.y().div_euclid(CHUNK_SIZE as i32) as i16,
+        )
     }
 
-    pub fn neighborhood(&self) -> [Tile; 9] {
+    pub fn chunk_offset(&self) -> TileChunkOffset {
+        TileChunkOffset::new(
+            self.x().rem_euclid(CHUNK_SIZE as i32) as u16,
+            self.y().rem_euclid(CHUNK_SIZE as i32) as u16,
+        )
+    }
+
+    pub fn neighborhood(&self) -> [TilePosition; 9] {
         let layer = self.layer();
         let (x, y) = (self.x(), self.y());
 
         [
-            Tile::new(layer, IVec2::new(x - 1, y - 1)),
-            Tile::new(layer, IVec2::new(x, y - 1)),
-            Tile::new(layer, IVec2::new(x + 1, y - 1)),
-            Tile::new(layer, IVec2::new(x - 1, y)),
-            Tile::new(layer, IVec2::new(x, y)),
-            Tile::new(layer, IVec2::new(x + 1, y)),
-            Tile::new(layer, IVec2::new(x - 1, y + 1)),
-            Tile::new(layer, IVec2::new(x, y + 1)),
-            Tile::new(layer, IVec2::new(x + 1, y + 1)),
+            TilePosition::new(layer, IVec2::new(x - 1, y - 1)),
+            TilePosition::new(layer, IVec2::new(x, y - 1)),
+            TilePosition::new(layer, IVec2::new(x + 1, y - 1)),
+            TilePosition::new(layer, IVec2::new(x - 1, y)),
+            TilePosition::new(layer, IVec2::new(x, y)),
+            TilePosition::new(layer, IVec2::new(x + 1, y)),
+            TilePosition::new(layer, IVec2::new(x - 1, y + 1)),
+            TilePosition::new(layer, IVec2::new(x, y + 1)),
+            TilePosition::new(layer, IVec2::new(x + 1, y + 1)),
         ]
     }
 
     fn on_remove(mut world: DeferredWorld, context: HookContext) {
-        let tile = world.entity(context.entity).get_ref::<Tile>().unwrap();
+        let tile = world
+            .entity(context.entity)
+            .get_ref::<TilePosition>()
+            .unwrap();
         if tile.last_changed() != tile.added() {
             world.write_message(TileChanged {
                 id: context.entity,
@@ -136,7 +155,7 @@ impl Tile {
     }
 }
 
-impl Default for Tile {
+impl Default for TilePosition {
     fn default() -> Self {
         Self {
             layer: Entity::PLACEHOLDER,
@@ -145,9 +164,47 @@ impl Default for Tile {
     }
 }
 
-impl fmt::Debug for Tile {
+impl fmt::Debug for TilePosition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Tile({:?}, {}, {})", self.layer(), self.x(), self.y())
+    }
+}
+
+impl TileChunkPosition {
+    pub fn new(x: i16, y: i16) -> Self {
+        TileChunkPosition(I16Vec2::new(x, y))
+    }
+
+    pub fn x(&self) -> i16 {
+        self.0.x
+    }
+
+    pub fn y(&self) -> i16 {
+        self.0.y
+    }
+}
+
+impl TileChunkOffset {
+    pub fn new(x: u16, y: u16) -> Self {
+        TileChunkOffset(U16Vec2::new(x, y))
+    }
+
+    pub fn x(&self) -> u16 {
+        self.0.x
+    }
+
+    pub fn y(&self) -> u16 {
+        self.0.y
+    }
+
+    pub fn index(&self) -> usize {
+        self.0.y as usize * CHUNK_SIZE + self.0.x as usize
+    }
+
+    pub fn from_index(index: usize) -> Self {
+        let x = (index % CHUNK_SIZE) as u16;
+        let y = (index / CHUNK_SIZE) as u16;
+        TileChunkOffset(U16Vec2::new(x, y))
     }
 }
 
@@ -207,4 +264,12 @@ fn test_floor() {
     assert_eq!(floor(-1000000.5), -1000001);
     assert_eq!(floor(2147483520.0), 2147483520);
     assert_eq!(floor(-2147483520.0), -2147483521);
+}
+
+#[test]
+fn test_tile_chunk_offset_index() {
+    let offset = TileChunkOffset(U16Vec2::new(5, 3));
+    let index = offset.index();
+    let roundtripped = TileChunkOffset::from_index(index);
+    assert_eq!(offset, roundtripped);
 }

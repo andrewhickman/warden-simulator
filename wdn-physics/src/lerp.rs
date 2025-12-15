@@ -98,7 +98,7 @@ mod tests {
     };
 
     use approx::assert_relative_eq;
-    use bevy::{prelude::*, time::TimePlugin};
+    use bevy::prelude::*;
 
     use super::*;
 
@@ -572,7 +572,7 @@ mod tests {
 
     fn make_app() -> App {
         let mut app = App::new();
-        app.add_plugins((TimePlugin, InterpolatePlugin));
+        app.add_plugins((MinimalPlugins, InterpolatePlugin));
         app.insert_resource(Time::<Fixed>::from_seconds(1.0));
         app
     }
