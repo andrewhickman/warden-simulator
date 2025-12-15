@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 bevy = { version = "0.17.2", default-features = false, features = ["libm", "trace"] }
+bitflags = "2.10.0"
 parking_lot = "0.12.5"
 smallvec = { version = "1.15.1", features = ["union"] }
 

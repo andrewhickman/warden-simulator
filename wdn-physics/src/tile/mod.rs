@@ -271,5 +271,6 @@ fn test_tile_chunk_offset_index() {
     let offset = TileChunkOffset(U16Vec2::new(5, 3));
     let index = offset.index();
     let roundtripped = TileChunkOffset::from_index(index);
+    assert_eq!(index, 101);
     assert_eq!(offset, roundtripped);
 }

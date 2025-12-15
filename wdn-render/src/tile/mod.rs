@@ -58,7 +58,7 @@ pub fn update_chunk_material(
             tile_buf.clear();
             tile_buf.extend(chunk.tiles().map(|tile| {
                 PackedTileData::from(TileData {
-                    tileset_index: tile as u16,
+                    tileset_index: tile.material() as u16,
                     color: Color::WHITE,
                     visible: true,
                 })

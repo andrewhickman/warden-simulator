@@ -3558,6 +3558,7 @@ dependencies = [
  "approx",
  "bevy",
  "bevy_math",
+ "bitflags 2.10.0",
  "parking_lot",
  "smallvec",
 ]
