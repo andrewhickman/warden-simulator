@@ -38,12 +38,12 @@ pub struct TileChunk {
 
 #[derive(Default, Resource)]
 pub struct TileMap {
-    chunks: HashMap<(Entity, TileChunkPosition), Entity>,
+    chunks: HashMap<TileChunkPosition, Entity>,
 }
 
 #[derive(Default)]
 pub struct TileStorageBuffer {
-    chunks: HashMap<(Entity, TileChunkPosition), TileChunk>,
+    chunks: HashMap<TileChunkPosition, TileChunk>,
 }
 
 #[derive(Default, Debug, Clone, Copy)]
@@ -76,7 +76,7 @@ bitflags! {
 
 impl TileStorage<'_, '_> {
     pub fn get(&self, tile: TilePosition) -> Option<&Tile> {
-        self.chunk(tile.layer(), tile.chunk_position())
+        self.chunk(tile.chunk_position())
             .map(|chunk| chunk.get(tile.chunk_offset()))
     }
 
@@ -94,8 +94,8 @@ impl TileStorage<'_, '_> {
         }
     }
 
-    pub fn chunk(&'_ self, layer: Entity, position: TileChunkPosition) -> Option<&TileChunk> {
-        if let Some(chunk_entity) = self.map.chunks.get(&(layer, position)) {
+    pub fn chunk(&'_ self, position: TileChunkPosition) -> Option<&TileChunk> {
+        if let Some(chunk_entity) = self.map.chunks.get(&position) {
             Some(
                 self.chunks
                     .get(*chunk_entity)
@@ -109,7 +109,7 @@ impl TileStorage<'_, '_> {
 
 impl TileStorageMut<'_, '_> {
     pub fn get(&self, tile: TilePosition) -> Option<&Tile> {
-        self.chunk(tile.layer(), tile.chunk_position())
+        self.chunk(tile.chunk_position())
             .map(|chunk| chunk.get(tile.chunk_offset()))
     }
 
@@ -129,7 +129,7 @@ impl TileStorageMut<'_, '_> {
 
     pub fn set_material(&'_ mut self, position: TilePosition, material: TileMaterial) {
         let tile = self
-            .chunk_mut(position.layer(), position.chunk_position())
+            .chunk_mut(position.chunk_position())
             .get_mut(position.chunk_offset());
         let prev_material = mem::replace(&mut tile.material, material);
 
@@ -140,20 +140,20 @@ impl TileStorageMut<'_, '_> {
         }
     }
 
-    pub fn chunk(&'_ self, layer: Entity, position: TileChunkPosition) -> Option<&TileChunk> {
-        if let Some(chunk_entity) = self.map.chunks.get(&(layer, position)) {
+    pub fn chunk(&'_ self, position: TileChunkPosition) -> Option<&TileChunk> {
+        if let Some(chunk_entity) = self.map.chunks.get(&position) {
             Some(
                 self.chunks
                     .get(*chunk_entity)
                     .expect("invalid chunk entity"),
             )
         } else {
-            self.buffer.chunks.get(&(layer, position))
+            self.buffer.chunks.get(&position)
         }
     }
 
-    fn chunk_mut(&'_ mut self, layer: Entity, position: TileChunkPosition) -> &mut TileChunk {
-        if let Some(chunk_entity) = self.map.chunks.get(&(layer, position)) {
+    fn chunk_mut(&'_ mut self, position: TileChunkPosition) -> &mut TileChunk {
+        if let Some(chunk_entity) = self.map.chunks.get(&position) {
             self.chunks
                 .get_mut(*chunk_entity)
                 .expect("invalid chunk entity")
@@ -161,7 +161,7 @@ impl TileStorageMut<'_, '_> {
         } else {
             self.buffer
                 .chunks
-                .entry((layer, position))
+                .entry(position)
                 .or_insert_with(|| TileChunk::empty(position))
         }
     }
@@ -171,7 +171,7 @@ impl TileStorageMut<'_, '_> {
             let neighbor_pos = TilePosition::new(position.layer(), position.position() - offset);
 
             let neighbour_tile = self
-                .chunk_mut(position.layer(), neighbor_pos.chunk_position())
+                .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
             neighbour_tile.adjacency.insert(adj);
         }
@@ -182,7 +182,7 @@ impl TileStorageMut<'_, '_> {
             let neighbor_pos = TilePosition::new(position.layer(), position.position() - offset);
 
             let neighbour_tile = self
-                .chunk_mut(position.layer(), neighbor_pos.chunk_position())
+                .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
             neighbour_tile.adjacency.remove(adj);
         }
@@ -214,29 +214,24 @@ impl TileChunk {
     }
 
     fn on_add(mut world: DeferredWorld, context: HookContext) {
-        let chunk = world.entity(context.entity);
-        let layer = chunk
-            .get::<ChildOf>()
-            .expect("missing ChildOf component for TileChunk")
-            .parent();
-        let chunk = chunk.get::<TileChunk>().unwrap().position();
+        let chunk = world
+            .entity(context.entity)
+            .get::<TileChunk>()
+            .unwrap()
+            .position();
         world
             .resource_mut::<TileMap>()
             .chunks
-            .insert((layer, chunk), context.entity);
+            .insert(chunk, context.entity);
     }
 
     fn on_remove(mut world: DeferredWorld, context: HookContext) {
-        let chunk = world.entity(context.entity);
-        let layer = chunk
-            .get::<ChildOf>()
-            .expect("missing ChildOf component for TileChunk")
-            .parent();
-        let chunk = chunk.get::<TileChunk>().unwrap().position();
-        world
-            .resource_mut::<TileMap>()
-            .chunks
-            .remove(&(layer, chunk));
+        let chunk = world
+            .entity(context.entity)
+            .get::<TileChunk>()
+            .unwrap()
+            .position();
+        world.resource_mut::<TileMap>().chunks.remove(&chunk);
     }
 }
 
@@ -255,7 +250,7 @@ impl SystemBuffer for TileStorageBuffer {
             world.spawn_batch(
                 self.chunks
                     .drain()
-                    .map(|((layer, _), chunk)| (ChildOf(layer), chunk)),
+                    .map(|(position, chunk)| (ChildOf(position.layer), chunk)),
             );
         }
     }
@@ -317,7 +312,10 @@ mod tests {
 
     #[test]
     fn tile_chunk_empty() {
-        let position = TileChunkPosition(I16Vec2::ZERO);
+        let position = TileChunkPosition {
+            layer: Entity::PLACEHOLDER,
+            position: I16Vec2::ZERO,
+        };
         let chunk = TileChunk::empty(position);
 
         assert_eq!(chunk.position(), position);
@@ -330,7 +328,10 @@ mod tests {
 
     #[test]
     fn tile_chunk_material_access() {
-        let position = TileChunkPosition(I16Vec2::ZERO);
+        let position = TileChunkPosition {
+            layer: Entity::PLACEHOLDER,
+            position: I16Vec2::ZERO,
+        };
         let mut chunk = TileChunk::empty(position);
         let offset = TileChunkOffset::new(10, 1);
 
@@ -458,11 +459,11 @@ mod tests {
         app.add_plugins(TilePlugin);
 
         let layer = app.world_mut().spawn(TileLayer {}).id();
-        let position = TileChunkPosition::new(5, 5);
+        let position = TileChunkPosition::new(layer, 5, 5);
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
-                storage.chunk_mut(layer, position);
+                storage.chunk_mut(position);
             })
             .unwrap();
 
@@ -470,7 +471,7 @@ mod tests {
             .world_mut()
             .resource::<TileMap>()
             .chunks
-            .get(&(layer, position))
+            .get(&position)
             .unwrap();
 
         assert!(app.world_mut().get_entity(chunk_entity).is_ok());
@@ -483,7 +484,7 @@ mod tests {
             !app.world_mut()
                 .resource::<TileMap>()
                 .chunks
-                .contains_key(&(layer, position))
+                .contains_key(&position)
         );
 
         app.world_mut()

@@ -10,9 +10,12 @@ use bevy::{
 };
 use parking_lot::Mutex;
 
-use crate::tile::{
-    index::{TileChanged, TileIndex},
-    storage::TileMap,
+use crate::{
+    PhysicsSystems,
+    tile::{
+        index::{TileChanged, TileIndex},
+        storage::TileMap,
+    },
 };
 
 pub const CHUNK_SIZE: usize = 32;
@@ -27,7 +30,10 @@ pub struct TilePosition {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct TileChunkPosition(I16Vec2);
+pub struct TileChunkPosition {
+    layer: Entity,
+    position: I16Vec2,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct TileChunkOffset(U16Vec2);
@@ -80,7 +86,12 @@ impl Plugin for TilePlugin {
             .init_resource::<TileMap>()
             .add_message::<TileChanged>();
 
-        app.add_systems(FixedUpdate, (update_tile, update_index).chain());
+        app.add_systems(
+            FixedUpdate,
+            (update_tile, update_index)
+                .in_set(PhysicsSystems::UpdateTile)
+                .chain(),
+        );
     }
 }
 
@@ -111,6 +122,7 @@ impl TilePosition {
 
     pub fn chunk_position(&self) -> TileChunkPosition {
         TileChunkPosition::new(
+            self.layer,
             self.x().div_euclid(CHUNK_SIZE as i32) as i16,
             self.y().div_euclid(CHUNK_SIZE as i32) as i16,
         )
@@ -171,16 +183,23 @@ impl fmt::Debug for TilePosition {
 }
 
 impl TileChunkPosition {
-    pub fn new(x: i16, y: i16) -> Self {
-        TileChunkPosition(I16Vec2::new(x, y))
+    pub fn new(layer: Entity, x: i16, y: i16) -> Self {
+        TileChunkPosition {
+            layer,
+            position: I16Vec2::new(x, y),
+        }
     }
 
     pub fn x(&self) -> i16 {
-        self.0.x
+        self.position.x
     }
 
     pub fn y(&self) -> i16 {
-        self.0.y
+        self.position.y
+    }
+
+    pub fn layer(&self) -> Entity {
+        self.layer
     }
 }
 
