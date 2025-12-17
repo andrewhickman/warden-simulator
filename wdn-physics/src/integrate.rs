@@ -25,7 +25,7 @@ pub fn integrate_velocity(
     mut query: Query<(&mut Transform, &mut Velocity, Option<&Collisions>)>,
     time: Res<Time>,
 ) {
-    let delta_seconds = time.delta_secs();
+    let delta_secs = time.delta_secs();
 
     query
         .par_iter_mut()
@@ -52,8 +52,8 @@ pub fn integrate_velocity(
                 }
             }
 
-            transform.translation.x += velocity.0.x * delta_seconds;
-            transform.translation.y += velocity.0.y * delta_seconds;
+            transform.translation.x += velocity.0.x * delta_secs;
+            transform.translation.y += velocity.0.y * delta_secs;
         });
 }
 
@@ -62,8 +62,12 @@ impl Velocity {
         Velocity(velocity)
     }
 
+    pub fn get(&self) -> Vec2 {
+        self.0
+    }
+
     pub fn collide(&mut self, collision: &Collision) {
-        let normal = collision.normal();
+        let normal = collision.normal;
         let projected = self.0.dot(normal);
         if projected < 0.0 {
             self.0 -= projected * normal;
@@ -79,7 +83,7 @@ mod tests {
     use bevy::{prelude::*, time::TimeUpdateStrategy};
 
     use crate::{
-        collision::{Collision, Collisions},
+        collision::{Collision, CollisionTarget, Collisions},
         integrate::{IntegratePlugin, Velocity},
     };
 
@@ -132,9 +136,12 @@ mod tests {
 
         let mut collisions = Collisions::default();
         collisions.insert(
-            Collision::Wall {
+            Collision {
+                position: default(),
                 normal: Vec2::X,
-                position: Default::default(),
+                target: CollisionTarget::Wall {
+                    position: default(),
+                },
             },
             0.0,
         );
@@ -165,9 +172,12 @@ mod tests {
 
         let mut collisions = Collisions::default();
         collisions.insert(
-            Collision::Wall {
+            Collision {
+                position: default(),
                 normal: Vec2::Y,
-                position: Default::default(),
+                target: CollisionTarget::Wall {
+                    position: default(),
+                },
             },
             0.5,
         );
@@ -198,16 +208,22 @@ mod tests {
 
         let mut collisions = Collisions::default();
         collisions.insert(
-            Collision::Wall {
+            Collision {
+                position: default(),
                 normal: Vec2::X,
-                position: Default::default(),
+                target: CollisionTarget::Wall {
+                    position: default(),
+                },
             },
             0.0,
         );
         collisions.insert(
-            Collision::Wall {
+            Collision {
+                position: default(),
                 normal: Vec2::Y,
-                position: Default::default(),
+                target: CollisionTarget::Wall {
+                    position: default(),
+                },
             },
             0.0,
         );
@@ -246,9 +262,12 @@ mod tests {
 
         let mut collisions = Collisions::default();
         collisions.insert(
-            Collision::Wall {
+            Collision {
+                position: default(),
                 normal: Vec2::X,
-                position: Default::default(),
+                target: CollisionTarget::Wall {
+                    position: default(),
+                },
             },
             0.0,
         );
@@ -281,10 +300,13 @@ mod tests {
 
         let mut collisions = Collisions::default();
         collisions.insert(
-            Collision::Collider {
+            Collision {
+                position: default(),
                 normal: Vec2::new(1.0, 1.0).normalize(),
-                id: other_entity,
-                position: Vec2::new(5.0, 5.0),
+                target: CollisionTarget::Collider {
+                    id: other_entity,
+                    position: Vec2::new(5.0, 5.0),
+                },
             },
             0.0,
         );

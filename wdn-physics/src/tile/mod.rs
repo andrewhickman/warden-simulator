@@ -104,6 +104,10 @@ impl TilePosition {
         TilePosition::new(layer, IVec2::new(floor(position.x), floor(position.y)))
     }
 
+    pub fn with_offset(&self, offset: IVec2) -> Self {
+        TilePosition::new(self.layer(), self.position() + offset)
+    }
+
     pub fn layer(&self) -> Entity {
         self.layer
     }
@@ -136,19 +140,16 @@ impl TilePosition {
     }
 
     pub fn neighborhood(&self) -> [TilePosition; 9] {
-        let layer = self.layer();
-        let (x, y) = (self.x(), self.y());
-
         [
-            TilePosition::new(layer, IVec2::new(x - 1, y - 1)),
-            TilePosition::new(layer, IVec2::new(x, y - 1)),
-            TilePosition::new(layer, IVec2::new(x + 1, y - 1)),
-            TilePosition::new(layer, IVec2::new(x - 1, y)),
-            TilePosition::new(layer, IVec2::new(x, y)),
-            TilePosition::new(layer, IVec2::new(x + 1, y)),
-            TilePosition::new(layer, IVec2::new(x - 1, y + 1)),
-            TilePosition::new(layer, IVec2::new(x, y + 1)),
-            TilePosition::new(layer, IVec2::new(x + 1, y + 1)),
+            self.with_offset(IVec2::new(-1, -1)),
+            self.with_offset(IVec2::new(0, -1)),
+            self.with_offset(IVec2::new(1, -1)),
+            self.with_offset(IVec2::new(-1, 0)),
+            self.with_offset(IVec2::new(0, 0)),
+            self.with_offset(IVec2::new(1, 0)),
+            self.with_offset(IVec2::new(-1, 1)),
+            self.with_offset(IVec2::new(0, 1)),
+            self.with_offset(IVec2::new(1, 1)),
         ]
     }
 
