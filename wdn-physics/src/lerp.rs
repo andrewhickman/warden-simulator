@@ -119,16 +119,12 @@ mod tests {
 
         run_end_interpolation(&mut app);
 
-        let transform = app.world().entity(entity).get::<Transform>().unwrap();
+        let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(transform.translation, Vec3::new(1.5, -2.0, 0.5));
         assert_relative_eq!(transform.rotation, Quat::from_rotation_y(0.5));
         assert_relative_eq!(transform.scale, Vec3::new(2.0, 1.5, 3.0));
 
-        let state = app
-            .world()
-            .entity(entity)
-            .get::<InterpolateState>()
-            .unwrap();
+        let state = app.world().get::<InterpolateState>(entity).unwrap();
         match *state {
             InterpolateState::Fixed { start } => {
                 assert_relative_eq!(start.translation, Vec3::new(1.5, -2.0, 0.5));
@@ -156,16 +152,12 @@ mod tests {
 
         run_start_interpolation(&mut app, 0.5);
 
-        let transform = app.world().entity(entity).get::<Transform>().unwrap();
+        let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(transform.translation, Vec3::new(1.5, -2.0, 0.5));
         assert_relative_eq!(transform.rotation, Quat::from_rotation_y(0.5));
         assert_relative_eq!(transform.scale, Vec3::new(2.0, 1.5, 3.0));
 
-        let state = app
-            .world()
-            .entity(entity)
-            .get::<InterpolateState>()
-            .unwrap();
+        let state = app.world().get::<InterpolateState>(entity).unwrap();
         match *state {
             InterpolateState::None => {}
             _ => panic!("expected Fixed position, got {state:?}"),
@@ -194,16 +186,12 @@ mod tests {
 
         run_end_interpolation(&mut app);
 
-        let transform = app.world().entity(entity).get::<Transform>().unwrap();
+        let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(transform.translation, Vec3::new(1.0, 1.0, 0.5));
         assert_relative_eq!(transform.rotation, Quat::from_rotation_x(FRAC_PI_2));
         assert_relative_eq!(transform.scale, Vec3::splat(1.5));
 
-        let state = app
-            .world()
-            .entity(entity)
-            .get::<InterpolateState>()
-            .unwrap();
+        let state = app.world().get::<InterpolateState>(entity).unwrap();
         match *state {
             InterpolateState::Fixed { start } => {
                 assert_relative_eq!(start.translation, Vec3::new(1.0, 1.0, 0.5));
@@ -241,16 +229,12 @@ mod tests {
         );
         run_end_interpolation(&mut app);
 
-        let transform = app.world().entity(entity).get::<Transform>().unwrap();
+        let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(transform.translation, Vec3::new(1.0, -1.0, 0.5));
         assert_relative_eq!(transform.rotation, Quat::from_rotation_z(FRAC_PI_2));
         assert_relative_eq!(transform.scale, Vec3::splat(1.5));
 
-        let state = app
-            .world()
-            .entity(entity)
-            .get::<InterpolateState>()
-            .unwrap();
+        let state = app.world().get::<InterpolateState>(entity).unwrap();
         match *state {
             InterpolateState::Fixed { start } => {
                 assert_relative_eq!(start.translation, Vec3::new(1.5, -2.0, 0.5));
@@ -294,11 +278,7 @@ mod tests {
         assert_relative_eq!(transform.rotation, Quat::from_rotation_x(FRAC_PI_4));
         assert_relative_eq!(transform.scale, Vec3::splat(1.5));
 
-        let state = app
-            .world()
-            .entity(entity)
-            .get::<InterpolateState>()
-            .unwrap();
+        let state = app.world().get::<InterpolateState>(entity).unwrap();
         match *state {
             InterpolateState::Interpolated {
                 start,
@@ -334,11 +314,7 @@ mod tests {
         assert_relative_eq!(transform.rotation, Quat::from_rotation_x(3.0 * FRAC_PI_4));
         assert_relative_eq!(transform.scale, Vec3::splat(0.75));
 
-        let state = app
-            .world()
-            .entity(entity)
-            .get::<InterpolateState>()
-            .unwrap();
+        let state = app.world().get::<InterpolateState>(entity).unwrap();
         match *state {
             InterpolateState::Interpolated {
                 start,
@@ -391,11 +367,7 @@ mod tests {
         assert_relative_eq!(transform.rotation, Quat::from_rotation_y(0.7 * FRAC_PI_2));
         assert_relative_eq!(transform.scale, Vec3::splat(1.7));
 
-        let state = app
-            .world()
-            .entity(entity)
-            .get::<InterpolateState>()
-            .unwrap();
+        let state = app.world().get::<InterpolateState>(entity).unwrap();
         match *state {
             InterpolateState::Interpolated {
                 start,
@@ -453,16 +425,12 @@ mod tests {
 
         run_end_interpolation(&mut app);
 
-        let transform = app.world().entity(entity).get::<Transform>().unwrap();
+        let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(transform.translation, Vec3::new(2.0, 2.0, 0.0));
         assert_relative_eq!(transform.rotation, Quat::from_rotation_z(PI));
         assert_relative_eq!(transform.scale, Vec3::splat(0.5));
 
-        let state = app
-            .world()
-            .entity(entity)
-            .get::<InterpolateState>()
-            .unwrap();
+        let state = app.world().get::<InterpolateState>(entity).unwrap();
         match *state {
             InterpolateState::Fixed { start } => {
                 assert_relative_eq!(start.translation, Vec3::new(2.0, 2.0, 0.0));
@@ -512,16 +480,12 @@ mod tests {
 
         run_start_interpolation(&mut app, 0.4);
 
-        let transform = app.world().entity(entity).get::<Transform>().unwrap();
+        let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(transform.translation, Vec3::new(2.0, 2.0, 0.0));
         assert_relative_eq!(transform.rotation, Quat::from_rotation_x(PI));
         assert_relative_eq!(transform.scale, Vec3::splat(0.8));
 
-        let state = app
-            .world()
-            .entity(entity)
-            .get::<InterpolateState>()
-            .unwrap();
+        let state = app.world().get::<InterpolateState>(entity).unwrap();
         match *state {
             InterpolateState::None => {}
             _ => panic!("expected None interpolation state, got {state:?}"),
@@ -559,11 +523,7 @@ mod tests {
         assert_relative_eq!(transform.scale, Vec3::splat(1.8));
         assert_eq!(transform.last_changed(), initial_transform_tick);
 
-        let state = app
-            .world()
-            .entity(entity)
-            .get::<InterpolateState>()
-            .unwrap();
+        let state = app.world().get::<InterpolateState>(entity).unwrap();
         match *state {
             InterpolateState::None => {}
             _ => panic!("expected None interpolation state, got {state:?}"),

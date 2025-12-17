@@ -214,11 +214,7 @@ impl TileChunk {
     }
 
     fn on_add(mut world: DeferredWorld, context: HookContext) {
-        let chunk = world
-            .entity(context.entity)
-            .get::<TileChunk>()
-            .unwrap()
-            .position();
+        let chunk = world.get::<TileChunk>(context.entity).unwrap().position();
         world
             .resource_mut::<TileMap>()
             .chunks
@@ -226,11 +222,7 @@ impl TileChunk {
     }
 
     fn on_remove(mut world: DeferredWorld, context: HookContext) {
-        let chunk = world
-            .entity(context.entity)
-            .get::<TileChunk>()
-            .unwrap()
-            .position();
+        let chunk = world.get::<TileChunk>(context.entity).unwrap().position();
         world.resource_mut::<TileMap>().chunks.remove(&chunk);
     }
 }

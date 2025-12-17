@@ -89,8 +89,8 @@ impl Plugin for TilePlugin {
         app.add_systems(
             FixedUpdate,
             (update_tile, update_index)
-                .in_set(PhysicsSystems::UpdateTile)
-                .chain(),
+                .chain()
+                .in_set(PhysicsSystems::UpdateTile),
         );
     }
 }

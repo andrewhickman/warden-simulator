@@ -123,7 +123,7 @@ mod tests {
 
         app.world_mut().run_schedule(FixedUpdate);
 
-        let tile = app.world().entity(entity).get::<TilePosition>().unwrap();
+        let tile = app.world().get::<TilePosition>(entity).unwrap();
         assert_eq!(tile.layer(), layer);
         assert_eq!(tile.position(), IVec2::new(1, -1));
 
@@ -168,7 +168,7 @@ mod tests {
 
         app.world_mut().run_schedule(FixedUpdate);
 
-        let tile = app.world().entity(entity).get::<TilePosition>().unwrap();
+        let tile = app.world().get::<TilePosition>(entity).unwrap();
         assert_eq!(tile.layer(), layer);
         assert_eq!(tile.position(), IVec2::new(2, -1));
 
@@ -222,7 +222,7 @@ mod tests {
 
         app.world_mut().run_schedule(FixedUpdate);
 
-        let tile = app.world().entity(entity).get::<TilePosition>().unwrap();
+        let tile = app.world().get::<TilePosition>(entity).unwrap();
         assert_eq!(tile.layer(), layer2);
         assert_eq!(tile.position(), IVec2::new(2, 1));
 
