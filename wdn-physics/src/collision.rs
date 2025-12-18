@@ -1580,6 +1580,198 @@ mod tests {
         }
     }
 
+    #[test]
+    fn collision_wall_ordering() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 1, 0));
+        set_tile(&mut app, TilePosition::new(layer, 0, 1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.7, 0.7),
+            Vec2::new(0.5, 0.3),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert_relative_eq!(collisions.next_time().unwrap(), 0.4);
+        let collision = collisions.next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.9, 0.82));
+        assert_relative_eq!(collision.normal, Vec2::NEG_X);
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 1, 0));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_intersecting_and_closing() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        let entity1 = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.3, 0.5),
+            Vec2::new(1.0, 0.0),
+            0.1,
+        );
+        let entity2 = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.32, 0.5),
+            Vec2::new(0.0, 0.0),
+            0.1,
+        );
+        let entity3 = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.8, 0.5),
+            Vec2::new(0.0, 0.0),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
+        assert_eq!(collisions1.active().len(), 1);
+        let active_collision = collisions1.active().next().unwrap();
+        assert_relative_eq!(active_collision.position, Vec2::new(0.3, 0.5));
+        assert_relative_eq!(active_collision.normal, Vec2::NEG_X);
+        match active_collision.target {
+            CollisionTarget::Collider { id, .. } => {
+                assert_eq!(id, entity2);
+            }
+            _ => panic!("Expected collider collision"),
+        }
+
+        assert_relative_eq!(collisions1.next_time().unwrap(), 0.3);
+        let next_collision = collisions1.next().unwrap();
+        assert_relative_eq!(next_collision.position, Vec2::new(0.6, 0.5));
+        assert_relative_eq!(next_collision.normal, Vec2::NEG_X);
+        match next_collision.target {
+            CollisionTarget::Collider { id, .. } => {
+                assert_eq!(id, entity3);
+            }
+            _ => panic!("Expected collider collision"),
+        }
+    }
+
+    #[test]
+    fn collision_collider_ordering() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        let entity1 = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.2, 0.5),
+            Vec2::new(0.5, 0.0),
+            0.01,
+        );
+        let entity2 = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.32, 0.5),
+            Vec2::new(0.0, 0.0),
+            0.01,
+        );
+        let entity3 = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.44, 0.5),
+            Vec2::new(-0.5, 0.0),
+            0.01,
+        );
+
+        app.update();
+
+        let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
+        assert_eq!(collisions1.active().len(), 0);
+        assert_relative_eq!(collisions1.next_time().unwrap(), 0.2);
+        let collision = collisions1.next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.3, 0.5));
+        assert_relative_eq!(collision.normal, Vec2::NEG_X);
+        match collision.target {
+            CollisionTarget::Collider { id, .. } => {
+                assert_eq!(id, entity2);
+            }
+            _ => panic!("Expected collider collision"),
+        }
+
+        let collisions3 = app.world().get::<Collisions>(entity3).unwrap();
+        assert_eq!(collisions3.active().len(), 0);
+        assert_relative_eq!(collisions3.next_time().unwrap(), 0.2);
+        let collision = collisions3.next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.34, 0.5));
+        assert_relative_eq!(collision.normal, Vec2::X);
+        match collision.target {
+            CollisionTarget::Collider { id, .. } => {
+                assert_eq!(id, entity2);
+            }
+            _ => panic!("Expected collider collision"),
+        }
+    }
+
+    #[test]
+    fn collision_colliders_tile_boundary() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        let entity1 = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.85, 0.5),
+            Vec2::new(0.5, 0.0),
+            0.05,
+        );
+        let entity2 = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(1.15, 0.5),
+            Vec2::new(-0.5, 0.0),
+            0.05,
+        );
+
+        app.update();
+
+        let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
+        assert_eq!(collisions1.active().len(), 0);
+        assert_relative_eq!(collisions1.next_time().unwrap(), 0.2);
+        let collision1 = collisions1.next().unwrap();
+        assert_relative_eq!(collision1.position, Vec2::new(0.95, 0.5));
+        assert_relative_eq!(collision1.normal, Vec2::NEG_X);
+        match collision1.target {
+            CollisionTarget::Collider { id, position } => {
+                assert_eq!(id, entity2);
+                assert_relative_eq!(position, Vec2::new(1.05, 0.5));
+            }
+            _ => panic!("Expected collider collision"),
+        }
+
+        let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
+        assert_eq!(collisions2.active().len(), 0);
+        assert_relative_eq!(collisions2.next_time().unwrap(), 0.2);
+        let collision2 = collisions2.next().unwrap();
+        assert_relative_eq!(collision2.position, Vec2::new(1.05, 0.5));
+        assert_relative_eq!(collision2.normal, Vec2::X);
+        match collision2.target {
+            CollisionTarget::Collider { id, position } => {
+                assert_eq!(id, entity1);
+                assert_relative_eq!(position, Vec2::new(0.95, 0.5));
+            }
+            _ => panic!("Expected collider collision"),
+        }
+    }
+
     fn make_app() -> App {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, TilePlugin, CollisionPlugin));
