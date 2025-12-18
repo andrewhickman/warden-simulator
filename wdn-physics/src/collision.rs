@@ -368,7 +368,7 @@ fn wall_collision(distance: f32, speed: f32, radius: f32) -> Option<f32> {
 
 #[cfg(test)]
 mod tests {
-    use std::time::Duration;
+    use std::{f32::consts::FRAC_1_SQRT_2, time::Duration};
 
     use approx::assert_relative_eq;
     use bevy::{ecs::system::RunSystemOnce, prelude::*, time::TimeUpdateStrategy};
@@ -1217,6 +1217,364 @@ mod tests {
         match collision.target {
             CollisionTarget::Wall { position } => {
                 assert_eq!(position, TilePosition::new(layer, -1, 0));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_corner_north_east_receding() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 1, 1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.85, 0.85),
+            Vec2::new(-0.5, -0.5),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert!(collisions.next_time().is_none());
+        assert!(collisions.next().is_none());
+    }
+
+    #[test]
+    fn collision_corner_north_east_closing() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 1, 1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.7, 0.7),
+            Vec2::new(0.5, 0.5),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert_eq!(collisions.next_time().unwrap(), 0.45857865);
+        let collision = collisions.next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.92928934, 0.92928934));
+        assert_relative_eq!(
+            collision.normal,
+            Vec2::new(-FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
+            epsilon = 0.0001
+        );
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 1, 1));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_corner_north_east_intersecting() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 1, 1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.95, 0.95),
+            Vec2::new(0.0, 0.0),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 1);
+        assert!(collisions.next_time().is_none());
+        assert!(collisions.next().is_none());
+        let collision = collisions.active().next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.95, 0.95), epsilon = 0.0001);
+        assert_relative_eq!(
+            collision.normal,
+            Vec2::new(-FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
+            epsilon = 0.0001
+        );
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 1, 1));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_corner_north_west_closing() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, -1, 1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.3, 0.7),
+            Vec2::new(-0.5, 0.5),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert_eq!(collisions.next_time().unwrap(), 0.45857865);
+        let collision = collisions.next().unwrap();
+        assert_relative_eq!(
+            collision.position,
+            Vec2::new(0.07071069, 0.92928934),
+            epsilon = 0.0001
+        );
+        assert_relative_eq!(
+            collision.normal,
+            Vec2::new(FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
+            epsilon = 0.0001
+        );
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, -1, 1));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_corner_north_west_intersecting() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, -1, 1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.05, 0.95),
+            Vec2::new(0.0, 0.0),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 1);
+        assert!(collisions.next_time().is_none());
+        assert!(collisions.next().is_none());
+        let collision = collisions.active().next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.05, 0.95), epsilon = 0.0001);
+        assert_relative_eq!(
+            collision.normal,
+            Vec2::new(FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
+            epsilon = 0.0001
+        );
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, -1, 1));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_corner_south_west_closing() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, -1, -1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.3, 0.3),
+            Vec2::new(-0.5, -0.5),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert_eq!(collisions.next_time().unwrap(), 0.45857865);
+        let collision = collisions.next().unwrap();
+        assert_relative_eq!(
+            collision.position,
+            Vec2::new(0.07071069, 0.07071069),
+            epsilon = 0.0001
+        );
+        assert_relative_eq!(
+            collision.normal,
+            Vec2::new(FRAC_1_SQRT_2, FRAC_1_SQRT_2),
+            epsilon = 0.0001
+        );
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, -1, -1));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_corner_south_west_intersecting() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, -1, -1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.05, 0.05),
+            Vec2::new(0.0, 0.0),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 1);
+        assert!(collisions.next_time().is_none());
+        assert!(collisions.next().is_none());
+        let collision = collisions.active().next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.05, 0.05), epsilon = 0.0001);
+        assert_relative_eq!(
+            collision.normal,
+            Vec2::new(FRAC_1_SQRT_2, FRAC_1_SQRT_2),
+            epsilon = 0.0001
+        );
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, -1, -1));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_corner_south_east_closing() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 1, -1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.7, 0.3),
+            Vec2::new(0.5, -0.5),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert_eq!(collisions.next_time().unwrap(), 0.45857865);
+        let collision = collisions.next().unwrap();
+        assert_relative_eq!(
+            collision.position,
+            Vec2::new(0.92928934, 0.07071069),
+            epsilon = 0.0001
+        );
+        assert_relative_eq!(
+            collision.normal,
+            Vec2::new(-FRAC_1_SQRT_2, FRAC_1_SQRT_2),
+            epsilon = 0.0001
+        );
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 1, -1));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_corner_south_east_intersecting() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 1, -1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.95, 0.05),
+            Vec2::new(0.0, 0.0),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 1);
+        assert!(collisions.next_time().is_none());
+        assert!(collisions.next().is_none());
+        let collision = collisions.active().next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.95, 0.05), epsilon = 0.0001);
+        assert_relative_eq!(
+            collision.normal,
+            Vec2::new(-FRAC_1_SQRT_2, FRAC_1_SQRT_2),
+            epsilon = 0.0001
+        );
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 1, -1));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_corner_angled() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 1, 1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.31, 0.6),
+            Vec2::new(1.0, 0.5),
+            0.05,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert_relative_eq!(collisions.next_time().unwrap(), 0.7040017, epsilon = 0.0001);
+        let collision = collisions.next().unwrap();
+        assert_relative_eq!(
+            collision.position,
+            Vec2::new(1.0140017, 0.95200086),
+            epsilon = 0.0001
+        );
+        assert_relative_eq!(
+            collision.normal,
+            Vec2::new(0.28003645, -0.95998937),
+            epsilon = 0.0001
+        );
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 1, 1));
             }
             _ => panic!("Expected wall collision"),
         }
