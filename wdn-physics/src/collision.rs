@@ -178,8 +178,7 @@ impl Collisions {
                 collider,
                 tile_position.with_offset(IVec2::new(1, 0)),
                 Vec2::NEG_X,
-                collider.position().x,
-                tile_position.x() + 1,
+                (tile_position.x() + 1) as f32 - collider.position().x,
                 collider.velocity().x,
                 collider.radius(),
                 delta_secs,
@@ -191,8 +190,7 @@ impl Collisions {
                 collider,
                 tile_position.with_offset(IVec2::new(0, 1)),
                 Vec2::NEG_Y,
-                collider.position().y,
-                tile_position.y() + 1,
+                (tile_position.y() + 1) as f32 - collider.position().y,
                 collider.velocity().y,
                 collider.radius(),
                 delta_secs,
@@ -204,9 +202,8 @@ impl Collisions {
                 collider,
                 tile_position.with_offset(IVec2::new(-1, 0)),
                 Vec2::X,
-                collider.position().x,
-                tile_position.x(),
-                collider.velocity().x,
+                collider.position().x - tile_position.x() as f32,
+                -collider.velocity().x,
                 collider.radius(),
                 delta_secs,
             );
@@ -217,9 +214,8 @@ impl Collisions {
                 collider,
                 tile_position.with_offset(IVec2::new(0, -1)),
                 Vec2::Y,
-                collider.position().y,
-                tile_position.y(),
-                collider.velocity().y,
+                collider.position().y - tile_position.y() as f32,
+                -collider.velocity().y,
                 collider.radius(),
                 delta_secs,
             );
@@ -275,14 +271,13 @@ impl Collisions {
         collider: &ColliderQueryItem,
         tile_position: TilePosition,
         normal: Vec2,
-        collider_position_component: f32,
-        tile_position_component: i32,
+        delta_position_component: f32,
         collider_velocity_component: f32,
         collider_radius: f32,
         delta_secs: f32,
     ) {
         if let Some(t) = wall_collision(
-            collider_position_component - tile_position_component as f32,
+            delta_position_component,
             collider_velocity_component,
             collider_radius,
         ) {
@@ -356,19 +351,19 @@ fn collider_collision(
 
     let t = (-b - discr.sqrt()) / (2.0 * a);
 
-    if t > 0. || b < 0. { Some(t) } else { None }
+    if t >= 0. { Some(t) } else { None }
 }
 
-fn wall_collision(
-    delta_position: f32,
-    projected_velocity: f32,
-    combined_radius: f32,
-) -> Option<f32> {
-    if projected_velocity > 0.0 {
-        Some((delta_position - combined_radius) / projected_velocity)
-    } else {
+fn wall_collision(distance: f32, speed: f32, radius: f32) -> Option<f32> {
+    if distance <= radius {
+        return Some(0.0);
+    }
+
+    if speed <= 0.0 {
         return None;
     }
+
+    Some((distance - radius) / speed)
 }
 
 #[cfg(test)]
@@ -376,12 +371,15 @@ mod tests {
     use std::time::Duration;
 
     use approx::assert_relative_eq;
-    use bevy::{prelude::*, time::TimeUpdateStrategy};
+    use bevy::{ecs::system::RunSystemOnce, prelude::*, time::TimeUpdateStrategy};
 
     use crate::{
         collision::{Collider, CollisionPlugin, CollisionTarget, Collisions},
         integrate::Velocity,
-        tile::{TilePlugin, storage::TileLayer},
+        tile::{
+            TilePlugin, TilePosition,
+            storage::{TileLayer, TileMaterial, TileStorageMut},
+        },
     };
 
     #[test]
@@ -490,6 +488,39 @@ mod tests {
     }
 
     #[test]
+    fn collision_collider_touching() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        let entity1 = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.4, 0.1),
+            Vec2::new(0.0, 0.0),
+            0.1,
+        );
+        let entity2 = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.2, 0.1),
+            Vec2::new(0.0, 0.0),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
+        assert_eq!(collisions1.active().len(), 0);
+        assert!(collisions1.next_time().is_none());
+        assert!(collisions1.next().is_none());
+
+        let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
+        assert_eq!(collisions2.active().len(), 0);
+        assert!(collisions2.next_time().is_none());
+        assert!(collisions2.next().is_none());
+    }
+
+    #[test]
     fn collision_collider_touching_and_receding() {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
@@ -576,7 +607,7 @@ mod tests {
     }
 
     #[test]
-    fn collision_collider_intersecting_and_stationary() {
+    fn collision_collider_intersecting() {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
@@ -847,6 +878,350 @@ mod tests {
         }
     }
 
+    #[test]
+    fn collision_wall_north_receding() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 0, 1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.0, 0.8),
+            Vec2::new(0.0, -0.5),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert!(collisions.next_time().is_none());
+        assert!(collisions.next().is_none());
+    }
+
+    #[test]
+    fn collision_wall_north_closing() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 0, 1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.0, 0.8),
+            Vec2::new(0.0, 0.5),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
+        let collision = collisions.next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.0, 0.9));
+        assert_relative_eq!(collision.normal, Vec2::NEG_Y);
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 0, 1));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_wall_north_intersecting() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 0, 1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.0, 0.9),
+            Vec2::new(0.0, 0.0),
+            0.2,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 1);
+        assert!(collisions.next_time().is_none());
+        assert!(collisions.next().is_none());
+        let collision = collisions.active().next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.0, 0.9));
+        assert_relative_eq!(collision.normal, Vec2::NEG_Y);
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 0, 1));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_wall_south_receding() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 0, -1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.0, 0.2),
+            Vec2::new(0.0, 0.5),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert!(collisions.next_time().is_none());
+        assert!(collisions.next().is_none());
+    }
+
+    #[test]
+    fn collision_wall_south_closing() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 0, -1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.0, 0.2),
+            Vec2::new(0.0, -0.5),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
+        let collision = collisions.next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.0, 0.1));
+        assert_relative_eq!(collision.normal, Vec2::Y);
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 0, -1));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_wall_south_intersecting() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 0, -1));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.0, 0.1),
+            Vec2::new(0.0, 0.0),
+            0.2,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 1);
+        assert!(collisions.next_time().is_none());
+        assert!(collisions.next().is_none());
+        let collision = collisions.active().next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.0, 0.1));
+        assert_relative_eq!(collision.normal, Vec2::Y);
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 0, -1));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_wall_east_receding() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 1, 0));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.8, 0.0),
+            Vec2::new(-0.5, 0.0),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert!(collisions.next_time().is_none());
+        assert!(collisions.next().is_none());
+    }
+
+    #[test]
+    fn collision_wall_east_closing() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 1, 0));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.8, 0.0),
+            Vec2::new(0.5, 0.0),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
+        let collision = collisions.next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.9, 0.0));
+        assert_relative_eq!(collision.normal, Vec2::NEG_X);
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 1, 0));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_wall_east_intersecting() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, 1, 0));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.9, 0.0),
+            Vec2::new(0.0, 0.0),
+            0.2,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 1);
+        assert!(collisions.next_time().is_none());
+        assert!(collisions.next().is_none());
+        let collision = collisions.active().next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.9, 0.0));
+        assert_relative_eq!(collision.normal, Vec2::NEG_X);
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 1, 0));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_wall_west_receding() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, -1, 0));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.2, 0.0),
+            Vec2::new(0.5, 0.0),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert!(collisions.next_time().is_none());
+        assert!(collisions.next().is_none());
+    }
+
+    #[test]
+    fn collision_wall_west_closing() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, -1, 0));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.2, 0.0),
+            Vec2::new(-0.5, 0.0),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
+        let collision = collisions.next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.1, 0.0));
+        assert_relative_eq!(collision.normal, Vec2::X);
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, -1, 0));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_wall_west_intersecting() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        set_tile(&mut app, TilePosition::new(layer, -1, 0));
+
+        let entity = spawn_entity(
+            &mut app,
+            layer,
+            Vec2::new(0.1, 0.0),
+            Vec2::new(0.0, 0.0),
+            0.2,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 1);
+        assert!(collisions.next_time().is_none());
+        assert!(collisions.next().is_none());
+        let collision = collisions.active().next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.1, 0.0));
+        assert_relative_eq!(collision.normal, Vec2::X);
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, -1, 0));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
     fn make_app() -> App {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, TilePlugin, CollisionPlugin));
@@ -881,5 +1256,13 @@ mod tests {
                 ChildOf(layer),
             ))
             .id()
+    }
+
+    fn set_tile(app: &mut App, position: TilePosition) {
+        app.world_mut()
+            .run_system_once(move |mut storage: TileStorageMut| {
+                storage.set_material(position, TileMaterial::Wall);
+            })
+            .unwrap();
     }
 }

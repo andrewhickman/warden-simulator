@@ -65,7 +65,7 @@ mod tests {
         let layer = Entity::from_raw_u32(0).unwrap();
         let entity1 = Entity::from_raw_u32(1).unwrap();
         let entity2 = Entity::from_raw_u32(2).unwrap();
-        let tile = TilePosition::new(layer, IVec2::new(0, 0));
+        let tile = TilePosition::new(layer, 0, 0);
 
         index.insert(entity1, tile);
         index.insert(entity2, tile);
@@ -88,9 +88,9 @@ mod tests {
     fn index_get_neighborhood() {
         let mut index = TileIndex::default();
         let layer = Entity::from_raw_u32(0).unwrap();
-        let center = TilePosition::new(layer, IVec2::new(1, 1));
-        let neighbor = TilePosition::new(layer, IVec2::new(0, 0));
-        let far = TilePosition::new(layer, IVec2::new(10, 10));
+        let center = TilePosition::new(layer, 1, 1);
+        let neighbor = TilePosition::new(layer, 0, 0);
+        let far = TilePosition::new(layer, 10, 10);
 
         let entity1 = Entity::from_raw_u32(1).unwrap();
         let entity2 = Entity::from_raw_u32(2).unwrap();
@@ -128,7 +128,7 @@ mod tests {
         assert_eq!(tile.position(), IVec2::new(1, -1));
 
         let index = app.world().resource::<TileIndex>();
-        let entities = index.get(TilePosition::new(layer, IVec2::new(1, -1)));
+        let entities = index.get(TilePosition::new(layer, 1, -1));
         assert_eq!(entities, &[entity]);
 
         assert_eq!(
@@ -140,7 +140,7 @@ mod tests {
             vec![TileChanged {
                 id: entity,
                 old: None,
-                new: Some(TilePosition::new(layer, IVec2::new(1, -1))),
+                new: Some(TilePosition::new(layer, 1, -1)),
             }],
         );
     }
@@ -173,9 +173,9 @@ mod tests {
         assert_eq!(tile.position(), IVec2::new(2, -1));
 
         let index = app.world().resource::<TileIndex>();
-        let entities = index.get(TilePosition::new(layer, IVec2::new(2, -1)));
+        let entities = index.get(TilePosition::new(layer, 2, -1));
         assert_eq!(entities, &[entity]);
-        let prev_entities = index.get(TilePosition::new(layer, IVec2::new(1, -1)));
+        let prev_entities = index.get(TilePosition::new(layer, 1, -1));
         assert_eq!(prev_entities, &[]);
 
         assert_eq!(
@@ -188,12 +188,12 @@ mod tests {
                 TileChanged {
                     id: entity,
                     old: None,
-                    new: Some(TilePosition::new(layer, IVec2::new(1, -1))),
+                    new: Some(TilePosition::new(layer, 1, -1)),
                 },
                 TileChanged {
                     id: entity,
-                    old: Some(TilePosition::new(layer, IVec2::new(1, -1))),
-                    new: Some(TilePosition::new(layer, IVec2::new(2, -1))),
+                    old: Some(TilePosition::new(layer, 1, -1)),
+                    new: Some(TilePosition::new(layer, 2, -1)),
                 }
             ],
         );
@@ -227,9 +227,9 @@ mod tests {
         assert_eq!(tile.position(), IVec2::new(2, 1));
 
         let index = app.world().resource::<TileIndex>();
-        let layer1_entities = index.get(TilePosition::new(layer1, IVec2::new(2, 1)));
+        let layer1_entities = index.get(TilePosition::new(layer1, 2, 1));
         assert_eq!(layer1_entities, &[]);
-        let layer2_entities = index.get(TilePosition::new(layer2, IVec2::new(2, 1)));
+        let layer2_entities = index.get(TilePosition::new(layer2, 2, 1));
         assert_eq!(layer2_entities, &[entity]);
 
         assert_eq!(
@@ -242,12 +242,12 @@ mod tests {
                 TileChanged {
                     id: entity,
                     old: None,
-                    new: Some(TilePosition::new(layer1, IVec2::new(2, 1))),
+                    new: Some(TilePosition::new(layer1, 2, 1)),
                 },
                 TileChanged {
                     id: entity,
-                    old: Some(TilePosition::new(layer1, IVec2::new(2, 1))),
-                    new: Some(TilePosition::new(layer2, IVec2::new(2, 1))),
+                    old: Some(TilePosition::new(layer1, 2, 1)),
+                    new: Some(TilePosition::new(layer2, 2, 1)),
                 }
             ],
         );
@@ -294,7 +294,7 @@ mod tests {
         assert_eq!(tile.last_changed(), tile_change_tick);
 
         let index = app.world().resource_ref::<TileIndex>();
-        let entities = index.get(TilePosition::new(layer, IVec2::new(1, -1)));
+        let entities = index.get(TilePosition::new(layer, 1, -1));
         assert_eq!(entities, &[entity]);
         assert_eq!(index.last_changed(), index_change_tick);
 
@@ -307,7 +307,7 @@ mod tests {
             vec![TileChanged {
                 id: entity,
                 old: None,
-                new: Some(TilePosition::new(layer, IVec2::new(1, -1))),
+                new: Some(TilePosition::new(layer, 1, -1)),
             }],
         );
     }
@@ -335,7 +335,7 @@ mod tests {
         app.world_mut().run_schedule(FixedUpdate);
 
         let index = app.world().resource::<TileIndex>();
-        let entities = index.get(TilePosition::new(layer, IVec2::new(1, -1)));
+        let entities = index.get(TilePosition::new(layer, 1, -1));
         assert_eq!(entities, &[]);
 
         assert_eq!(
@@ -348,11 +348,11 @@ mod tests {
                 TileChanged {
                     id: entity,
                     old: None,
-                    new: Some(TilePosition::new(layer, IVec2::new(1, -1))),
+                    new: Some(TilePosition::new(layer, 1, -1)),
                 },
                 TileChanged {
                     id: entity,
-                    old: Some(TilePosition::new(layer, IVec2::new(1, -1))),
+                    old: Some(TilePosition::new(layer, 1, -1)),
                     new: None,
                 },
             ],
@@ -376,7 +376,7 @@ mod tests {
         assert!(app.world().resource::<Messages<TileChanged>>().is_empty());
 
         let index = app.world().resource::<TileIndex>();
-        let entities = index.get(TilePosition::new(layer, IVec2::new(1, -1)));
+        let entities = index.get(TilePosition::new(layer, 1, -1));
         assert_eq!(entities, &[]);
     }
 }

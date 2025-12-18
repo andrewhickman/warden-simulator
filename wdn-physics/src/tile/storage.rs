@@ -348,7 +348,7 @@ mod tests {
 
         app.world_mut()
             .run_system_once(move |storage: TileStorage| {
-                let tile_pos = TilePosition::new(layer, IVec2::new(0, 0));
+                let tile_pos = TilePosition::new(layer, 0, 0);
                 assert!(storage.get(tile_pos).is_none());
                 assert_eq!(storage.get_material(tile_pos), TileMaterial::Empty);
             })
@@ -364,7 +364,7 @@ mod tests {
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
-                let tile_pos = TilePosition::new(layer, IVec2::new(5, 7));
+                let tile_pos = TilePosition::new(layer, 5, 7);
                 storage.set_material(tile_pos, TileMaterial::Wall);
                 assert!(storage.get(tile_pos).is_some());
                 assert_eq!(storage.get_material(tile_pos), TileMaterial::Wall);
@@ -373,7 +373,7 @@ mod tests {
 
         app.world_mut()
             .run_system_once(move |storage: TileStorage| {
-                let tile_pos = TilePosition::new(layer, IVec2::new(5, 7));
+                let tile_pos = TilePosition::new(layer, 5, 7);
                 assert!(storage.get(tile_pos).is_some());
                 assert_eq!(storage.get_material(tile_pos), TileMaterial::Wall);
             })
@@ -388,7 +388,7 @@ mod tests {
         let layer = app.world_mut().spawn(TileLayer {}).id();
 
         let range: Vec<_> = (-100..100)
-            .flat_map(|x| (-100..100).map(move |y| TilePosition::new(layer, IVec2::new(x, y))))
+            .flat_map(|x| (-100..100).map(move |y| TilePosition::new(layer, x, y)))
             .collect();
         let range_clone = range.clone();
 
@@ -426,8 +426,8 @@ mod tests {
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
                 let position = IVec2::new(10, 15);
-                let tile1 = TilePosition::new(layer1, position);
-                let tile2 = TilePosition::new(layer2, position);
+                let tile1 = TilePosition::from_vec(layer1, position);
+                let tile2 = TilePosition::from_vec(layer2, position);
 
                 storage.set_material(tile1, TileMaterial::Wall);
                 storage.set_material(tile2, TileMaterial::Empty);
@@ -440,8 +440,8 @@ mod tests {
         app.world_mut()
             .run_system_once(move |storage: TileStorage| {
                 let position = IVec2::new(10, 15);
-                let tile1 = TilePosition::new(layer1, position);
-                let tile2 = TilePosition::new(layer2, position);
+                let tile1 = TilePosition::from_vec(layer1, position);
+                let tile2 = TilePosition::from_vec(layer2, position);
 
                 assert_eq!(storage.get_material(tile1), TileMaterial::Wall);
                 assert_eq!(storage.get_material(tile2), TileMaterial::Empty);
@@ -485,7 +485,7 @@ mod tests {
 
         app.world_mut()
             .run_system_once(move |storage: TileStorage| {
-                let tile_pos = TilePosition::new(layer, IVec2::new(5, 5));
+                let tile_pos = TilePosition::new(layer, 5, 5);
                 assert!(storage.get(tile_pos).is_none());
             })
             .unwrap();
@@ -498,46 +498,46 @@ mod tests {
 
         let layer = app.world_mut().spawn(TileLayer {}).id();
 
-        let center = TilePosition::new(layer, IVec2::new(5, 5));
+        let center = TilePosition::new(layer, 5, 5);
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
                 storage.set_material(center, TileMaterial::Wall);
 
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(5, 5))),
+                    storage.get_occupancy(TilePosition::new(layer, 5, 5)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(6, 5))),
+                    storage.get_occupancy(TilePosition::new(layer, 6, 5)),
                     TileOccupancy::WEST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(6, 6))),
+                    storage.get_occupancy(TilePosition::new(layer, 6, 6)),
                     TileOccupancy::SOUTH_WEST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(5, 6))),
+                    storage.get_occupancy(TilePosition::new(layer, 5, 6)),
                     TileOccupancy::SOUTH
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(4, 6))),
+                    storage.get_occupancy(TilePosition::new(layer, 4, 6)),
                     TileOccupancy::SOUTH_EAST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(4, 5))),
+                    storage.get_occupancy(TilePosition::new(layer, 4, 5)),
                     TileOccupancy::EAST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(4, 4))),
+                    storage.get_occupancy(TilePosition::new(layer, 4, 4)),
                     TileOccupancy::NORTH_EAST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(5, 4))),
+                    storage.get_occupancy(TilePosition::new(layer, 5, 4)),
                     TileOccupancy::NORTH
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(6, 4))),
+                    storage.get_occupancy(TilePosition::new(layer, 6, 4)),
                     TileOccupancy::NORTH_WEST
                 );
             })
@@ -546,39 +546,39 @@ mod tests {
         app.world_mut()
             .run_system_once(move |storage: TileStorage| {
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(5, 5))),
+                    storage.get_occupancy(TilePosition::new(layer, 5, 5)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(6, 5))),
+                    storage.get_occupancy(TilePosition::new(layer, 6, 5)),
                     TileOccupancy::WEST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(6, 6))),
+                    storage.get_occupancy(TilePosition::new(layer, 6, 6)),
                     TileOccupancy::SOUTH_WEST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(5, 6))),
+                    storage.get_occupancy(TilePosition::new(layer, 5, 6)),
                     TileOccupancy::SOUTH
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(4, 6))),
+                    storage.get_occupancy(TilePosition::new(layer, 4, 6)),
                     TileOccupancy::SOUTH_EAST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(4, 5))),
+                    storage.get_occupancy(TilePosition::new(layer, 4, 5)),
                     TileOccupancy::EAST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(4, 4))),
+                    storage.get_occupancy(TilePosition::new(layer, 4, 4)),
                     TileOccupancy::NORTH_EAST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(5, 4))),
+                    storage.get_occupancy(TilePosition::new(layer, 5, 4)),
                     TileOccupancy::NORTH
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(6, 4))),
+                    storage.get_occupancy(TilePosition::new(layer, 6, 4)),
                     TileOccupancy::NORTH_WEST
                 );
             })
@@ -589,39 +589,39 @@ mod tests {
                 storage.set_material(center, TileMaterial::Empty);
 
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(5, 5))),
+                    storage.get_occupancy(TilePosition::new(layer, 5, 5)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(6, 5))),
+                    storage.get_occupancy(TilePosition::new(layer, 6, 5)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(6, 6))),
+                    storage.get_occupancy(TilePosition::new(layer, 6, 6)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(5, 6))),
+                    storage.get_occupancy(TilePosition::new(layer, 5, 6)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(4, 6))),
+                    storage.get_occupancy(TilePosition::new(layer, 4, 6)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(4, 5))),
+                    storage.get_occupancy(TilePosition::new(layer, 4, 5)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(4, 4))),
+                    storage.get_occupancy(TilePosition::new(layer, 4, 4)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(5, 4))),
+                    storage.get_occupancy(TilePosition::new(layer, 5, 4)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(6, 4))),
+                    storage.get_occupancy(TilePosition::new(layer, 6, 4)),
                     TileOccupancy::NONE
                 );
             })
@@ -630,39 +630,39 @@ mod tests {
         app.world_mut()
             .run_system_once(move |storage: TileStorage| {
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(5, 5))),
+                    storage.get_occupancy(TilePosition::new(layer, 5, 5)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(6, 5))),
+                    storage.get_occupancy(TilePosition::new(layer, 6, 5)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(6, 6))),
+                    storage.get_occupancy(TilePosition::new(layer, 6, 6)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(5, 6))),
+                    storage.get_occupancy(TilePosition::new(layer, 5, 6)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(4, 6))),
+                    storage.get_occupancy(TilePosition::new(layer, 4, 6)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(4, 5))),
+                    storage.get_occupancy(TilePosition::new(layer, 4, 5)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(4, 4))),
+                    storage.get_occupancy(TilePosition::new(layer, 4, 4)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(5, 4))),
+                    storage.get_occupancy(TilePosition::new(layer, 5, 4)),
                     TileOccupancy::NONE
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(6, 4))),
+                    storage.get_occupancy(TilePosition::new(layer, 6, 4)),
                     TileOccupancy::NONE
                 );
             })
@@ -676,11 +676,11 @@ mod tests {
 
         let layer = app.world_mut().spawn(TileLayer {}).id();
 
-        let edge_tile = TilePosition::new(layer, IVec2::new(31, 15));
-        let east_neighbor = TilePosition::new(layer, IVec2::new(32, 15));
-        let west_neighbor = TilePosition::new(layer, IVec2::new(30, 15));
-        let northeast_neighbor = TilePosition::new(layer, IVec2::new(32, 16));
-        let southeast_neighbor = TilePosition::new(layer, IVec2::new(32, 14));
+        let edge_tile = TilePosition::new(layer, 31, 15);
+        let east_neighbor = TilePosition::new(layer, 32, 15);
+        let west_neighbor = TilePosition::new(layer, 30, 15);
+        let northeast_neighbor = TilePosition::new(layer, 32, 16);
+        let southeast_neighbor = TilePosition::new(layer, 32, 14);
 
         assert_eq!(edge_tile.chunk_position(), west_neighbor.chunk_position());
 
@@ -731,11 +731,11 @@ mod tests {
 
         let layer = app.world_mut().spawn(TileLayer {}).id();
 
-        let edge_tile = TilePosition::new(layer, IVec2::new(15, 31));
-        let north_neighbor = TilePosition::new(layer, IVec2::new(15, 32));
-        let south_neighbor = TilePosition::new(layer, IVec2::new(15, 30));
-        let northwest_neighbor = TilePosition::new(layer, IVec2::new(14, 32));
-        let northeast_neighbor = TilePosition::new(layer, IVec2::new(16, 32));
+        let edge_tile = TilePosition::new(layer, 15, 31);
+        let north_neighbor = TilePosition::new(layer, 15, 32);
+        let south_neighbor = TilePosition::new(layer, 15, 30);
+        let northwest_neighbor = TilePosition::new(layer, 14, 32);
+        let northeast_neighbor = TilePosition::new(layer, 16, 32);
 
         assert_eq!(edge_tile.chunk_position(), south_neighbor.chunk_position());
 
@@ -787,15 +787,15 @@ mod tests {
 
         let layer = app.world_mut().spawn(TileLayer {}).id();
 
-        let corner_tile = TilePosition::new(layer, IVec2::new(0, 0));
-        let east_tile = TilePosition::new(layer, IVec2::new(1, 0));
-        let northeast_tile = TilePosition::new(layer, IVec2::new(1, 1));
-        let north_tile = TilePosition::new(layer, IVec2::new(0, 1));
-        let northwest_tile = TilePosition::new(layer, IVec2::new(-1, 1));
-        let west_tile = TilePosition::new(layer, IVec2::new(-1, 0));
-        let southwest_tile = TilePosition::new(layer, IVec2::new(-1, -1));
-        let south_tile = TilePosition::new(layer, IVec2::new(0, -1));
-        let southeast_tile = TilePosition::new(layer, IVec2::new(1, -1));
+        let corner_tile = TilePosition::new(layer, 0, 0);
+        let east_tile = TilePosition::new(layer, 1, 0);
+        let northeast_tile = TilePosition::new(layer, 1, 1);
+        let north_tile = TilePosition::new(layer, 0, 1);
+        let northwest_tile = TilePosition::new(layer, -1, 1);
+        let west_tile = TilePosition::new(layer, -1, 0);
+        let southwest_tile = TilePosition::new(layer, -1, -1);
+        let south_tile = TilePosition::new(layer, 0, -1);
+        let southeast_tile = TilePosition::new(layer, 1, -1);
 
         assert_eq!(corner_tile.chunk_position(), east_tile.chunk_position());
         assert_eq!(corner_tile.chunk_position(), north_tile.chunk_position());
@@ -876,81 +876,72 @@ mod tests {
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
-                storage.set_material(
-                    TilePosition::new(layer, IVec2::new(10, 10)),
-                    TileMaterial::Wall,
-                );
-                storage.set_material(
-                    TilePosition::new(layer, IVec2::new(11, 10)),
-                    TileMaterial::Wall,
-                );
-                storage.set_material(
-                    TilePosition::new(layer, IVec2::new(10, 11)),
-                    TileMaterial::Wall,
-                );
+                storage.set_material(TilePosition::new(layer, 10, 10), TileMaterial::Wall);
+                storage.set_material(TilePosition::new(layer, 11, 10), TileMaterial::Wall);
+                storage.set_material(TilePosition::new(layer, 10, 11), TileMaterial::Wall);
 
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(9, 9))),
+                    storage.get_occupancy(TilePosition::new(layer, 9, 9)),
                     TileOccupancy::NORTH_EAST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(10, 9))),
+                    storage.get_occupancy(TilePosition::new(layer, 10, 9)),
                     TileOccupancy::NORTH | TileOccupancy::NORTH_EAST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(11, 9))),
+                    storage.get_occupancy(TilePosition::new(layer, 11, 9)),
                     TileOccupancy::NORTH_WEST | TileOccupancy::NORTH
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(12, 9))),
+                    storage.get_occupancy(TilePosition::new(layer, 12, 9)),
                     TileOccupancy::NORTH_WEST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(9, 10))),
+                    storage.get_occupancy(TilePosition::new(layer, 9, 10)),
                     TileOccupancy::NORTH_EAST | TileOccupancy::EAST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(10, 10))),
+                    storage.get_occupancy(TilePosition::new(layer, 10, 10)),
                     TileOccupancy::NORTH | TileOccupancy::EAST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(11, 10))),
+                    storage.get_occupancy(TilePosition::new(layer, 11, 10)),
                     TileOccupancy::NORTH_WEST | TileOccupancy::WEST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(12, 10))),
+                    storage.get_occupancy(TilePosition::new(layer, 12, 10)),
                     TileOccupancy::WEST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(9, 11))),
+                    storage.get_occupancy(TilePosition::new(layer, 9, 11)),
                     TileOccupancy::EAST | TileOccupancy::SOUTH_EAST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(10, 11))),
+                    storage.get_occupancy(TilePosition::new(layer, 10, 11)),
                     TileOccupancy::SOUTH | TileOccupancy::SOUTH_EAST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(11, 11))),
+                    storage.get_occupancy(TilePosition::new(layer, 11, 11)),
                     TileOccupancy::WEST | TileOccupancy::SOUTH_WEST | TileOccupancy::SOUTH
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(12, 11))),
+                    storage.get_occupancy(TilePosition::new(layer, 12, 11)),
                     TileOccupancy::SOUTH_WEST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(9, 12))),
+                    storage.get_occupancy(TilePosition::new(layer, 9, 12)),
                     TileOccupancy::SOUTH_EAST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(10, 12))),
+                    storage.get_occupancy(TilePosition::new(layer, 10, 12)),
                     TileOccupancy::SOUTH
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(11, 12))),
+                    storage.get_occupancy(TilePosition::new(layer, 11, 12)),
                     TileOccupancy::SOUTH_WEST
                 );
                 assert_eq!(
-                    storage.get_occupancy(TilePosition::new(layer, IVec2::new(12, 12))),
+                    storage.get_occupancy(TilePosition::new(layer, 12, 12)),
                     TileOccupancy::NONE
                 );
             })
@@ -966,8 +957,8 @@ mod tests {
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
-                let center = TilePosition::new(layer, IVec2::new(5, 5));
-                let east_neighbor = TilePosition::new(layer, IVec2::new(6, 5));
+                let center = TilePosition::new(layer, 5, 5);
+                let east_neighbor = TilePosition::new(layer, 6, 5);
 
                 storage.set_material(center, TileMaterial::Wall);
                 storage.set_material(east_neighbor, TileMaterial::Empty);

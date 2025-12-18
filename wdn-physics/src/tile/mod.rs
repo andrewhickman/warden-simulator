@@ -96,16 +96,23 @@ impl Plugin for TilePlugin {
 }
 
 impl TilePosition {
-    pub fn new(layer: Entity, position: IVec2) -> Self {
+    pub fn new(layer: Entity, x: i32, y: i32) -> Self {
+        TilePosition {
+            layer,
+            position: IVec2::new(x, y),
+        }
+    }
+
+    pub fn from_vec(layer: Entity, position: IVec2) -> Self {
         TilePosition { layer, position }
     }
 
     pub fn floor(layer: Entity, position: Vec2) -> Self {
-        TilePosition::new(layer, IVec2::new(floor(position.x), floor(position.y)))
+        TilePosition::new(layer, floor(position.x), floor(position.y))
     }
 
     pub fn with_offset(&self, offset: IVec2) -> Self {
-        TilePosition::new(self.layer(), self.position() + offset)
+        TilePosition::from_vec(self.layer(), self.position() + offset)
     }
 
     pub fn layer(&self) -> Entity {
