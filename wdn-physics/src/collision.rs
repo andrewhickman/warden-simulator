@@ -34,7 +34,7 @@ pub struct Collisions {
 #[derive(Clone, Copy, Debug)]
 pub struct Collision {
     pub position: Vec2,
-    pub normal: Vec2,
+    pub normal: Dir2,
     pub target: CollisionTarget,
 }
 
@@ -154,7 +154,7 @@ impl Collisions {
                 let target_position = candidate.position_at(t);
                 let collision = Collision {
                     position,
-                    normal: (position - target_position).normalize(),
+                    normal: Dir2::new(position - target_position).unwrap_or(Dir2::X),
                     target: CollisionTarget::Collider {
                         id: candidate_id,
                         position: target_position,
@@ -177,7 +177,7 @@ impl Collisions {
             self.check_tile_edge(
                 collider,
                 tile_position.with_offset(IVec2::new(1, 0)),
-                Vec2::NEG_X,
+                Dir2::NEG_X,
                 (tile_position.x() + 1) as f32 - collider.position().x,
                 collider.velocity().x,
                 collider.radius(),
@@ -189,7 +189,7 @@ impl Collisions {
             self.check_tile_edge(
                 collider,
                 tile_position.with_offset(IVec2::new(0, 1)),
-                Vec2::NEG_Y,
+                Dir2::NEG_Y,
                 (tile_position.y() + 1) as f32 - collider.position().y,
                 collider.velocity().y,
                 collider.radius(),
@@ -201,7 +201,7 @@ impl Collisions {
             self.check_tile_edge(
                 collider,
                 tile_position.with_offset(IVec2::new(-1, 0)),
-                Vec2::X,
+                Dir2::X,
                 collider.position().x - tile_position.x() as f32,
                 -collider.velocity().x,
                 collider.radius(),
@@ -213,7 +213,7 @@ impl Collisions {
             self.check_tile_edge(
                 collider,
                 tile_position.with_offset(IVec2::new(0, -1)),
-                Vec2::Y,
+                Dir2::Y,
                 collider.position().y - tile_position.y() as f32,
                 -collider.velocity().y,
                 collider.radius(),
@@ -270,7 +270,7 @@ impl Collisions {
         &mut self,
         collider: &ColliderQueryItem,
         tile_position: TilePosition,
-        normal: Vec2,
+        normal: Dir2,
         delta_position_component: f32,
         collider_velocity_component: f32,
         collider_radius: f32,
@@ -312,7 +312,7 @@ impl Collisions {
                 let target_position = corner_position.as_vec2();
                 let collision = Collision {
                     position,
-                    normal: (position - target_position).normalize(),
+                    normal: Dir2::new(position - target_position).unwrap_or(Dir2::X),
                     target: CollisionTarget::Wall {
                         position: tile_position,
                     },
@@ -430,7 +430,7 @@ mod tests {
         assert_relative_eq!(collisions1.next_time().unwrap(), 0.4);
         let collision1 = collisions1.next().unwrap();
         assert_relative_eq!(collision1.position, Vec2::new(0.2, 0.18));
-        assert_relative_eq!(collision1.normal, Vec2::X);
+        assert_eq!(collision1.normal, Dir2::X);
         match collision1.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity2);
@@ -444,7 +444,7 @@ mod tests {
         assert_relative_eq!(collisions2.next_time().unwrap(), 0.4);
         let collision2 = collisions2.next().unwrap();
         assert_relative_eq!(collision2.position, Vec2::new(0.1, 0.18));
-        assert_relative_eq!(collision2.normal, Vec2::NEG_X);
+        assert_eq!(collision2.normal, Dir2::NEG_X);
         match collision2.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity1);
@@ -581,7 +581,7 @@ mod tests {
         assert!(collisions1.next().is_none());
         let collision1 = collisions1.active().next().unwrap();
         assert_relative_eq!(collision1.position, Vec2::new(0.4, 0.1));
-        assert_relative_eq!(collision1.normal, Vec2::X);
+        assert_eq!(collision1.normal, Dir2::X);
         match collision1.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity2);
@@ -596,7 +596,7 @@ mod tests {
         assert!(collisions2.next().is_none());
         let collision2 = collisions2.active().next().unwrap();
         assert_relative_eq!(collision2.position, Vec2::new(0.2, 0.1));
-        assert_relative_eq!(collision2.normal, Vec2::NEG_X);
+        assert_eq!(collision2.normal, Dir2::NEG_X);
         match collision2.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity1);
@@ -634,7 +634,7 @@ mod tests {
         assert!(collisions1.next().is_none());
         let collision1 = collisions1.active().next().unwrap();
         assert_relative_eq!(collision1.position, Vec2::new(0.2, 0.1));
-        assert_relative_eq!(collision1.normal, Vec2::X);
+        assert_eq!(collision1.normal, Dir2::X);
         match collision1.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity2);
@@ -649,7 +649,7 @@ mod tests {
         assert!(collisions2.next().is_none());
         let collision2 = collisions2.active().next().unwrap();
         assert_relative_eq!(collision2.position, Vec2::new(0.15, 0.1));
-        assert_relative_eq!(collision2.normal, Vec2::NEG_X);
+        assert_eq!(collision2.normal, Dir2::NEG_X);
         match collision2.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity1);
@@ -687,7 +687,7 @@ mod tests {
         assert!(collisions1.next().is_none());
         let collision1 = collisions1.active().next().unwrap();
         assert_relative_eq!(collision1.position, Vec2::new(0.2, 0.1));
-        assert_relative_eq!(collision1.normal, Vec2::X);
+        assert_eq!(collision1.normal, Dir2::X);
         match collision1.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity2);
@@ -702,7 +702,7 @@ mod tests {
         assert!(collisions2.next().is_none());
         let collision2 = collisions2.active().next().unwrap();
         assert_relative_eq!(collision2.position, Vec2::new(0.15, 0.1));
-        assert_relative_eq!(collision2.normal, Vec2::NEG_X);
+        assert_eq!(collision2.normal, Dir2::NEG_X);
         match collision2.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity1);
@@ -740,7 +740,7 @@ mod tests {
         assert!(collisions1.next().is_none());
         let collision1 = collisions1.active().next().unwrap();
         assert_relative_eq!(collision1.position, Vec2::new(0.2, 0.1));
-        assert_relative_eq!(collision1.normal, Vec2::X);
+        assert_eq!(collision1.normal, Dir2::X);
         match collision1.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity2);
@@ -755,7 +755,7 @@ mod tests {
         assert!(collisions2.next().is_none());
         let collision2 = collisions2.active().next().unwrap();
         assert_relative_eq!(collision2.position, Vec2::new(0.15, 0.1));
-        assert_relative_eq!(collision2.normal, Vec2::NEG_X);
+        assert_eq!(collision2.normal, Dir2::NEG_X);
         match collision2.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity1);
@@ -792,7 +792,7 @@ mod tests {
         assert_relative_eq!(collisions1.next_time().unwrap(), 0.24, epsilon = 0.0001);
         let collision1 = collisions1.next().unwrap();
         assert_relative_eq!(collision1.position, Vec2::new(0.28, 0.3), epsilon = 0.0001);
-        assert_relative_eq!(collision1.normal, Vec2::new(0.6, 0.8), epsilon = 0.0001);
+        assert_relative_eq!(*collision1.normal, Vec2::new(0.6, 0.8), epsilon = 0.0001);
         match collision1.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity2);
@@ -811,7 +811,7 @@ mod tests {
         assert_relative_eq!(collisions2.next_time().unwrap(), 0.24, epsilon = 0.0001);
         let collision2 = collisions2.next().unwrap();
         assert_relative_eq!(collision2.position, Vec2::new(0.22, 0.22), epsilon = 0.0001);
-        assert_relative_eq!(collision2.normal, Vec2::new(-0.6, -0.8), epsilon = 0.0001);
+        assert_relative_eq!(*collision2.normal, Vec2::new(-0.6, -0.8), epsilon = 0.0001);
         match collision2.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity1);
@@ -854,7 +854,7 @@ mod tests {
         assert_relative_eq!(collisions1.next_time().unwrap(), t);
         let collision1 = collisions1.next().unwrap();
         assert_relative_eq!(collision1.position, Vec2::new(0.2 + t / 2.0, 0.0));
-        assert_relative_eq!(collision1.normal, Vec2::X);
+        assert_eq!(collision1.normal, Dir2::X);
         match collision1.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity2);
@@ -868,7 +868,7 @@ mod tests {
         assert_relative_eq!(collisions2.next_time().unwrap(), t);
         let collision2 = collisions2.next().unwrap();
         assert_relative_eq!(collision2.position, Vec2::new(t / 2.0, 0.0));
-        assert_relative_eq!(collision2.normal, Vec2::NEG_X);
+        assert_eq!(collision2.normal, Dir2::NEG_X);
         match collision2.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity1);
@@ -923,7 +923,7 @@ mod tests {
         assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
         let collision = collisions.next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.0, 0.9));
-        assert_relative_eq!(collision.normal, Vec2::NEG_Y);
+        assert_eq!(collision.normal, Dir2::NEG_Y);
         match collision.target {
             CollisionTarget::Wall { position } => {
                 assert_eq!(position, TilePosition::new(layer, 0, 1));
@@ -955,7 +955,7 @@ mod tests {
         assert!(collisions.next().is_none());
         let collision = collisions.active().next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.0, 0.9));
-        assert_relative_eq!(collision.normal, Vec2::NEG_Y);
+        assert_eq!(collision.normal, Dir2::NEG_Y);
         match collision.target {
             CollisionTarget::Wall { position } => {
                 assert_eq!(position, TilePosition::new(layer, 0, 1));
@@ -1009,7 +1009,7 @@ mod tests {
         assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
         let collision = collisions.next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.0, 0.1));
-        assert_relative_eq!(collision.normal, Vec2::Y);
+        assert_eq!(collision.normal, Dir2::Y);
         match collision.target {
             CollisionTarget::Wall { position } => {
                 assert_eq!(position, TilePosition::new(layer, 0, -1));
@@ -1041,7 +1041,7 @@ mod tests {
         assert!(collisions.next().is_none());
         let collision = collisions.active().next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.0, 0.1));
-        assert_relative_eq!(collision.normal, Vec2::Y);
+        assert_eq!(collision.normal, Dir2::Y);
         match collision.target {
             CollisionTarget::Wall { position } => {
                 assert_eq!(position, TilePosition::new(layer, 0, -1));
@@ -1095,7 +1095,7 @@ mod tests {
         assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
         let collision = collisions.next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.9, 0.0));
-        assert_relative_eq!(collision.normal, Vec2::NEG_X);
+        assert_eq!(collision.normal, Dir2::NEG_X);
         match collision.target {
             CollisionTarget::Wall { position } => {
                 assert_eq!(position, TilePosition::new(layer, 1, 0));
@@ -1127,7 +1127,7 @@ mod tests {
         assert!(collisions.next().is_none());
         let collision = collisions.active().next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.9, 0.0));
-        assert_relative_eq!(collision.normal, Vec2::NEG_X);
+        assert_eq!(collision.normal, Dir2::NEG_X);
         match collision.target {
             CollisionTarget::Wall { position } => {
                 assert_eq!(position, TilePosition::new(layer, 1, 0));
@@ -1181,7 +1181,7 @@ mod tests {
         assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
         let collision = collisions.next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.1, 0.0));
-        assert_relative_eq!(collision.normal, Vec2::X);
+        assert_eq!(collision.normal, Dir2::X);
         match collision.target {
             CollisionTarget::Wall { position } => {
                 assert_eq!(position, TilePosition::new(layer, -1, 0));
@@ -1213,7 +1213,7 @@ mod tests {
         assert!(collisions.next().is_none());
         let collision = collisions.active().next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.1, 0.0));
-        assert_relative_eq!(collision.normal, Vec2::X);
+        assert_eq!(collision.normal, Dir2::X);
         match collision.target {
             CollisionTarget::Wall { position } => {
                 assert_eq!(position, TilePosition::new(layer, -1, 0));
@@ -1268,7 +1268,7 @@ mod tests {
         let collision = collisions.next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.92928934, 0.92928934));
         assert_relative_eq!(
-            collision.normal,
+            *collision.normal,
             Vec2::new(-FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
             epsilon = 0.0001
         );
@@ -1304,7 +1304,7 @@ mod tests {
         let collision = collisions.active().next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.95, 0.95), epsilon = 0.0001);
         assert_relative_eq!(
-            collision.normal,
+            *collision.normal,
             Vec2::new(-FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
             epsilon = 0.0001
         );
@@ -1343,7 +1343,7 @@ mod tests {
             epsilon = 0.0001
         );
         assert_relative_eq!(
-            collision.normal,
+            *collision.normal,
             Vec2::new(FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
             epsilon = 0.0001
         );
@@ -1379,7 +1379,7 @@ mod tests {
         let collision = collisions.active().next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.05, 0.95), epsilon = 0.0001);
         assert_relative_eq!(
-            collision.normal,
+            *collision.normal,
             Vec2::new(FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
             epsilon = 0.0001
         );
@@ -1418,7 +1418,7 @@ mod tests {
             epsilon = 0.0001
         );
         assert_relative_eq!(
-            collision.normal,
+            *collision.normal,
             Vec2::new(FRAC_1_SQRT_2, FRAC_1_SQRT_2),
             epsilon = 0.0001
         );
@@ -1454,7 +1454,7 @@ mod tests {
         let collision = collisions.active().next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.05, 0.05), epsilon = 0.0001);
         assert_relative_eq!(
-            collision.normal,
+            *collision.normal,
             Vec2::new(FRAC_1_SQRT_2, FRAC_1_SQRT_2),
             epsilon = 0.0001
         );
@@ -1493,7 +1493,7 @@ mod tests {
             epsilon = 0.0001
         );
         assert_relative_eq!(
-            collision.normal,
+            *collision.normal,
             Vec2::new(-FRAC_1_SQRT_2, FRAC_1_SQRT_2),
             epsilon = 0.0001
         );
@@ -1529,7 +1529,7 @@ mod tests {
         let collision = collisions.active().next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.95, 0.05), epsilon = 0.0001);
         assert_relative_eq!(
-            collision.normal,
+            *collision.normal,
             Vec2::new(-FRAC_1_SQRT_2, FRAC_1_SQRT_2),
             epsilon = 0.0001
         );
@@ -1568,7 +1568,7 @@ mod tests {
             epsilon = 0.0001
         );
         assert_relative_eq!(
-            collision.normal,
+            *collision.normal,
             Vec2::new(0.28003645, -0.95998937),
             epsilon = 0.0001
         );
@@ -1603,7 +1603,7 @@ mod tests {
         assert_relative_eq!(collisions.next_time().unwrap(), 0.4);
         let collision = collisions.next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.9, 0.82));
-        assert_relative_eq!(collision.normal, Vec2::NEG_X);
+        assert_eq!(collision.normal, Dir2::NEG_X);
         match collision.target {
             CollisionTarget::Wall { position } => {
                 assert_eq!(position, TilePosition::new(layer, 1, 0));
@@ -1645,7 +1645,7 @@ mod tests {
         assert_eq!(collisions1.active().len(), 1);
         let active_collision = collisions1.active().next().unwrap();
         assert_relative_eq!(active_collision.position, Vec2::new(0.3, 0.5));
-        assert_relative_eq!(active_collision.normal, Vec2::NEG_X);
+        assert_eq!(active_collision.normal, Dir2::NEG_X);
         match active_collision.target {
             CollisionTarget::Collider { id, .. } => {
                 assert_eq!(id, entity2);
@@ -1656,7 +1656,7 @@ mod tests {
         assert_relative_eq!(collisions1.next_time().unwrap(), 0.3);
         let next_collision = collisions1.next().unwrap();
         assert_relative_eq!(next_collision.position, Vec2::new(0.6, 0.5));
-        assert_relative_eq!(next_collision.normal, Vec2::NEG_X);
+        assert_eq!(next_collision.normal, Dir2::NEG_X);
         match next_collision.target {
             CollisionTarget::Collider { id, .. } => {
                 assert_eq!(id, entity3);
@@ -1699,7 +1699,7 @@ mod tests {
         assert_relative_eq!(collisions1.next_time().unwrap(), 0.2);
         let collision = collisions1.next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.3, 0.5));
-        assert_relative_eq!(collision.normal, Vec2::NEG_X);
+        assert_eq!(collision.normal, Dir2::NEG_X);
         match collision.target {
             CollisionTarget::Collider { id, .. } => {
                 assert_eq!(id, entity2);
@@ -1712,7 +1712,7 @@ mod tests {
         assert_relative_eq!(collisions3.next_time().unwrap(), 0.2);
         let collision = collisions3.next().unwrap();
         assert_relative_eq!(collision.position, Vec2::new(0.34, 0.5));
-        assert_relative_eq!(collision.normal, Vec2::X);
+        assert_eq!(collision.normal, Dir2::X);
         match collision.target {
             CollisionTarget::Collider { id, .. } => {
                 assert_eq!(id, entity2);
@@ -1748,7 +1748,7 @@ mod tests {
         assert_relative_eq!(collisions1.next_time().unwrap(), 0.2);
         let collision1 = collisions1.next().unwrap();
         assert_relative_eq!(collision1.position, Vec2::new(0.95, 0.5));
-        assert_relative_eq!(collision1.normal, Vec2::NEG_X);
+        assert_eq!(collision1.normal, Dir2::NEG_X);
         match collision1.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity2);
@@ -1762,7 +1762,7 @@ mod tests {
         assert_relative_eq!(collisions2.next_time().unwrap(), 0.2);
         let collision2 = collisions2.next().unwrap();
         assert_relative_eq!(collision2.position, Vec2::new(1.05, 0.5));
-        assert_relative_eq!(collision2.normal, Vec2::X);
+        assert_eq!(collision2.normal, Dir2::X);
         match collision2.target {
             CollisionTarget::Collider { id, position } => {
                 assert_eq!(id, entity1);

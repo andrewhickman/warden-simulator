@@ -68,7 +68,7 @@ impl Velocity {
 
     pub fn collide(&mut self, collision: Collision) {
         let normal = collision.normal;
-        let projected = self.0.dot(normal);
+        let projected = self.0.dot(*normal);
         if projected < 0.0 {
             self.0 -= projected * normal;
         }
@@ -136,7 +136,7 @@ mod tests {
         collisions.insert(
             Collision {
                 position: default(),
-                normal: Vec2::X,
+                normal: Dir2::X,
                 target: CollisionTarget::Wall {
                     position: default(),
                 },
@@ -170,7 +170,7 @@ mod tests {
         collisions.insert(
             Collision {
                 position: Vec2::new(2.0, -1.0),
-                normal: Vec2::Y,
+                normal: Dir2::Y,
                 target: CollisionTarget::Wall {
                     position: default(),
                 },
@@ -204,7 +204,7 @@ mod tests {
         collisions.insert(
             Collision {
                 position: default(),
-                normal: Vec2::X,
+                normal: Dir2::X,
                 target: CollisionTarget::Wall {
                     position: default(),
                 },
@@ -214,7 +214,7 @@ mod tests {
         collisions.insert(
             Collision {
                 position: default(),
-                normal: Vec2::Y,
+                normal: Dir2::Y,
                 target: CollisionTarget::Wall {
                     position: default(),
                 },
@@ -256,7 +256,7 @@ mod tests {
         collisions.insert(
             Collision {
                 position: default(),
-                normal: Vec2::X,
+                normal: Dir2::X,
                 target: CollisionTarget::Wall {
                     position: default(),
                 },
@@ -292,7 +292,7 @@ mod tests {
         collisions.insert(
             Collision {
                 position: Vec2::new(-2.0, 1.0),
-                normal: Vec2::new(1.0, 1.0).normalize(),
+                normal: Dir2::new(Vec2::new(1.0, 1.0)).unwrap(),
                 target: CollisionTarget::Collider {
                     id: other_entity,
                     position: Vec2::new(5.0, 5.0),
