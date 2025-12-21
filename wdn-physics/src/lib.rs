@@ -1,6 +1,8 @@
 pub mod collision;
+pub mod door;
 pub mod integrate;
 pub mod lerp;
+pub mod pawn;
 pub mod tile;
 
 use bevy::prelude::*;

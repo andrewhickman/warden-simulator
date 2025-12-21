@@ -9,26 +9,28 @@ pub struct AssetsPlugin;
 #[derive(Debug, Resource)]
 pub struct AssetHandles {
     pub tileset: Handle<Image>,
+    pub pawn: Handle<Image>,
 }
 
 impl Plugin for AssetsPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_systems(Startup, load)
+        app.add_systems(PreStartup, load)
             .add_systems(PreUpdate, configure_tileset.after(AssetTrackingSystems));
     }
 }
 
 impl AssetHandles {
     pub fn asset_ids(&self) -> impl Iterator<Item = UntypedAssetId> + '_ {
-        let AssetHandles { tileset } = self;
+        let AssetHandles { tileset, pawn } = self;
 
-        [tileset.into()].into_iter()
+        [tileset.into(), pawn.into()].into_iter()
     }
 }
 
 pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
     commands.insert_resource(AssetHandles {
-        tileset: assets.load_with_settings("image/tileset.png", tile_image_settings),
+        tileset: assets.load_with_settings("image/tileset.png", sample_nearest),
+        pawn: assets.load_with_settings("image/pawn.png", sample_nearest),
     });
 }
 
@@ -45,7 +47,7 @@ pub fn configure_tileset(
     }
 }
 
-fn tile_image_settings(settings: &mut ImageLoaderSettings) {
+fn sample_nearest(settings: &mut ImageLoaderSettings) {
     settings.sampler = ImageSampler::nearest();
 }
 

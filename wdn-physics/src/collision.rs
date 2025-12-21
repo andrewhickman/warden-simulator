@@ -6,7 +6,7 @@ use crate::{
     tile::{
         TilePosition,
         index::TileIndex,
-        storage::{Tile, TileOccupancy, TileStorage},
+        storage::{TileOccupancy, TileStorage},
     },
 };
 
@@ -44,17 +44,6 @@ pub enum CollisionTarget {
     Wall { position: TilePosition },
 }
 
-impl Plugin for CollisionPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(
-            FixedUpdate,
-            resolve_collisions
-                .in_set(PhysicsSystems::ResolveCollisions)
-                .after(PhysicsSystems::UpdateTile),
-        );
-    }
-}
-
 pub fn resolve_collisions(
     index: Res<TileIndex>,
     storage: TileStorage,
@@ -81,10 +70,28 @@ pub fn resolve_collisions(
                 collisions.check_collider(&collider, candidate, &candidate_collider, delta_secs);
             });
 
-            if let Some(tile) = storage.get(tile_position) {
-                collisions.check_tile(&collider, tile_position, tile, delta_secs);
+            let tile_occupancy = storage.get_occupancy(tile_position);
+            if tile_occupancy != TileOccupancy::NONE {
+                collisions.check_tile(&collider, tile_position, tile_occupancy, delta_secs);
             }
         });
+}
+
+impl Plugin for CollisionPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            FixedUpdate,
+            resolve_collisions
+                .in_set(PhysicsSystems::ResolveCollisions)
+                .after(PhysicsSystems::UpdateTile),
+        );
+    }
+}
+
+impl Collider {
+    pub fn new(radius: f32) -> Self {
+        Self { radius }
+    }
 }
 
 impl ColliderQueryItem<'_, '_> {
@@ -169,10 +176,9 @@ impl Collisions {
         &mut self,
         collider: &ColliderQueryItem,
         tile_position: TilePosition,
-        tile: &Tile,
+        occupancy: TileOccupancy,
         delta_secs: f32,
     ) {
-        let occupancy = tile.occupancy();
         if occupancy.contains(TileOccupancy::EAST) {
             self.check_tile_edge(
                 collider,

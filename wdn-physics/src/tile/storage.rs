@@ -26,7 +26,7 @@ pub struct TileStorageMut<'w, 's> {
     buffer: Deferred<'s, TileStorageBuffer>,
 }
 
-#[derive(Component)]
+#[derive(Copy, Clone, Component, Debug, Default)]
 pub struct TileLayer {}
 
 #[derive(Component)]
