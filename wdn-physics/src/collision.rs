@@ -12,20 +12,24 @@ use crate::{
 
 pub struct CollisionPlugin;
 
-#[derive(Component, Clone, Copy)]
+#[derive(Component, Clone, Copy, Debug)]
 #[require(Transform, Collisions, TilePosition)]
 pub struct Collider {
     radius: f32,
 }
 
-#[derive(QueryData)]
+#[derive(Component, Clone, Copy, Debug)]
+#[require(TilePosition)]
+pub struct TileCollider;
+
+#[derive(QueryData, Debug)]
 pub struct ColliderQuery {
     collider: &'static Collider,
     transform: &'static Transform,
     velocity: Option<&'static Velocity>,
 }
 
-#[derive(Component, Clone, Default)]
+#[derive(Component, Clone, Debug, Default)]
 pub struct Collisions {
     active: Vec<Collision>,
     nearest: Option<(Collision, f32)>,
@@ -48,6 +52,7 @@ pub fn resolve_collisions(
     index: Res<TileIndex>,
     storage: TileStorage,
     mut colliders: Query<(Entity, ColliderQuery, &TilePosition, &mut Collisions)>,
+    tile_colliders: Query<&TilePosition, With<TileCollider>>,
     candidates: Query<ColliderQuery>,
     time: Res<Time>,
 ) {
@@ -58,19 +63,26 @@ pub fn resolve_collisions(
         .for_each(|(collider_id, collider, &tile_position, mut collisions)| {
             collisions.clear();
 
+            let mut tile_occupancy = storage.get_occupancy(tile_position);
+
             index.get_neighborhood(tile_position).for_each(|candidate| {
                 if candidate == collider_id {
                     return;
                 }
 
-                let Ok(candidate_collider) = candidates.get(candidate) else {
-                    return;
-                };
-
-                collisions.check_collider(&collider, candidate, &candidate_collider, delta_secs);
+                if let Ok(candidate_collider) = candidates.get(candidate) {
+                    collisions.check_collider(
+                        &collider,
+                        candidate,
+                        &candidate_collider,
+                        delta_secs,
+                    );
+                } else if let Ok(&tile_collider_position) = tile_colliders.get(candidate) {
+                    tile_occupancy |=
+                        TileOccupancy::from_offset(tile_position, tile_collider_position);
+                }
             });
 
-            let tile_occupancy = storage.get_occupancy(tile_position);
             if tile_occupancy != TileOccupancy::NONE {
                 collisions.check_tile(&collider, tile_position, tile_occupancy, delta_secs);
             }
@@ -380,7 +392,7 @@ mod tests {
     use bevy::{ecs::system::RunSystemOnce, prelude::*, time::TimeUpdateStrategy};
 
     use crate::{
-        collision::{Collider, CollisionPlugin, CollisionTarget, Collisions},
+        collision::{Collider, CollisionPlugin, CollisionTarget, Collisions, TileCollider},
         integrate::Velocity,
         tile::{
             TilePlugin, TilePosition,
@@ -393,7 +405,7 @@ mod tests {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.0, 0.0),
@@ -414,14 +426,14 @@ mod tests {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
-        let entity1 = spawn_entity(
+        let entity1 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.4, 0.1),
             Vec2::new(-0.5, 0.2),
             0.05,
         );
-        let entity2 = spawn_entity(
+        let entity2 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(-0.1, 0.1),
@@ -465,14 +477,14 @@ mod tests {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
-        let entity1 = spawn_entity(
+        let entity1 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.4, 0.1),
             Vec2::new(0.5, 0.2),
             0.05,
         );
-        let entity2 = spawn_entity(
+        let entity2 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(-0.1, 0.1),
@@ -498,14 +510,14 @@ mod tests {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
-        let entity1 = spawn_entity(
+        let entity1 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.4, 0.1),
             Vec2::new(0.0, 0.0),
             0.1,
         );
-        let entity2 = spawn_entity(
+        let entity2 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.2, 0.1),
@@ -531,14 +543,14 @@ mod tests {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
-        let entity1 = spawn_entity(
+        let entity1 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.4, 0.1),
             Vec2::new(0.5, 0.2),
             0.1,
         );
-        let entity2 = spawn_entity(
+        let entity2 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.2, 0.1),
@@ -564,14 +576,14 @@ mod tests {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
-        let entity1 = spawn_entity(
+        let entity1 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.4, 0.1),
             Vec2::new(-0.5, 0.2),
             0.1,
         );
-        let entity2 = spawn_entity(
+        let entity2 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.2, 0.1),
@@ -617,14 +629,14 @@ mod tests {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
-        let entity1 = spawn_entity(
+        let entity1 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.2, 0.1),
             Vec2::new(0.0, 0.0),
             0.1,
         );
-        let entity2 = spawn_entity(
+        let entity2 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.15, 0.1),
@@ -670,14 +682,14 @@ mod tests {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
-        let entity1 = spawn_entity(
+        let entity1 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.2, 0.1),
             Vec2::new(0.5, 0.0),
             0.1,
         );
-        let entity2 = spawn_entity(
+        let entity2 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.15, 0.1),
@@ -723,14 +735,14 @@ mod tests {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
-        let entity1 = spawn_entity(
+        let entity1 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.2, 0.1),
             Vec2::new(-0.5, 0.0),
             0.1,
         );
-        let entity2 = spawn_entity(
+        let entity2 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.15, 0.1),
@@ -776,14 +788,14 @@ mod tests {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
-        let entity1 = spawn_entity(
+        let entity1 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.4, 0.3),
             Vec2::new(-0.5, 0.0),
             0.05,
         );
-        let entity2 = spawn_entity(
+        let entity2 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.1, 0.22),
@@ -838,14 +850,14 @@ mod tests {
         let layer = spawn_layer(&mut app);
 
         let t = 1e-6f32;
-        let entity1 = spawn_entity(
+        let entity1 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.2 + t, 0.0),
             Vec2::new(-0.5, 0.0),
             0.1,
         );
-        let entity2 = spawn_entity(
+        let entity2 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.0, 0.0),
@@ -891,7 +903,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, 0, 1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.0, 0.8),
@@ -914,7 +926,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, 0, 1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.0, 0.8),
@@ -945,7 +957,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, 0, 1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.0, 0.9),
@@ -977,7 +989,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, 0, -1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.0, 0.2),
@@ -1000,7 +1012,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, 0, -1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.0, 0.2),
@@ -1031,7 +1043,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, 0, -1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.0, 0.1),
@@ -1063,7 +1075,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, 1, 0));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.8, 0.0),
@@ -1086,7 +1098,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, 1, 0));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.8, 0.0),
@@ -1117,7 +1129,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, 1, 0));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.9, 0.0),
@@ -1149,7 +1161,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, -1, 0));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.2, 0.0),
@@ -1172,7 +1184,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, -1, 0));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.2, 0.0),
@@ -1203,7 +1215,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, -1, 0));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.1, 0.0),
@@ -1229,13 +1241,137 @@ mod tests {
     }
 
     #[test]
+    fn collision_tile_collider_north_closing() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        spawn_tile_collider(&mut app, TilePosition::new(layer, 0, 1));
+
+        let entity = spawn_collider(
+            &mut app,
+            layer,
+            Vec2::new(0.0, 0.8),
+            Vec2::new(0.0, 0.5),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
+        let collision = collisions.next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.0, 0.9));
+        assert_eq!(collision.normal, Dir2::NEG_Y);
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 0, 1));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_tile_collider_south_closing() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        spawn_tile_collider(&mut app, TilePosition::new(layer, 0, -1));
+
+        let entity = spawn_collider(
+            &mut app,
+            layer,
+            Vec2::new(0.0, 0.2),
+            Vec2::new(0.0, -0.5),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
+        let collision = collisions.next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.0, 0.1));
+        assert_eq!(collision.normal, Dir2::Y);
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 0, -1));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_tile_collider_east_closing() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        spawn_tile_collider(&mut app, TilePosition::new(layer, 1, 0));
+
+        let entity = spawn_collider(
+            &mut app,
+            layer,
+            Vec2::new(0.8, 0.0),
+            Vec2::new(0.5, 0.0),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
+        let collision = collisions.next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.9, 0.0));
+        assert_eq!(collision.normal, Dir2::NEG_X);
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, 1, 0));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
+    fn collision_tile_collider_west_closing() {
+        let mut app = make_app();
+        let layer = spawn_layer(&mut app);
+
+        spawn_tile_collider(&mut app, TilePosition::new(layer, -1, 0));
+
+        let entity = spawn_collider(
+            &mut app,
+            layer,
+            Vec2::new(0.2, 0.0),
+            Vec2::new(-0.5, 0.0),
+            0.1,
+        );
+
+        app.update();
+
+        let collisions = app.world().get::<Collisions>(entity).unwrap();
+        assert_eq!(collisions.active().len(), 0);
+        assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
+        let collision = collisions.next().unwrap();
+        assert_relative_eq!(collision.position, Vec2::new(0.1, 0.0));
+        assert_eq!(collision.normal, Dir2::X);
+        match collision.target {
+            CollisionTarget::Wall { position } => {
+                assert_eq!(position, TilePosition::new(layer, -1, 0));
+            }
+            _ => panic!("Expected wall collision"),
+        }
+    }
+
+    #[test]
     fn collision_corner_north_east_receding() {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
         set_tile(&mut app, TilePosition::new(layer, 1, 1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.85, 0.85),
@@ -1258,7 +1394,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, 1, 1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.7, 0.7),
@@ -1293,7 +1429,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, 1, 1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.95, 0.95),
@@ -1329,7 +1465,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, -1, 1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.3, 0.7),
@@ -1368,7 +1504,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, -1, 1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.05, 0.95),
@@ -1404,7 +1540,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, -1, -1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.3, 0.3),
@@ -1443,7 +1579,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, -1, -1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.05, 0.05),
@@ -1479,7 +1615,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, 1, -1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.7, 0.3),
@@ -1518,7 +1654,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, 1, -1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.95, 0.05),
@@ -1554,7 +1690,7 @@ mod tests {
 
         set_tile(&mut app, TilePosition::new(layer, 1, 1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.31, 0.6),
@@ -1594,7 +1730,7 @@ mod tests {
         set_tile(&mut app, TilePosition::new(layer, 1, 0));
         set_tile(&mut app, TilePosition::new(layer, 0, 1));
 
-        let entity = spawn_entity(
+        let entity = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.7, 0.7),
@@ -1623,21 +1759,21 @@ mod tests {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
-        let entity1 = spawn_entity(
+        let entity1 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.3, 0.5),
             Vec2::new(1.0, 0.0),
             0.1,
         );
-        let entity2 = spawn_entity(
+        let entity2 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.32, 0.5),
             Vec2::new(0.0, 0.0),
             0.1,
         );
-        let entity3 = spawn_entity(
+        let entity3 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.8, 0.5),
@@ -1676,21 +1812,21 @@ mod tests {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
-        let entity1 = spawn_entity(
+        let entity1 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.2, 0.5),
             Vec2::new(0.5, 0.0),
             0.01,
         );
-        let entity2 = spawn_entity(
+        let entity2 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.32, 0.5),
             Vec2::new(0.0, 0.0),
             0.01,
         );
-        let entity3 = spawn_entity(
+        let entity3 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.44, 0.5),
@@ -1732,14 +1868,14 @@ mod tests {
         let mut app = make_app();
         let layer = spawn_layer(&mut app);
 
-        let entity1 = spawn_entity(
+        let entity1 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(0.85, 0.5),
             Vec2::new(0.5, 0.0),
             0.05,
         );
-        let entity2 = spawn_entity(
+        let entity2 = spawn_collider(
             &mut app,
             layer,
             Vec2::new(1.15, 0.5),
@@ -1797,7 +1933,7 @@ mod tests {
         app.world_mut().spawn(TileLayer {}).id()
     }
 
-    fn spawn_entity(
+    fn spawn_collider(
         app: &mut App,
         layer: Entity,
         position: Vec2,
@@ -1811,6 +1947,12 @@ mod tests {
                 Velocity::new(velocity),
                 ChildOf(layer),
             ))
+            .id()
+    }
+
+    fn spawn_tile_collider(app: &mut App, position: TilePosition) -> Entity {
+        app.world_mut()
+            .spawn((TileCollider, position, ChildOf(position.layer())))
             .id()
     }
 

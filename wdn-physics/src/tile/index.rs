@@ -11,13 +11,6 @@ pub struct TileIndex {
     index: HashMap<TilePosition, SmallVec<[Entity; 7]>>,
 }
 
-#[derive(Clone, Debug, Message, PartialEq, Eq)]
-pub struct TileChanged {
-    pub id: Entity,
-    pub old: Option<TilePosition>,
-    pub new: Option<TilePosition>,
-}
-
 impl TileIndex {
     pub fn insert(&mut self, id: Entity, tile: TilePosition) {
         self.index.entry(tile).or_default().push(id);
@@ -54,10 +47,7 @@ impl TileIndex {
 mod tests {
     use bevy::prelude::*;
 
-    use crate::tile::{
-        TilePlugin, TilePosition,
-        index::{TileChanged, TileIndex},
-    };
+    use crate::tile::{TilePlugin, TilePosition, index::TileIndex};
 
     #[test]
     fn index_get() {
@@ -107,7 +97,59 @@ mod tests {
     }
 
     #[test]
-    fn tile_added() {
+    fn tile_position_added() {
+        let mut app = App::new();
+        app.add_plugins(TilePlugin);
+
+        let layer = app.world_mut().spawn_empty().id();
+        let entity = app
+            .world_mut()
+            .spawn((ChildOf(layer), TilePosition::new(layer, 1, -1)))
+            .id();
+
+        app.world_mut().run_schedule(FixedUpdate);
+
+        let tile = app.world().get::<TilePosition>(entity).unwrap();
+        assert_eq!(tile.layer(), layer);
+        assert_eq!(tile.position(), IVec2::new(1, -1));
+
+        let index = app.world().resource::<TileIndex>();
+        let entities = index.get(TilePosition::new(layer, 1, -1));
+        assert_eq!(entities, &[entity]);
+    }
+
+    #[test]
+    fn tile_position_changed() {
+        let mut app = App::new();
+        app.add_plugins(TilePlugin);
+
+        let layer = app.world_mut().spawn_empty().id();
+        let entity = app
+            .world_mut()
+            .spawn((ChildOf(layer), TilePosition::new(layer, 1, -1)))
+            .id();
+
+        app.world_mut().run_schedule(FixedUpdate);
+
+        app.world_mut()
+            .entity_mut(entity)
+            .insert(TilePosition::new(layer, 2, -1));
+
+        app.world_mut().run_schedule(FixedUpdate);
+
+        let tile = app.world().get::<TilePosition>(entity).unwrap();
+        assert_eq!(tile.layer(), layer);
+        assert_eq!(tile.position(), IVec2::new(2, -1));
+
+        let index = app.world().resource::<TileIndex>();
+        let entities = index.get(TilePosition::new(layer, 2, -1));
+        assert_eq!(entities, &[entity]);
+        let prev_entities = index.get(TilePosition::new(layer, 1, -1));
+        assert_eq!(prev_entities, &[]);
+    }
+
+    #[test]
+    fn transform_added() {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
@@ -130,23 +172,10 @@ mod tests {
         let index = app.world().resource::<TileIndex>();
         let entities = index.get(TilePosition::new(layer, 1, -1));
         assert_eq!(entities, &[entity]);
-
-        assert_eq!(
-            app.world()
-                .resource::<Messages<TileChanged>>()
-                .iter_current_update_messages()
-                .cloned()
-                .collect::<Vec<_>>(),
-            vec![TileChanged {
-                id: entity,
-                old: None,
-                new: Some(TilePosition::new(layer, 1, -1)),
-            }],
-        );
     }
 
     #[test]
-    fn tile_position_changed() {
+    fn transform_changed() {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
@@ -177,26 +206,6 @@ mod tests {
         assert_eq!(entities, &[entity]);
         let prev_entities = index.get(TilePosition::new(layer, 1, -1));
         assert_eq!(prev_entities, &[]);
-
-        assert_eq!(
-            app.world()
-                .resource::<Messages<TileChanged>>()
-                .iter_current_update_messages()
-                .cloned()
-                .collect::<Vec<_>>(),
-            vec![
-                TileChanged {
-                    id: entity,
-                    old: None,
-                    new: Some(TilePosition::new(layer, 1, -1)),
-                },
-                TileChanged {
-                    id: entity,
-                    old: Some(TilePosition::new(layer, 1, -1)),
-                    new: Some(TilePosition::new(layer, 2, -1)),
-                }
-            ],
-        );
     }
 
     #[test]
@@ -231,26 +240,6 @@ mod tests {
         assert_eq!(layer1_entities, &[]);
         let layer2_entities = index.get(TilePosition::new(layer2, 2, 1));
         assert_eq!(layer2_entities, &[entity]);
-
-        assert_eq!(
-            app.world()
-                .resource::<Messages<TileChanged>>()
-                .iter_current_update_messages()
-                .cloned()
-                .collect::<Vec<_>>(),
-            vec![
-                TileChanged {
-                    id: entity,
-                    old: None,
-                    new: Some(TilePosition::new(layer1, 2, 1)),
-                },
-                TileChanged {
-                    id: entity,
-                    old: Some(TilePosition::new(layer1, 2, 1)),
-                    new: Some(TilePosition::new(layer2, 2, 1)),
-                }
-            ],
-        );
     }
 
     #[test]
@@ -297,19 +286,6 @@ mod tests {
         let entities = index.get(TilePosition::new(layer, 1, -1));
         assert_eq!(entities, &[entity]);
         assert_eq!(index.last_changed(), index_change_tick);
-
-        assert_eq!(
-            app.world()
-                .resource::<Messages<TileChanged>>()
-                .iter_current_update_messages()
-                .cloned()
-                .collect::<Vec<_>>(),
-            vec![TileChanged {
-                id: entity,
-                old: None,
-                new: Some(TilePosition::new(layer, 1, -1)),
-            }],
-        );
     }
 
     #[test]
@@ -337,26 +313,6 @@ mod tests {
         let index = app.world().resource::<TileIndex>();
         let entities = index.get(TilePosition::new(layer, 1, -1));
         assert_eq!(entities, &[]);
-
-        assert_eq!(
-            app.world()
-                .resource::<Messages<TileChanged>>()
-                .iter_current_update_messages()
-                .cloned()
-                .collect::<Vec<_>>(),
-            vec![
-                TileChanged {
-                    id: entity,
-                    old: None,
-                    new: Some(TilePosition::new(layer, 1, -1)),
-                },
-                TileChanged {
-                    id: entity,
-                    old: Some(TilePosition::new(layer, 1, -1)),
-                    new: None,
-                },
-            ],
-        );
     }
 
     #[test]
@@ -372,8 +328,6 @@ mod tests {
                 TilePosition::default(),
             ))
             .despawn();
-
-        assert!(app.world().resource::<Messages<TileChanged>>().is_empty());
 
         let index = app.world().resource::<TileIndex>();
         let entities = index.get(TilePosition::new(layer, 1, -1));

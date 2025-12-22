@@ -289,6 +289,18 @@ impl TileOccupancy {
         (TileOccupancy::SOUTH, IVec2::new(0, 1)),
         (TileOccupancy::SOUTH_EAST, IVec2::new(-1, 1)),
     ];
+
+    pub fn from_offset(center: TilePosition, occupied: TilePosition) -> TileOccupancy {
+        println!("center: {:?}, occupied: {:?}", center, occupied);
+
+        let delta = center.position() - occupied.position();
+        for (adj, offset) in Self::OFFSETS {
+            if delta == offset {
+                return adj;
+            }
+        }
+        TileOccupancy::NONE
+    }
 }
 
 #[cfg(test)]

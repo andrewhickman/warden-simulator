@@ -8,14 +8,10 @@ use bevy::{
     math::{I16Vec2, U16Vec2},
     prelude::*,
 };
-use parking_lot::Mutex;
 
 use crate::{
     PhysicsSystems,
-    tile::{
-        index::{TileChanged, TileIndex},
-        storage::TileMap,
-    },
+    tile::{index::TileIndex, storage::TileMap},
 };
 
 pub const CHUNK_SIZE: usize = 32;
@@ -23,7 +19,7 @@ pub const CHUNK_SIZE: usize = 32;
 pub struct TilePlugin;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Component)]
-#[component(on_remove = TilePosition::on_remove)]
+#[component(immutable, on_insert = TilePosition::on_insert, on_replace = TilePosition::on_replace)]
 pub struct TilePosition {
     layer: Entity,
     position: IVec2,
@@ -39,59 +35,38 @@ pub struct TileChunkPosition {
 pub struct TileChunkOffset(U16Vec2);
 
 pub fn update_tile(
+    commands: ParallelCommands,
     mut entities: Query<
-        (Entity, &ChildOf, &Transform, &mut TilePosition),
+        (Entity, &ChildOf, &Transform, &TilePosition),
         Or<(Changed<Transform>, Changed<ChildOf>)>,
     >,
-    writer: MessageWriter<TileChanged>,
 ) {
-    let writer = Mutex::new(writer);
-
     entities
         .par_iter_mut()
-        .for_each(|(id, parent, transform, mut tile)| {
+        .for_each(|(id, parent, transform, old)| {
             let new = TilePosition::floor(parent.get(), transform.translation.xy());
-            let old = if tile.is_added() {
-                None
-            } else if *tile != new {
-                Some(*tile)
-            } else {
-                return;
-            };
-
-            *tile = new;
-            writer.lock().write(TileChanged {
-                id,
-                old,
-                new: Some(new),
-            });
+            if *old != new {
+                commands.command_scope(move |mut commands| {
+                    commands.entity(id).insert(new);
+                });
+            }
         });
-}
-
-pub fn update_index(mut reader: MessageReader<TileChanged>, mut index: ResMut<TileIndex>) {
-    for event in reader.read() {
-        if let Some(old) = event.old {
-            index.remove(event.id, old);
-        }
-
-        if let Some(new) = event.new {
-            index.insert(event.id, new);
-        }
-    }
 }
 
 impl Plugin for TilePlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<TileIndex>()
-            .init_resource::<TileMap>()
-            .add_message::<TileChanged>();
+        app.init_resource::<TileIndex>().init_resource::<TileMap>();
 
-        app.add_systems(
-            FixedUpdate,
-            (update_tile, update_index)
-                .chain()
-                .in_set(PhysicsSystems::UpdateTile),
-        );
+        app.add_systems(FixedUpdate, update_tile.in_set(PhysicsSystems::UpdateTile));
+    }
+}
+
+impl Default for TileChunkPosition {
+    fn default() -> Self {
+        Self {
+            layer: Entity::PLACEHOLDER,
+            position: I16Vec2::MIN,
+        }
     }
 }
 
@@ -160,17 +135,21 @@ impl TilePosition {
         ]
     }
 
-    fn on_remove(mut world: DeferredWorld, context: HookContext) {
-        let tile = world
-            .entity(context.entity)
-            .get_ref::<TilePosition>()
-            .unwrap();
-        if tile.last_changed() != tile.added() {
-            world.write_message(TileChanged {
-                id: context.entity,
-                old: Some(*tile),
-                new: None,
-            });
+    fn on_insert(mut world: DeferredWorld, context: HookContext) {
+        let tile = *world.get::<TilePosition>(context.entity).unwrap();
+        if tile != TilePosition::default() {
+            world
+                .resource_mut::<TileIndex>()
+                .insert(context.entity, tile);
+        }
+    }
+
+    fn on_replace(mut world: DeferredWorld, context: HookContext) {
+        let tile = *world.get::<TilePosition>(context.entity).unwrap();
+        if tile != TilePosition::default() {
+            world
+                .resource_mut::<TileIndex>()
+                .remove(context.entity, tile);
         }
     }
 }
