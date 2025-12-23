@@ -138,6 +138,7 @@ mod tests {
                 position: default(),
                 normal: Dir2::X,
                 target: CollisionTarget::Wall {
+                    id: None,
                     position: default(),
                 },
             },
@@ -172,6 +173,7 @@ mod tests {
                 position: Vec2::new(2.0, -1.0),
                 normal: Dir2::Y,
                 target: CollisionTarget::Wall {
+                    id: None,
                     position: default(),
                 },
             },
@@ -206,6 +208,7 @@ mod tests {
                 position: default(),
                 normal: Dir2::X,
                 target: CollisionTarget::Wall {
+                    id: None,
                     position: default(),
                 },
             },
@@ -216,6 +219,7 @@ mod tests {
                 position: default(),
                 normal: Dir2::Y,
                 target: CollisionTarget::Wall {
+                    id: None,
                     position: default(),
                 },
             },
@@ -258,6 +262,7 @@ mod tests {
                 position: default(),
                 normal: Dir2::X,
                 target: CollisionTarget::Wall {
+                    id: None,
                     position: default(),
                 },
             },

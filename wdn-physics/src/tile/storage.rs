@@ -6,6 +6,7 @@ use bevy::{
         system::{SystemBuffer, SystemMeta, SystemParam},
         world::DeferredWorld,
     },
+    math::CompassOctant,
     platform::collections::HashMap,
     prelude::*,
 };
@@ -63,14 +64,14 @@ bitflags! {
     #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
     pub struct TileOccupancy : u8 {
         const NONE = 0b0000_0000;
-        const EAST = 0b0000_0001;
+        const NORTH = 0b0000_0001;
         const NORTH_EAST = 0b0000_0010;
-        const NORTH = 0b0000_0100;
-        const NORTH_WEST = 0b0000_1000;
-        const WEST = 0b0001_0000;
+        const EAST = 0b0000_0100;
+        const SOUTH_EAST = 0b0000_1000;
+        const SOUTH = 0b0001_0000;
         const SOUTH_WEST = 0b0010_0000;
-        const SOUTH = 0b0100_0000;
-        const SOUTH_EAST = 0b1000_0000;
+        const WEST = 0b0100_0000;
+        const NORTH_WEST = 0b1000_0000;
     }
 }
 
@@ -280,26 +281,27 @@ impl TileMaterial {
 
 impl TileOccupancy {
     const OFFSETS: [(TileOccupancy, IVec2); 8] = [
-        (TileOccupancy::EAST, IVec2::new(-1, 0)),
-        (TileOccupancy::NORTH_EAST, IVec2::new(-1, -1)),
         (TileOccupancy::NORTH, IVec2::new(0, -1)),
-        (TileOccupancy::NORTH_WEST, IVec2::new(1, -1)),
-        (TileOccupancy::WEST, IVec2::new(1, 0)),
-        (TileOccupancy::SOUTH_WEST, IVec2::new(1, 1)),
-        (TileOccupancy::SOUTH, IVec2::new(0, 1)),
+        (TileOccupancy::NORTH_EAST, IVec2::new(-1, -1)),
+        (TileOccupancy::EAST, IVec2::new(-1, 0)),
         (TileOccupancy::SOUTH_EAST, IVec2::new(-1, 1)),
+        (TileOccupancy::SOUTH, IVec2::new(0, 1)),
+        (TileOccupancy::SOUTH_WEST, IVec2::new(1, 1)),
+        (TileOccupancy::WEST, IVec2::new(1, 0)),
+        (TileOccupancy::NORTH_WEST, IVec2::new(1, -1)),
     ];
 
-    pub fn from_offset(center: TilePosition, occupied: TilePosition) -> TileOccupancy {
-        println!("center: {:?}, occupied: {:?}", center, occupied);
-
-        let delta = center.position() - occupied.position();
-        for (adj, offset) in Self::OFFSETS {
-            if delta == offset {
-                return adj;
-            }
+    pub fn from_octant(octant: CompassOctant) -> Self {
+        match octant {
+            CompassOctant::North => TileOccupancy::NORTH,
+            CompassOctant::NorthEast => TileOccupancy::NORTH_EAST,
+            CompassOctant::East => TileOccupancy::EAST,
+            CompassOctant::SouthEast => TileOccupancy::SOUTH_EAST,
+            CompassOctant::South => TileOccupancy::SOUTH,
+            CompassOctant::SouthWest => TileOccupancy::SOUTH_WEST,
+            CompassOctant::West => TileOccupancy::WEST,
+            CompassOctant::NorthWest => TileOccupancy::NORTH_WEST,
         }
-        TileOccupancy::NONE
     }
 }
 
