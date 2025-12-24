@@ -4702,7 +4702,6 @@ name = "warden-simulator"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "rand",
  "wdn-physics",
  "wdn-render",
  "wdn-save",

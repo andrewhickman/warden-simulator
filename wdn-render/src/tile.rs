@@ -8,7 +8,8 @@ use bevy::{
 };
 
 use wdn_physics::tile::{
-    CHUNK_SIZE, TileChunkOffset, TileChunkPosition, storage::{TileChunk, TileLayer, TileMaterial}
+    CHUNK_SIZE, TileChunkPosition,
+    storage::{TileChunk, TileLayer, TileMaterial},
 };
 
 use crate::assets::AssetHandles;
@@ -27,7 +28,7 @@ impl Plugin for TilePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TileChunkMesh>();
 
-        app.add_systems(Update, update_chunk_data.after(AssetEventSystems));
+        app.add_systems(PostUpdate, update_chunk_data.before(AssetEventSystems));
 
         app.register_required_components::<TileLayer, Visibility>();
         app.register_required_components::<TileChunk, TileChunkRender>();
@@ -61,31 +62,16 @@ pub fn update_chunk_data(
             return;
         };
 
-        let packed_data = chunk
-            .tiles()
-            .map(|tile| pack_tile_chunk(tile.material()))
-            .collect::<Vec<PackedTileData>>();
-        let tile_data = images.add(make_chunk_tile_data_image(
-            &UVec2::splat(CHUNK_SIZE as u32),
-            &packed_data,
-        ));
+        let Some(data) = image.data.as_mut() else {
+            error!("image data not found for chunk {chunk:?}");
+            return;
+        };
 
-        material.tile_data = tile_data;
-
-        // let Some(data) = image.data.as_mut() else {
-        //     error!("image data not found for chunk {chunk:?}");
-        //     return;
-        // };
-
-        // data.clear();
-        // for (i, tile) in chunk.tiles().enumerate() {
-        //     let packed = pack_tile_chunk(tile.material());
-        //     data.extend_from_slice(bytemuck::bytes_of(&packed));
-
-        //     if tile.material() == TileMaterial::Wall {
-        //         info!("wall @ {:?}", TileChunkOffset::from_index(i));
-        //     }
-        // }
+        data.clear();
+        for tile in chunk.tiles() {
+            let packed = pack_tile_chunk(tile.material());
+            data.extend_from_slice(bytemuck::bytes_of(&packed));
+        }
     });
 }
 
