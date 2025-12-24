@@ -28,6 +28,7 @@ pub struct TileStorageMut<'w, 's> {
 }
 
 #[derive(Copy, Clone, Component, Debug, Default)]
+#[require(Transform)]
 pub struct TileLayer {}
 
 #[derive(Component)]

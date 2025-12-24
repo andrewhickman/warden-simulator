@@ -1,5 +1,5 @@
 use bevy::{
-    ecs::{component::Tick, system::SystemChangeTick},
+    ecs::{change_detection::Tick, system::SystemChangeTick},
     prelude::*,
 };
 

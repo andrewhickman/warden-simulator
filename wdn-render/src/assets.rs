@@ -1,6 +1,6 @@
 use bevy::{
-    asset::{AssetTrackingSystems, UntypedAssetId},
-    image::{ImageLoaderSettings, ImageSampler},
+    asset::UntypedAssetId,
+    image::{ImageArrayLayout, ImageLoaderSettings, ImageSampler},
     prelude::*,
 };
 
@@ -14,8 +14,7 @@ pub struct AssetHandles {
 
 impl Plugin for AssetsPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_systems(PreStartup, load)
-            .add_systems(PreUpdate, configure_tileset.after(AssetTrackingSystems));
+        app.add_systems(PreStartup, load);
     }
 }
 
@@ -29,25 +28,17 @@ impl AssetHandles {
 
 pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
     commands.insert_resource(AssetHandles {
-        tileset: assets.load_with_settings("image/tileset.png", sample_nearest),
-        pawn: assets.load_with_settings("image/pawn.png", sample_nearest),
+        tileset: assets.load_with_settings("image/tileset.png", set_tileset),
+        pawn: assets.load_with_settings("image/pawn.png", set_nearest),
     });
 }
 
-pub fn configure_tileset(
-    assets: Res<AssetHandles>,
-    mut images: ResMut<Assets<Image>>,
-    mut events: MessageReader<AssetEvent<Image>>,
-) {
-    for event in events.read() {
-        if event.is_loaded_with_dependencies(assets.tileset.id()) {
-            let image = images.get_mut(assets.tileset.id()).unwrap();
-            image.reinterpret_stacked_2d_as_array(2);
-        }
-    }
+fn set_tileset(settings: &mut ImageLoaderSettings) {
+    settings.sampler = ImageSampler::nearest();
+    settings.array_layout = Some(ImageArrayLayout::RowCount { rows: 2 });
 }
 
-fn sample_nearest(settings: &mut ImageLoaderSettings) {
+fn set_nearest(settings: &mut ImageLoaderSettings) {
     settings.sampler = ImageSampler::nearest();
 }
 

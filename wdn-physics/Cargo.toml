@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-bevy = { version = "0.17.2", default-features = false, features = ["libm", "trace"] }
+bevy = { version = "0.18.0-rc.1", default-features = false, features = ["libm", "trace"] }
 bitflags = "2.10.0"
 smallvec = { version = "1.15.1", features = ["union"] }
 
 [dev-dependencies]
 approx = "0.5.1"
-bevy_math = { version = "0.17.2", default-features = false, features = ["approx"] }
+bevy_math = { version = "0.18.0-rc.1", default-features = false, features = ["approx"] }

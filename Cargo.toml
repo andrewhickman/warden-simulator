@@ -13,7 +13,8 @@ path = "src/main.rs"
 members = ["wdn-physics", "wdn-render", "wdn-save", "wdn-tasks", "wdn-ui"]
 
 [dependencies]
-bevy = { version = "0.17.2", default-features = false, features = ["bevy_winit", "multi_threaded", "webgl2", "x11"] }
+bevy = { version = "0.18.0-rc.1", default-features = true, features = ["bevy_winit", "multi_threaded", "webgl2", "x11"] }
+rand = "0.9.2"
 wdn-physics = { version = "0.1.0", path = "wdn-physics" }
 wdn-render = { version = "0.1.0", path = "wdn-render" }
 wdn-save = { version = "0.1.0", path = "wdn-save" }
