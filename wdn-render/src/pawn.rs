@@ -25,6 +25,6 @@ impl PawnSprite {
         let image = world.resource::<AssetHandles>().pawn.clone();
         let mut sprite = world.get_mut::<Sprite>(context.entity).unwrap();
         sprite.image = image;
-        sprite.custom_size = Some(Vec2::splat(Pawn::RADIUS as f32));
+        sprite.custom_size = Some(Vec2::splat(Pawn::RADIUS as f32 * 3.6));
     }
 }
