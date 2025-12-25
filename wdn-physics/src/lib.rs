@@ -1,5 +1,6 @@
 pub mod collision;
 pub mod door;
+pub mod health;
 pub mod integrate;
 pub mod lerp;
 pub mod pawn;

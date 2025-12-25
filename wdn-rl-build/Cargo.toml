@@ -1,0 +1,14 @@
+[package]
+name = "wdn-rl-build"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.100"
+fs-err = "3.2.2"
+itertools = "0.14.0"
+prettyplease = "0.2.37"
+prost = "0.14.1"
+quote = "1.0.42"
+syn = "2.0.111"
+wdn-rl-onnx = { version = "0.1.0", path = "../wdn-rl-onnx" }

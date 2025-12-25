@@ -10,7 +10,18 @@ name = "wdn"
 path = "src/main.rs"
 
 [workspace]
-members = ["wdn-physics", "wdn-render", "wdn-save", "wdn-tasks", "wdn-ui"]
+members = [
+    "wdn-physics",
+    "wdn-render",
+    "wdn-rl-build",
+    "wdn-rl-model",
+    "wdn-rl-onnx",
+    "wdn-rl-ppo",
+    "wdn-rl-train",
+    "wdn-save",
+    "wdn-tasks",
+    "wdn-ui"
+]
 
 [dependencies]
 bevy = { version = "0.18.0-rc.1", default-features = true, features = ["bevy_winit", "multi_threaded", "webgl2", "x11"] }
