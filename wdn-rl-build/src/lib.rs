@@ -5,8 +5,8 @@ mod tensor;
 use std::path::Path;
 
 use anyhow::{Context, Result};
-use wdn_rl_onnx::ModelProto;
 use prost::Message;
+use wdn_rl_onnx::ModelProto;
 
 use self::codegen::Generator;
 

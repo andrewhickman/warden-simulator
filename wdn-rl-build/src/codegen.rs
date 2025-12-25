@@ -4,8 +4,8 @@ use std::{
 };
 
 use anyhow::{Context, Result, bail, ensure};
-use wdn_rl_onnx::{ModelProto, NodeProto, TensorProto, ValueInfoProto};
 use quote::quote;
+use wdn_rl_onnx::{ModelProto, NodeProto, TensorProto, ValueInfoProto};
 
 use crate::{
     op::{Operation, Var},

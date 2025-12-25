@@ -25,6 +25,9 @@ pub struct Collider {
 #[require(TilePosition)]
 pub struct TileCollider;
 
+#[derive(Component, Clone, Copy, Debug, Default)]
+pub struct ColliderDisabled;
+
 #[derive(QueryData, Debug)]
 pub struct ColliderQuery {
     collider: &'static Collider,
@@ -70,16 +73,25 @@ struct TileColliderLookup {
 pub fn resolve_collisions(
     index: Res<TileIndex>,
     storage: TileStorage,
-    mut colliders: Query<(Entity, ColliderQuery, &TilePosition, &mut Collisions)>,
-    candidates: Query<AnyOf<(ColliderQuery, TileColliderQuery)>>,
+    mut colliders: Query<(
+        Entity,
+        ColliderQuery,
+        &TilePosition,
+        &mut Collisions,
+        Has<ColliderDisabled>,
+    )>,
+    candidates: Query<AnyOf<(ColliderQuery, TileColliderQuery)>, Without<ColliderDisabled>>,
     time: Res<Time>,
 ) {
     let delta_secs = time.delta_secs();
 
-    colliders
-        .par_iter_mut()
-        .for_each(|(collider_id, collider, &tile_position, mut collisions)| {
+    colliders.par_iter_mut().for_each(
+        |(collider_id, collider, &tile_position, mut collisions, disabled)| {
             collisions.clear();
+
+            if disabled {
+                return;
+            }
 
             let mut tile_occupancy = storage.get_occupancy(tile_position);
             let mut tile_colliders = TileColliderLookup::new();
@@ -122,7 +134,8 @@ pub fn resolve_collisions(
                     delta_secs,
                 );
             }
-        });
+        },
+    );
 }
 
 impl Plugin for CollisionPlugin {
@@ -190,6 +203,11 @@ impl Collisions {
         } else {
             self.active.push(collision);
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.active.clear();
+        self.nearest = None;
     }
 
     fn check_collider(
@@ -395,11 +413,6 @@ impl Collisions {
                 self.insert(collision, t)
             }
         }
-    }
-
-    pub fn clear(&mut self) {
-        self.active.clear();
-        self.nearest = None;
     }
 }
 
