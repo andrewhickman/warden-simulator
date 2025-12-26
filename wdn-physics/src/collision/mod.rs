@@ -19,6 +19,7 @@ pub struct CollisionPlugin;
 #[require(Transform, Collisions, TilePosition)]
 pub struct Collider {
     radius: f32,
+    solid: bool,
 }
 
 #[derive(Component, Clone, Copy, Debug, Default)]
@@ -52,6 +53,7 @@ pub struct Collision {
     pub position: Vec2,
     pub normal: Dir2,
     pub target: CollisionTarget,
+    pub solid: bool,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -150,8 +152,8 @@ impl Plugin for CollisionPlugin {
 }
 
 impl Collider {
-    pub fn new(radius: f32) -> Self {
-        Self { radius }
+    pub fn new(radius: f32, solid: bool) -> Self {
+        Self { radius, solid }
     }
 }
 
@@ -170,6 +172,10 @@ impl ColliderQueryItem<'_, '_> {
 
     pub fn velocity(&self) -> Vec2 {
         self.velocity.map_or(Vec2::ZERO, |v| v.get())
+    }
+
+    pub fn solid(&self) -> bool {
+        self.collider.solid
     }
 }
 
@@ -193,7 +199,7 @@ impl Collisions {
     }
 
     pub fn insert(&mut self, collision: Collision, t: f32) {
-        if t > 0.0 {
+        if collision.solid && t > 0.0 {
             match self.next_time() {
                 Some(next_t) if next_t <= t => {}
                 _ => {
@@ -232,6 +238,7 @@ impl Collisions {
                         id: candidate_id,
                         position: target_position,
                     },
+                    solid: collider.solid() && candidate.solid(),
                 };
                 self.insert(collision, t)
             }
@@ -380,6 +387,7 @@ impl Collisions {
                         id: tile_collider_id,
                         position: tile_position,
                     },
+                    solid: collider.collider.solid,
                 };
                 self.insert(collision, t)
             }
@@ -409,6 +417,7 @@ impl Collisions {
                         id: tile_collider_id,
                         position: tile_position,
                     },
+                    solid: collider.collider.solid,
                 };
                 self.insert(collision, t)
             }

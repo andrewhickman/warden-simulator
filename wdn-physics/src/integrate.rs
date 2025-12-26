@@ -36,7 +36,9 @@ pub fn integrate_velocity(
 
             if let Some(collisions) = collisions {
                 for collision in collisions.active() {
-                    velocity.collide(collision);
+                    if collision.solid {
+                        velocity.collide(collision);
+                    }
                 }
 
                 if velocity.0 == Vec2::ZERO {
@@ -141,6 +143,7 @@ mod tests {
                     id: None,
                     position: default(),
                 },
+                solid: true,
             },
             0.0,
         );
@@ -176,6 +179,7 @@ mod tests {
                     id: None,
                     position: default(),
                 },
+                solid: true,
             },
             0.5,
         );
@@ -211,6 +215,7 @@ mod tests {
                     id: None,
                     position: default(),
                 },
+                solid: true,
             },
             0.0,
         );
@@ -222,6 +227,7 @@ mod tests {
                     id: None,
                     position: default(),
                 },
+                solid: true,
             },
             0.0,
         );
@@ -265,6 +271,7 @@ mod tests {
                     id: None,
                     position: default(),
                 },
+                solid: true,
             },
             0.0,
         );
@@ -302,6 +309,7 @@ mod tests {
                     id: other_entity,
                     position: Vec2::new(5.0, 5.0),
                 },
+                solid: true,
             },
             0.5,
         );
@@ -326,6 +334,84 @@ mod tests {
             Vec2::new(-2.0, 1.0),
             epsilon = 0.0001
         );
+    }
+
+    #[test]
+    fn integrate_non_solid_collision_active() {
+        let mut app = make_app();
+
+        let other_entity = app.world_mut().spawn_empty().id();
+
+        let mut collisions = Collisions::default();
+        collisions.insert(
+            Collision {
+                position: Vec2::new(2.0, 1.0),
+                normal: Dir2::X,
+                target: CollisionTarget::Collider {
+                    id: other_entity,
+                    position: Vec2::new(3.0, 1.0),
+                },
+                solid: false,
+            },
+            0.5,
+        );
+
+        let entity = app
+            .world_mut()
+            .spawn((
+                Transform::from_xyz(0.0, 0.0, 0.0),
+                Velocity(Vec2::new(4.0, 2.0)),
+                collisions,
+            ))
+            .id();
+
+        app.update();
+
+        // Velocity should not be affected by non-solid collision
+        let velocity = app.world().get::<Velocity>(entity).unwrap();
+        assert_relative_eq!(velocity.0, Vec2::new(4.0, 2.0));
+
+        // Position should integrate normally, not stop at collision
+        let transform = app.world().get::<Transform>(entity).unwrap();
+        assert_relative_eq!(transform.translation.xy(), Vec2::new(4.0, 2.0));
+    }
+
+    #[test]
+    fn integrate_non_solid_wall_collision_active() {
+        let mut app = make_app();
+
+        let mut collisions = Collisions::default();
+        collisions.insert(
+            Collision {
+                position: Vec2::new(2.0, 1.0),
+                normal: Dir2::Y,
+                target: CollisionTarget::Wall {
+                    id: None,
+                    position: default(),
+                },
+                solid: false,
+            },
+            0.0,
+        );
+
+        let entity = app
+            .world_mut()
+            .spawn((
+                Transform::from_xyz(0.0, 0.0, 0.0),
+                Velocity(Vec2::new(3.0, -5.0)),
+                collisions,
+            ))
+            .id();
+
+        app.update();
+
+        // Velocity should not be affected by non-solid collision
+        let velocity = app.world().get::<Velocity>(entity).unwrap();
+        assert_relative_eq!(velocity.0, Vec2::new(3.0, -5.0));
+
+        // Position should integrate normally
+        let transform = app.world().get::<Transform>(entity).unwrap();
+        assert_relative_eq!(transform.translation.xy(), Vec2::new(3.0, -5.0));
     }
 
     fn make_app() -> App {

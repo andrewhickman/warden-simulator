@@ -4,7 +4,7 @@ use crate::{collision::Collider, health::Health, integrate::Velocity, lerp::Inte
 
 #[derive(Copy, Clone, Component, Debug, Default)]
 #[require(
-    Collider::new(Pawn::RADIUS),
+    Collider::new(Pawn::RADIUS, true),
     Velocity,
     Interpolated,
     Health::new(Pawn::MAX_HEALTH)
