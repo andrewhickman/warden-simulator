@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy_ecs::prelude::*;
 
 use crate::{collision::Collider, health::Health, integrate::Velocity, lerp::Interpolated};
 

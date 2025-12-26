@@ -1,15 +1,11 @@
 use std::{fmt, mem};
 
-use bevy::{
-    ecs::{
-        lifecycle::HookContext,
-        system::{SystemBuffer, SystemMeta, SystemParam},
-        world::DeferredWorld,
-    },
-    math::CompassOctant,
-    platform::collections::HashMap,
-    prelude::*,
+use bevy_ecs::{
+    lifecycle::HookContext, prelude::*, system::{SystemBuffer, SystemMeta, SystemParam}, world::DeferredWorld
 };
+use bevy_math::{CompassOctant, prelude::*};
+use bevy_platform::collections::HashMap;
+use bevy_transform::prelude::*;
 use bitflags::bitflags;
 
 use crate::tile::{CHUNK_SIZE, TileChunkOffset, TileChunkPosition, TilePosition};
@@ -308,11 +304,9 @@ impl TileOccupancy {
 
 #[cfg(test)]
 mod tests {
-    use bevy::{
-        ecs::system::RunSystemOnce,
-        math::{I16Vec2, IVec2},
-        prelude::*,
-    };
+    use bevy_app::prelude::*;
+    use bevy_ecs::{prelude::*, system::RunSystemOnce};
+    use bevy_math::{I16Vec2, prelude::*};
 
     use crate::tile::{
         CHUNK_SIZE, TileChunkOffset, TileChunkPosition, TilePlugin, TilePosition,

@@ -1,7 +1,5 @@
-use bevy::{
-    platform::collections::{HashMap, hash_map},
-    prelude::*,
-};
+use bevy_ecs::prelude::*;
+use bevy_platform::collections::{HashMap, hash_map};
 use smallvec::SmallVec;
 
 use crate::tile::TilePosition;
@@ -45,7 +43,10 @@ impl TileIndex {
 
 #[cfg(test)]
 mod tests {
-    use bevy::prelude::*;
+    use bevy_app::prelude::*;
+    use bevy_ecs::prelude::*;
+    use bevy_math::prelude::*;
+    use bevy_transform::prelude::*;
 
     use crate::tile::{TilePlugin, TilePosition, index::TileIndex};
 

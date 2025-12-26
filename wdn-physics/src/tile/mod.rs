@@ -3,11 +3,10 @@ pub mod storage;
 
 use std::fmt;
 
-use bevy::{
-    ecs::{lifecycle::HookContext, relationship::Relationship, world::DeferredWorld},
-    math::{I16Vec2, U16Vec2},
-    prelude::*,
-};
+use bevy_app::prelude::*;
+use bevy_ecs::{lifecycle::HookContext, prelude::*, relationship::Relationship, world::DeferredWorld};
+use bevy_math::{I16Vec2, U16Vec2, prelude::*};
+use bevy_transform::prelude::*;
 
 use crate::{
     PhysicsSystems,

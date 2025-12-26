@@ -1,4 +1,8 @@
-use bevy::prelude::*;
+use bevy_app::prelude::*;
+use bevy_ecs::prelude::*;
+use bevy_math::prelude::*;
+use bevy_time::prelude::*;
+use bevy_transform::prelude::*;
 
 use crate::{
     PhysicsSystems,
@@ -82,7 +86,11 @@ mod tests {
     use std::time::Duration;
 
     use approx::assert_relative_eq;
-    use bevy::{prelude::*, time::TimeUpdateStrategy};
+    use bevy_app::prelude::*;
+    use bevy_ecs::prelude::*;
+    use bevy_math::prelude::*;
+    use bevy_time::{TimePlugin, TimeUpdateStrategy, prelude::*};
+    use bevy_transform::prelude::*;
 
     use crate::{
         collision::{Collision, CollisionTarget, Collisions},
@@ -137,11 +145,11 @@ mod tests {
         let mut collisions = Collisions::default();
         collisions.insert(
             Collision {
-                position: default(),
+                position: Default::default(),
                 normal: Dir2::X,
                 target: CollisionTarget::Wall {
                     id: None,
-                    position: default(),
+                    position: Default::default(),
                 },
                 solid: true,
             },
@@ -177,7 +185,7 @@ mod tests {
                 normal: Dir2::Y,
                 target: CollisionTarget::Wall {
                     id: None,
-                    position: default(),
+                    position: Default::default(),
                 },
                 solid: true,
             },
@@ -209,11 +217,11 @@ mod tests {
         let mut collisions = Collisions::default();
         collisions.insert(
             Collision {
-                position: default(),
+                position: Default::default(),
                 normal: Dir2::X,
                 target: CollisionTarget::Wall {
                     id: None,
-                    position: default(),
+                    position: Default::default(),
                 },
                 solid: true,
             },
@@ -221,11 +229,11 @@ mod tests {
         );
         collisions.insert(
             Collision {
-                position: default(),
+                position: Default::default(),
                 normal: Dir2::Y,
                 target: CollisionTarget::Wall {
                     id: None,
-                    position: default(),
+                    position: Default::default(),
                 },
                 solid: true,
             },
@@ -265,11 +273,11 @@ mod tests {
         let mut collisions = Collisions::default();
         collisions.insert(
             Collision {
-                position: default(),
+                position: Default::default(),
                 normal: Dir2::X,
                 target: CollisionTarget::Wall {
                     id: None,
-                    position: default(),
+                    position: Default::default(),
                 },
                 solid: true,
             },
@@ -367,11 +375,9 @@ mod tests {
 
         app.update();
 
-        // Velocity should not be affected by non-solid collision
         let velocity = app.world().get::<Velocity>(entity).unwrap();
         assert_relative_eq!(velocity.0, Vec2::new(4.0, 2.0));
 
-        // Position should integrate normally, not stop at collision
         let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(transform.translation.xy(), Vec2::new(4.0, 2.0));
     }
@@ -387,7 +393,7 @@ mod tests {
                 normal: Dir2::Y,
                 target: CollisionTarget::Wall {
                     id: None,
-                    position: default(),
+                    position: Default::default(),
                 },
                 solid: false,
             },
@@ -405,18 +411,16 @@ mod tests {
 
         app.update();
 
-        // Velocity should not be affected by non-solid collision
         let velocity = app.world().get::<Velocity>(entity).unwrap();
         assert_relative_eq!(velocity.0, Vec2::new(3.0, -5.0));
 
-        // Position should integrate normally
         let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(transform.translation.xy(), Vec2::new(3.0, -5.0));
     }
 
     fn make_app() -> App {
         let mut app = App::new();
-        app.add_plugins((MinimalPlugins, IntegratePlugin));
+        app.add_plugins((TaskPoolPlugin::default(), TimePlugin, IntegratePlugin));
 
         app.insert_resource(Time::<Fixed>::from_duration(Duration::from_secs(1)));
         app.insert_resource(Time::<Virtual>::from_max_delta(Duration::MAX));

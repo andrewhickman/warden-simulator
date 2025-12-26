@@ -9671,8 +9671,12 @@ name = "wdn-physics"
 version = "0.1.0"
 dependencies = [
  "approx",
- "bevy 0.18.0-rc.1",
+ "bevy_app 0.18.0-rc.1",
+ "bevy_ecs 0.18.0-rc.1",
  "bevy_math 0.18.0-rc.1",
+ "bevy_platform 0.18.0-rc.1",
+ "bevy_time 0.18.0-rc.1",
+ "bevy_transform 0.18.0-rc.1",
  "bitflags 2.10.0",
  "smallvec",
 ]

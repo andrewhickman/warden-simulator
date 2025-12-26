@@ -1,7 +1,11 @@
 #[cfg(test)]
 mod tests;
 
-use bevy::{ecs::query::QueryData, math::CompassOctant, prelude::*};
+use bevy_app::prelude::*;
+use bevy_ecs::{prelude::*, query::QueryData};
+use bevy_math::{CompassOctant, prelude::*};
+use bevy_time::prelude::*;
+use bevy_transform::prelude::*;
 
 use crate::{
     PhysicsSystems,

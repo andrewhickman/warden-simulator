@@ -6,7 +6,8 @@ pub mod lerp;
 pub mod pawn;
 pub mod tile;
 
-use bevy::prelude::*;
+use bevy_app::prelude::*;
+use bevy_ecs::prelude::*;
 
 use crate::{
     collision::CollisionPlugin, integrate::IntegratePlugin, lerp::InterpolatePlugin,

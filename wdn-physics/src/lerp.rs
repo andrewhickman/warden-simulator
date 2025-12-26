@@ -1,7 +1,7 @@
-use bevy::{
-    ecs::{change_detection::Tick, system::SystemChangeTick},
-    prelude::*,
-};
+use bevy_app::prelude::*;
+use bevy_ecs::{change_detection::Tick, prelude::*, system::SystemChangeTick};
+use bevy_time::prelude::*;
+use bevy_transform::prelude::*;
 
 pub struct InterpolatePlugin;
 
@@ -98,7 +98,10 @@ mod tests {
     };
 
     use approx::assert_relative_eq;
-    use bevy::prelude::*;
+    use bevy_app::prelude::*;
+    use bevy_ecs::prelude::*;
+    use bevy_math::prelude::*;
+    use bevy_time::{TimePlugin, prelude::*};
 
     use super::*;
 
@@ -532,7 +535,7 @@ mod tests {
 
     fn make_app() -> App {
         let mut app = App::new();
-        app.add_plugins((MinimalPlugins, InterpolatePlugin));
+        app.add_plugins((TaskPoolPlugin::default(), TimePlugin, InterpolatePlugin));
         app.insert_resource(Time::<Fixed>::from_seconds(1.0));
         app
     }

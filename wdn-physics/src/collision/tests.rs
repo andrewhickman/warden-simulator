@@ -1,7 +1,11 @@
 use std::{cmp::Reverse, f32::consts::FRAC_1_SQRT_2, time::Duration};
 
 use approx::assert_relative_eq;
-use bevy::{ecs::system::RunSystemOnce, prelude::*, time::TimeUpdateStrategy, math::FloatOrd};
+use bevy_app::prelude::*;
+use bevy_ecs::{prelude::*, system::RunSystemOnce};
+use bevy_math::{FloatOrd, prelude::*};
+use bevy_time::{TimePlugin, TimeUpdateStrategy, prelude::*};
+use bevy_transform::prelude::*;
 
 use crate::{
     collision::{
@@ -2194,7 +2198,7 @@ fn collision_corner_non_solid_closing() {
 
 fn make_app() -> App {
     let mut app = App::new();
-    app.add_plugins((MinimalPlugins, TilePlugin, CollisionPlugin));
+    app.add_plugins((TaskPoolPlugin::default(), TimePlugin, TilePlugin, CollisionPlugin));
 
     app.insert_resource(Time::<Fixed>::from_duration(Duration::from_secs(1)));
     app.insert_resource(Time::<Virtual>::from_max_delta(Duration::MAX));
