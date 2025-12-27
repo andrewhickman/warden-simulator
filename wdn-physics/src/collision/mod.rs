@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests;
 
+use std::mem;
+
 use bevy_app::prelude::*;
 use bevy_ecs::{prelude::*, query::QueryData};
 use bevy_math::{CompassOctant, prelude::*};
@@ -49,6 +51,7 @@ pub struct TileColliderQuery {
 #[derive(Component, Clone, Debug, Default)]
 pub struct Collisions {
     active: Vec<Collision>,
+    previous: Vec<Collision>,
     nearest: Option<(Collision, f32)>,
 }
 
@@ -188,6 +191,14 @@ impl Collisions {
         self.active.iter().copied()
     }
 
+    pub fn iter(&self) -> impl Iterator<Item = Collision> {
+        self.active().chain(self.next())
+    }
+
+    pub fn previous(&self) -> impl ExactSizeIterator<Item = Collision> + '_ {
+        self.previous.iter().copied()
+    }
+
     pub fn next(&self) -> Option<Collision> {
         match self.nearest {
             Some((collision, _)) => Some(collision),
@@ -216,8 +227,21 @@ impl Collisions {
     }
 
     pub fn clear(&mut self) {
-        self.active.clear();
-        self.nearest = None;
+        self.previous.clear();
+        mem::swap(&mut self.previous, &mut self.active);
+        if let Some((collision, _)) = self.nearest.take() {
+            self.previous.push(collision);
+        }
+    }
+
+    pub fn started(&self) -> impl Iterator<Item = Collision> + '_ {
+        self.iter()
+            .filter(|ac| !self.previous().any(|pc| pc.target.contains(&ac.target)))
+    }
+
+    pub fn ended(&self) -> impl Iterator<Item = Collision> + '_ {
+        self.previous()
+            .filter(|pc| !self.iter().any(|ac| ac.target.contains(&pc.target)))
     }
 
     fn check_collider(
@@ -429,6 +453,38 @@ impl Collisions {
     }
 }
 
+impl CollisionTarget {
+    pub fn contains(&self, other: &Self) -> bool {
+        match (self, other) {
+            (
+                CollisionTarget::Collider { id: id1, .. },
+                CollisionTarget::Collider { id: id2, .. },
+            ) => id1 == id2,
+            (
+                CollisionTarget::Wall {
+                    id: Some(_),
+                    position: pos1,
+                },
+                CollisionTarget::Wall {
+                    id: None,
+                    position: pos2,
+                },
+            ) => pos1 == pos2,
+            (
+                CollisionTarget::Wall {
+                    id: Some(id1),
+                    position: pos1,
+                },
+                CollisionTarget::Wall {
+                    id: Some(id2),
+                    position: pos2,
+                },
+            ) => pos1 == pos2 && id1 == id2,
+            _ => false,
+        }
+    }
+}
+
 impl TileColliderLookup {
     fn new() -> Self {
         Self {
@@ -437,7 +493,10 @@ impl TileColliderLookup {
     }
 
     fn insert(&mut self, octant: CompassOctant, id: Entity) {
-        self.entities[octant.to_index()] = Some(id);
+        match &mut self.entities[octant.to_index()] {
+            Some(old_id) if *old_id > id => {}
+            tile => *tile = Some(id),
+        }
     }
 
     fn get(&self, octant: CompassOctant) -> Option<Entity> {

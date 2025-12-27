@@ -1,8 +1,9 @@
+use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 
 use wdn_physics::{integrate::Velocity, lerp::Interpolated};
 
-pub struct HealthPlugin;
+pub struct CombatPlugin;
 
 #[derive(Copy, Clone, Component, Debug, Default)]
 pub struct Health {
@@ -14,6 +15,10 @@ pub struct Health {
 #[require(Velocity, Interpolated)]
 pub struct Projectile {
     pub damage: u32,
+}
+
+impl Plugin for CombatPlugin {
+    fn build(&self, _: &mut App) {}
 }
 
 impl Health {
