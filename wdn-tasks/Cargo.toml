@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-bevy = { version = "0.18.0-rc.1", default-features = false }
+bevy_app = "0.18.0-rc.1"
 wdn-physics = { version = "0.1.0", path = "../wdn-physics" }
 wdn-rl-model = { version = "0.1.0", path = "../wdn-rl-model" }
 

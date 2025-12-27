@@ -1,7 +1,7 @@
-use bevy::{
-    ecs::{lifecycle::HookContext, world::DeferredWorld},
-    prelude::*,
-};
+use bevy_app::prelude::*;
+use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
+use bevy_math::prelude::*;
+use bevy_sprite::prelude::*;
 
 use wdn_physics::pawn::Pawn;
 

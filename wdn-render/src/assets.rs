@@ -1,8 +1,7 @@
-use bevy::{
-    asset::UntypedAssetId,
-    image::{ImageArrayLayout, ImageLoaderSettings, ImageSampler},
-    prelude::*,
-};
+use bevy_app::prelude::*;
+use bevy_asset::{UntypedAssetId, prelude::*};
+use bevy_ecs::prelude::*;
+use bevy_image::{ImageArrayLayout, ImageLoaderSettings, ImageSampler, prelude::*};
 
 pub struct AssetsPlugin;
 
@@ -13,7 +12,7 @@ pub struct AssetHandles {
 }
 
 impl Plugin for AssetsPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
+    fn build(&self, app: &mut App) {
         app.add_systems(PreStartup, load);
     }
 }
@@ -44,11 +43,11 @@ fn set_nearest(settings: &mut ImageLoaderSettings) {
 
 #[cfg(test)]
 mod tests {
-    use bevy::{
-        asset::{AssetPlugin as BevyAssetPlugin, LoadState},
-        prelude::*,
-        render::texture::TexturePlugin,
-    };
+    use bevy_app::{ScheduleRunnerPlugin, prelude::*};
+    use bevy_asset::{AssetPlugin as BevyAssetPlugin, LoadState, prelude::*};
+    use bevy_ecs::prelude::*;
+    use bevy_image::*;
+    use bevy_render::texture::TexturePlugin;
 
     use crate::assets::{AssetHandles, AssetsPlugin};
 
@@ -56,10 +55,11 @@ mod tests {
     fn load_assets() {
         let mut app = App::new();
         app.add_plugins((
-            MinimalPlugins,
+            TaskPoolPlugin::default(),
+            ScheduleRunnerPlugin::default(),
             BevyAssetPlugin {
                 file_path: concat!(env!("CARGO_MANIFEST_DIR"), "/../assets").to_owned(),
-                ..default()
+                ..Default::default()
             },
             ImagePlugin::default(),
             TexturePlugin,
