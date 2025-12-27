@@ -1,9 +1,19 @@
 use bevy_ecs::prelude::*;
 
+use wdn_physics::{integrate::Velocity, lerp::Interpolated};
+
+pub struct HealthPlugin;
+
 #[derive(Copy, Clone, Component, Debug, Default)]
 pub struct Health {
     pub current: u32,
     pub max: u32,
+}
+
+#[derive(Copy, Clone, Component, Debug, Default)]
+#[require(Velocity, Interpolated)]
+pub struct Projectile {
+    pub damage: u32,
 }
 
 impl Health {

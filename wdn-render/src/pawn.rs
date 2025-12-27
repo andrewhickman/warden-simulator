@@ -3,7 +3,7 @@ use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
 use bevy_math::prelude::*;
 use bevy_sprite::prelude::*;
 
-use wdn_physics::pawn::Pawn;
+use wdn_world::pawn::Pawn;
 
 use crate::assets::AssetHandles;
 

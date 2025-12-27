@@ -1,7 +1,10 @@
 use std::{fmt, mem};
 
 use bevy_ecs::{
-    lifecycle::HookContext, prelude::*, system::{SystemBuffer, SystemMeta, SystemParam}, world::DeferredWorld
+    lifecycle::HookContext,
+    prelude::*,
+    system::{SystemBuffer, SystemMeta, SystemParam},
+    world::DeferredWorld,
 };
 use bevy_math::{CompassOctant, prelude::*};
 use bevy_platform::collections::HashMap;

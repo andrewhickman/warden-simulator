@@ -1,6 +1,7 @@
 use bevy_ecs::prelude::*;
+use wdn_physics::{collision::Collider, integrate::Velocity, lerp::Interpolated};
 
-use crate::{collision::Collider, health::Health, integrate::Velocity, lerp::Interpolated};
+use crate::health::Health;
 
 #[derive(Copy, Clone, Component, Debug, Default)]
 #[require(

@@ -6,6 +6,7 @@ use wdn_render::RenderPlugin as WdnRenderPlugin;
 use wdn_save::SavePlugin as WdnSavePlugin;
 use wdn_tasks::TasksPlugin as WdnTasksPlugin;
 use wdn_ui::UiPlugin as WdnUiPlugin;
+use wdn_world::WorldPlugin as WdnWorldPlugin;
 
 pub fn main() {
     App::new()
@@ -20,6 +21,7 @@ pub fn main() {
                 ..default()
             }),
             WdnPhysicsPlugin,
+            WdnWorldPlugin,
             WdnTasksPlugin,
             WdnSavePlugin,
             WdnRenderPlugin,

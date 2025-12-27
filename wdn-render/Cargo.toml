@@ -20,3 +20,4 @@ bevy_transform = "0.18.0-rc.1"
 bytemuck = "1.24.0"
 wdn-physics = { version = "0.1.0", path = "../wdn-physics" }
 wdn-tasks = { version = "0.1.0", path = "../wdn-tasks" }
+wdn-world = { version = "0.1.0", path = "../wdn-world" }

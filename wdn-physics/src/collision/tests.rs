@@ -2198,7 +2198,12 @@ fn collision_corner_non_solid_closing() {
 
 fn make_app() -> App {
     let mut app = App::new();
-    app.add_plugins((TaskPoolPlugin::default(), TimePlugin, TilePlugin, CollisionPlugin));
+    app.add_plugins((
+        TaskPoolPlugin::default(),
+        TimePlugin,
+        TilePlugin,
+        CollisionPlugin,
+    ));
 
     app.insert_resource(Time::<Fixed>::from_duration(Duration::from_secs(1)));
     app.insert_resource(Time::<Virtual>::from_max_delta(Duration::MAX));

@@ -7,7 +7,10 @@ use bevy_image::prelude::*;
 use bevy_log::prelude::*;
 use bevy_math::prelude::*;
 use bevy_mesh::prelude::*;
-use bevy_sprite_render::{AlphaMode2d, PackedTileData, TileData, TilemapChunkMaterial, make_chunk_tile_data_image, prelude::*};
+use bevy_sprite_render::{
+    AlphaMode2d, PackedTileData, TileData, TilemapChunkMaterial, make_chunk_tile_data_image,
+    prelude::*,
+};
 use bevy_transform::prelude::*;
 
 use wdn_physics::tile::{
