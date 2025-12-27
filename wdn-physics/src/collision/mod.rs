@@ -65,7 +65,7 @@ pub struct Collision {
 
 #[derive(Clone, Copy, Debug)]
 pub enum CollisionTarget {
-    Collider {
+    Tile {
         id: Entity,
         position: Vec2,
     },
@@ -262,7 +262,7 @@ impl Collisions {
                 let collision = Collision {
                     position,
                     normal: Dir2::new(position - target_position).unwrap_or(Dir2::X),
-                    target: CollisionTarget::Collider {
+                    target: CollisionTarget::Tile {
                         id: candidate_id,
                         position: target_position,
                     },
@@ -456,10 +456,9 @@ impl Collisions {
 impl CollisionTarget {
     pub fn contains(&self, other: &Self) -> bool {
         match (self, other) {
-            (
-                CollisionTarget::Collider { id: id1, .. },
-                CollisionTarget::Collider { id: id2, .. },
-            ) => id1 == id2,
+            (CollisionTarget::Tile { id: id1, .. }, CollisionTarget::Tile { id: id2, .. }) => {
+                id1 == id2
+            }
             (
                 CollisionTarget::Wall {
                     id: Some(_),

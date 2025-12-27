@@ -73,7 +73,7 @@ fn collision_collider() {
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.1, 0.18));
         }
@@ -88,7 +88,7 @@ fn collision_collider() {
     assert_eq!(collision2.normal, Dir2::NEG_X);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.2, 0.18));
         }
@@ -226,7 +226,7 @@ fn collision_collider_touching_and_closing() {
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.2, 0.1));
         }
@@ -242,7 +242,7 @@ fn collision_collider_touching_and_closing() {
     assert_eq!(collision2.normal, Dir2::NEG_X);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.4, 0.1));
         }
@@ -281,7 +281,7 @@ fn collision_collider_intersecting() {
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.15, 0.1));
         }
@@ -297,7 +297,7 @@ fn collision_collider_intersecting() {
     assert_eq!(collision2.normal, Dir2::NEG_X);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.2, 0.1));
         }
@@ -336,7 +336,7 @@ fn collision_collider_intersecting_and_receding() {
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.15, 0.1));
         }
@@ -352,7 +352,7 @@ fn collision_collider_intersecting_and_receding() {
     assert_eq!(collision2.normal, Dir2::NEG_X);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.2, 0.1));
         }
@@ -391,7 +391,7 @@ fn collision_collider_intersecting_and_closing() {
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.15, 0.1));
         }
@@ -407,7 +407,7 @@ fn collision_collider_intersecting_and_closing() {
     assert_eq!(collision2.normal, Dir2::NEG_X);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.2, 0.1));
         }
@@ -445,7 +445,7 @@ fn collision_collider_angled() {
     assert_relative_eq!(*collision1.normal, Vec2::new(0.6, 0.8), epsilon = 0.0001);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.22, 0.22), epsilon = 0.0001);
             assert_relative_eq!(
@@ -465,7 +465,7 @@ fn collision_collider_angled() {
     assert_relative_eq!(*collision2.normal, Vec2::new(-0.6, -0.8), epsilon = 0.0001);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.28, 0.3), epsilon = 0.0001);
             assert_relative_eq!(
@@ -509,7 +509,7 @@ fn collision_collider_almost_touching_closing() {
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(t / 2.0, 0.0));
         }
@@ -524,7 +524,7 @@ fn collision_collider_almost_touching_closing() {
     assert_eq!(collision2.normal, Dir2::NEG_X);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.2 + t / 2.0, 0.0));
         }
@@ -1630,7 +1630,7 @@ fn collision_intersecting_and_closing() {
     assert_eq!(active_collision.normal, Dir2::NEG_X);
     assert!(active_collision.solid);
     match active_collision.target {
-        CollisionTarget::Collider { id, .. } => {
+        CollisionTarget::Tile { id, .. } => {
             assert_eq!(id, entity2);
         }
         _ => panic!("Expected collider collision"),
@@ -1642,7 +1642,7 @@ fn collision_intersecting_and_closing() {
     assert_eq!(next_collision.normal, Dir2::NEG_X);
     assert!(next_collision.solid);
     match next_collision.target {
-        CollisionTarget::Collider { id, .. } => {
+        CollisionTarget::Tile { id, .. } => {
             assert_eq!(id, entity3);
         }
         _ => panic!("Expected collider collision"),
@@ -1686,7 +1686,7 @@ fn collision_collider_ordering() {
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Collider { id, .. } => {
+        CollisionTarget::Tile { id, .. } => {
             assert_eq!(id, entity2);
         }
         _ => panic!("Expected collider collision"),
@@ -1700,7 +1700,7 @@ fn collision_collider_ordering() {
     assert_eq!(collision.normal, Dir2::X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Collider { id, .. } => {
+        CollisionTarget::Tile { id, .. } => {
             assert_eq!(id, entity2);
         }
         _ => panic!("Expected collider collision"),
@@ -1773,7 +1773,7 @@ fn collision_colliders_tile_boundary() {
     assert_eq!(collision1.normal, Dir2::NEG_X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(1.05, 0.5));
         }
@@ -1788,7 +1788,7 @@ fn collision_colliders_tile_boundary() {
     assert_eq!(collision2.normal, Dir2::X);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.95, 0.5));
         }
@@ -1875,7 +1875,7 @@ fn collision_collider_disabled_removed() {
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Collider { id, .. } => {
+        CollisionTarget::Tile { id, .. } => {
             assert_eq!(id, entity2);
         }
         _ => panic!("Expected collider collision"),
@@ -2004,7 +2004,7 @@ fn collision_collider_disabled_ordering() {
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Collider { id, .. } => {
+        CollisionTarget::Tile { id, .. } => {
             assert_eq!(id, entity3);
         }
         _ => panic!("Expected collider collision"),
@@ -2022,7 +2022,7 @@ fn collision_collider_disabled_ordering() {
     assert_eq!(collision.normal, Dir2::X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Collider { id, .. } => {
+        CollisionTarget::Tile { id, .. } => {
             assert_eq!(id, entity1);
         }
         _ => panic!("Expected collider collision"),
@@ -2065,7 +2065,7 @@ fn collision_collider_non_solid_ordering() {
     assert_eq!(active1.normal, Dir2::NEG_X);
     assert!(!active1.solid);
     match active1.target {
-        CollisionTarget::Collider { id, .. } => {
+        CollisionTarget::Tile { id, .. } => {
             assert_eq!(id, entity2);
         }
         _ => panic!("Expected collider collision"),
@@ -2076,7 +2076,7 @@ fn collision_collider_non_solid_ordering() {
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Collider { id, .. } => {
+        CollisionTarget::Tile { id, .. } => {
             assert_eq!(id, entity3);
         }
         _ => panic!("Expected collider collision"),
@@ -2091,7 +2091,7 @@ fn collision_collider_non_solid_ordering() {
     assert_eq!(active2[0].normal, Dir2::X);
     assert!(!active2[0].solid);
     match active2[0].target {
-        CollisionTarget::Collider { id, .. } => {
+        CollisionTarget::Tile { id, .. } => {
             assert_eq!(id, entity1);
         }
         _ => panic!("Expected collider collision"),
@@ -2101,7 +2101,7 @@ fn collision_collider_non_solid_ordering() {
     assert_eq!(active2[1].normal, Dir2::NEG_X);
     assert!(!active2[1].solid);
     match active2[1].target {
-        CollisionTarget::Collider { id, .. } => {
+        CollisionTarget::Tile { id, .. } => {
             assert_eq!(id, entity3);
         }
         _ => panic!("Expected collider collision"),
@@ -2115,7 +2115,7 @@ fn collision_collider_non_solid_ordering() {
     assert_eq!(active3.normal, Dir2::X);
     assert!(!active3.solid);
     match active3.target {
-        CollisionTarget::Collider { id, .. } => {
+        CollisionTarget::Tile { id, .. } => {
             assert_eq!(id, entity2);
         }
         _ => panic!("Expected collider collision"),
@@ -2126,7 +2126,7 @@ fn collision_collider_non_solid_ordering() {
     assert_eq!(collision.normal, Dir2::X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Collider { id, .. } => {
+        CollisionTarget::Tile { id, .. } => {
             assert_eq!(id, entity1);
         }
         _ => panic!("Expected collider collision"),
@@ -2273,7 +2273,7 @@ fn collision_collider_events() {
     assert_relative_eq!(*started_collision.normal, Vec2::NEG_X);
     assert!(!started_collision.solid);
     match started_collision.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.6, 0.5));
         }
@@ -2307,7 +2307,7 @@ fn collision_collider_events() {
     assert_relative_eq!(ended_collision.position, Vec2::new(0.5, 0.5));
     assert!(!ended_collision.solid);
     match ended_collision.target {
-        CollisionTarget::Collider { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.5, 0.5));
         }
@@ -2315,7 +2315,12 @@ fn collision_collider_events() {
     }
 
     update_collider(&mut app, entity1, Vec2::new(1.2, 0.5), Vec2::new(0.3, 0.5));
-    update_collider(&mut app, entity2, Vec2::new(-0.3, 0.5), Vec2::new(-0.3, 0.5));
+    update_collider(
+        &mut app,
+        entity2,
+        Vec2::new(-0.3, 0.5),
+        Vec2::new(-0.3, 0.5),
+    );
     app.update();
 
     let collisions = app.world().get::<Collisions>(entity1).unwrap();
@@ -2362,10 +2367,7 @@ fn collision_tile_collider_events() {
         _ => panic!("Expected wall collision"),
     }
 
-    let tile_entity = spawn_tile_collider(
-        &mut app,
-        TilePosition::new(layer, 0, 1)
-    );
+    let tile_entity = spawn_tile_collider(&mut app, TilePosition::new(layer, 0, 1));
     app.update();
 
     let collisions = app.world().get::<Collisions>(entity).unwrap();

@@ -313,7 +313,7 @@ mod tests {
             Collision {
                 position: Vec2::new(-2.0, 1.0),
                 normal: Dir2::new(Vec2::new(1.0, 1.0)).unwrap(),
-                target: CollisionTarget::Collider {
+                target: CollisionTarget::Tile {
                     id: other_entity,
                     position: Vec2::new(5.0, 5.0),
                 },
@@ -355,7 +355,7 @@ mod tests {
             Collision {
                 position: Vec2::new(2.0, 1.0),
                 normal: Dir2::X,
-                target: CollisionTarget::Collider {
+                target: CollisionTarget::Tile {
                     id: other_entity,
                     position: Vec2::new(3.0, 1.0),
                 },
