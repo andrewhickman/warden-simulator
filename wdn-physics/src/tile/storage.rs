@@ -8,7 +8,6 @@ use bevy_ecs::{
 };
 use bevy_math::{CompassOctant, prelude::*};
 use bevy_platform::collections::HashMap;
-use bevy_transform::prelude::*;
 use bitflags::bitflags;
 
 use crate::tile::{CHUNK_SIZE, TileChunkOffset, TileChunkPosition, TilePosition};
@@ -25,10 +24,6 @@ pub struct TileStorageMut<'w, 's> {
     chunks: Query<'w, 's, &'static mut TileChunk>,
     buffer: Deferred<'s, TileStorageBuffer>,
 }
-
-#[derive(Copy, Clone, Component, Debug, Default)]
-#[require(Transform)]
-pub struct TileLayer {}
 
 #[derive(Component)]
 #[component(on_add = TileChunk::on_add, on_remove = TileChunk::on_remove)]
@@ -313,9 +308,8 @@ mod tests {
 
     use crate::tile::{
         CHUNK_SIZE, TileChunkOffset, TileChunkPosition, TilePlugin, TilePosition,
-        storage::{
-            TileChunk, TileLayer, TileMap, TileMaterial, TileOccupancy, TileStorage, TileStorageMut,
-        },
+        layer::Layer,
+        storage::{TileChunk, TileMap, TileMaterial, TileOccupancy, TileStorage, TileStorageMut},
     };
 
     #[test]
@@ -354,7 +348,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn(TileLayer {}).id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
 
         app.world_mut().run_schedule(FixedUpdate);
 
@@ -372,7 +366,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn(TileLayer {}).id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
@@ -397,7 +391,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn(TileLayer {}).id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
 
         let range: Vec<_> = (-100..100)
             .flat_map(|x| (-100..100).map(move |y| TilePosition::new(layer, x, y)))
@@ -432,8 +426,8 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer1 = app.world_mut().spawn(TileLayer {}).id();
-        let layer2 = app.world_mut().spawn(TileLayer {}).id();
+        let layer1 = app.world_mut().spawn(Layer::default()).id();
+        let layer2 = app.world_mut().spawn(Layer::default()).id();
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
@@ -466,7 +460,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn(TileLayer {}).id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
         let position = TileChunkPosition::new(layer, 5, 5);
 
         app.world_mut()
@@ -508,7 +502,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn(TileLayer {}).id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
 
         let center = TilePosition::new(layer, 5, 5);
 
@@ -686,7 +680,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn(TileLayer {}).id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
 
         let edge_tile = TilePosition::new(layer, 31, 15);
         let east_neighbor = TilePosition::new(layer, 32, 15);
@@ -741,7 +735,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn(TileLayer {}).id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
 
         let edge_tile = TilePosition::new(layer, 15, 31);
         let north_neighbor = TilePosition::new(layer, 15, 32);
@@ -797,7 +791,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn(TileLayer {}).id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
 
         let corner_tile = TilePosition::new(layer, 0, 0);
         let east_tile = TilePosition::new(layer, 1, 0);
@@ -884,7 +878,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn(TileLayer {}).id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
@@ -965,7 +959,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn(TileLayer {}).id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {

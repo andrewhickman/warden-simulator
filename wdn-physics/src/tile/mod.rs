@@ -1,4 +1,5 @@
 pub mod index;
+pub mod layer;
 pub mod storage;
 
 use std::fmt;
@@ -12,7 +13,7 @@ use bevy_transform::prelude::*;
 
 use crate::{
     PhysicsSystems,
-    tile::{index::TileIndex, storage::TileMap},
+    tile::{index::TileIndex, layer::InLayer, storage::TileMap},
 };
 
 pub const CHUNK_SIZE: usize = 32;
@@ -38,14 +39,14 @@ pub struct TileChunkOffset(U16Vec2);
 pub fn update_tile(
     commands: ParallelCommands,
     mut entities: Query<
-        (Entity, &ChildOf, &Transform, &TilePosition),
-        Or<(Changed<Transform>, Changed<ChildOf>)>,
+        (Entity, &InLayer, &Transform, &TilePosition),
+        Or<(Changed<Transform>, Changed<InLayer>)>,
     >,
 ) {
     entities
         .par_iter_mut()
-        .for_each(|(id, parent, transform, old)| {
-            let new = TilePosition::floor(parent.get(), transform.translation.xy());
+        .for_each(|(id, layer, transform, old)| {
+            let new = TilePosition::floor(layer.get(), transform.translation.xy());
             if *old != new {
                 commands.command_scope(move |mut commands| {
                     commands.entity(id).insert(new);
@@ -59,15 +60,8 @@ impl Plugin for TilePlugin {
         app.init_resource::<TileIndex>().init_resource::<TileMap>();
 
         app.add_systems(FixedUpdate, update_tile.in_set(PhysicsSystems::UpdateTile));
-    }
-}
 
-impl Default for TileChunkPosition {
-    fn default() -> Self {
-        Self {
-            layer: Entity::PLACEHOLDER,
-            position: I16Vec2::MIN,
-        }
+        app.add_observer(layer::child_added);
     }
 }
 

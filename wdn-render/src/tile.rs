@@ -15,7 +15,8 @@ use bevy_transform::prelude::*;
 
 use wdn_physics::tile::{
     CHUNK_SIZE, TileChunkPosition,
-    storage::{TileChunk, TileLayer, TileMaterial},
+    layer::Layer,
+    storage::{TileChunk, TileMaterial},
 };
 
 use crate::assets::AssetHandles;
@@ -36,7 +37,7 @@ impl Plugin for TilePlugin {
 
         app.add_systems(PostUpdate, update_chunk_data.before(AssetEventSystems));
 
-        app.register_required_components::<TileLayer, Visibility>();
+        app.register_required_components::<Layer, Visibility>();
         app.register_required_components::<TileChunk, TileChunkRender>();
     }
 }

@@ -48,7 +48,7 @@ mod tests {
     use bevy_math::prelude::*;
     use bevy_transform::prelude::*;
 
-    use crate::tile::{TilePlugin, TilePosition, index::TileIndex};
+    use crate::tile::{TilePlugin, TilePosition, index::TileIndex, layer::Layer};
 
     #[test]
     fn index_get() {
@@ -102,7 +102,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn_empty().id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
         let entity = app
             .world_mut()
             .spawn((ChildOf(layer), TilePosition::new(layer, 1, -1)))
@@ -124,7 +124,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn_empty().id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
         let entity = app
             .world_mut()
             .spawn((ChildOf(layer), TilePosition::new(layer, 1, -1)))
@@ -154,7 +154,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn_empty().id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
         let entity = app
             .world_mut()
             .spawn((
@@ -180,7 +180,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn_empty().id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
         let entity = app
             .world_mut()
             .spawn((
@@ -214,8 +214,8 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer1 = app.world_mut().spawn_empty().id();
-        let layer2 = app.world_mut().spawn_empty().id();
+        let layer1 = app.world_mut().spawn(Layer::default()).id();
+        let layer2 = app.world_mut().spawn(Layer::default()).id();
 
         let entity = app
             .world_mut()
@@ -248,7 +248,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn_empty().id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
         let entity = app
             .world_mut()
             .spawn((
@@ -294,7 +294,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn_empty().id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
         let entity = app
             .world_mut()
             .spawn((
@@ -321,7 +321,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
-        let layer = app.world_mut().spawn_empty().id();
+        let layer = app.world_mut().spawn(Layer::default()).id();
         app.world_mut()
             .spawn((
                 Transform::from_xyz(1.2, -0.3, 0.0),
