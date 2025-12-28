@@ -33,3 +33,51 @@ pub fn child_added(
         _ => {}
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bevy_app::prelude::*;
+
+    use crate::tile::TilePlugin;
+
+    #[test]
+    fn child_spawned() {
+        let mut app = App::new();
+        app.add_plugins(TilePlugin);
+
+        let layer = app.world_mut().spawn(Layer::default()).id();
+        let child = app.world_mut().spawn(ChildOf(layer)).id();
+
+        let in_layer = app.world().entity(child).get::<InLayer>().unwrap();
+        assert_eq!(in_layer.0, layer);
+    }
+
+    #[test]
+    fn grandchild_spawned() {
+        let mut app = App::new();
+        app.add_plugins(TilePlugin);
+
+        let layer = app.world_mut().spawn(Layer::default()).id();
+        let child = app.world_mut().spawn(ChildOf(layer)).id();
+        let grandchild = app.world_mut().spawn(ChildOf(child)).id();
+
+        let in_layer = app.world().entity(grandchild).get::<InLayer>().unwrap();
+        assert_eq!(in_layer.0, layer);
+    }
+
+    #[test]
+    fn hierarchy_spawned() {
+        let mut app = App::new();
+        app.add_plugins(TilePlugin);
+
+        let layer = app
+            .world_mut()
+            .spawn((Layer::default(), children![(), children![(), ()]]))
+            .id();
+
+        let mut query = app.world_mut().query::<&InLayer>();
+        assert_eq!(query.iter(app.world()).count(), 4);
+        assert!(query.iter(app.world()).all(|i| i.0 == layer));
+    }
+}

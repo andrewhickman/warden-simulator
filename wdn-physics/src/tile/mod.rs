@@ -1,8 +1,10 @@
 pub mod index;
 pub mod layer;
 pub mod storage;
+#[cfg(test)]
+mod tests;
 
-use std::fmt;
+use std::{fmt, iter};
 
 use bevy_app::prelude::*;
 use bevy_ecs::{
@@ -13,7 +15,11 @@ use bevy_transform::prelude::*;
 
 use crate::{
     PhysicsSystems,
-    tile::{index::TileIndex, layer::InLayer, storage::TileMap},
+    tile::{
+        index::TileIndex,
+        layer::{InLayer, LayerPosition},
+        storage::TileMap,
+    },
 };
 
 pub const CHUNK_SIZE: usize = 32;
@@ -38,21 +44,45 @@ pub struct TileChunkOffset(U16Vec2);
 
 pub fn update_tile(
     commands: ParallelCommands,
-    mut entities: Query<
-        (Entity, &InLayer, &Transform, &TilePosition),
-        Or<(Changed<Transform>, Changed<InLayer>)>,
-    >,
+    mut entities: Query<(
+        Entity,
+        Ref<ChildOf>,
+        Ref<InLayer>,
+        Ref<Transform>,
+        Ref<TilePosition>,
+        &mut LayerPosition,
+    )>,
+    parents: Query<(&Transform, &ChildOf, &InLayer)>,
 ) {
-    entities
-        .par_iter_mut()
-        .for_each(|(id, layer, transform, old)| {
-            let new = TilePosition::floor(layer.get(), transform.translation.xy());
-            if *old != new {
-                commands.command_scope(move |mut commands| {
-                    commands.entity(id).insert(new);
-                });
+    entities.par_iter_mut().for_each(
+        |(id, parent, layer, transform, old, mut relative_position)| {
+            if parent.get() != layer.get() || transform.is_changed() || layer.is_changed() {
+                relative_position.0 = ancestors((&transform, &parent, &layer), &parents)
+                    .map(|(t, _, _)| t.translation.xy())
+                    .sum();
+
+                let new = TilePosition::floor(layer.get(), relative_position.0);
+                if *old != new {
+                    commands.command_scope(move |mut commands| {
+                        commands.entity(id).insert(new);
+                    });
+                }
             }
-        });
+        },
+    );
+}
+
+fn ancestors<'a>(
+    leaf: (&'a Transform, &'a ChildOf, &'a InLayer),
+    query: &'a Query<(&Transform, &ChildOf, &InLayer)>,
+) -> impl Iterator<Item = (&'a Transform, &'a ChildOf, &'a InLayer)> + 'a {
+    iter::successors(Some(leaf), move |(_, parent, layer)| {
+        if parent.get() == layer.get() {
+            return None;
+        } else {
+            query.get(parent.get()).ok()
+        }
+    })
 }
 
 impl Plugin for TilePlugin {
