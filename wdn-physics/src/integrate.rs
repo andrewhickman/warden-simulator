@@ -147,7 +147,7 @@ mod tests {
             Collision {
                 position: Default::default(),
                 normal: Dir2::X,
-                target: CollisionTarget::Wall {
+                target: CollisionTarget::Tile {
                     id: None,
                     position: Default::default(),
                 },
@@ -183,7 +183,7 @@ mod tests {
             Collision {
                 position: Vec2::new(2.0, -1.0),
                 normal: Dir2::Y,
-                target: CollisionTarget::Wall {
+                target: CollisionTarget::Tile {
                     id: None,
                     position: Default::default(),
                 },
@@ -219,7 +219,7 @@ mod tests {
             Collision {
                 position: Default::default(),
                 normal: Dir2::X,
-                target: CollisionTarget::Wall {
+                target: CollisionTarget::Tile {
                     id: None,
                     position: Default::default(),
                 },
@@ -231,7 +231,7 @@ mod tests {
             Collision {
                 position: Default::default(),
                 normal: Dir2::Y,
-                target: CollisionTarget::Wall {
+                target: CollisionTarget::Tile {
                     id: None,
                     position: Default::default(),
                 },
@@ -275,7 +275,7 @@ mod tests {
             Collision {
                 position: Default::default(),
                 normal: Dir2::X,
-                target: CollisionTarget::Wall {
+                target: CollisionTarget::Tile {
                     id: None,
                     position: Default::default(),
                 },
@@ -313,7 +313,7 @@ mod tests {
             Collision {
                 position: Vec2::new(-2.0, 1.0),
                 normal: Dir2::new(Vec2::new(1.0, 1.0)).unwrap(),
-                target: CollisionTarget::Tile {
+                target: CollisionTarget::Collider {
                     id: other_entity,
                     position: Vec2::new(5.0, 5.0),
                 },
@@ -355,7 +355,7 @@ mod tests {
             Collision {
                 position: Vec2::new(2.0, 1.0),
                 normal: Dir2::X,
-                target: CollisionTarget::Tile {
+                target: CollisionTarget::Collider {
                     id: other_entity,
                     position: Vec2::new(3.0, 1.0),
                 },
@@ -391,7 +391,7 @@ mod tests {
             Collision {
                 position: Vec2::new(2.0, 1.0),
                 normal: Dir2::Y,
-                target: CollisionTarget::Wall {
+                target: CollisionTarget::Tile {
                     id: None,
                     position: Default::default(),
                 },

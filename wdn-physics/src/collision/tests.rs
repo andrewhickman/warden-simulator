@@ -74,7 +74,7 @@ fn collision_collider() {
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.1, 0.18));
         }
@@ -89,7 +89,7 @@ fn collision_collider() {
     assert_eq!(collision2.normal, Dir2::NEG_X);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.2, 0.18));
         }
@@ -227,7 +227,7 @@ fn collision_collider_touching_and_closing() {
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.2, 0.1));
         }
@@ -243,7 +243,7 @@ fn collision_collider_touching_and_closing() {
     assert_eq!(collision2.normal, Dir2::NEG_X);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.4, 0.1));
         }
@@ -282,7 +282,7 @@ fn collision_collider_intersecting() {
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.15, 0.1));
         }
@@ -298,7 +298,7 @@ fn collision_collider_intersecting() {
     assert_eq!(collision2.normal, Dir2::NEG_X);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.2, 0.1));
         }
@@ -337,7 +337,7 @@ fn collision_collider_intersecting_and_receding() {
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.15, 0.1));
         }
@@ -353,7 +353,7 @@ fn collision_collider_intersecting_and_receding() {
     assert_eq!(collision2.normal, Dir2::NEG_X);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.2, 0.1));
         }
@@ -392,7 +392,7 @@ fn collision_collider_intersecting_and_closing() {
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.15, 0.1));
         }
@@ -408,7 +408,7 @@ fn collision_collider_intersecting_and_closing() {
     assert_eq!(collision2.normal, Dir2::NEG_X);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.2, 0.1));
         }
@@ -446,7 +446,7 @@ fn collision_collider_angled() {
     assert_relative_eq!(*collision1.normal, Vec2::new(0.6, 0.8), epsilon = 0.0001);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.22, 0.22), epsilon = 0.0001);
             assert_relative_eq!(
@@ -466,7 +466,7 @@ fn collision_collider_angled() {
     assert_relative_eq!(*collision2.normal, Vec2::new(-0.6, -0.8), epsilon = 0.0001);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.28, 0.3), epsilon = 0.0001);
             assert_relative_eq!(
@@ -510,7 +510,7 @@ fn collision_collider_almost_touching_closing() {
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(t / 2.0, 0.0));
         }
@@ -525,7 +525,7 @@ fn collision_collider_almost_touching_closing() {
     assert_eq!(collision2.normal, Dir2::NEG_X);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.2 + t / 2.0, 0.0));
         }
@@ -581,7 +581,7 @@ fn collision_wall_north_closing() {
     assert_eq!(collision.normal, Dir2::NEG_Y);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 0, 1));
             assert!(id.is_none());
         }
@@ -615,7 +615,7 @@ fn collision_wall_north_intersecting() {
     assert_eq!(collision.normal, Dir2::NEG_Y);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 0, 1));
             assert!(id.is_none());
         }
@@ -671,7 +671,7 @@ fn collision_wall_south_closing() {
     assert_eq!(collision.normal, Dir2::Y);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 0, -1));
             assert!(id.is_none());
         }
@@ -705,7 +705,7 @@ fn collision_wall_south_intersecting() {
     assert_eq!(collision.normal, Dir2::Y);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 0, -1));
             assert!(id.is_none());
         }
@@ -761,7 +761,7 @@ fn collision_wall_east_closing() {
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 1, 0));
             assert!(id.is_none());
         }
@@ -795,7 +795,7 @@ fn collision_wall_east_intersecting() {
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 1, 0));
             assert!(id.is_none());
         }
@@ -851,7 +851,7 @@ fn collision_wall_west_closing() {
     assert_eq!(collision.normal, Dir2::X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, -1, 0));
             assert!(id.is_none());
         }
@@ -885,7 +885,7 @@ fn collision_wall_west_intersecting() {
     assert_eq!(collision.normal, Dir2::X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, -1, 0));
             assert!(id.is_none());
         }
@@ -918,7 +918,7 @@ fn collision_tile_collider_north_closing() {
     assert_eq!(collision.normal, Dir2::NEG_Y);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 0, 1));
             assert_eq!(id, Some(tile_entity));
         }
@@ -951,7 +951,7 @@ fn collision_tile_collider_south_closing() {
     assert_eq!(collision.normal, Dir2::Y);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 0, -1));
             assert_eq!(id, Some(tile_entity));
         }
@@ -984,7 +984,7 @@ fn collision_tile_collider_east_closing() {
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 1, 0));
             assert_eq!(id, Some(tile_entity));
         }
@@ -1017,7 +1017,7 @@ fn collision_tile_collider_west_closing() {
     assert_eq!(collision.normal, Dir2::X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, -1, 0));
             assert_eq!(id, Some(tile_entity));
         }
@@ -1054,7 +1054,7 @@ fn collision_tile_collider_corner_north_east_closing() {
     );
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 1, 1));
             assert_eq!(id, Some(tile_entity));
         }
@@ -1095,7 +1095,7 @@ fn collision_tile_collider_corner_north_west_closing() {
     );
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, -1, 1));
             assert_eq!(id, Some(tile_entity));
         }
@@ -1136,7 +1136,7 @@ fn collision_tile_collider_corner_south_west_closing() {
     );
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, -1, -1));
             assert_eq!(id, Some(tile_entity));
         }
@@ -1177,7 +1177,7 @@ fn collision_tile_collider_corner_south_east_closing() {
     );
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 1, -1));
             assert_eq!(id, Some(tile_entity));
         }
@@ -1237,7 +1237,7 @@ fn collision_corner_north_east_closing() {
     );
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 1, 1));
             assert!(id.is_none());
         }
@@ -1275,7 +1275,7 @@ fn collision_corner_north_east_intersecting() {
     );
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 1, 1));
             assert!(id.is_none());
         }
@@ -1316,7 +1316,7 @@ fn collision_corner_north_west_closing() {
     );
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, -1, 1));
             assert!(id.is_none());
         }
@@ -1354,7 +1354,7 @@ fn collision_corner_north_west_intersecting() {
     );
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, -1, 1));
             assert!(id.is_none());
         }
@@ -1395,7 +1395,7 @@ fn collision_corner_south_west_closing() {
     );
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, -1, -1));
             assert!(id.is_none());
         }
@@ -1433,7 +1433,7 @@ fn collision_corner_south_west_intersecting() {
     );
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, -1, -1));
             assert!(id.is_none());
         }
@@ -1474,7 +1474,7 @@ fn collision_corner_south_east_closing() {
     );
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 1, -1));
             assert!(id.is_none());
         }
@@ -1512,7 +1512,7 @@ fn collision_corner_south_east_intersecting() {
     );
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 1, -1));
             assert!(id.is_none());
         }
@@ -1553,7 +1553,7 @@ fn collision_corner_angled() {
     );
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 1, 1));
             assert!(id.is_none());
         }
@@ -1587,7 +1587,7 @@ fn collision_wall_ordering() {
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 1, 0));
             assert!(id.is_none());
         }
@@ -1631,7 +1631,7 @@ fn collision_intersecting_and_closing() {
     assert_eq!(active_collision.normal, Dir2::NEG_X);
     assert!(active_collision.solid);
     match active_collision.target {
-        CollisionTarget::Tile { id, .. } => {
+        CollisionTarget::Collider { id, .. } => {
             assert_eq!(id, entity2);
         }
         _ => panic!("Expected collider collision"),
@@ -1643,7 +1643,7 @@ fn collision_intersecting_and_closing() {
     assert_eq!(next_collision.normal, Dir2::NEG_X);
     assert!(next_collision.solid);
     match next_collision.target {
-        CollisionTarget::Tile { id, .. } => {
+        CollisionTarget::Collider { id, .. } => {
             assert_eq!(id, entity3);
         }
         _ => panic!("Expected collider collision"),
@@ -1687,7 +1687,7 @@ fn collision_collider_ordering() {
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Tile { id, .. } => {
+        CollisionTarget::Collider { id, .. } => {
             assert_eq!(id, entity2);
         }
         _ => panic!("Expected collider collision"),
@@ -1701,7 +1701,7 @@ fn collision_collider_ordering() {
     assert_eq!(collision.normal, Dir2::X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Tile { id, .. } => {
+        CollisionTarget::Collider { id, .. } => {
             assert_eq!(id, entity2);
         }
         _ => panic!("Expected collider collision"),
@@ -1736,7 +1736,7 @@ fn collision_tile_collider_ordering() {
     assert_eq!(collision.normal, Dir2::NEG_Y);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, tile_position);
             assert_eq!(id, Some(cmp::max(tile_entity1, tile_entity2)));
         }
@@ -1774,7 +1774,7 @@ fn collision_colliders_tile_boundary() {
     assert_eq!(collision1.normal, Dir2::NEG_X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(1.05, 0.5));
         }
@@ -1789,7 +1789,7 @@ fn collision_colliders_tile_boundary() {
     assert_eq!(collision2.normal, Dir2::X);
     assert!(collision2.solid);
     match collision2.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity1);
             assert_relative_eq!(position, Vec2::new(0.95, 0.5));
         }
@@ -1876,7 +1876,7 @@ fn collision_collider_disabled_removed() {
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
     match collision1.target {
-        CollisionTarget::Tile { id, .. } => {
+        CollisionTarget::Collider { id, .. } => {
             assert_eq!(id, entity2);
         }
         _ => panic!("Expected collider collision"),
@@ -2005,7 +2005,7 @@ fn collision_collider_disabled_ordering() {
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Tile { id, .. } => {
+        CollisionTarget::Collider { id, .. } => {
             assert_eq!(id, entity3);
         }
         _ => panic!("Expected collider collision"),
@@ -2023,7 +2023,7 @@ fn collision_collider_disabled_ordering() {
     assert_eq!(collision.normal, Dir2::X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Tile { id, .. } => {
+        CollisionTarget::Collider { id, .. } => {
             assert_eq!(id, entity1);
         }
         _ => panic!("Expected collider collision"),
@@ -2066,7 +2066,7 @@ fn collision_collider_non_solid_ordering() {
     assert_eq!(active1.normal, Dir2::NEG_X);
     assert!(!active1.solid);
     match active1.target {
-        CollisionTarget::Tile { id, .. } => {
+        CollisionTarget::Collider { id, .. } => {
             assert_eq!(id, entity2);
         }
         _ => panic!("Expected collider collision"),
@@ -2077,7 +2077,7 @@ fn collision_collider_non_solid_ordering() {
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Tile { id, .. } => {
+        CollisionTarget::Collider { id, .. } => {
             assert_eq!(id, entity3);
         }
         _ => panic!("Expected collider collision"),
@@ -2092,7 +2092,7 @@ fn collision_collider_non_solid_ordering() {
     assert_eq!(active2[0].normal, Dir2::X);
     assert!(!active2[0].solid);
     match active2[0].target {
-        CollisionTarget::Tile { id, .. } => {
+        CollisionTarget::Collider { id, .. } => {
             assert_eq!(id, entity1);
         }
         _ => panic!("Expected collider collision"),
@@ -2102,7 +2102,7 @@ fn collision_collider_non_solid_ordering() {
     assert_eq!(active2[1].normal, Dir2::NEG_X);
     assert!(!active2[1].solid);
     match active2[1].target {
-        CollisionTarget::Tile { id, .. } => {
+        CollisionTarget::Collider { id, .. } => {
             assert_eq!(id, entity3);
         }
         _ => panic!("Expected collider collision"),
@@ -2116,7 +2116,7 @@ fn collision_collider_non_solid_ordering() {
     assert_eq!(active3.normal, Dir2::X);
     assert!(!active3.solid);
     match active3.target {
-        CollisionTarget::Tile { id, .. } => {
+        CollisionTarget::Collider { id, .. } => {
             assert_eq!(id, entity2);
         }
         _ => panic!("Expected collider collision"),
@@ -2127,7 +2127,7 @@ fn collision_collider_non_solid_ordering() {
     assert_eq!(collision.normal, Dir2::X);
     assert!(collision.solid);
     match collision.target {
-        CollisionTarget::Tile { id, .. } => {
+        CollisionTarget::Collider { id, .. } => {
             assert_eq!(id, entity1);
         }
         _ => panic!("Expected collider collision"),
@@ -2160,7 +2160,7 @@ fn collision_wall_non_solid_closing() {
     assert_eq!(collision.normal, Dir2::NEG_Y);
     assert!(!collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 0, 1));
             assert!(id.is_none());
         }
@@ -2194,7 +2194,7 @@ fn collision_tile_collider_non_solid_closing() {
     assert_eq!(collision.normal, Dir2::NEG_Y);
     assert!(!collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 0, 1));
             assert_eq!(id, Some(tile_entity));
         }
@@ -2232,7 +2232,7 @@ fn collision_corner_non_solid_closing() {
     );
     assert!(!collision.solid);
     match collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 1, 1));
             assert!(id.is_none());
         }
@@ -2274,7 +2274,7 @@ fn collision_collider_events() {
     assert_relative_eq!(*started_collision.normal, Vec2::NEG_X);
     assert!(!started_collision.solid);
     match started_collision.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.6, 0.5));
         }
@@ -2308,7 +2308,7 @@ fn collision_collider_events() {
     assert_relative_eq!(ended_collision.position, Vec2::new(0.5, 0.5));
     assert!(!ended_collision.solid);
     match ended_collision.target {
-        CollisionTarget::Tile { id, position } => {
+        CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity2);
             assert_relative_eq!(position, Vec2::new(0.5, 0.5));
         }
@@ -2361,7 +2361,7 @@ fn collision_tile_collider_events() {
     assert_relative_eq!(started_collision.position, Vec2::new(0.5, 0.9));
     assert!(started_collision.solid);
     match started_collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 0, 1));
             assert!(id.is_none());
         }
@@ -2382,7 +2382,7 @@ fn collision_tile_collider_events() {
     assert_relative_eq!(started_collision.position, Vec2::new(0.5, 0.9));
     assert!(started_collision.solid);
     match started_collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 0, 1));
             assert_eq!(id, Some(tile_entity));
         }
@@ -2415,7 +2415,7 @@ fn collision_tile_collider_events() {
     assert_relative_eq!(ended_collision.position, Vec2::new(0.5, 0.9));
     assert!(ended_collision.solid);
     match ended_collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 0, 1));
             assert_eq!(id, Some(tile_entity));
         }
@@ -2436,7 +2436,7 @@ fn collision_tile_collider_events() {
     assert_relative_eq!(ended_collision.position, Vec2::new(0.5, 0.9));
     assert!(ended_collision.solid);
     match ended_collision.target {
-        CollisionTarget::Wall { id, position } => {
+        CollisionTarget::Tile { id, position } => {
             assert_eq!(position, TilePosition::new(layer, 0, 1));
             assert!(id.is_none());
         }

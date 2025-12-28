@@ -65,11 +65,11 @@ pub struct Collision {
 
 #[derive(Clone, Copy, Debug)]
 pub enum CollisionTarget {
-    Tile {
+    Collider {
         id: Entity,
         position: Vec2,
     },
-    Wall {
+    Tile {
         id: Option<Entity>,
         position: TilePosition,
     },
@@ -262,7 +262,7 @@ impl Collisions {
                 let collision = Collision {
                     position,
                     normal: Dir2::new(position - target_position).unwrap_or(Dir2::X),
-                    target: CollisionTarget::Tile {
+                    target: CollisionTarget::Collider {
                         id: candidate_id,
                         position: target_position,
                     },
@@ -411,7 +411,7 @@ impl Collisions {
                 let collision = Collision {
                     position,
                     normal,
-                    target: CollisionTarget::Wall {
+                    target: CollisionTarget::Tile {
                         id: tile_collider_id,
                         position: tile_position,
                     },
@@ -441,7 +441,7 @@ impl Collisions {
                 let collision = Collision {
                     position,
                     normal: Dir2::new(position - target_position).unwrap_or(Dir2::X),
-                    target: CollisionTarget::Wall {
+                    target: CollisionTarget::Tile {
                         id: tile_collider_id,
                         position: tile_position,
                     },
@@ -456,25 +456,26 @@ impl Collisions {
 impl CollisionTarget {
     pub fn contains(&self, other: &Self) -> bool {
         match (self, other) {
-            (CollisionTarget::Tile { id: id1, .. }, CollisionTarget::Tile { id: id2, .. }) => {
-                id1 == id2
-            }
             (
-                CollisionTarget::Wall {
+                CollisionTarget::Collider { id: id1, .. },
+                CollisionTarget::Collider { id: id2, .. },
+            ) => id1 == id2,
+            (
+                CollisionTarget::Tile {
                     id: Some(_),
                     position: pos1,
                 },
-                CollisionTarget::Wall {
+                CollisionTarget::Tile {
                     id: None,
                     position: pos2,
                 },
             ) => pos1 == pos2,
             (
-                CollisionTarget::Wall {
+                CollisionTarget::Tile {
                     id: Some(id1),
                     position: pos1,
                 },
-                CollisionTarget::Wall {
+                CollisionTarget::Tile {
                     id: Some(id2),
                     position: pos2,
                 },
