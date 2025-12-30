@@ -34,7 +34,7 @@ pub fn integrate_velocity(
     query
         .par_iter_mut()
         .for_each(|(mut transform, mut velocity, collisions)| {
-            if velocity.0 == Vec2::ZERO {
+            if velocity.is_zero() {
                 return;
             }
 
@@ -45,7 +45,7 @@ pub fn integrate_velocity(
                     }
                 }
 
-                if velocity.0 == Vec2::ZERO {
+                if velocity.is_zero() {
                     return;
                 }
 
@@ -70,6 +70,30 @@ impl Velocity {
 
     pub fn get(&self) -> Vec2 {
         self.0
+    }
+
+    pub fn is_zero(&self) -> bool {
+        self.0 == Vec2::ZERO
+    }
+
+    pub fn decelerate(&mut self, decel: f32) {
+        if self.is_zero() {
+            return;
+        }
+
+        let speed = self.0.length();
+        let new_speed = speed - decel;
+
+        if new_speed <= 0.0 {
+            self.0 = Vec2::ZERO;
+        } else {
+            let scale = new_speed / speed;
+            self.0 *= scale;
+        }
+    }
+
+    pub fn accelerate(&mut self, target: Vec2, accel: f32) {
+        self.0 += (target - self.0).clamp_length_max(accel);
     }
 
     pub fn collide(&mut self, collision: Collision) {
