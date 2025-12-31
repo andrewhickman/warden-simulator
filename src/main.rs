@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use bevy::{prelude::*, window::WindowPlugin};
-use wdn_physics::PhysicsPlugin as WdnPhysicsPlugin;
+use wdn_physics::{PhysicsPlugin as WdnPhysicsPlugin};
 use wdn_render::RenderPlugin as WdnRenderPlugin;
 use wdn_save::SavePlugin as WdnSavePlugin;
 use wdn_tasks::TasksPlugin as WdnTasksPlugin;

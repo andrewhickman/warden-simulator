@@ -25,7 +25,6 @@ pub struct Pawn {
 #[require(
     Collider::new(Pawn::PROJECTILE_RADIUS, false),
     Transform,
-    Velocity,
     Interpolated,
     Projectile::new(1)
 )]
