@@ -18,8 +18,7 @@ use crate::{
     integrate::Velocity,
     tile::{
         TilePlugin, TilePosition,
-        layer::Layer,
-        storage::{TileMaterial, TileStorageMut},
+        storage::{TileLayer, TileMaterial, TileStorageMut},
     },
 };
 
@@ -2457,7 +2456,7 @@ fn make_app() -> App {
 }
 
 fn spawn_layer(app: &mut App) -> Entity {
-    app.world_mut().spawn(Layer::default()).id()
+    app.world_mut().spawn(TileLayer::default()).id()
 }
 
 fn spawn_collider(

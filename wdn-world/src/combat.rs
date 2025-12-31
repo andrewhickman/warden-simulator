@@ -89,8 +89,7 @@ mod tests {
     use bevy_transform::prelude::*;
 
     use wdn_physics::{
-        collision::{Collider, Collision, CollisionTarget, Collisions},
-        tile::layer::Layer,
+        collision::{Collider, Collision, CollisionTarget, Collisions}, tile::storage::TileLayer,
     };
 
     use crate::combat::{CombatPlugin, Health, Projectile};
@@ -168,6 +167,6 @@ mod tests {
     }
 
     fn spawn_layer(app: &mut App) -> Entity {
-        app.world_mut().spawn(Layer::default()).id()
+        app.world_mut().spawn(TileLayer::default()).id()
     }
 }

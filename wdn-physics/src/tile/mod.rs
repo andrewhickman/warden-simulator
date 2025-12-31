@@ -1,10 +1,7 @@
 pub mod index;
-pub mod layer;
 pub mod storage;
-#[cfg(test)]
-mod tests;
 
-use std::{fmt, iter};
+use std::fmt;
 
 use bevy_app::prelude::*;
 use bevy_ecs::{
@@ -15,11 +12,7 @@ use bevy_transform::prelude::*;
 
 use crate::{
     PhysicsSystems,
-    tile::{
-        index::TileIndex,
-        layer::{InLayer, LayerTransform, transform_to_isometry},
-        storage::TileMap,
-    },
+    tile::{index::TileIndex, storage::TileMap},
 };
 
 pub const CHUNK_SIZE: usize = 32;
@@ -44,46 +37,21 @@ pub struct TileChunkOffset(U16Vec2);
 
 pub fn update_tile(
     commands: ParallelCommands,
-    mut entities: Query<(
-        Entity,
-        Ref<ChildOf>,
-        Ref<InLayer>,
-        Ref<Transform>,
-        Ref<TilePosition>,
-        &mut LayerTransform,
-    )>,
-    parents: Query<(&Transform, &ChildOf, &InLayer)>,
+    mut entities: Query<
+        (Entity, &ChildOf, &Transform, &TilePosition),
+        Or<(Changed<Transform>, Changed<ChildOf>)>,
+    >,
 ) {
     entities
         .par_iter_mut()
-        .for_each(|(id, parent, layer, transform, old, mut layer_position)| {
-            if parent.get() != layer.get() || transform.is_changed() || layer.is_changed() {
-                *layer_position = LayerTransform::from_ancestor_isometries(
-                    ancestors((&transform, &parent, &layer), &parents)
-                        .map(|(t, _, _)| transform_to_isometry(t)),
-                );
-
-                let new = TilePosition::floor(layer.get(), layer_position.position());
-                if *old != new {
-                    commands.command_scope(move |mut commands| {
-                        commands.entity(id).insert(new);
-                    });
-                }
+        .for_each(|(id, parent, transform, old)| {
+            let new = TilePosition::floor(parent.get(), transform.translation.xy());
+            if *old != new {
+                commands.command_scope(move |mut commands| {
+                    commands.entity(id).insert(new);
+                });
             }
         });
-}
-
-fn ancestors<'a>(
-    leaf: (&'a Transform, &'a ChildOf, &'a InLayer),
-    query: &'a Query<(&Transform, &ChildOf, &InLayer)>,
-) -> impl Iterator<Item = (&'a Transform, &'a ChildOf, &'a InLayer)> + 'a {
-    iter::successors(Some(leaf), move |(_, parent, layer)| {
-        if parent.get() == layer.get() {
-            return None;
-        } else {
-            query.get(parent.get()).ok()
-        }
-    })
 }
 
 impl Plugin for TilePlugin {
@@ -91,8 +59,6 @@ impl Plugin for TilePlugin {
         app.init_resource::<TileIndex>().init_resource::<TileMap>();
 
         app.add_systems(FixedUpdate, update_tile.in_set(PhysicsSystems::UpdateTile));
-
-        app.add_observer(layer::child_added);
     }
 }
 

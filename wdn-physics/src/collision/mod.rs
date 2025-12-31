@@ -7,6 +7,7 @@ use bevy_app::prelude::*;
 use bevy_ecs::{prelude::*, query::QueryData};
 use bevy_math::{CompassOctant, prelude::*};
 use bevy_time::prelude::*;
+use bevy_transform::prelude::*;
 
 use crate::{
     PhysicsSystems,
@@ -14,7 +15,6 @@ use crate::{
     tile::{
         TilePosition,
         index::TileIndex,
-        layer::LayerTransform,
         storage::{TileOccupancy, TileStorage},
     },
 };
@@ -22,7 +22,7 @@ use crate::{
 pub struct CollisionPlugin;
 
 #[derive(Component, Clone, Copy, Debug)]
-#[require(Collisions, TilePosition, LayerTransform)]
+#[require(Transform, Collisions, TilePosition)]
 pub struct Collider {
     radius: f32,
     solid: bool,
@@ -38,7 +38,7 @@ pub struct ColliderDisabled;
 #[derive(QueryData, Debug)]
 pub struct ColliderQuery {
     collider: &'static Collider,
-    transform: &'static LayerTransform,
+    transform: &'static Transform,
     velocity: Option<&'static Velocity>,
 }
 
@@ -170,13 +170,13 @@ impl ColliderQueryItem<'_, '_> {
     }
 
     pub fn position(&self) -> Vec2 {
-        self.transform.position()
+        self.transform.translation.xy()
     }
 
     pub fn position_at(&self, t: f32) -> Vec2 {
         match self.velocity {
-            Some(velocity) if t > 0.0 => self.transform.position() + velocity.get() * t,
-            _ => self.transform.position(),
+            Some(velocity) if t > 0.0 => self.position() + velocity.get() * t,
+            _ => self.position(),
         }
     }
 
