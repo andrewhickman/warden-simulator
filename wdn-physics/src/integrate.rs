@@ -358,13 +358,13 @@ mod tests {
         app.update();
 
         let velocity = app.world().get::<Velocity>(entity).unwrap();
-        assert_relative_eq!(velocity.0, Vec2::new(-1.0, 1.0), epsilon = 0.0001);
+        assert_relative_eq!(velocity.0, Vec2::new(-1.0, 1.0), epsilon = 1e-4);
 
         let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(
             transform.translation.xy(),
             Vec2::new(-2.0, 1.0),
-            epsilon = 0.0001
+            epsilon = 1e-4
         );
     }
 

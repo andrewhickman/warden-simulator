@@ -17,7 +17,7 @@ use crate::{
     PhysicsSystems,
     tile::{
         index::TileIndex,
-        layer::{InLayer, LayerPosition},
+        layer::{InLayer, LayerTransform, transform_to_isometry},
         storage::TileMap,
     },
 };
@@ -50,26 +50,27 @@ pub fn update_tile(
         Ref<InLayer>,
         Ref<Transform>,
         Ref<TilePosition>,
-        &mut LayerPosition,
+        &mut LayerTransform,
     )>,
     parents: Query<(&Transform, &ChildOf, &InLayer)>,
 ) {
-    entities.par_iter_mut().for_each(
-        |(id, parent, layer, transform, old, mut relative_position)| {
+    entities
+        .par_iter_mut()
+        .for_each(|(id, parent, layer, transform, old, mut layer_position)| {
             if parent.get() != layer.get() || transform.is_changed() || layer.is_changed() {
-                relative_position.0 = ancestors((&transform, &parent, &layer), &parents)
-                    .map(|(t, _, _)| t.translation.xy())
-                    .sum();
+                *layer_position = LayerTransform::from_ancestor_isometries(
+                    ancestors((&transform, &parent, &layer), &parents)
+                        .map(|(t, _, _)| transform_to_isometry(t)),
+                );
 
-                let new = TilePosition::floor(layer.get(), relative_position.0);
+                let new = TilePosition::floor(layer.get(), layer_position.position());
                 if *old != new {
                     commands.command_scope(move |mut commands| {
                         commands.entity(id).insert(new);
                     });
                 }
             }
-        },
-    );
+        });
 }
 
 fn ancestors<'a>(

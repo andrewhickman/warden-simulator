@@ -1,7 +1,7 @@
 use std::f32::consts::TAU;
 
 use bevy_ecs::prelude::*;
-use bevy_math::{Dir2, Vec2};
+use bevy_math::Dir2;
 use bevy_time::prelude::*;
 use bevy_transform::prelude::*;
 use wdn_physics::{collision::Collider, integrate::Velocity, lerp::Interpolated};
@@ -15,7 +15,7 @@ use crate::combat::{Health, Projectile};
     Velocity,
     Interpolated,
     Health::new(Pawn::MAX_HEALTH),
-    PawnAction,
+    PawnAction
 )]
 pub struct Pawn {
     rotation: u8,
@@ -67,27 +67,25 @@ pub fn apply_pawn_actions(
 ) {
     query
         .par_iter_mut()
-        .for_each(|(mut pawn, mut velocity, transform, action)| {
-            match action {
-                PawnAction::Stand => {
-                    velocity.decelerate(Pawn::ACCELERATION * time.delta_secs());
-                }
-                PawnAction::Walk => {
-                    velocity.accelerate(
-                        pawn.direction() * Pawn::WALK_SPEED,
-                        Pawn::ACCELERATION * time.delta_secs(),
-                    );
-                }
-                PawnAction::TurnLeft => {
-                    velocity.decelerate(Pawn::ACCELERATION * time.delta_secs());
-                    pawn.rotation = pawn.rotation.wrapping_add(1) % Pawn::ROTATION_INCREMENTS;
-                }
-                PawnAction::TurnRight => {
-                    velocity.decelerate(Pawn::ACCELERATION * time.delta_secs());
-                    pawn.rotation = pawn.rotation.wrapping_sub(1) % Pawn::ROTATION_INCREMENTS;
-                }
-                PawnAction::AttackLeft => todo!(),
-                PawnAction::AttackRight => todo!(),
+        .for_each(|(mut pawn, mut velocity, transform, action)| match action {
+            PawnAction::Stand => {
+                velocity.decelerate(Pawn::ACCELERATION * time.delta_secs());
             }
+            PawnAction::Walk => {
+                velocity.accelerate(
+                    pawn.direction() * Pawn::WALK_SPEED,
+                    Pawn::ACCELERATION * time.delta_secs(),
+                );
+            }
+            PawnAction::TurnLeft => {
+                velocity.decelerate(Pawn::ACCELERATION * time.delta_secs());
+                pawn.rotation = pawn.rotation.wrapping_add(1) % Pawn::ROTATION_INCREMENTS;
+            }
+            PawnAction::TurnRight => {
+                velocity.decelerate(Pawn::ACCELERATION * time.delta_secs());
+                pawn.rotation = pawn.rotation.wrapping_sub(1) % Pawn::ROTATION_INCREMENTS;
+            }
+            PawnAction::AttackLeft => todo!(),
+            PawnAction::AttackRight => todo!(),
         });
 }

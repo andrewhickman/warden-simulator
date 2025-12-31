@@ -14,7 +14,7 @@ use crate::{
     tile::{
         TilePosition,
         index::TileIndex,
-        layer::LayerPosition,
+        layer::LayerTransform,
         storage::{TileOccupancy, TileStorage},
     },
 };
@@ -22,7 +22,7 @@ use crate::{
 pub struct CollisionPlugin;
 
 #[derive(Component, Clone, Copy, Debug)]
-#[require(Collisions, TilePosition, LayerPosition)]
+#[require(Collisions, TilePosition, LayerTransform)]
 pub struct Collider {
     radius: f32,
     solid: bool,
@@ -38,7 +38,7 @@ pub struct ColliderDisabled;
 #[derive(QueryData, Debug)]
 pub struct ColliderQuery {
     collider: &'static Collider,
-    position: &'static LayerPosition,
+    transform: &'static LayerTransform,
     velocity: Option<&'static Velocity>,
 }
 
@@ -170,11 +170,14 @@ impl ColliderQueryItem<'_, '_> {
     }
 
     pub fn position(&self) -> Vec2 {
-        self.position.0
+        self.transform.position()
     }
 
     pub fn position_at(&self, t: f32) -> Vec2 {
-        self.position() + self.velocity() * t.max(0.0)
+        match self.velocity {
+            Some(velocity) if t > 0.0 => self.transform.position() + velocity.get() * t,
+            _ => self.transform.position(),
+        }
     }
 
     pub fn velocity(&self) -> Vec2 {

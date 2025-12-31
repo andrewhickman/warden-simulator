@@ -440,40 +440,32 @@ fn collision_collider_angled() {
 
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 0);
-    assert_relative_eq!(collisions1.next_time().unwrap(), 0.24, epsilon = 0.0001);
+    assert_relative_eq!(collisions1.next_time().unwrap(), 0.24, epsilon = 1e-4);
     let collision1 = collisions1.next().unwrap();
-    assert_relative_eq!(collision1.position, Vec2::new(0.28, 0.3), epsilon = 0.0001);
-    assert_relative_eq!(*collision1.normal, Vec2::new(0.6, 0.8), epsilon = 0.0001);
+    assert_relative_eq!(collision1.position, Vec2::new(0.28, 0.3), epsilon = 1e-4);
+    assert_relative_eq!(*collision1.normal, Vec2::new(0.6, 0.8), epsilon = 1e-4);
     assert!(collision1.solid);
     match collision1.target {
         CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity2);
-            assert_relative_eq!(position, Vec2::new(0.22, 0.22), epsilon = 0.0001);
-            assert_relative_eq!(
-                collision1.position.distance(position),
-                0.1,
-                epsilon = 0.0001,
-            );
+            assert_relative_eq!(position, Vec2::new(0.22, 0.22), epsilon = 1e-4);
+            assert_relative_eq!(collision1.position.distance(position), 0.1, epsilon = 1e-4,);
         }
         _ => panic!("Expected collider collision"),
     }
 
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 0);
-    assert_relative_eq!(collisions2.next_time().unwrap(), 0.24, epsilon = 0.0001);
+    assert_relative_eq!(collisions2.next_time().unwrap(), 0.24, epsilon = 1e-4);
     let collision2 = collisions2.next().unwrap();
-    assert_relative_eq!(collision2.position, Vec2::new(0.22, 0.22), epsilon = 0.0001);
-    assert_relative_eq!(*collision2.normal, Vec2::new(-0.6, -0.8), epsilon = 0.0001);
+    assert_relative_eq!(collision2.position, Vec2::new(0.22, 0.22), epsilon = 1e-4);
+    assert_relative_eq!(*collision2.normal, Vec2::new(-0.6, -0.8), epsilon = 1e-4);
     assert!(collision2.solid);
     match collision2.target {
         CollisionTarget::Collider { id, position } => {
             assert_eq!(id, entity1);
-            assert_relative_eq!(position, Vec2::new(0.28, 0.3), epsilon = 0.0001);
-            assert_relative_eq!(
-                collision2.position.distance(position),
-                0.1,
-                epsilon = 0.0001,
-            );
+            assert_relative_eq!(position, Vec2::new(0.28, 0.3), epsilon = 1e-4);
+            assert_relative_eq!(collision2.position.distance(position), 0.1, epsilon = 1e-4,);
         }
         _ => panic!("Expected collider collision"),
     }
@@ -1050,7 +1042,7 @@ fn collision_tile_collider_corner_north_east_closing() {
     assert_relative_eq!(
         *collision.normal,
         Vec2::new(-FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert!(collision.solid);
     match collision.target {
@@ -1086,12 +1078,12 @@ fn collision_tile_collider_corner_north_west_closing() {
     assert_relative_eq!(
         collision.position,
         Vec2::new(0.07071069, 0.92928934),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert_relative_eq!(
         *collision.normal,
         Vec2::new(FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert!(collision.solid);
     match collision.target {
@@ -1127,12 +1119,12 @@ fn collision_tile_collider_corner_south_west_closing() {
     assert_relative_eq!(
         collision.position,
         Vec2::new(0.07071069, 0.07071069),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert_relative_eq!(
         *collision.normal,
         Vec2::new(FRAC_1_SQRT_2, FRAC_1_SQRT_2),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert!(collision.solid);
     match collision.target {
@@ -1168,12 +1160,12 @@ fn collision_tile_collider_corner_south_east_closing() {
     assert_relative_eq!(
         collision.position,
         Vec2::new(0.92928934, 0.07071069),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert_relative_eq!(
         *collision.normal,
         Vec2::new(-FRAC_1_SQRT_2, FRAC_1_SQRT_2),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert!(collision.solid);
     match collision.target {
@@ -1233,7 +1225,7 @@ fn collision_corner_north_east_closing() {
     assert_relative_eq!(
         *collision.normal,
         Vec2::new(-FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert!(collision.solid);
     match collision.target {
@@ -1267,11 +1259,11 @@ fn collision_corner_north_east_intersecting() {
     assert!(collisions.next_time().is_none());
     assert!(collisions.next().is_none());
     let collision = collisions.active().next().unwrap();
-    assert_relative_eq!(collision.position, Vec2::new(0.95, 0.95), epsilon = 0.0001);
+    assert_relative_eq!(collision.position, Vec2::new(0.95, 0.95), epsilon = 1e-4);
     assert_relative_eq!(
         *collision.normal,
         Vec2::new(-FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert!(collision.solid);
     match collision.target {
@@ -1307,12 +1299,12 @@ fn collision_corner_north_west_closing() {
     assert_relative_eq!(
         collision.position,
         Vec2::new(0.07071069, 0.92928934),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert_relative_eq!(
         *collision.normal,
         Vec2::new(FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert!(collision.solid);
     match collision.target {
@@ -1346,11 +1338,11 @@ fn collision_corner_north_west_intersecting() {
     assert!(collisions.next_time().is_none());
     assert!(collisions.next().is_none());
     let collision = collisions.active().next().unwrap();
-    assert_relative_eq!(collision.position, Vec2::new(0.05, 0.95), epsilon = 0.0001);
+    assert_relative_eq!(collision.position, Vec2::new(0.05, 0.95), epsilon = 1e-4);
     assert_relative_eq!(
         *collision.normal,
         Vec2::new(FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert!(collision.solid);
     match collision.target {
@@ -1386,12 +1378,12 @@ fn collision_corner_south_west_closing() {
     assert_relative_eq!(
         collision.position,
         Vec2::new(0.07071069, 0.07071069),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert_relative_eq!(
         *collision.normal,
         Vec2::new(FRAC_1_SQRT_2, FRAC_1_SQRT_2),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert!(collision.solid);
     match collision.target {
@@ -1425,11 +1417,11 @@ fn collision_corner_south_west_intersecting() {
     assert!(collisions.next_time().is_none());
     assert!(collisions.next().is_none());
     let collision = collisions.active().next().unwrap();
-    assert_relative_eq!(collision.position, Vec2::new(0.05, 0.05), epsilon = 0.0001);
+    assert_relative_eq!(collision.position, Vec2::new(0.05, 0.05), epsilon = 1e-4);
     assert_relative_eq!(
         *collision.normal,
         Vec2::new(FRAC_1_SQRT_2, FRAC_1_SQRT_2),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert!(collision.solid);
     match collision.target {
@@ -1465,12 +1457,12 @@ fn collision_corner_south_east_closing() {
     assert_relative_eq!(
         collision.position,
         Vec2::new(0.92928934, 0.07071069),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert_relative_eq!(
         *collision.normal,
         Vec2::new(-FRAC_1_SQRT_2, FRAC_1_SQRT_2),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert!(collision.solid);
     match collision.target {
@@ -1504,11 +1496,11 @@ fn collision_corner_south_east_intersecting() {
     assert!(collisions.next_time().is_none());
     assert!(collisions.next().is_none());
     let collision = collisions.active().next().unwrap();
-    assert_relative_eq!(collision.position, Vec2::new(0.95, 0.05), epsilon = 0.0001);
+    assert_relative_eq!(collision.position, Vec2::new(0.95, 0.05), epsilon = 1e-4);
     assert_relative_eq!(
         *collision.normal,
         Vec2::new(-FRAC_1_SQRT_2, FRAC_1_SQRT_2),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert!(collision.solid);
     match collision.target {
@@ -1539,17 +1531,17 @@ fn collision_corner_angled() {
 
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
-    assert_relative_eq!(collisions.next_time().unwrap(), 0.7040017, epsilon = 0.0001);
+    assert_relative_eq!(collisions.next_time().unwrap(), 0.7040017, epsilon = 1e-4);
     let collision = collisions.next().unwrap();
     assert_relative_eq!(
         collision.position,
         Vec2::new(1.0140017, 0.95200086),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert_relative_eq!(
         *collision.normal,
         Vec2::new(0.28003645, -0.95998937),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert!(collision.solid);
     match collision.target {
@@ -2228,7 +2220,7 @@ fn collision_corner_non_solid_closing() {
     assert_relative_eq!(
         *collision.normal,
         Vec2::new(-FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
-        epsilon = 0.0001
+        epsilon = 1e-4
     );
     assert!(!collision.solid);
     match collision.target {
