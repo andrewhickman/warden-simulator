@@ -15,7 +15,8 @@ use bevy_transform::prelude::*;
 
 use wdn_physics::tile::{
     CHUNK_SIZE, TileChunkPosition,
-    storage::{TileChunk, TileLayer, TileMaterial},
+    layer::TileLayer,
+    storage::{TileChunk, TileMaterial},
 };
 
 use crate::assets::AssetHandles;

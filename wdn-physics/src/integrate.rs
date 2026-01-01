@@ -12,6 +12,7 @@ use crate::{
 pub struct IntegratePlugin;
 
 #[derive(Clone, Copy, Component, Default, Debug)]
+#[require(Transform)]
 pub struct Velocity(Vec2);
 
 impl Plugin for IntegratePlugin {

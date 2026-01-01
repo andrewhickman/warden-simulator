@@ -89,7 +89,8 @@ mod tests {
     use bevy_transform::prelude::*;
 
     use wdn_physics::{
-        collision::{Collider, Collision, CollisionTarget, Collisions}, tile::storage::TileLayer,
+        collision::{Collider, Collision, CollisionTarget, Collisions},
+        tile::layer::TileLayer,
     };
 
     use crate::combat::{CombatPlugin, Health, Projectile};

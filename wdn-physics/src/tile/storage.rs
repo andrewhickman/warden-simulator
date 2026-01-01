@@ -8,7 +8,6 @@ use bevy_ecs::{
 };
 use bevy_math::{CompassOctant, prelude::*};
 use bevy_platform::collections::HashMap;
-use bevy_transform::prelude::*;
 use bitflags::bitflags;
 
 use crate::tile::{CHUNK_SIZE, TileChunkOffset, TileChunkPosition, TilePosition};
@@ -25,10 +24,6 @@ pub struct TileStorageMut<'w, 's> {
     chunks: Query<'w, 's, &'static mut TileChunk>,
     buffer: Deferred<'s, TileStorageBuffer>,
 }
-
-#[derive(Copy, Clone, Component, Debug, Default)]
-#[require(Transform)]
-pub struct TileLayer {}
 
 #[derive(Component)]
 #[component(on_add = TileChunk::on_add, on_remove = TileChunk::on_remove)]
@@ -313,9 +308,8 @@ mod tests {
 
     use crate::tile::{
         CHUNK_SIZE, TileChunkOffset, TileChunkPosition, TilePlugin, TilePosition,
-        storage::{
-            TileChunk, TileLayer, TileMap, TileMaterial, TileOccupancy, TileStorage, TileStorageMut,
-        },
+        layer::TileLayer,
+        storage::{TileChunk, TileMap, TileMaterial, TileOccupancy, TileStorage, TileStorageMut},
     };
 
     #[test]

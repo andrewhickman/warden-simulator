@@ -1,18 +1,23 @@
 pub mod index;
+pub mod layer;
 pub mod storage;
+#[cfg(test)]
+mod tests;
 
 use std::fmt;
 
 use bevy_app::prelude::*;
-use bevy_ecs::{
-    lifecycle::HookContext, prelude::*, relationship::Relationship, world::DeferredWorld,
-};
+use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
 use bevy_math::{I16Vec2, U16Vec2, prelude::*};
 use bevy_transform::prelude::*;
 
 use crate::{
     PhysicsSystems,
-    tile::{index::TileIndex, storage::TileMap},
+    tile::{
+        index::TileIndex,
+        layer::{InLayer, LayerEntityQuery, LayerEntityQueryItem, LayerTransform},
+        storage::TileMap,
+    },
 };
 
 pub const CHUNK_SIZE: usize = 32;
@@ -37,19 +42,31 @@ pub struct TileChunkOffset(U16Vec2);
 
 pub fn update_tile(
     commands: ParallelCommands,
-    mut entities: Query<
-        (Entity, &ChildOf, &Transform, &TilePosition),
-        Or<(Changed<Transform>, Changed<ChildOf>)>,
-    >,
+    mut entities: Query<(
+        Entity,
+        Ref<InLayer>,
+        Ref<ChildOf>,
+        Ref<Transform>,
+        Ref<TilePosition>,
+        &mut LayerTransform,
+    )>,
+    parents: Query<(LayerEntityQuery, &Transform)>,
 ) {
     entities
         .par_iter_mut()
-        .for_each(|(id, parent, transform, old)| {
-            let new = TilePosition::floor(parent.get(), transform.translation.xy());
-            if *old != new {
-                commands.command_scope(move |mut commands| {
-                    commands.entity(id).insert(new);
-                });
+        .for_each(|(id, layer, parent, transform, old, mut position)| {
+            let parent = LayerEntityQueryItem::new(&layer, &parent);
+            if parent.has_parent() || transform.is_changed() || layer.is_changed() {
+                *position = LayerTransform::from_ancestor_transforms(
+                    parent.ancestors(&*transform, &parents),
+                );
+
+                let new = TilePosition::floor(parent.layer(), position.position());
+                if *old != new {
+                    commands.command_scope(move |mut commands| {
+                        commands.entity(id).insert(new);
+                    });
+                }
             }
         });
 }
@@ -59,6 +76,8 @@ impl Plugin for TilePlugin {
         app.init_resource::<TileIndex>().init_resource::<TileMap>();
 
         app.add_systems(FixedUpdate, update_tile.in_set(PhysicsSystems::UpdateTile));
+
+        app.add_observer(layer::child_added);
     }
 }
 

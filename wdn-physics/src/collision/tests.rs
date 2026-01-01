@@ -18,7 +18,8 @@ use crate::{
     integrate::Velocity,
     tile::{
         TilePlugin, TilePosition,
-        storage::{TileLayer, TileMaterial, TileStorageMut},
+        layer::TileLayer,
+        storage::{TileMaterial, TileStorageMut},
     },
 };
 
