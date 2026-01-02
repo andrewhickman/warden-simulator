@@ -9,6 +9,8 @@ use bevy_ecs::{
 use bevy_math::prelude::*;
 use bevy_transform::prelude::*;
 
+use crate::integrate::Velocity;
+
 #[derive(Copy, Clone, Component, Debug, Default)]
 #[require(Transform)]
 pub struct TileLayer {}
@@ -30,6 +32,12 @@ pub struct LayerEntities(EntityHashSet);
 
 #[derive(Copy, Clone, Component, Debug, Default)]
 pub struct LayerTransform(Isometry2d);
+
+#[derive(Copy, Clone, Component, Debug, Default)]
+pub struct LayerVelocity {
+    linear: Vec2,
+    angular: f32,
+}
 
 pub fn child_added(
     insert: On<Insert, ChildOf>,
@@ -103,6 +111,47 @@ impl LayerTransform {
 
     pub fn rotation(&self) -> Rot2 {
         self.0.rotation
+    }
+}
+
+impl LayerVelocity {
+    pub fn from_ancestor_transforms_and_velocities<'a>(
+        items: impl Iterator<Item = (&'a Transform, Option<&'a Velocity>)>,
+    ) -> Self {
+        let mut chain: Vec<(Isometry2d, Vec2, f32)> = items
+            .map(|(transform, velocity)| {
+                let isometry = transform_to_isometry(transform);
+                let (linear, angular) = velocity
+                    .map(|v| (v.get(), v.angular()))
+                    .unwrap_or((Vec2::ZERO, 0.0));
+                (isometry, linear, angular)
+            })
+            .collect();
+
+        chain.reverse();
+
+        let mut parent_rotation = Rot2::IDENTITY;
+        let mut angular = 0.0;
+        let mut linear = Vec2::ZERO;
+
+        for (local_isometry, local_linear, local_angular) in chain {
+            let r_pc = parent_rotation * local_isometry.translation;
+            linear += r_pc.perp() * angular;
+            linear += parent_rotation * local_linear;
+
+            angular += local_angular;
+            parent_rotation = parent_rotation * local_isometry.rotation;
+        }
+
+        LayerVelocity { linear, angular }
+    }
+
+    pub fn get(&self) -> Vec2 {
+        self.linear
+    }
+
+    pub fn angular(&self) -> f32 {
+        self.angular
     }
 }
 

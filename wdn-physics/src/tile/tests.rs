@@ -6,10 +6,11 @@ use bevy_ecs::prelude::*;
 use bevy_math::prelude::*;
 use bevy_transform::prelude::*;
 
+use crate::integrate::Velocity;
 use crate::tile::{
     TilePlugin, TilePosition,
     index::TileIndex,
-    layer::{LayerTransform, TileLayer},
+    layer::{LayerTransform, LayerVelocity, TileLayer},
 };
 
 #[test]
@@ -338,6 +339,86 @@ fn parent_transform_changed() {
     assert_eq!(parent_entities, &[parent]);
     let child_entities = index.get(TilePosition::new(layer, 3, 2));
     assert_eq!(child_entities, &[child]);
+}
+
+#[test]
+fn parent_transform_added() {
+    let mut app = App::new();
+    app.add_plugins(TilePlugin);
+
+    let layer = app.world_mut().spawn(TileLayer::default()).id();
+
+    let parent = app
+        .world_mut()
+        .spawn((
+            Transform::from_xyz(0.0, 0.0, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_2)),
+            ChildOf(layer),
+            TilePosition::default(),
+            LayerTransform::default(),
+            LayerVelocity::default(),
+            Velocity::new(Vec2::new(1.0, 0.0)),
+        ))
+        .id();
+
+    let child = app
+        .world_mut()
+        .spawn((
+            Transform::from_xyz(0.0, 0.0, 0.0),
+            ChildOf(parent),
+            TilePosition::default(),
+            LayerTransform::default(),
+            LayerVelocity::default(),
+            Velocity::new(Vec2::new(1.0, 0.0)),
+        ))
+        .id();
+
+    app.world_mut().run_schedule(FixedUpdate);
+
+    let parent_v = app.world().get::<LayerVelocity>(parent).unwrap().get();
+    assert_relative_eq!(parent_v, Vec2::new(1.0, 0.0));
+
+    let child_v = app.world().get::<LayerVelocity>(child).unwrap().get();
+    assert_relative_eq!(child_v, Vec2::new(1.0, 1.0));
+}
+
+#[test]
+fn layer_angular_velocity_sums_down_hierarchy() {
+    let mut app = App::new();
+    app.add_plugins(TilePlugin);
+
+    let layer = app.world_mut().spawn(TileLayer::default()).id();
+
+    let parent = app
+        .world_mut()
+        .spawn((
+            Transform::from_xyz(0.0, 0.0, 0.0),
+            ChildOf(layer),
+            TilePosition::default(),
+            LayerTransform::default(),
+            LayerVelocity::default(),
+            Velocity::new(Vec2::ZERO).with_angular(1.25),
+        ))
+        .id();
+
+    let child = app
+        .world_mut()
+        .spawn((
+            Transform::from_xyz(0.0, 0.0, 0.0),
+            ChildOf(parent),
+            TilePosition::default(),
+            LayerTransform::default(),
+            LayerVelocity::default(),
+            Velocity::new(Vec2::ZERO).with_angular(-0.5),
+        ))
+        .id();
+
+    app.world_mut().run_schedule(FixedUpdate);
+
+    let parent_w = app.world().get::<LayerVelocity>(parent).unwrap().angular();
+    assert_relative_eq!(parent_w, 1.25);
+
+    let child_w = app.world().get::<LayerVelocity>(child).unwrap().angular();
+    assert_relative_eq!(child_w, 0.75);
 }
 
 #[test]

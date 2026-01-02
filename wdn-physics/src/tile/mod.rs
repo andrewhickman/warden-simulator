@@ -13,9 +13,10 @@ use bevy_transform::prelude::*;
 
 use crate::{
     PhysicsSystems,
+    integrate::Velocity,
     tile::{
         index::TileIndex,
-        layer::{InLayer, LayerEntityQuery, LayerEntityQueryItem, LayerTransform},
+        layer::{InLayer, LayerEntityQuery, LayerEntityQueryItem, LayerTransform, LayerVelocity},
         storage::TileMap,
     },
 };
@@ -49,16 +50,20 @@ pub fn update_tile(
         Ref<Transform>,
         Ref<TilePosition>,
         &mut LayerTransform,
+        Option<&mut LayerVelocity>,
+        Option<Ref<Velocity>>,
     )>,
-    parents: Query<(LayerEntityQuery, &Transform)>,
+    parents: Query<(LayerEntityQuery, (&Transform, Option<&Velocity>))>,
 ) {
-    entities
-        .par_iter_mut()
-        .for_each(|(id, layer, parent, transform, old, mut position)| {
+    entities.par_iter_mut().for_each(
+        |(id, layer, parent, transform, old, mut position, mut layer_velocity, velocity)| {
             let parent = LayerEntityQueryItem::new(&layer, &parent);
+            let velocity_changed = velocity.as_ref().is_some_and(|v| v.is_changed());
+
             if parent.has_parent() || transform.is_changed() || layer.is_changed() {
+                let start = (&*transform, velocity.as_ref().map(|v| &**v));
                 *position = LayerTransform::from_ancestor_transforms(
-                    parent.ancestors(&*transform, &parents),
+                    parent.ancestors(start, &parents).map(|(t, _)| t),
                 );
 
                 let new = TilePosition::floor(parent.layer(), position.position());
@@ -68,7 +73,21 @@ pub fn update_tile(
                     });
                 }
             }
-        });
+
+            if let Some(layer_velocity) = layer_velocity.as_mut() {
+                if parent.has_parent()
+                    || transform.is_changed()
+                    || layer.is_changed()
+                    || velocity_changed
+                {
+                    let start = (&*transform, velocity.as_ref().map(|v| &**v));
+                    **layer_velocity = LayerVelocity::from_ancestor_transforms_and_velocities(
+                        parent.ancestors(start, &parents),
+                    );
+                }
+            }
+        },
+    );
 }
 
 impl Plugin for TilePlugin {
