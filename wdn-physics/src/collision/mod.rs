@@ -13,7 +13,7 @@ use crate::{
     tile::{
         TilePosition,
         index::TileIndex,
-        layer::{LayerEntityQuery, LayerPosition, LayerVelocity},
+        layer::{LayerPosition, LayerVelocity},
         storage::{TileOccupancy, TileStorage},
     },
 };
@@ -36,7 +36,6 @@ pub struct ColliderDisabled;
 
 #[derive(QueryData, Debug)]
 pub struct ColliderQuery {
-    layer: LayerEntityQuery,
     collider: &'static Collider,
     transform: &'static LayerPosition,
     velocity: Option<&'static LayerVelocity>,

@@ -1,34 +1,10 @@
-use std::iter;
-
-use bevy_ecs::{
-    entity::EntityHashSet,
-    prelude::*,
-    query::{QueryData, ReadOnlyQueryData},
-    relationship::Relationship,
-};
+use bevy_ecs::prelude::*;
 use bevy_math::prelude::*;
 use bevy_transform::prelude::*;
-
-use crate::integrate::Velocity;
 
 #[derive(Copy, Clone, Component, Debug, Default)]
 #[require(Transform)]
 pub struct TileLayer {}
-
-#[derive(Copy, Clone, Component, Debug)]
-#[relationship(relationship_target = LayerEntities)]
-pub struct InLayer(pub Entity);
-
-#[derive(QueryData, Debug)]
-#[query_data(derive(Copy, Clone, Debug))]
-pub struct LayerEntityQuery {
-    layer: &'static InLayer,
-    parent: &'static ChildOf,
-}
-
-#[derive(Component, Debug)]
-#[relationship_target(relationship = InLayer, linked_spawn)]
-pub struct LayerEntities(EntityHashSet);
 
 #[derive(Copy, Clone, Component, Debug, Default)]
 pub struct LayerPosition {
@@ -41,99 +17,9 @@ pub struct LayerVelocity {
     angular: f32,
 }
 
-pub fn child_added(
-    insert: On<Insert, ChildOf>,
-    mut commands: Commands,
-    parents: Query<&ChildOf>,
-    layers: Query<AnyOf<((Entity, &TileLayer), &InLayer)>>,
-) {
-    let parent = parents.get(insert.entity).unwrap();
-    match layers.get(parent.get()) {
-        Ok((Some((layer, _)), _) | (None, Some(&InLayer(layer)))) => {
-            commands
-                .entity(insert.entity)
-                .insert_recursive::<Children>(InLayer(layer));
-        }
-        _ => {}
-    }
-}
-
-pub fn update_components<'a>(
-    ancestors: impl Iterator<Item = (&'a Transform, Option<&'a Velocity>)>,
-    position: &mut LayerPosition,
-    velocity: Option<&mut LayerVelocity>,
-) {
-    let mut angular = 0.0;
-    let mut linear = Vec2::ZERO;
-    let mut isometry = Isometry2d::IDENTITY;
-
-    for (ancestor_transform, ancestor_velocity) in ancestors {
-        let ancestor_isometry = transform_to_isometry(ancestor_transform);
-
-        if let Some(ancestor_velocity) = ancestor_velocity {
-            linear += ancestor_velocity.linear();
-            angular += ancestor_velocity.angular();
-
-            linear += isometry.translation.perp() * ancestor_velocity.angular();
-        }
-
-        linear = ancestor_isometry.rotation * linear;
-        isometry = ancestor_isometry * isometry;
-    }
-
-    *position = LayerPosition { isometry };
-    if let Some(velocity) = velocity {
-        *velocity = LayerVelocity { linear, angular };
-    }
-}
-
-impl<'w, 's: 'w> LayerEntityQueryItem<'w, 's> {
-    pub fn new(layer: &'w InLayer, parent: &'w ChildOf) -> LayerEntityQueryItem<'w, 's> {
-        LayerEntityQueryItem { layer, parent }
-    }
-
-    pub fn ancestors<T>(
-        &self,
-        value: T::Item<'w, 's>,
-        query: &'w Query<'w, 's, (LayerEntityQuery, T)>,
-    ) -> impl Iterator<Item = T::Item<'w, 's>>
-    where
-        T: ReadOnlyQueryData,
-    {
-        iter::successors(Some((*self, value)), move |(parent, _)| {
-            if let Some(parent) = parent.parent() {
-                query.get(parent).ok()
-            } else {
-                return None;
-            }
-        })
-        .map(|(_, v)| v)
-    }
-
-    pub fn has_parent(&self) -> bool {
-        self.layer.get() != self.parent.get()
-    }
-
-    pub fn parent(&self) -> Option<Entity> {
-        if self.has_parent() {
-            Some(self.parent.get())
-        } else {
-            None
-        }
-    }
-
-    pub fn layer(&self) -> Entity {
-        self.layer.get()
-    }
-}
-
 impl LayerPosition {
-    pub fn from_ancestor_transforms<'a>(transforms: impl Iterator<Item = &'a Transform>) -> Self {
-        let isometry = transforms
-            .map(|transform| transform_to_isometry(&transform))
-            .reduce(|a, b| b * a)
-            .unwrap_or(Isometry2d::IDENTITY);
-        LayerPosition { isometry }
+    pub fn new(isometry: Isometry2d) -> Self {
+        Self { isometry }
     }
 
     pub fn position(&self) -> Vec2 {
@@ -146,28 +32,8 @@ impl LayerPosition {
 }
 
 impl LayerVelocity {
-    pub fn from_ancestor_transforms_and_velocities<'a>(
-        ancestors: impl Iterator<Item = (&'a Transform, Option<&'a Velocity>)>,
-    ) -> Self {
-        let mut angular = 0.0;
-        let mut linear = Vec2::ZERO;
-        let mut isometry = Isometry2d::IDENTITY;
-
-        for (ancestor_transform, ancestor_velocity) in ancestors {
-            let ancestor_isometry = transform_to_isometry(ancestor_transform);
-
-            if let Some(ancestor_velocity) = ancestor_velocity {
-                linear += ancestor_velocity.linear();
-                angular += ancestor_velocity.angular();
-
-                linear += isometry.translation.perp() * ancestor_velocity.angular();
-            }
-
-            linear = ancestor_isometry.rotation * linear;
-            isometry = ancestor_isometry * isometry;
-        }
-
-        LayerVelocity { linear, angular }
+    pub fn new(linear: Vec2, angular: f32) -> Self {
+        Self { linear, angular }
     }
 
     pub fn linear(&self) -> Vec2 {
@@ -179,7 +45,7 @@ impl LayerVelocity {
     }
 }
 
-fn transform_to_isometry(transform: &Transform) -> Isometry2d {
+pub fn transform_to_isometry(transform: &Transform) -> Isometry2d {
     let translation = transform.translation.xy();
     let rotation = quat_to_rot(transform.rotation);
     Isometry2d::new(translation, rotation)
@@ -202,14 +68,9 @@ mod tests {
     use std::f32::consts::PI;
 
     use approx::assert_relative_eq;
-    use bevy_app::prelude::*;
-    use bevy_ecs::prelude::*;
     use bevy_math::prelude::*;
 
-    use crate::tile::{
-        TilePlugin,
-        layer::{InLayer, TileLayer, quat_to_rot},
-    };
+    use crate::tile::layer::quat_to_rot;
 
     #[test]
     fn quat_to_rot2_identity() {
@@ -267,45 +128,5 @@ mod tests {
         let quat = Quat::from_euler(EulerRot::XYZ, 1.5, 0.4, angle);
         let rot = quat_to_rot(quat);
         assert_relative_eq!(rot, Rot2::radians(angle), epsilon = 1e-5);
-    }
-
-    #[test]
-    fn child_spawned() {
-        let mut app = App::new();
-        app.add_plugins(TilePlugin);
-
-        let layer = app.world_mut().spawn(TileLayer::default()).id();
-        let child = app.world_mut().spawn(ChildOf(layer)).id();
-
-        let in_layer = app.world().entity(child).get::<InLayer>().unwrap();
-        assert_eq!(in_layer.0, layer);
-    }
-
-    #[test]
-    fn grandchild_spawned() {
-        let mut app = App::new();
-        app.add_plugins(TilePlugin);
-
-        let layer = app.world_mut().spawn(TileLayer::default()).id();
-        let child = app.world_mut().spawn(ChildOf(layer)).id();
-        let grandchild = app.world_mut().spawn(ChildOf(child)).id();
-
-        let in_layer = app.world().entity(grandchild).get::<InLayer>().unwrap();
-        assert_eq!(in_layer.0, layer);
-    }
-
-    #[test]
-    fn hierarchy_spawned() {
-        let mut app = App::new();
-        app.add_plugins(TilePlugin);
-
-        let layer = app
-            .world_mut()
-            .spawn((TileLayer::default(), children![(), children![(), ()]]))
-            .id();
-
-        let mut query = app.world_mut().query::<&InLayer>();
-        assert_eq!(query.iter(app.world()).count(), 4);
-        assert!(query.iter(app.world()).all(|i| i.0 == layer));
     }
 }

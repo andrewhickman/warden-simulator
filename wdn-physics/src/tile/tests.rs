@@ -377,7 +377,6 @@ fn velocity_no_parent() {
             ChildOf(layer),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -403,7 +402,6 @@ fn velocity_parent_linear() {
             ChildOf(layer),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -415,7 +413,6 @@ fn velocity_parent_linear() {
             ChildOf(parent),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -445,7 +442,6 @@ fn velocity_parent_angular() {
             ChildOf(layer),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -457,7 +453,6 @@ fn velocity_parent_angular() {
             ChildOf(parent),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -487,7 +482,6 @@ fn velocity_parent_combined() {
             ChildOf(layer),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -499,7 +493,6 @@ fn velocity_parent_combined() {
             ChildOf(parent),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -529,7 +522,6 @@ fn velocity_parent_rotated() {
             ChildOf(layer),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -541,7 +533,6 @@ fn velocity_parent_rotated() {
             ChildOf(parent),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -550,13 +541,13 @@ fn velocity_parent_rotated() {
     let parent_velocity = app.world().get::<LayerVelocity>(parent).unwrap();
     assert_relative_eq!(
         parent_velocity.linear(),
-        Vec2::new(0.0, 1.0),
+        Vec2::new(1.0, 0.0),
         epsilon = 1e-4
     );
     assert_relative_eq!(parent_velocity.angular(), 0.0);
 
     let child_velocity = app.world().get::<LayerVelocity>(child).unwrap();
-    assert_relative_eq!(child_velocity.linear(), Vec2::new(0.0, 2.0), epsilon = 1e-4);
+    assert_relative_eq!(child_velocity.linear(), Vec2::new(1.0, 1.0), epsilon = 1e-4);
     assert_relative_eq!(child_velocity.angular(), 0.0);
 }
 
@@ -575,7 +566,6 @@ fn velocity_grandparent() {
             ChildOf(layer),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -587,7 +577,6 @@ fn velocity_grandparent() {
             ChildOf(grandparent),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -599,7 +588,6 @@ fn velocity_grandparent() {
             ChildOf(parent),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -637,7 +625,6 @@ fn velocity_updated_on_change() {
             ChildOf(layer),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -649,7 +636,6 @@ fn velocity_updated_on_change() {
             ChildOf(parent),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -684,7 +670,6 @@ fn velocity_complex_hierarchy() {
             ChildOf(layer),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -696,7 +681,6 @@ fn velocity_complex_hierarchy() {
             ChildOf(grandparent),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -708,7 +692,6 @@ fn velocity_complex_hierarchy() {
             ChildOf(parent),
             TilePosition::default(),
             LayerPosition::default(),
-            LayerVelocity::default(),
         ))
         .id();
 
@@ -717,7 +700,7 @@ fn velocity_complex_hierarchy() {
     let grandparent_velocity = app.world().get::<LayerVelocity>(grandparent).unwrap();
     assert_relative_eq!(
         grandparent_velocity.linear(),
-        Vec2::new(1.414214, 1.414214),
+        Vec2::new(2.0, 0.0),
         epsilon = 1e-4
     );
     assert_relative_eq!(grandparent_velocity.angular(), 0.2);
@@ -725,7 +708,7 @@ fn velocity_complex_hierarchy() {
     let parent_velocity = app.world().get::<LayerVelocity>(parent).unwrap();
     assert_relative_eq!(
         parent_velocity.linear(),
-        Vec2::new(0.1414214, 2.921801),
+        Vec2::new(1.434315, 1.697056),
         epsilon = 1e-4
     );
     assert_relative_eq!(parent_velocity.angular(), 0.35);
@@ -733,7 +716,7 @@ fn velocity_complex_hierarchy() {
     let child_velocity = app.world().get::<LayerVelocity>(child).unwrap();
     assert_relative_eq!(
         child_velocity.linear(),
-        Vec2::new(-0.7611274, 4.990087),
+        Vec2::new(-0.4707278, 3.087493),
         epsilon = 1e-4
     );
     assert_relative_eq!(child_velocity.angular(), 0.45, epsilon = 1e-4);

@@ -4,13 +4,12 @@ pub mod storage;
 #[cfg(test)]
 mod tests;
 
-use std::{
-    fmt,
-    ops::{Deref, DerefMut},
-};
+use std::fmt;
 
 use bevy_app::prelude::*;
-use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
+use bevy_ecs::{
+    lifecycle::HookContext, prelude::*, relationship::Relationship, world::DeferredWorld,
+};
 use bevy_math::{I16Vec2, U16Vec2, prelude::*};
 use bevy_transform::prelude::*;
 
@@ -19,10 +18,7 @@ use crate::{
     integrate::Velocity,
     tile::{
         index::TileIndex,
-        layer::{
-            InLayer, LayerEntityQuery, LayerEntityQueryItem, LayerPosition, LayerVelocity,
-            update_components,
-        },
+        layer::{LayerPosition, LayerVelocity, TileLayer, transform_to_isometry},
         storage::TileMap,
     },
 };
@@ -51,7 +47,6 @@ pub fn update_tile(
     commands: ParallelCommands,
     mut entities: Query<(
         Entity,
-        Ref<InLayer>,
         Ref<ChildOf>,
         Ref<Transform>,
         Option<Ref<Velocity>>,
@@ -59,23 +54,52 @@ pub fn update_tile(
         &mut LayerPosition,
         Option<&mut LayerVelocity>,
     )>,
-    parents: Query<(LayerEntityQuery, (&Transform, Option<&Velocity>))>,
+    parents: Query<(&ChildOf, &Transform, Option<&Velocity>)>,
+    layers: Query<&TileLayer>,
 ) {
     entities.par_iter_mut().for_each(
-        |(id, layer, parent, transform, velocity, old, mut layer_position, mut layer_velocity)| {
-            let parent = LayerEntityQueryItem::new(&layer, &parent);
-            if parent.has_parent()
+        |(id, parent, transform, velocity, old, mut layer_position, layer_velocity)| {
+            let parent_changed = parent.is_changed();
+            let mut parent = parent.get();
+            let mut has_parent = !layers.contains(parent);
+
+            if has_parent
+                || parent_changed
                 || transform.is_changed()
-                || layer.is_changed()
                 || velocity.as_ref().is_some_and(Ref::is_changed)
             {
-                update_components(
-                    parent.ancestors((transform.deref(), velocity.as_deref()), &parents),
-                    layer_position.deref_mut(),
-                    layer_velocity.as_deref_mut(),
-                );
+                let mut isometry = transform_to_isometry(&transform);
+                let mut angular = velocity.as_ref().map_or(0.0, |v| v.angular());
+                let mut linear = velocity.as_ref().map_or(Vec2::ZERO, |v| v.linear());
 
-                let new = TilePosition::floor(parent.layer(), layer_position.position());
+                while has_parent {
+                    let (ancestor_parent, ancestor_transform, ancestor_velocity) =
+                        parents.get(parent).expect("invalid parent");
+                    let ancestor_isometry = transform_to_isometry(ancestor_transform);
+
+                    if let Some(ancestor_velocity) = ancestor_velocity {
+                        linear += isometry.translation.perp() * ancestor_velocity.angular();
+                    }
+
+                    linear = ancestor_isometry.rotation * linear;
+
+                    if let Some(ancestor_velocity) = ancestor_velocity {
+                        linear += ancestor_velocity.linear();
+                        angular += ancestor_velocity.angular();
+                    }
+
+                    isometry = ancestor_isometry * isometry;
+
+                    parent = ancestor_parent.get();
+                    has_parent = !layers.contains(parent);
+                }
+
+                *layer_position = LayerPosition::new(isometry);
+                if let Some(mut layer_velocity) = layer_velocity {
+                    *layer_velocity = LayerVelocity::new(linear, angular);
+                }
+
+                let new = TilePosition::floor(parent, layer_position.position());
                 if *old != new {
                     commands.command_scope(move |mut commands| {
                         commands.entity(id).insert(new);
@@ -91,8 +115,6 @@ impl Plugin for TilePlugin {
         app.init_resource::<TileIndex>().init_resource::<TileMap>();
 
         app.add_systems(FixedUpdate, update_tile.in_set(PhysicsSystems::UpdateTile));
-
-        app.add_observer(layer::child_added);
     }
 }
 
