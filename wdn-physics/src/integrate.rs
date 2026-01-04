@@ -7,12 +7,13 @@ use bevy_transform::prelude::*;
 use crate::{
     PhysicsSystems,
     collision::{Collision, Collisions},
+    tile::layer::LayerVelocity,
 };
 
 pub struct IntegratePlugin;
 
 #[derive(Clone, Copy, Component, Default, Debug)]
-#[require(Transform)]
+#[require(Transform, LayerVelocity)]
 pub struct Velocity {
     linear: Vec2,
     angular: f32,

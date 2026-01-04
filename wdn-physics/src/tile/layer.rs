@@ -31,7 +31,9 @@ pub struct LayerEntityQuery {
 pub struct LayerEntities(EntityHashSet);
 
 #[derive(Copy, Clone, Component, Debug, Default)]
-pub struct LayerPosition(Isometry2d);
+pub struct LayerPosition {
+    isometry: Isometry2d,
+}
 
 #[derive(Copy, Clone, Component, Debug, Default)]
 pub struct LayerVelocity {
@@ -53,6 +55,35 @@ pub fn child_added(
                 .insert_recursive::<Children>(InLayer(layer));
         }
         _ => {}
+    }
+}
+
+pub fn update_components<'a>(
+    ancestors: impl Iterator<Item = (&'a Transform, Option<&'a Velocity>)>,
+    position: &mut LayerPosition,
+    velocity: Option<&mut LayerVelocity>,
+) {
+    let mut angular = 0.0;
+    let mut linear = Vec2::ZERO;
+    let mut isometry = Isometry2d::IDENTITY;
+
+    for (ancestor_transform, ancestor_velocity) in ancestors {
+        let ancestor_isometry = transform_to_isometry(ancestor_transform);
+
+        if let Some(ancestor_velocity) = ancestor_velocity {
+            linear += ancestor_velocity.linear();
+            angular += ancestor_velocity.angular();
+
+            linear += isometry.translation.perp() * ancestor_velocity.angular();
+        }
+
+        linear = ancestor_isometry.rotation * linear;
+        isometry = ancestor_isometry * isometry;
+    }
+
+    *position = LayerPosition { isometry };
+    if let Some(velocity) = velocity {
+        *velocity = LayerVelocity { linear, angular };
     }
 }
 
@@ -102,15 +133,15 @@ impl LayerPosition {
             .map(|transform| transform_to_isometry(&transform))
             .reduce(|a, b| b * a)
             .unwrap_or(Isometry2d::IDENTITY);
-        LayerPosition(isometry)
+        LayerPosition { isometry }
     }
 
     pub fn position(&self) -> Vec2 {
-        self.0.translation
+        self.isometry.translation
     }
 
     pub fn rotation(&self) -> Rot2 {
-        self.0.rotation
+        self.isometry.rotation
     }
 }
 

@@ -10,11 +10,10 @@ use bevy_time::prelude::*;
 
 use crate::{
     PhysicsSystems,
-    integrate::Velocity,
     tile::{
         TilePosition,
         index::TileIndex,
-        layer::{LayerEntityQuery, LayerPosition},
+        layer::{LayerEntityQuery, LayerPosition, LayerVelocity},
         storage::{TileOccupancy, TileStorage},
     },
 };
@@ -40,7 +39,7 @@ pub struct ColliderQuery {
     layer: LayerEntityQuery,
     collider: &'static Collider,
     transform: &'static LayerPosition,
-    velocity: Option<&'static Velocity>,
+    velocity: Option<&'static LayerVelocity>,
 }
 
 #[derive(QueryData, Debug)]

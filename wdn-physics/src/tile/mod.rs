@@ -4,7 +4,10 @@ pub mod storage;
 #[cfg(test)]
 mod tests;
 
-use std::fmt;
+use std::{
+    fmt,
+    ops::{Deref, DerefMut},
+};
 
 use bevy_app::prelude::*;
 use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
@@ -16,7 +19,10 @@ use crate::{
     integrate::Velocity,
     tile::{
         index::TileIndex,
-        layer::{InLayer, LayerEntityQuery, LayerEntityQueryItem, LayerPosition, LayerVelocity},
+        layer::{
+            InLayer, LayerEntityQuery, LayerEntityQueryItem, LayerPosition, LayerVelocity,
+            update_components,
+        },
         storage::TileMap,
     },
 };
@@ -48,38 +54,32 @@ pub fn update_tile(
         Ref<InLayer>,
         Ref<ChildOf>,
         Ref<Transform>,
+        Option<Ref<Velocity>>,
         Ref<TilePosition>,
         &mut LayerPosition,
-        Option<(Ref<Velocity>, &mut LayerVelocity)>,
+        Option<&mut LayerVelocity>,
     )>,
-    transforms: Query<(LayerEntityQuery, &Transform)>,
-    velocities: Query<(LayerEntityQuery, (&Transform, Option<&Velocity>))>,
+    parents: Query<(LayerEntityQuery, (&Transform, Option<&Velocity>))>,
 ) {
     entities.par_iter_mut().for_each(
-        |(id, layer, parent, transform, old, mut position, mut velocity)| {
+        |(id, layer, parent, transform, velocity, old, mut layer_position, mut layer_velocity)| {
             let parent = LayerEntityQueryItem::new(&layer, &parent);
-            if parent.has_parent() || transform.is_changed() || layer.is_changed() {
-                *position = LayerPosition::from_ancestor_transforms(
-                    parent.ancestors(&*transform, &transforms),
+            if parent.has_parent()
+                || transform.is_changed()
+                || layer.is_changed()
+                || velocity.as_ref().is_some_and(Ref::is_changed)
+            {
+                update_components(
+                    parent.ancestors((transform.deref(), velocity.as_deref()), &parents),
+                    layer_position.deref_mut(),
+                    layer_velocity.as_deref_mut(),
                 );
 
-                let new = TilePosition::floor(parent.layer(), position.position());
+                let new = TilePosition::floor(parent.layer(), layer_position.position());
                 if *old != new {
                     commands.command_scope(move |mut commands| {
                         commands.entity(id).insert(new);
                     });
-                }
-            }
-
-            if let Some((velocity, layer_velocity)) = &mut velocity {
-                if parent.has_parent()
-                    || transform.is_changed()
-                    || layer.is_changed()
-                    || velocity.is_changed()
-                {
-                    **layer_velocity = LayerVelocity::from_ancestor_transforms_and_velocities(
-                        parent.ancestors((&*transform, Some(&**velocity)), &velocities),
-                    );
                 }
             }
         },
