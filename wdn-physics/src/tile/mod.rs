@@ -13,9 +13,10 @@ use bevy_transform::prelude::*;
 
 use crate::{
     PhysicsSystems,
+    integrate::Velocity,
     tile::{
         index::TileIndex,
-        layer::{InLayer, LayerEntityQuery, LayerEntityQueryItem, LayerTransform},
+        layer::{InLayer, LayerEntityQuery, LayerEntityQueryItem, LayerPosition, LayerVelocity},
         storage::TileMap,
     },
 };
@@ -48,17 +49,18 @@ pub fn update_tile(
         Ref<ChildOf>,
         Ref<Transform>,
         Ref<TilePosition>,
-        &mut LayerTransform,
+        &mut LayerPosition,
+        Option<(Ref<Velocity>, &mut LayerVelocity)>,
     )>,
-    parents: Query<(LayerEntityQuery, &Transform)>,
+    transforms: Query<(LayerEntityQuery, &Transform)>,
+    velocities: Query<(LayerEntityQuery, (&Transform, Option<&Velocity>))>,
 ) {
-    entities
-        .par_iter_mut()
-        .for_each(|(id, layer, parent, transform, old, mut position)| {
+    entities.par_iter_mut().for_each(
+        |(id, layer, parent, transform, old, mut position, mut velocity)| {
             let parent = LayerEntityQueryItem::new(&layer, &parent);
             if parent.has_parent() || transform.is_changed() || layer.is_changed() {
-                *position = LayerTransform::from_ancestor_transforms(
-                    parent.ancestors(&*transform, &parents),
+                *position = LayerPosition::from_ancestor_transforms(
+                    parent.ancestors(&*transform, &transforms),
                 );
 
                 let new = TilePosition::floor(parent.layer(), position.position());
@@ -68,7 +70,20 @@ pub fn update_tile(
                     });
                 }
             }
-        });
+
+            if let Some((velocity, layer_velocity)) = &mut velocity {
+                if parent.has_parent()
+                    || transform.is_changed()
+                    || layer.is_changed()
+                    || velocity.is_changed()
+                {
+                    **layer_velocity = LayerVelocity::from_ancestor_transforms_and_velocities(
+                        parent.ancestors((&*transform, Some(&**velocity)), &velocities),
+                    );
+                }
+            }
+        },
+    );
 }
 
 impl Plugin for TilePlugin {

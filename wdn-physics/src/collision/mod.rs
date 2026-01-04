@@ -14,7 +14,7 @@ use crate::{
     tile::{
         TilePosition,
         index::TileIndex,
-        layer::{LayerEntityQuery, LayerTransform},
+        layer::{LayerEntityQuery, LayerPosition},
         storage::{TileOccupancy, TileStorage},
     },
 };
@@ -22,7 +22,7 @@ use crate::{
 pub struct CollisionPlugin;
 
 #[derive(Component, Clone, Copy, Debug)]
-#[require(Collisions, TilePosition, LayerTransform)]
+#[require(Collisions, TilePosition, LayerPosition)]
 pub struct Collider {
     radius: f32,
     solid: bool,
@@ -39,7 +39,7 @@ pub struct ColliderDisabled;
 pub struct ColliderQuery {
     layer: LayerEntityQuery,
     collider: &'static Collider,
-    transform: &'static LayerTransform,
+    transform: &'static LayerPosition,
     velocity: Option<&'static Velocity>,
 }
 
@@ -92,7 +92,6 @@ pub fn resolve_collisions(
         Has<ColliderDisabled>,
     )>,
     candidates: Query<AnyOf<(ColliderQuery, TileColliderQuery)>, Without<ColliderDisabled>>,
-    parents: Query<(LayerEntityQuery, &Velocity)>,
     time: Res<Time>,
 ) {
     let delta_secs = time.delta_secs();
@@ -178,13 +177,13 @@ impl ColliderQueryItem<'_, '_> {
 
     pub fn position_at(&self, t: f32) -> Vec2 {
         match self.velocity {
-            Some(velocity) if t > 0.0 => self.transform.position() + velocity.get() * t,
+            Some(velocity) if t > 0.0 => self.transform.position() + velocity.linear() * t,
             _ => self.transform.position(),
         }
     }
 
     pub fn velocity(&self) -> Vec2 {
-        self.velocity.map_or(Vec2::ZERO, |v| v.get())
+        self.velocity.map_or(Vec2::ZERO, |v| v.linear())
     }
 
     pub fn solid(&self) -> bool {

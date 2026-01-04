@@ -9,6 +9,8 @@ use bevy_ecs::{
 use bevy_math::prelude::*;
 use bevy_transform::prelude::*;
 
+use crate::integrate::Velocity;
+
 #[derive(Copy, Clone, Component, Debug, Default)]
 #[require(Transform)]
 pub struct TileLayer {}
@@ -29,7 +31,13 @@ pub struct LayerEntityQuery {
 pub struct LayerEntities(EntityHashSet);
 
 #[derive(Copy, Clone, Component, Debug, Default)]
-pub struct LayerTransform(Isometry2d);
+pub struct LayerPosition(Isometry2d);
+
+#[derive(Copy, Clone, Component, Debug, Default)]
+pub struct LayerVelocity {
+    linear: Vec2,
+    angular: f32,
+}
 
 pub fn child_added(
     insert: On<Insert, ChildOf>,
@@ -88,13 +96,13 @@ impl<'w, 's: 'w> LayerEntityQueryItem<'w, 's> {
     }
 }
 
-impl LayerTransform {
+impl LayerPosition {
     pub fn from_ancestor_transforms<'a>(transforms: impl Iterator<Item = &'a Transform>) -> Self {
         let isometry = transforms
             .map(|transform| transform_to_isometry(&transform))
             .reduce(|a, b| b * a)
             .unwrap_or(Isometry2d::IDENTITY);
-        LayerTransform(isometry)
+        LayerPosition(isometry)
     }
 
     pub fn position(&self) -> Vec2 {
@@ -103,6 +111,40 @@ impl LayerTransform {
 
     pub fn rotation(&self) -> Rot2 {
         self.0.rotation
+    }
+}
+
+impl LayerVelocity {
+    pub fn from_ancestor_transforms_and_velocities<'a>(
+        ancestors: impl Iterator<Item = (&'a Transform, Option<&'a Velocity>)>,
+    ) -> Self {
+        let mut angular = 0.0;
+        let mut linear = Vec2::ZERO;
+        let mut isometry = Isometry2d::IDENTITY;
+
+        for (ancestor_transform, ancestor_velocity) in ancestors {
+            let ancestor_isometry = transform_to_isometry(ancestor_transform);
+
+            if let Some(ancestor_velocity) = ancestor_velocity {
+                linear += ancestor_velocity.linear();
+                angular += ancestor_velocity.angular();
+
+                linear += isometry.translation.perp() * ancestor_velocity.angular();
+            }
+
+            linear = ancestor_isometry.rotation * linear;
+            isometry = ancestor_isometry * isometry;
+        }
+
+        LayerVelocity { linear, angular }
+    }
+
+    pub fn linear(&self) -> Vec2 {
+        self.linear
+    }
+
+    pub fn angular(&self) -> f32 {
+        self.angular
     }
 }
 

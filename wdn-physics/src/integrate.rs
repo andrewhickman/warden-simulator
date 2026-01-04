@@ -13,7 +13,10 @@ pub struct IntegratePlugin;
 
 #[derive(Clone, Copy, Component, Default, Debug)]
 #[require(Transform)]
-pub struct Velocity(Vec2);
+pub struct Velocity {
+    linear: Vec2,
+    angular: f32,
+}
 
 impl Plugin for IntegratePlugin {
     fn build(&self, app: &mut App) {
@@ -39,69 +42,87 @@ pub fn integrate_velocity(
                 return;
             }
 
-            if let Some(collisions) = collisions {
-                for collision in collisions.active() {
-                    if collision.solid {
-                        velocity.collide(collision);
+            if velocity.linear != Vec2::ZERO {
+                if let Some(collisions) = collisions {
+                    for collision in collisions.active() {
+                        if collision.solid {
+                            velocity.collide(collision);
+                        }
                     }
-                }
 
-                if velocity.is_zero() {
-                    return;
-                }
+                    if velocity.linear != Vec2::ZERO {
+                        if let Some(collision) = collisions.next() {
+                            transform.translation.x = collision.position.x;
+                            transform.translation.y = collision.position.y;
 
-                if let Some(collision) = collisions.next() {
-                    transform.translation.x = collision.position.x;
-                    transform.translation.y = collision.position.y;
-
-                    velocity.collide(collision);
-                    return;
+                            velocity.collide(collision);
+                        } else {
+                            transform.translation.x += velocity.linear.x * delta_secs;
+                            transform.translation.y += velocity.linear.y * delta_secs;
+                        }
+                    }
+                } else {
+                    transform.translation.x += velocity.linear.x * delta_secs;
+                    transform.translation.y += velocity.linear.y * delta_secs;
                 }
             }
 
-            transform.translation.x += velocity.0.x * delta_secs;
-            transform.translation.y += velocity.0.y * delta_secs;
+            if velocity.angular != 0.0 {
+                transform.rotate_z(velocity.angular * delta_secs);
+            }
         });
 }
 
 impl Velocity {
-    pub fn new(velocity: Vec2) -> Self {
-        Velocity(velocity)
+    pub fn new(linear: Vec2) -> Self {
+        Velocity {
+            linear,
+            angular: 0.0,
+        }
     }
 
-    pub fn get(&self) -> Vec2 {
-        self.0
+    pub fn linear(&self) -> Vec2 {
+        self.linear
+    }
+
+    pub fn angular(&self) -> f32 {
+        self.angular
+    }
+
+    pub fn with_angular(mut self, angular: f32) -> Self {
+        self.angular = angular;
+        self
     }
 
     pub fn is_zero(&self) -> bool {
-        self.0 == Vec2::ZERO
+        self.linear == Vec2::ZERO && self.angular == 0.0
     }
 
     pub fn decelerate(&mut self, decel: f32) {
-        if self.is_zero() {
+        if self.linear == Vec2::ZERO {
             return;
         }
 
-        let speed = self.0.length();
+        let speed = self.linear.length();
         let new_speed = speed - decel;
 
         if new_speed <= 0.0 {
-            self.0 = Vec2::ZERO;
+            self.linear = Vec2::ZERO;
         } else {
             let scale = new_speed / speed;
-            self.0 *= scale;
+            self.linear *= scale;
         }
     }
 
     pub fn accelerate(&mut self, target: Vec2, accel: f32) {
-        self.0 += (target - self.0).clamp_length_max(accel);
+        self.linear += (target - self.linear).clamp_length_max(accel);
     }
 
     pub fn collide(&mut self, collision: Collision) {
         let normal = collision.normal;
-        let projected = self.0.dot(*normal);
+        let projected = self.linear.dot(*normal);
         if projected < 0.0 {
-            self.0 -= projected * normal;
+            self.linear -= projected * normal;
         }
     }
 }
@@ -130,7 +151,7 @@ mod tests {
             .world_mut()
             .spawn((
                 Transform::from_xyz(0.0, 0.0, 0.0),
-                Velocity(Vec2::new(5.0, 3.0)),
+                Velocity::new(Vec2::new(5.0, 3.0)),
             ))
             .id();
 
@@ -146,7 +167,10 @@ mod tests {
 
         let entity = app
             .world_mut()
-            .spawn((Transform::from_xyz(10.0, 20.0, 0.0), Velocity(Vec2::ZERO)))
+            .spawn((
+                Transform::from_xyz(10.0, 20.0, 0.0),
+                Velocity::new(Vec2::ZERO),
+            ))
             .id();
 
         let change_tick = app
@@ -161,6 +185,28 @@ mod tests {
         let transform = app.world().entity(entity).get_ref::<Transform>().unwrap();
         assert_relative_eq!(transform.translation.xy(), Vec2::new(10.0, 20.0));
         assert_eq!(transform.last_changed(), change_tick);
+    }
+
+    #[test]
+    fn integrate_angular_velocity() {
+        let mut app = make_app();
+
+        let entity = app
+            .world_mut()
+            .spawn((
+                Transform::from_xyz(0.0, 0.0, 0.0),
+                Velocity::new(Vec2::ZERO).with_angular(1.0),
+            ))
+            .id();
+
+        app.update();
+
+        let transform = app.world().get::<Transform>(entity).unwrap();
+        let expected = Quat::from_rotation_z(1.0);
+        assert_relative_eq!(transform.rotation.x, expected.x, epsilon = 1e-6);
+        assert_relative_eq!(transform.rotation.y, expected.y, epsilon = 1e-6);
+        assert_relative_eq!(transform.rotation.z, expected.z, epsilon = 1e-6);
+        assert_relative_eq!(transform.rotation.w, expected.w, epsilon = 1e-6);
     }
 
     #[test]
@@ -185,7 +231,7 @@ mod tests {
             .world_mut()
             .spawn((
                 Transform::from_xyz(0.0, 0.0, 0.0),
-                Velocity(Vec2::new(-5.0, 3.0)),
+                Velocity::new(Vec2::new(-5.0, 3.0)),
                 collisions,
             ))
             .id();
@@ -193,7 +239,7 @@ mod tests {
         app.update();
 
         let velocity = app.world().get::<Velocity>(entity).unwrap();
-        assert_relative_eq!(velocity.0, Vec2::new(0.0, 3.0));
+        assert_relative_eq!(velocity.linear(), Vec2::new(0.0, 3.0));
 
         let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(transform.translation.xy(), Vec2::new(0.0, 3.0));
@@ -221,7 +267,7 @@ mod tests {
             .world_mut()
             .spawn((
                 Transform::from_xyz(0.0, 0.0, 0.0),
-                Velocity(Vec2::new(4.0, -2.0)),
+                Velocity::new(Vec2::new(4.0, -2.0)),
                 collisions,
             ))
             .id();
@@ -229,7 +275,7 @@ mod tests {
         app.update();
 
         let velocity = app.world().get::<Velocity>(entity).unwrap();
-        assert_relative_eq!(velocity.0, Vec2::new(4.0, 0.0));
+        assert_relative_eq!(velocity.linear(), Vec2::new(4.0, 0.0));
 
         let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(transform.translation.xy(), Vec2::new(2.0, -1.0));
@@ -269,7 +315,7 @@ mod tests {
             .world_mut()
             .spawn((
                 Transform::from_xyz(0.0, 0.0, 0.0),
-                Velocity(Vec2::new(-3.0, -4.0)),
+                Velocity::new(Vec2::new(-3.0, -4.0)),
                 collisions,
             ))
             .id();
@@ -284,7 +330,7 @@ mod tests {
         app.update();
 
         let velocity = app.world().get::<Velocity>(entity).unwrap();
-        assert_relative_eq!(velocity.0, Vec2::ZERO);
+        assert_relative_eq!(velocity.linear(), Vec2::ZERO);
 
         let transform = app.world().entity(entity).get_ref::<Transform>().unwrap();
         assert_relative_eq!(transform.translation.xy(), Vec2::ZERO);
@@ -313,7 +359,7 @@ mod tests {
             .world_mut()
             .spawn((
                 Transform::from_xyz(0.0, 0.0, 0.0),
-                Velocity(Vec2::new(5.0, 3.0)),
+                Velocity::new(Vec2::new(5.0, 3.0)),
                 collisions,
             ))
             .id();
@@ -321,7 +367,7 @@ mod tests {
         app.update();
 
         let velocity = app.world().get::<Velocity>(entity).unwrap();
-        assert_relative_eq!(velocity.0, Vec2::new(5.0, 3.0));
+        assert_relative_eq!(velocity.linear(), Vec2::new(5.0, 3.0));
 
         let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(transform.translation.xy(), Vec2::new(5.0, 3.0));
@@ -351,7 +397,7 @@ mod tests {
             .world_mut()
             .spawn((
                 Transform::from_xyz(0.0, 0.0, 0.0),
-                Velocity(Vec2::new(-4.0, -2.0)),
+                Velocity::new(Vec2::new(-4.0, -2.0)),
                 collisions,
             ))
             .id();
@@ -359,7 +405,7 @@ mod tests {
         app.update();
 
         let velocity = app.world().get::<Velocity>(entity).unwrap();
-        assert_relative_eq!(velocity.0, Vec2::new(-1.0, 1.0), epsilon = 1e-4);
+        assert_relative_eq!(velocity.linear(), Vec2::new(-1.0, 1.0), epsilon = 1e-4);
 
         let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(
@@ -393,7 +439,7 @@ mod tests {
             .world_mut()
             .spawn((
                 Transform::from_xyz(0.0, 0.0, 0.0),
-                Velocity(Vec2::new(4.0, 2.0)),
+                Velocity::new(Vec2::new(4.0, 2.0)),
                 collisions,
             ))
             .id();
@@ -401,7 +447,7 @@ mod tests {
         app.update();
 
         let velocity = app.world().get::<Velocity>(entity).unwrap();
-        assert_relative_eq!(velocity.0, Vec2::new(4.0, 2.0));
+        assert_relative_eq!(velocity.linear(), Vec2::new(4.0, 2.0));
 
         let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(transform.translation.xy(), Vec2::new(4.0, 2.0));
@@ -429,7 +475,7 @@ mod tests {
             .world_mut()
             .spawn((
                 Transform::from_xyz(0.0, 0.0, 0.0),
-                Velocity(Vec2::new(3.0, -5.0)),
+                Velocity::new(Vec2::new(3.0, -5.0)),
                 collisions,
             ))
             .id();
@@ -437,7 +483,7 @@ mod tests {
         app.update();
 
         let velocity = app.world().get::<Velocity>(entity).unwrap();
-        assert_relative_eq!(velocity.0, Vec2::new(3.0, -5.0));
+        assert_relative_eq!(velocity.linear(), Vec2::new(3.0, -5.0));
 
         let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(transform.translation.xy(), Vec2::new(3.0, -5.0));
