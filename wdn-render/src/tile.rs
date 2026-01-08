@@ -28,8 +28,8 @@ pub struct TileChunkMesh(Handle<Mesh>);
 
 #[derive(Copy, Clone, Component, Debug, Default)]
 #[require(Mesh2d, MeshMaterial2d<TilemapChunkMaterial>, Transform)]
-#[component(on_add = TileChunkRender::on_add)]
-pub struct TileChunkRender;
+#[component(on_add = TileChunkSprite::on_add)]
+pub struct TileChunkSprite;
 
 impl Plugin for TilePlugin {
     fn build(&self, app: &mut App) {
@@ -38,7 +38,7 @@ impl Plugin for TilePlugin {
         app.add_systems(PostUpdate, update_chunk_data.before(AssetEventSystems));
 
         app.register_required_components::<TileLayer, Visibility>();
-        app.register_required_components::<TileChunk, TileChunkRender>();
+        app.register_required_components::<TileChunk, TileChunkSprite>();
     }
 }
 
@@ -82,7 +82,7 @@ pub fn update_chunk_data(
     });
 }
 
-impl TileChunkRender {
+impl TileChunkSprite {
     fn on_add(mut world: DeferredWorld, context: HookContext) {
         let mesh = world.resource::<TileChunkMesh>().0.clone();
 

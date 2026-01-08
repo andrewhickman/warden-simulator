@@ -2,6 +2,7 @@ pub mod collision;
 pub mod integrate;
 pub mod lerp;
 pub mod tile;
+pub mod transform;
 
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;

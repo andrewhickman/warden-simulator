@@ -9,6 +9,7 @@ pub struct AssetsPlugin;
 pub struct AssetHandles {
     pub tileset: Handle<Image>,
     pub pawn: Handle<Image>,
+    pub pawn_projectile: Handle<Image>,
 }
 
 impl Plugin for AssetsPlugin {
@@ -19,9 +20,13 @@ impl Plugin for AssetsPlugin {
 
 impl AssetHandles {
     pub fn asset_ids(&self) -> impl Iterator<Item = UntypedAssetId> + '_ {
-        let AssetHandles { tileset, pawn } = self;
+        let AssetHandles {
+            tileset,
+            pawn,
+            pawn_projectile,
+        } = self;
 
-        [tileset.into(), pawn.into()].into_iter()
+        [tileset.into(), pawn.into(), pawn_projectile.into()].into_iter()
     }
 }
 
@@ -29,6 +34,7 @@ pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
     commands.insert_resource(AssetHandles {
         tileset: assets.load_with_settings("image/tileset.png", set_tileset),
         pawn: assets.load_with_settings("image/pawn.png", set_nearest),
+        pawn_projectile: assets.load_with_settings("image/pawn_projectile.png", set_nearest),
     });
 }
 

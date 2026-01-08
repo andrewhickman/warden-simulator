@@ -93,6 +93,10 @@ impl Velocity {
         self.angular
     }
 
+    pub fn set_angular(&mut self, angular: f32) {
+        self.angular = angular;
+    }
+
     pub fn with_angular(mut self, angular: f32) -> Self {
         self.angular = angular;
         self

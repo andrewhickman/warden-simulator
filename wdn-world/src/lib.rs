@@ -6,6 +6,7 @@ use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 
 use crate::combat::CombatPlugin;
+use crate::pawn::PawnPlugin;
 
 pub struct WorldPlugin;
 
@@ -17,6 +18,6 @@ pub enum WorldSystems {
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(CombatPlugin);
+        app.add_plugins((CombatPlugin, PawnPlugin));
     }
 }

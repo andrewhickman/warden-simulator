@@ -20,9 +20,10 @@ use crate::{
     lerp::start_interpolation,
     tile::{
         index::TileIndex,
-        layer::{LayerPosition, LayerVelocity, TileLayer, transform_to_isometry},
+        layer::{LayerPosition, LayerVelocity, TileLayer},
         storage::TileMap,
     },
+    transform::transform_to_isometry,
 };
 
 pub const CHUNK_SIZE: usize = 32;
