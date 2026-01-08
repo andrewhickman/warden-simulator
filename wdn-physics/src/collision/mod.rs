@@ -198,14 +198,18 @@ impl Collisions {
     }
 
     pub fn iter(&self) -> impl Iterator<Item = Collision> {
-        self.active().chain(self.next())
+        self.active().chain(self.next_collision())
     }
 
     pub fn previous(&self) -> impl ExactSizeIterator<Item = Collision> + '_ {
         self.previous.iter().copied()
     }
 
-    pub fn next(&self) -> Option<Collision> {
+    pub fn next(&self) -> Option<(Collision, f32)> {
+        self.nearest
+    }
+
+    pub fn next_collision(&self) -> Option<Collision> {
         match self.nearest {
             Some((collision, _)) => Some(collision),
             None => None,

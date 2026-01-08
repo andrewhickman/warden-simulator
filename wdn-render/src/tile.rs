@@ -57,8 +57,6 @@ pub fn update_chunk_data(
     mut images: ResMut<Assets<Image>>,
 ) {
     query.iter_mut().for_each(|(chunk, material)| {
-        info!("updating tile chunk data for chunk {chunk:?}");
-
         let Some(material) = materials.get_mut(material.id()) else {
             error!("material asset not found for chunk {chunk:?}");
             return;

@@ -40,7 +40,7 @@ fn collision_empty() {
 
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     assert!(collisions.next_time().is_none());
 }
 
@@ -69,7 +69,7 @@ fn collision_collider() {
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 0);
     assert_relative_eq!(collisions1.next_time().unwrap(), 0.4);
-    let collision1 = collisions1.next().unwrap();
+    let collision1 = collisions1.next_collision().unwrap();
     assert_relative_eq!(collision1.position, Vec2::new(0.2, 0.18));
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
@@ -84,7 +84,7 @@ fn collision_collider() {
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 0);
     assert_relative_eq!(collisions2.next_time().unwrap(), 0.4);
-    let collision2 = collisions2.next().unwrap();
+    let collision2 = collisions2.next_collision().unwrap();
     assert_relative_eq!(collision2.position, Vec2::new(0.1, 0.18));
     assert_eq!(collision2.normal, Dir2::NEG_X);
     assert!(collision2.solid);
@@ -122,12 +122,12 @@ fn collision_collider_receding() {
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 0);
     assert!(collisions1.next_time().is_none());
-    assert!(collisions1.next().is_none());
+    assert!(collisions1.next_collision().is_none());
 
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 0);
     assert!(collisions2.next_time().is_none());
-    assert!(collisions2.next().is_none());
+    assert!(collisions2.next_collision().is_none());
 }
 
 #[test]
@@ -155,12 +155,12 @@ fn collision_collider_touching() {
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 0);
     assert!(collisions1.next_time().is_none());
-    assert!(collisions1.next().is_none());
+    assert!(collisions1.next_collision().is_none());
 
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 0);
     assert!(collisions2.next_time().is_none());
-    assert!(collisions2.next().is_none());
+    assert!(collisions2.next_collision().is_none());
 }
 
 #[test]
@@ -188,12 +188,12 @@ fn collision_collider_touching_and_receding() {
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 0);
     assert!(collisions1.next_time().is_none());
-    assert!(collisions1.next().is_none());
+    assert!(collisions1.next_collision().is_none());
 
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 0);
     assert!(collisions2.next_time().is_none());
-    assert!(collisions2.next().is_none());
+    assert!(collisions2.next_collision().is_none());
 }
 
 #[test]
@@ -221,7 +221,7 @@ fn collision_collider_touching_and_closing() {
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 1);
     assert!(collisions1.next_time().is_none());
-    assert!(collisions1.next().is_none());
+    assert!(collisions1.next_collision().is_none());
     let collision1 = collisions1.active().next().unwrap();
     assert_relative_eq!(collision1.position, Vec2::new(0.4, 0.1));
     assert_eq!(collision1.normal, Dir2::X);
@@ -237,7 +237,7 @@ fn collision_collider_touching_and_closing() {
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 1);
     assert!(collisions2.next_time().is_none());
-    assert!(collisions2.next().is_none());
+    assert!(collisions2.next_collision().is_none());
     let collision2 = collisions2.active().next().unwrap();
     assert_relative_eq!(collision2.position, Vec2::new(0.2, 0.1));
     assert_eq!(collision2.normal, Dir2::NEG_X);
@@ -276,7 +276,7 @@ fn collision_collider_intersecting() {
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 1);
     assert!(collisions1.next_time().is_none());
-    assert!(collisions1.next().is_none());
+    assert!(collisions1.next_collision().is_none());
     let collision1 = collisions1.active().next().unwrap();
     assert_relative_eq!(collision1.position, Vec2::new(0.2, 0.1));
     assert_eq!(collision1.normal, Dir2::X);
@@ -292,7 +292,7 @@ fn collision_collider_intersecting() {
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 1);
     assert!(collisions2.next_time().is_none());
-    assert!(collisions2.next().is_none());
+    assert!(collisions2.next_collision().is_none());
     let collision2 = collisions2.active().next().unwrap();
     assert_relative_eq!(collision2.position, Vec2::new(0.15, 0.1));
     assert_eq!(collision2.normal, Dir2::NEG_X);
@@ -331,7 +331,7 @@ fn collision_collider_intersecting_and_receding() {
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 1);
     assert!(collisions1.next_time().is_none());
-    assert!(collisions1.next().is_none());
+    assert!(collisions1.next_collision().is_none());
     let collision1 = collisions1.active().next().unwrap();
     assert_relative_eq!(collision1.position, Vec2::new(0.2, 0.1));
     assert_eq!(collision1.normal, Dir2::X);
@@ -347,7 +347,7 @@ fn collision_collider_intersecting_and_receding() {
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 1);
     assert!(collisions2.next_time().is_none());
-    assert!(collisions2.next().is_none());
+    assert!(collisions2.next_collision().is_none());
     let collision2 = collisions2.active().next().unwrap();
     assert_relative_eq!(collision2.position, Vec2::new(0.15, 0.1));
     assert_eq!(collision2.normal, Dir2::NEG_X);
@@ -386,7 +386,7 @@ fn collision_collider_intersecting_and_closing() {
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 1);
     assert!(collisions1.next_time().is_none());
-    assert!(collisions1.next().is_none());
+    assert!(collisions1.next_collision().is_none());
     let collision1 = collisions1.active().next().unwrap();
     assert_relative_eq!(collision1.position, Vec2::new(0.2, 0.1));
     assert_eq!(collision1.normal, Dir2::X);
@@ -402,7 +402,7 @@ fn collision_collider_intersecting_and_closing() {
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 1);
     assert!(collisions2.next_time().is_none());
-    assert!(collisions2.next().is_none());
+    assert!(collisions2.next_collision().is_none());
     let collision2 = collisions2.active().next().unwrap();
     assert_relative_eq!(collision2.position, Vec2::new(0.15, 0.1));
     assert_eq!(collision2.normal, Dir2::NEG_X);
@@ -441,7 +441,7 @@ fn collision_collider_angled() {
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 0);
     assert_relative_eq!(collisions1.next_time().unwrap(), 0.24, epsilon = 1e-4);
-    let collision1 = collisions1.next().unwrap();
+    let collision1 = collisions1.next_collision().unwrap();
     assert_relative_eq!(collision1.position, Vec2::new(0.28, 0.3), epsilon = 1e-4);
     assert_relative_eq!(*collision1.normal, Vec2::new(0.6, 0.8), epsilon = 1e-4);
     assert!(collision1.solid);
@@ -457,7 +457,7 @@ fn collision_collider_angled() {
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 0);
     assert_relative_eq!(collisions2.next_time().unwrap(), 0.24, epsilon = 1e-4);
-    let collision2 = collisions2.next().unwrap();
+    let collision2 = collisions2.next_collision().unwrap();
     assert_relative_eq!(collision2.position, Vec2::new(0.22, 0.22), epsilon = 1e-4);
     assert_relative_eq!(*collision2.normal, Vec2::new(-0.6, -0.8), epsilon = 1e-4);
     assert!(collision2.solid);
@@ -497,7 +497,7 @@ fn collision_collider_almost_touching_closing() {
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 0);
     assert_relative_eq!(collisions1.next_time().unwrap(), t);
-    let collision1 = collisions1.next().unwrap();
+    let collision1 = collisions1.next_collision().unwrap();
     assert_relative_eq!(collision1.position, Vec2::new(0.2 + t / 2.0, 0.0));
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
@@ -512,7 +512,7 @@ fn collision_collider_almost_touching_closing() {
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 0);
     assert_relative_eq!(collisions2.next_time().unwrap(), t);
-    let collision2 = collisions2.next().unwrap();
+    let collision2 = collisions2.next_collision().unwrap();
     assert_relative_eq!(collision2.position, Vec2::new(t / 2.0, 0.0));
     assert_eq!(collision2.normal, Dir2::NEG_X);
     assert!(collision2.solid);
@@ -545,7 +545,7 @@ fn collision_wall_north_receding() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
 }
 
 #[test]
@@ -568,7 +568,7 @@ fn collision_wall_north_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.0, 0.9));
     assert_eq!(collision.normal, Dir2::NEG_Y);
     assert!(collision.solid);
@@ -601,7 +601,7 @@ fn collision_wall_north_intersecting() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     let collision = collisions.active().next().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.0, 0.9));
     assert_eq!(collision.normal, Dir2::NEG_Y);
@@ -635,7 +635,7 @@ fn collision_wall_south_receding() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
 }
 
 #[test]
@@ -658,7 +658,7 @@ fn collision_wall_south_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.0, 0.1));
     assert_eq!(collision.normal, Dir2::Y);
     assert!(collision.solid);
@@ -691,7 +691,7 @@ fn collision_wall_south_intersecting() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     let collision = collisions.active().next().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.0, 0.1));
     assert_eq!(collision.normal, Dir2::Y);
@@ -725,7 +725,7 @@ fn collision_wall_east_receding() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
 }
 
 #[test]
@@ -748,7 +748,7 @@ fn collision_wall_east_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.9, 0.0));
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
@@ -781,7 +781,7 @@ fn collision_wall_east_intersecting() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     let collision = collisions.active().next().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.9, 0.0));
     assert_eq!(collision.normal, Dir2::NEG_X);
@@ -815,7 +815,7 @@ fn collision_wall_west_receding() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
 }
 
 #[test]
@@ -838,7 +838,7 @@ fn collision_wall_west_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.1, 0.0));
     assert_eq!(collision.normal, Dir2::X);
     assert!(collision.solid);
@@ -871,7 +871,7 @@ fn collision_wall_west_intersecting() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     let collision = collisions.active().next().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.1, 0.0));
     assert_eq!(collision.normal, Dir2::X);
@@ -905,7 +905,7 @@ fn collision_tile_collider_north_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.0, 0.9));
     assert_eq!(collision.normal, Dir2::NEG_Y);
     assert!(collision.solid);
@@ -938,7 +938,7 @@ fn collision_tile_collider_south_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.0, 0.1));
     assert_eq!(collision.normal, Dir2::Y);
     assert!(collision.solid);
@@ -971,7 +971,7 @@ fn collision_tile_collider_east_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.9, 0.0));
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
@@ -1004,7 +1004,7 @@ fn collision_tile_collider_west_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.1, 0.0));
     assert_eq!(collision.normal, Dir2::X);
     assert!(collision.solid);
@@ -1037,7 +1037,7 @@ fn collision_tile_collider_corner_north_east_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_eq!(collisions.next_time().unwrap(), 0.45857865);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.92928934, 0.92928934));
     assert_relative_eq!(
         *collision.normal,
@@ -1074,7 +1074,7 @@ fn collision_tile_collider_corner_north_west_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_eq!(collisions.next_time().unwrap(), 0.45857865);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(
         collision.position,
         Vec2::new(0.07071069, 0.92928934),
@@ -1115,7 +1115,7 @@ fn collision_tile_collider_corner_south_west_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_eq!(collisions.next_time().unwrap(), 0.45857865);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(
         collision.position,
         Vec2::new(0.07071069, 0.07071069),
@@ -1156,7 +1156,7 @@ fn collision_tile_collider_corner_south_east_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_eq!(collisions.next_time().unwrap(), 0.45857865);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(
         collision.position,
         Vec2::new(0.92928934, 0.07071069),
@@ -1197,7 +1197,7 @@ fn collision_corner_north_east_receding() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
 }
 
 #[test]
@@ -1220,7 +1220,7 @@ fn collision_corner_north_east_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_eq!(collisions.next_time().unwrap(), 0.45857865);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.92928934, 0.92928934));
     assert_relative_eq!(
         *collision.normal,
@@ -1257,7 +1257,7 @@ fn collision_corner_north_east_intersecting() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     let collision = collisions.active().next().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.95, 0.95), epsilon = 1e-4);
     assert_relative_eq!(
@@ -1295,7 +1295,7 @@ fn collision_corner_north_west_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_eq!(collisions.next_time().unwrap(), 0.45857865);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(
         collision.position,
         Vec2::new(0.07071069, 0.92928934),
@@ -1336,7 +1336,7 @@ fn collision_corner_north_west_intersecting() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     let collision = collisions.active().next().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.05, 0.95), epsilon = 1e-4);
     assert_relative_eq!(
@@ -1374,7 +1374,7 @@ fn collision_corner_south_west_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_eq!(collisions.next_time().unwrap(), 0.45857865);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(
         collision.position,
         Vec2::new(0.07071069, 0.07071069),
@@ -1415,7 +1415,7 @@ fn collision_corner_south_west_intersecting() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     let collision = collisions.active().next().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.05, 0.05), epsilon = 1e-4);
     assert_relative_eq!(
@@ -1453,7 +1453,7 @@ fn collision_corner_south_east_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_eq!(collisions.next_time().unwrap(), 0.45857865);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(
         collision.position,
         Vec2::new(0.92928934, 0.07071069),
@@ -1494,7 +1494,7 @@ fn collision_corner_south_east_intersecting() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     let collision = collisions.active().next().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.95, 0.05), epsilon = 1e-4);
     assert_relative_eq!(
@@ -1532,7 +1532,7 @@ fn collision_corner_angled() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_relative_eq!(collisions.next_time().unwrap(), 0.7040017, epsilon = 1e-4);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(
         collision.position,
         Vec2::new(1.0140017, 0.95200086),
@@ -1574,7 +1574,7 @@ fn collision_wall_ordering() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_relative_eq!(collisions.next_time().unwrap(), 0.4);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.9, 0.82));
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
@@ -1630,7 +1630,7 @@ fn collision_intersecting_and_closing() {
     }
 
     assert_relative_eq!(collisions1.next_time().unwrap(), 0.3);
-    let next_collision = collisions1.next().unwrap();
+    let next_collision = collisions1.next_collision().unwrap();
     assert_relative_eq!(next_collision.position, Vec2::new(0.6, 0.5));
     assert_eq!(next_collision.normal, Dir2::NEG_X);
     assert!(next_collision.solid);
@@ -1674,7 +1674,7 @@ fn collision_collider_ordering() {
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 0);
     assert_relative_eq!(collisions1.next_time().unwrap(), 0.2);
-    let collision = collisions1.next().unwrap();
+    let collision = collisions1.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.3, 0.5));
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
@@ -1688,7 +1688,7 @@ fn collision_collider_ordering() {
     let collisions3 = app.world().get::<Collisions>(entity3).unwrap();
     assert_eq!(collisions3.active().len(), 0);
     assert_relative_eq!(collisions3.next_time().unwrap(), 0.2);
-    let collision = collisions3.next().unwrap();
+    let collision = collisions3.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.34, 0.5));
     assert_eq!(collision.normal, Dir2::X);
     assert!(collision.solid);
@@ -1723,7 +1723,7 @@ fn collision_tile_collider_ordering() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 0);
     assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
-    let collision = collisions.next().unwrap();
+    let collision = collisions.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.0, 0.9));
     assert_eq!(collision.normal, Dir2::NEG_Y);
     assert!(collision.solid);
@@ -1761,7 +1761,7 @@ fn collision_colliders_tile_boundary() {
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 0);
     assert_relative_eq!(collisions1.next_time().unwrap(), 0.2);
-    let collision1 = collisions1.next().unwrap();
+    let collision1 = collisions1.next_collision().unwrap();
     assert_relative_eq!(collision1.position, Vec2::new(0.95, 0.5));
     assert_eq!(collision1.normal, Dir2::NEG_X);
     assert!(collision1.solid);
@@ -1776,7 +1776,7 @@ fn collision_colliders_tile_boundary() {
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 0);
     assert_relative_eq!(collisions2.next_time().unwrap(), 0.2);
-    let collision2 = collisions2.next().unwrap();
+    let collision2 = collisions2.next_collision().unwrap();
     assert_relative_eq!(collision2.position, Vec2::new(1.05, 0.5));
     assert_eq!(collision2.normal, Dir2::X);
     assert!(collision2.solid);
@@ -1812,19 +1812,19 @@ fn collision_collider_disabled_inserted() {
     app.update();
 
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
-    assert!(collisions1.next().is_some());
+    assert!(collisions1.next_collision().is_some());
 
     app.world_mut().entity_mut(entity1).insert(ColliderDisabled);
     app.update();
 
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 0);
-    assert!(collisions1.next().is_none());
+    assert!(collisions1.next_collision().is_none());
     assert_eq!(collisions1.ended().count(), 1);
 
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 0);
-    assert!(collisions2.next().is_none());
+    assert!(collisions2.next_collision().is_none());
     assert_eq!(collisions1.ended().count(), 1);
 }
 
@@ -1852,7 +1852,7 @@ fn collision_collider_disabled_removed() {
     app.update();
 
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
-    assert!(collisions1.next().is_none());
+    assert!(collisions1.next_collision().is_none());
 
     app.world_mut()
         .entity_mut(entity1)
@@ -1860,10 +1860,10 @@ fn collision_collider_disabled_removed() {
     app.update();
 
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
-    assert!(collisions1.next().is_some());
+    assert!(collisions1.next_collision().is_some());
     assert_eq!(collisions1.started().count(), 1);
 
-    let collision1 = collisions1.next().unwrap();
+    let collision1 = collisions1.next_collision().unwrap();
     assert_relative_eq!(collision1.position, Vec2::new(0.2, 0.18));
     assert_eq!(collision1.normal, Dir2::X);
     assert!(collision1.solid);
@@ -1902,11 +1902,11 @@ fn collision_collider_disabled() {
 
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 0);
-    assert!(collisions1.next().is_none());
+    assert!(collisions1.next_collision().is_none());
 
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 0);
-    assert!(collisions2.next().is_none());
+    assert!(collisions2.next_collision().is_none());
 }
 
 #[test]
@@ -1932,7 +1932,7 @@ fn collision_tile_collider_disabled() {
 
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 0);
-    assert!(collisions1.next().is_none());
+    assert!(collisions1.next_collision().is_none());
 }
 
 #[test]
@@ -1956,7 +1956,7 @@ fn collision_wall_disabled() {
 
     let collisions1 = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions1.active().len(), 0);
-    assert!(collisions1.next().is_none());
+    assert!(collisions1.next_collision().is_none());
 }
 
 #[test]
@@ -1992,7 +1992,7 @@ fn collision_collider_disabled_ordering() {
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert_eq!(collisions1.active().len(), 0);
     assert_relative_eq!(collisions1.next_time().unwrap(), 0.22);
-    let collision = collisions1.next().unwrap();
+    let collision = collisions1.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.31, 0.5));
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
@@ -2005,12 +2005,12 @@ fn collision_collider_disabled_ordering() {
 
     let collisions2 = app.world().get::<Collisions>(entity2).unwrap();
     assert_eq!(collisions2.active().len(), 0);
-    assert!(collisions2.next().is_none());
+    assert!(collisions2.next_collision().is_none());
 
     let collisions3 = app.world().get::<Collisions>(entity3).unwrap();
     assert_eq!(collisions3.active().len(), 0);
     assert_relative_eq!(collisions3.next_time().unwrap(), 0.22);
-    let collision = collisions3.next().unwrap();
+    let collision = collisions3.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.33, 0.5));
     assert_eq!(collision.normal, Dir2::X);
     assert!(collision.solid);
@@ -2064,7 +2064,7 @@ fn collision_collider_non_solid_ordering() {
         _ => panic!("Expected collider collision"),
     }
     assert_relative_eq!(collisions1.next_time().unwrap(), 0.22);
-    let collision = collisions1.next().unwrap();
+    let collision = collisions1.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.31, 0.5));
     assert_eq!(collision.normal, Dir2::NEG_X);
     assert!(collision.solid);
@@ -2099,7 +2099,7 @@ fn collision_collider_non_solid_ordering() {
         }
         _ => panic!("Expected collider collision"),
     }
-    assert!(collisions2.next().is_none());
+    assert!(collisions2.next_collision().is_none());
 
     let collisions3 = app.world().get::<Collisions>(entity3).unwrap();
     assert_eq!(collisions3.active().len(), 1);
@@ -2114,7 +2114,7 @@ fn collision_collider_non_solid_ordering() {
         _ => panic!("Expected collider collision"),
     }
     assert_relative_eq!(collisions3.next_time().unwrap(), 0.22);
-    let collision = collisions3.next().unwrap();
+    let collision = collisions3.next_collision().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.33, 0.5));
     assert_eq!(collision.normal, Dir2::X);
     assert!(collision.solid);
@@ -2146,7 +2146,7 @@ fn collision_wall_non_solid_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     let collision = collisions.active().next().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.0, 0.9));
     assert_eq!(collision.normal, Dir2::NEG_Y);
@@ -2180,7 +2180,7 @@ fn collision_tile_collider_non_solid_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     let collision = collisions.active().next().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.0, 0.9));
     assert_eq!(collision.normal, Dir2::NEG_Y);
@@ -2214,7 +2214,7 @@ fn collision_corner_non_solid_closing() {
     let collisions = app.world().get::<Collisions>(entity).unwrap();
     assert_eq!(collisions.active().len(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     let collision = collisions.active().next().unwrap();
     assert_relative_eq!(collision.position, Vec2::new(0.92928934, 0.92928934));
     assert_relative_eq!(
@@ -2258,7 +2258,7 @@ fn collision_collider_events() {
     assert_eq!(collisions.active().count(), 1);
     assert_eq!(collisions.previous().count(), 0);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     assert_eq!(collisions.started().count(), 1);
     assert_eq!(collisions.ended().count(), 0);
     let started_collision = collisions.started().next().unwrap();
@@ -2281,7 +2281,7 @@ fn collision_collider_events() {
     assert_eq!(collisions.active().count(), 1);
     assert_eq!(collisions.previous().count(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     assert_eq!(collisions.started().count(), 0);
     assert_eq!(collisions.ended().count(), 0);
 
@@ -2293,7 +2293,7 @@ fn collision_collider_events() {
     assert_eq!(collisions.active().count(), 0);
     assert_eq!(collisions.previous().count(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     assert_eq!(collisions.started().count(), 0);
     assert_eq!(collisions.ended().count(), 1);
     let ended_collision = collisions.ended().next().unwrap();
@@ -2320,7 +2320,7 @@ fn collision_collider_events() {
     assert_eq!(collisions.active().count(), 0);
     assert_eq!(collisions.previous().count(), 0);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     assert_eq!(collisions.started().count(), 0);
     assert_eq!(collisions.ended().count(), 0);
 }
@@ -2346,7 +2346,7 @@ fn collision_tile_collider_events() {
     assert_eq!(collisions.active().count(), 1);
     assert_eq!(collisions.previous().count(), 0);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     assert_eq!(collisions.started().count(), 1);
     assert_eq!(collisions.ended().count(), 0);
     let started_collision = collisions.started().next().unwrap();
@@ -2367,7 +2367,7 @@ fn collision_tile_collider_events() {
     assert_eq!(collisions.active().count(), 1);
     assert_eq!(collisions.previous().count(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     assert_eq!(collisions.started().count(), 1);
     assert_eq!(collisions.ended().count(), 0);
     let started_collision = collisions.started().next().unwrap();
@@ -2388,7 +2388,7 @@ fn collision_tile_collider_events() {
     assert_eq!(collisions.active().count(), 1);
     assert_eq!(collisions.previous().count(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     assert_eq!(collisions.started().count(), 0);
     assert_eq!(collisions.ended().count(), 0);
 
@@ -2400,7 +2400,7 @@ fn collision_tile_collider_events() {
     assert_eq!(collisions.active().count(), 1);
     assert_eq!(collisions.previous().count(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     assert_eq!(collisions.started().count(), 0);
     assert_eq!(collisions.ended().count(), 1);
     let ended_collision = collisions.ended().next().unwrap();
@@ -2421,7 +2421,7 @@ fn collision_tile_collider_events() {
     assert_eq!(collisions.active().count(), 0);
     assert_eq!(collisions.previous().count(), 1);
     assert!(collisions.next_time().is_none());
-    assert!(collisions.next().is_none());
+    assert!(collisions.next_collision().is_none());
     assert_eq!(collisions.started().count(), 0);
     assert_eq!(collisions.ended().count(), 1);
     let ended_collision = collisions.ended().next().unwrap();

@@ -1,7 +1,4 @@
-use std::{
-    f32::consts::{PI, TAU},
-    time::Duration,
-};
+use std::{f32::consts::TAU, time::Duration};
 
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;

@@ -3,7 +3,9 @@
 use bevy::{prelude::*, window::WindowPlugin};
 
 use wdn_physics::PhysicsPlugin as WdnPhysicsPlugin;
+use wdn_physics::tile::TilePosition;
 use wdn_physics::tile::layer::TileLayer;
+use wdn_physics::tile::storage::{TileMaterial, TileStorageMut};
 use wdn_render::RenderPlugin as WdnRenderPlugin;
 use wdn_save::SavePlugin as WdnSavePlugin;
 use wdn_tasks::TasksPlugin as WdnTasksPlugin;
@@ -31,18 +33,19 @@ pub fn main() {
             WdnUiPlugin,
         ))
         .add_systems(Startup, spawn_pawn)
-        .add_systems(Update, handle_pawn_input)
+        .add_systems(Update, (handle_pawn_input, handle_tile_toggle))
         .run();
 }
 
 fn spawn_pawn(mut commands: Commands) {
-    commands.spawn(Camera2d);
-    let layer = commands
-        .spawn((
-            TileLayer::default(),
-            Transform::from_scale(Vec3::splat(100.0)),
-        ))
-        .id();
+    commands.spawn((
+        Camera2d,
+        Projection::Orthographic(OrthographicProjection {
+            scale: 0.01,
+            ..OrthographicProjection::default_2d()
+        }),
+    ));
+    let layer = commands.spawn((TileLayer::default(),)).id();
     commands.spawn((
         Pawn::default(),
         ChildOf(layer),
@@ -121,4 +124,31 @@ fn handle_pawn_input(
 
     // Default to standing
     *action = PawnAction::Stand;
+}
+
+fn handle_tile_toggle(
+    mouse: Res<ButtonInput<MouseButton>>,
+    camera_query: Single<(&Camera, &GlobalTransform)>,
+    window: Single<&Window>,
+    layer: Single<Entity, With<TileLayer>>,
+    mut tile_storage: TileStorageMut,
+) {
+    if mouse.just_pressed(MouseButton::Right) {
+        if let Some(cursor_pos) = window.cursor_position() {
+            let (camera, camera_transform) = camera_query.into_inner();
+            if let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_pos) {
+                // Convert world position to tile position
+                let tile_pos = TilePosition::floor(*layer, world_pos);
+
+                // Toggle tile material between Empty and Wall
+                let current_material = tile_storage.get_material(tile_pos);
+                let new_material = match current_material {
+                    TileMaterial::Empty => TileMaterial::Wall,
+                    TileMaterial::Wall => TileMaterial::Empty,
+                };
+
+                tile_storage.set_material(tile_pos, new_material);
+            }
+        }
+    }
 }

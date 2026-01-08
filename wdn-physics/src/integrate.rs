@@ -37,14 +37,14 @@ pub fn integrate_velocity(
     mut query: Query<(&mut Transform, &mut Velocity, Option<&Collisions>)>,
     time: Res<Time>,
 ) {
-    let delta_secs = time.delta_secs();
-
     query
         .par_iter_mut()
         .for_each(|(mut transform, mut velocity, collisions)| {
             if velocity.is_zero() {
                 return;
             }
+
+            let mut delta_secs = time.delta_secs();
 
             if velocity.linear != Vec2::ZERO {
                 if let Some(collisions) = collisions {
@@ -54,18 +54,16 @@ pub fn integrate_velocity(
                         }
                     }
 
-                    if velocity.linear != Vec2::ZERO {
-                        if let Some(collision) = collisions.next() {
-                            transform.translation.x = collision.position.x;
-                            transform.translation.y = collision.position.y;
+                    if let Some((collision, t)) = collisions.next() {
+                        transform.translation.x = collision.position.x;
+                        transform.translation.y = collision.position.y;
+                        delta_secs -= t;
 
-                            velocity.collide(collision);
-                        } else {
-                            transform.translation.x += velocity.linear.x * delta_secs;
-                            transform.translation.y += velocity.linear.y * delta_secs;
-                        }
+                        velocity.collide(collision);
                     }
-                } else {
+                }
+
+                if velocity.linear != Vec2::ZERO {
                     transform.translation.x += velocity.linear.x * delta_secs;
                     transform.translation.y += velocity.linear.y * delta_secs;
                 }
@@ -286,7 +284,7 @@ mod tests {
         assert_relative_eq!(velocity.linear(), Vec2::new(4.0, 0.0));
 
         let transform = app.world().get::<Transform>(entity).unwrap();
-        assert_relative_eq!(transform.translation.xy(), Vec2::new(2.0, -1.0));
+        assert_relative_eq!(transform.translation.xy(), Vec2::new(4.0, -1.0));
     }
 
     #[test]
@@ -418,7 +416,7 @@ mod tests {
         let transform = app.world().get::<Transform>(entity).unwrap();
         assert_relative_eq!(
             transform.translation.xy(),
-            Vec2::new(-2.0, 1.0),
+            Vec2::new(-2.5, 1.5),
             epsilon = 1e-4
         );
     }
