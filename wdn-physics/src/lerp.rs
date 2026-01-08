@@ -10,7 +10,7 @@ pub struct InterpolatePlugin;
 pub struct Interpolated;
 
 #[derive(Component, Clone, Copy, Debug, Default)]
-pub(crate) enum InterpolateState {
+pub enum InterpolateState {
     #[default]
     None,
     Fixed {
@@ -23,24 +23,7 @@ pub(crate) enum InterpolateState {
     },
 }
 
-fn end_interpolation(mut transforms: Query<(&mut Transform, &mut InterpolateState)>) {
-    transforms
-        .par_iter_mut()
-        .for_each(|(mut transform, mut state)| {
-            match *state {
-                InterpolateState::Fixed { .. } => return,
-                InterpolateState::Interpolated {
-                    end, change_tick, ..
-                } if transform.last_changed() == change_tick => {
-                    *transform = end;
-                    *state = InterpolateState::Fixed { start: end };
-                }
-                _ => *state = InterpolateState::Fixed { start: *transform },
-            };
-        });
-}
-
-fn start_interpolation(
+pub fn start_interpolation(
     mut transforms: Query<(&mut Transform, &mut InterpolateState)>,
     time: Res<Time<Fixed>>,
     tick: SystemChangeTick,
@@ -77,6 +60,23 @@ fn start_interpolation(
                 end,
                 change_tick: tick.this_run(),
             }
+        });
+}
+
+pub fn end_interpolation(mut transforms: Query<(&mut Transform, &mut InterpolateState)>) {
+    transforms
+        .par_iter_mut()
+        .for_each(|(mut transform, mut state)| {
+            match *state {
+                InterpolateState::Fixed { .. } => return,
+                InterpolateState::Interpolated {
+                    end, change_tick, ..
+                } if transform.last_changed() == change_tick => {
+                    *transform = end;
+                    *state = InterpolateState::Fixed { start: end };
+                }
+                _ => *state = InterpolateState::Fixed { start: *transform },
+            };
         });
 }
 

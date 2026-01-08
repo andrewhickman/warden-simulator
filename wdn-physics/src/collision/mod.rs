@@ -149,11 +149,14 @@ pub fn resolve_collisions(
 
 impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
+        app.configure_sets(
+            FixedUpdate,
+            PhysicsSystems::ResolveCollisions.after(PhysicsSystems::PropagatePosition),
+        );
+
         app.add_systems(
             FixedUpdate,
-            resolve_collisions
-                .in_set(PhysicsSystems::ResolveCollisions)
-                .after(PhysicsSystems::UpdateTile),
+            resolve_collisions.in_set(PhysicsSystems::ResolveCollisions),
         );
     }
 }

@@ -8,7 +8,8 @@ use std::fmt;
 
 use bevy_app::prelude::*;
 use bevy_ecs::{
-    lifecycle::HookContext, prelude::*, relationship::Relationship, world::DeferredWorld,
+    change_detection::Tick, lifecycle::HookContext, prelude::*, relationship::Relationship,
+    system::SystemChangeTick, world::DeferredWorld,
 };
 use bevy_math::{I16Vec2, U16Vec2, prelude::*};
 use bevy_transform::prelude::*;
@@ -16,6 +17,7 @@ use bevy_transform::prelude::*;
 use crate::{
     PhysicsSystems,
     integrate::Velocity,
+    lerp::start_interpolation,
     tile::{
         index::TileIndex,
         layer::{LayerPosition, LayerVelocity, TileLayer, transform_to_isometry},
@@ -43,7 +45,10 @@ pub struct TileChunkPosition {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct TileChunkOffset(U16Vec2);
 
-pub fn update_tile(
+#[derive(Debug, Default, Resource)]
+pub struct PropagatePositionChangeTick(Tick);
+
+pub fn propagate_position(
     commands: ParallelCommands,
     mut entities: Query<(
         Entity,
@@ -54,67 +59,96 @@ pub fn update_tile(
         &mut LayerPosition,
         Option<&mut LayerVelocity>,
     )>,
-    parents: Query<(&ChildOf, &Transform, Option<&Velocity>)>,
+    parents: Query<(Ref<ChildOf>, Ref<Transform>, Option<Ref<Velocity>>)>,
     layers: Query<&TileLayer>,
+    ticks: SystemChangeTick,
+    mut last_run: ResMut<PropagatePositionChangeTick>,
 ) {
     entities.par_iter_mut().for_each(
-        |(id, parent, transform, velocity, old, mut layer_position, layer_velocity)| {
-            let parent_changed = parent.is_changed();
-            let mut parent = parent.get();
-            let mut has_parent = !layers.contains(parent);
+        |(id, mut parent, transform, velocity, old, mut layer_position, layer_velocity)| {
+            let mut has_parent = !layers.contains(parent.get());
+            let mut any_changed = position_changed(
+                &transform,
+                &parent,
+                &velocity,
+                last_run.tick(),
+                ticks.this_run(),
+            );
+            if !has_parent && !any_changed {
+                return;
+            }
 
-            if has_parent
-                || parent_changed
-                || transform.is_changed()
-                || velocity.as_ref().is_some_and(Ref::is_changed)
-            {
-                let mut isometry = transform_to_isometry(&transform);
-                let mut angular = velocity.as_ref().map_or(0.0, |v| v.angular());
-                let mut linear = velocity.as_ref().map_or(Vec2::ZERO, |v| v.linear());
+            let mut isometry = transform_to_isometry(&transform);
+            let mut angular = velocity.as_ref().map_or(0.0, |v| v.angular());
+            let mut linear = velocity.as_ref().map_or(Vec2::ZERO, |v| v.linear());
 
-                while has_parent {
-                    let (ancestor_parent, ancestor_transform, ancestor_velocity) =
-                        parents.get(parent).expect("invalid parent");
-                    let ancestor_isometry = transform_to_isometry(ancestor_transform);
+            while has_parent {
+                let (ancestor_parent, ancestor_transform, ancestor_velocity) =
+                    parents.get(parent.get()).expect("invalid parent");
 
-                    if let Some(ancestor_velocity) = ancestor_velocity {
-                        linear += isometry.translation.perp() * ancestor_velocity.angular();
-                    }
-
-                    linear = ancestor_isometry.rotation * linear;
-
-                    if let Some(ancestor_velocity) = ancestor_velocity {
-                        linear += ancestor_velocity.linear();
-                        angular += ancestor_velocity.angular();
-                    }
-
-                    isometry = ancestor_isometry * isometry;
-
-                    parent = ancestor_parent.get();
-                    has_parent = !layers.contains(parent);
+                has_parent = !layers.contains(ancestor_parent.get());
+                any_changed = any_changed
+                    || position_changed(
+                        &ancestor_transform,
+                        &ancestor_parent,
+                        &ancestor_velocity,
+                        last_run.tick(),
+                        ticks.this_run(),
+                    );
+                if !has_parent && !any_changed {
+                    return;
                 }
 
-                *layer_position = LayerPosition::new(isometry);
-                if let Some(mut layer_velocity) = layer_velocity {
-                    *layer_velocity = LayerVelocity::new(linear, angular);
+                let ancestor_isometry = transform_to_isometry(&ancestor_transform);
+
+                if let Some(ancestor_velocity) = &ancestor_velocity {
+                    linear += isometry.translation.perp() * ancestor_velocity.angular();
                 }
 
-                let new = TilePosition::floor(parent, layer_position.position());
-                if *old != new {
-                    commands.command_scope(move |mut commands| {
-                        commands.entity(id).insert(new);
-                    });
+                linear = ancestor_isometry.rotation * linear;
+
+                if let Some(ancestor_velocity) = &ancestor_velocity {
+                    linear += ancestor_velocity.linear();
+                    angular += ancestor_velocity.angular();
                 }
+
+                isometry = ancestor_isometry * isometry;
+                parent = ancestor_parent;
+            }
+
+            *layer_position = LayerPosition::new(isometry);
+            if let Some(mut layer_velocity) = layer_velocity {
+                *layer_velocity = LayerVelocity::new(linear, angular);
+            }
+
+            let new = TilePosition::floor(parent.get(), layer_position.position());
+            if *old != new {
+                commands.command_scope(move |mut commands| {
+                    commands.entity(id).insert(new);
+                });
             }
         },
     );
+
+    last_run.set_tick(ticks.this_run());
 }
 
 impl Plugin for TilePlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<TileIndex>().init_resource::<TileMap>();
+        app.init_resource::<TileIndex>()
+            .init_resource::<TileMap>()
+            .init_resource::<PropagatePositionChangeTick>();
 
-        app.add_systems(FixedUpdate, update_tile.in_set(PhysicsSystems::UpdateTile));
+        app.add_systems(
+            FixedUpdate,
+            propagate_position.in_set(PhysicsSystems::PropagatePosition),
+        );
+        app.add_systems(
+            RunFixedMainLoop,
+            propagate_position
+                .in_set(RunFixedMainLoopSystems::AfterFixedMainLoop)
+                .before(start_interpolation),
+        );
     }
 }
 
@@ -260,6 +294,30 @@ impl TileChunkOffset {
         let y = (index / CHUNK_SIZE) as u16;
         TileChunkOffset(U16Vec2::new(x, y))
     }
+}
+
+impl PropagatePositionChangeTick {
+    pub fn tick(&self) -> Tick {
+        self.0
+    }
+
+    pub fn set_tick(&mut self, tick: Tick) {
+        self.0 = tick;
+    }
+}
+
+fn position_changed(
+    transform: &Ref<Transform>,
+    parent: &Ref<ChildOf>,
+    velocity: &Option<Ref<Velocity>>,
+    last_run: Tick,
+    this_run: Tick,
+) -> bool {
+    transform.last_changed().is_newer_than(last_run, this_run)
+        || parent.last_changed().is_newer_than(last_run, this_run)
+        || velocity
+            .as_ref()
+            .is_some_and(|v| v.last_changed().is_newer_than(last_run, this_run))
 }
 
 fn floor(value: f32) -> i32 {

@@ -11,6 +11,7 @@ pub struct WorldPlugin;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemSet)]
 pub enum WorldSystems {
+    ApplyPawnActions,
     ApplyProjectiles,
 }
 

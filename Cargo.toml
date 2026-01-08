@@ -20,8 +20,8 @@ members = [
     "wdn-rl-train",
     "wdn-save",
     "wdn-tasks",
-    "wdn-ui"
-, "wdn-world"]
+    "wdn-ui",
+    "wdn-world"]
 
 [features]
 default = ["dev"]

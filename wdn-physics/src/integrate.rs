@@ -21,11 +21,14 @@ pub struct Velocity {
 
 impl Plugin for IntegratePlugin {
     fn build(&self, app: &mut App) {
+        app.configure_sets(
+            FixedUpdate,
+            PhysicsSystems::Integrate.after(PhysicsSystems::ResolveCollisions),
+        );
+
         app.add_systems(
             FixedUpdate,
-            integrate_velocity
-                .in_set(PhysicsSystems::Integrate)
-                .after(PhysicsSystems::ResolveCollisions),
+            integrate_velocity.in_set(PhysicsSystems::Integrate),
         );
     }
 }

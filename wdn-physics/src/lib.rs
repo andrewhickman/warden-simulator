@@ -15,7 +15,7 @@ pub struct PhysicsPlugin;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemSet)]
 pub enum PhysicsSystems {
-    UpdateTile,
+    PropagatePosition,
     ResolveCollisions,
     Integrate,
 }

@@ -721,3 +721,87 @@ fn velocity_complex_hierarchy() {
     );
     assert_relative_eq!(child_velocity.angular(), 0.45, epsilon = 1e-4);
 }
+
+#[test]
+fn grandparent_parent_changed() {
+    let mut app = App::new();
+    app.add_plugins(TilePlugin);
+
+    let layer = app.world_mut().spawn(TileLayer::default()).id();
+
+    let grandparent = app
+        .world_mut()
+        .spawn((
+            Transform::from_xyz(2.0, 3.0, 0.0),
+            ChildOf(layer),
+            TilePosition::default(),
+            LayerPosition::default(),
+        ))
+        .id();
+
+    let parent = app
+        .world_mut()
+        .spawn((
+            Transform::from_xyz(1.0, 0.5, 0.0),
+            ChildOf(grandparent),
+            TilePosition::default(),
+            LayerPosition::default(),
+        ))
+        .id();
+
+    let child = app
+        .world_mut()
+        .spawn((
+            Transform::from_xyz(0.5, 0.25, 0.0),
+            ChildOf(parent),
+            TilePosition::default(),
+            LayerPosition::default(),
+        ))
+        .id();
+
+    app.world_mut().run_schedule(FixedUpdate);
+
+    let grandparent_tile = app.world().get::<TilePosition>(grandparent).unwrap();
+    assert_eq!(grandparent_tile.layer(), layer);
+    assert_eq!(grandparent_tile.position(), IVec2::new(2, 3));
+
+    let parent_tile = app.world().get::<TilePosition>(parent).unwrap();
+    assert_eq!(parent_tile.layer(), layer);
+    assert_eq!(parent_tile.position(), IVec2::new(3, 3));
+
+    let child_tile = app.world().get::<TilePosition>(child).unwrap();
+    assert_eq!(child_tile.layer(), layer);
+    assert_eq!(child_tile.position(), IVec2::new(3, 3));
+
+    let child_layer_pos = app.world().get::<LayerPosition>(child).unwrap();
+    assert_relative_eq!(child_layer_pos.position(), Vec2::new(3.5, 3.75));
+
+    app.world_mut()
+        .entity_mut(grandparent)
+        .insert(Transform::from_xyz(5.0, 1.0, 0.0));
+
+    app.world_mut().run_schedule(FixedUpdate);
+
+    let grandparent_tile = app.world().get::<TilePosition>(grandparent).unwrap();
+    assert_eq!(grandparent_tile.layer(), layer);
+    assert_eq!(grandparent_tile.position(), IVec2::new(5, 1));
+
+    let parent_tile = app.world().get::<TilePosition>(parent).unwrap();
+    assert_eq!(parent_tile.layer(), layer);
+    assert_eq!(parent_tile.position(), IVec2::new(6, 1));
+
+    let child_tile = app.world().get::<TilePosition>(child).unwrap();
+    assert_eq!(child_tile.layer(), layer);
+    assert_eq!(child_tile.position(), IVec2::new(6, 1));
+
+    let child_layer_pos = app.world().get::<LayerPosition>(child).unwrap();
+    assert_relative_eq!(child_layer_pos.position(), Vec2::new(6.5, 1.75));
+
+    let index = app.world().resource::<TileIndex>();
+    let grandparent_entities = index.get(TilePosition::new(layer, 5, 1));
+    assert_eq!(grandparent_entities, &[grandparent]);
+
+    let entities_at_6_1 = index.get(TilePosition::new(layer, 6, 1));
+    assert!(entities_at_6_1.contains(&parent));
+    assert!(entities_at_6_1.contains(&child));
+}
