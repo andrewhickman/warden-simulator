@@ -6,7 +6,7 @@ use bevy_math::Vec2;
 use bevy_time::prelude::*;
 use bevy_transform::prelude::*;
 use wdn_physics::{
-    collision::Collider, integrate::Velocity, lerp::Interpolated, transform::quat_to_rot,
+    collision::Collider, kinematics::Velocity, lerp::Interpolated, sync::quat_to_rot,
 };
 
 use crate::{

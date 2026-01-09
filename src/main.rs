@@ -2,10 +2,14 @@
 
 use bevy::{prelude::*, window::WindowPlugin};
 
-use wdn_physics::PhysicsPlugin as WdnPhysicsPlugin;
-use wdn_physics::tile::TilePosition;
-use wdn_physics::tile::layer::TileLayer;
-use wdn_physics::tile::storage::{TileMaterial, TileStorageMut};
+use wdn_physics::{
+    PhysicsPlugin as WdnPhysicsPlugin,
+    layer::Layer,
+    tile::{
+        TilePosition,
+        storage::{TileMaterial, TileStorageMut},
+    },
+};
 use wdn_render::RenderPlugin as WdnRenderPlugin;
 use wdn_save::SavePlugin as WdnSavePlugin;
 use wdn_tasks::TasksPlugin as WdnTasksPlugin;
@@ -45,7 +49,7 @@ fn spawn_pawn(mut commands: Commands) {
             ..OrthographicProjection::default_2d()
         }),
     ));
-    let layer = commands.spawn((TileLayer::default(),)).id();
+    let layer = commands.spawn((Layer::default(),)).id();
     commands.spawn((
         Pawn::default(),
         ChildOf(layer),
@@ -130,7 +134,7 @@ fn handle_tile_toggle(
     mouse: Res<ButtonInput<MouseButton>>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
     window: Single<&Window>,
-    layer: Single<Entity, With<TileLayer>>,
+    layer: Single<Entity, With<Layer>>,
     mut tile_storage: TileStorageMut,
 ) {
     if mouse.just_pressed(MouseButton::Right) {

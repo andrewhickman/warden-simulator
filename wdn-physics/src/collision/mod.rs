@@ -10,10 +10,10 @@ use bevy_time::prelude::*;
 
 use crate::{
     PhysicsSystems,
+    layer::{LayerPosition, LayerVelocity},
     tile::{
         TilePosition,
         index::TileIndex,
-        layer::{LayerPosition, LayerVelocity},
         storage::{TileOccupancy, TileStorage},
     },
 };
@@ -151,12 +151,14 @@ impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
             FixedUpdate,
-            PhysicsSystems::ResolveCollisions.after(PhysicsSystems::PropagatePosition),
+            PhysicsSystems::Collisions
+                .after(PhysicsSystems::Sync)
+                .before(PhysicsSystems::Kinematics),
         );
 
         app.add_systems(
             FixedUpdate,
-            resolve_collisions.in_set(PhysicsSystems::ResolveCollisions),
+            resolve_collisions.in_set(PhysicsSystems::Collisions),
         );
     }
 }

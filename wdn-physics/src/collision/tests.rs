@@ -15,10 +15,11 @@ use crate::{
     collision::{
         Collider, ColliderDisabled, CollisionPlugin, CollisionTarget, Collisions, TileCollider,
     },
-    integrate::Velocity,
+    kinematics::Velocity,
+    layer::Layer,
+    sync::SyncPlugin,
     tile::{
         TilePlugin, TilePosition,
-        layer::TileLayer,
         storage::{TileMaterial, TileStorageMut},
     },
 };
@@ -2442,6 +2443,7 @@ fn make_app() -> App {
         TaskPoolPlugin::default(),
         TimePlugin,
         TilePlugin,
+        SyncPlugin,
         CollisionPlugin,
     ));
 
@@ -2457,7 +2459,7 @@ fn make_app() -> App {
 }
 
 fn spawn_layer(app: &mut App) -> Entity {
-    app.world_mut().spawn(TileLayer::default()).id()
+    app.world_mut().spawn(Layer::default()).id()
 }
 
 fn spawn_collider(

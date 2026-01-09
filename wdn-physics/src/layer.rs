@@ -2,16 +2,20 @@ use bevy_ecs::prelude::*;
 use bevy_math::prelude::*;
 use bevy_transform::prelude::*;
 
-#[derive(Copy, Clone, Component, Debug, Default)]
-#[require(Transform)]
-pub struct TileLayer {}
+use crate::tile::TilePosition;
 
 #[derive(Copy, Clone, Component, Debug, Default)]
+#[require(Transform)]
+pub struct Layer {}
+
+#[derive(Copy, Clone, Component, Debug, Default)]
+#[require(Transform, TilePosition)]
 pub struct LayerPosition {
     isometry: Isometry2d,
 }
 
 #[derive(Copy, Clone, Component, Debug, Default)]
+#[require(LayerPosition)]
 pub struct LayerVelocity {
     linear: Vec2,
     angular: f32,

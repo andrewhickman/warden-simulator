@@ -7,7 +7,7 @@ use bevy_time::prelude::*;
 use wdn_physics::{
     PhysicsSystems,
     collision::{CollisionTarget, Collisions},
-    integrate::Velocity,
+    kinematics::Velocity,
     lerp::Interpolated,
 };
 
@@ -58,7 +58,7 @@ impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
             FixedUpdate,
-            WorldSystems::ApplyProjectiles.after(PhysicsSystems::ResolveCollisions),
+            WorldSystems::ApplyProjectiles.after(PhysicsSystems::Collisions),
         );
 
         app.add_systems(
@@ -110,7 +110,7 @@ mod tests {
 
     use wdn_physics::{
         collision::{Collider, Collision, CollisionTarget, Collisions},
-        tile::layer::TileLayer,
+        layer::Layer,
     };
 
     use crate::combat::{CombatPlugin, Health, Projectile};
@@ -188,6 +188,6 @@ mod tests {
     }
 
     fn spawn_layer(app: &mut App) -> Entity {
-        app.world_mut().spawn(TileLayer::default()).id()
+        app.world_mut().spawn(Layer::default()).id()
     }
 }
