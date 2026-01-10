@@ -41,6 +41,12 @@ pub fn main() {
         .run();
 }
 
+#[derive(Component)]
+pub struct Player;
+
+#[derive(Component)]
+pub struct Target;
+
 fn spawn_pawn(mut commands: Commands) {
     commands.spawn((
         Camera2d,
@@ -51,6 +57,14 @@ fn spawn_pawn(mut commands: Commands) {
     ));
     let layer = commands.spawn((Layer::default(),)).id();
     commands.spawn((
+        Player,
+        Pawn::default(),
+        ChildOf(layer),
+        Transform::from_xyz(0.0, -1.0, 0.0),
+    ));
+
+    commands.spawn((
+        Target,
         Pawn::default(),
         ChildOf(layer),
         Transform::from_xyz(0.0, 0.0, 0.0),
@@ -62,7 +76,7 @@ fn handle_pawn_input(
     keys: Res<ButtonInput<KeyCode>>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
     window: Single<&Window>,
-    pawn_query: Single<(&mut PawnAction, &GlobalTransform), With<Pawn>>,
+    pawn_query: Single<(&mut PawnAction, &GlobalTransform), (With<Pawn>, With<Player>)>,
 ) {
     let (mut action, pawn_transform) = pawn_query.into_inner();
 

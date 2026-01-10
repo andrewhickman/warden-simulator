@@ -27,12 +27,12 @@ pub struct PawnPlugin;
 )]
 pub struct Pawn;
 
-#[derive(Copy, Clone, Component, Debug, Default)]
+#[derive(Copy, Clone, Component, Debug)]
 #[require(
     Collider::new(PawnProjectile::RADIUS, false),
     Transform,
     Interpolated,
-    Projectile::new(PawnProjectile::DAMAGE, PawnProjectile::DURATION)
+    Projectile::new(Entity::PLACEHOLDER, PawnProjectile::DAMAGE, PawnProjectile::DURATION)
 )]
 pub struct PawnProjectile;
 
@@ -75,19 +75,17 @@ pub fn apply_pawn_actions(
                 velocity.set_angular(-Pawn::TURN_SPEED);
             }
             PawnAction::AttackLeft => commands.command_scope(|mut commands| {
-                commands.spawn((
-                    PawnProjectile,
-                    ChildOf(id),
-                    Transform::from_xyz(-Pawn::RADIUS, 0.0, 0.0),
-                    Velocity::new(Vec2::new(0.0, PawnProjectile::SPEED)),
+                commands.spawn(PawnProjectile::new(
+                    id,
+                    Vec2::new(-Pawn::RADIUS, 0.0),
+                    Vec2::new(0.0, PawnProjectile::SPEED),
                 ));
             }),
             PawnAction::AttackRight => commands.command_scope(|mut commands| {
-                commands.spawn((
-                    PawnProjectile,
-                    ChildOf(id),
-                    Transform::from_xyz(Pawn::RADIUS, 0.0, 0.0),
-                    Velocity::new(Vec2::new(0.0, PawnProjectile::SPEED)),
+                commands.spawn(PawnProjectile::new(
+                    id,
+                    Vec2::new(Pawn::RADIUS, 0.0),
+                    Vec2::new(0.0, PawnProjectile::SPEED),
                 ));
             }),
         });
@@ -109,7 +107,7 @@ impl Plugin for PawnPlugin {
 
 impl Pawn {
     pub const RADIUS: f32 = 0.24;
-    pub const MAX_HEALTH: u32 = 100;
+    pub const MAX_HEALTH: u32 = 5;
     pub const WALK_SPEED: f32 = 1.5;
     pub const TURN_SPEED: f32 = TAU;
     pub const ACCELERATION: f32 = 6.0;
@@ -120,4 +118,14 @@ impl PawnProjectile {
     pub const DAMAGE: u32 = 1;
     pub const DURATION: Duration = Duration::from_secs(1);
     pub const SPEED: f32 = 0.86;
+
+    pub fn new(pawn: Entity, position: Vec2, velocity: Vec2) -> impl Bundle {
+        (
+            PawnProjectile,
+            Projectile::new(pawn, PawnProjectile::DAMAGE, PawnProjectile::DURATION),
+            ChildOf(pawn),
+            Transform::from_translation(position.extend(0.0)),
+            Velocity::new(velocity),
+        )
+    }
 }
