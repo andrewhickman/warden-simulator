@@ -6,7 +6,8 @@ use bevy_math::Vec2;
 use bevy_time::prelude::*;
 use bevy_transform::prelude::*;
 use wdn_physics::{
-    collision::Collider, kinematics::Velocity, lerp::Interpolated, sync::quat_to_rot,
+    PhysicsSystems, collision::Collider, kinematics::Velocity, lerp::Interpolated,
+    sync::quat_to_rot,
 };
 
 use crate::{
@@ -77,14 +78,14 @@ pub fn apply_pawn_actions(
             PawnAction::AttackLeft => commands.command_scope(|mut commands| {
                 commands.spawn(PawnProjectile::new(
                     id,
-                    Vec2::new(-Pawn::RADIUS, 0.0),
+                    Vec2::new(-PawnProjectile::OFFSET, 0.0),
                     Vec2::new(0.0, PawnProjectile::SPEED),
                 ));
             }),
             PawnAction::AttackRight => commands.command_scope(|mut commands| {
                 commands.spawn(PawnProjectile::new(
                     id,
-                    Vec2::new(Pawn::RADIUS, 0.0),
+                    Vec2::new(PawnProjectile::OFFSET, 0.0),
                     Vec2::new(0.0, PawnProjectile::SPEED),
                 ));
             }),
@@ -95,7 +96,7 @@ impl Plugin for PawnPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
             FixedUpdate,
-            WorldSystems::ApplyPawnActions.before(WorldSystems::ApplyProjectiles),
+            WorldSystems::ApplyPawnActions.before(PhysicsSystems::Sync),
         );
 
         app.add_systems(
@@ -106,7 +107,7 @@ impl Plugin for PawnPlugin {
 }
 
 impl Pawn {
-    pub const RADIUS: f32 = 0.24;
+    pub const RADIUS: f32 = 0.2;
     pub const MAX_HEALTH: u32 = 5;
     pub const WALK_SPEED: f32 = 1.5;
     pub const TURN_SPEED: f32 = TAU;
@@ -114,9 +115,10 @@ impl Pawn {
 }
 
 impl PawnProjectile {
+    pub const OFFSET: f32 = 0.12;
     pub const RADIUS: f32 = 0.08;
     pub const DAMAGE: u32 = 1;
-    pub const DURATION: Duration = Duration::from_secs(1);
+    pub const DURATION: Duration = Duration::from_millis(500);
     pub const SPEED: f32 = 0.86;
 
     pub fn new(pawn: Entity, position: Vec2, velocity: Vec2) -> impl Bundle {
@@ -124,7 +126,7 @@ impl PawnProjectile {
             PawnProjectile,
             Projectile::new(pawn, PawnProjectile::DAMAGE, PawnProjectile::DURATION),
             ChildOf(pawn),
-            Transform::from_translation(position.extend(0.0)),
+            Transform::from_translation(position.extend(1.0)),
             Velocity::new(velocity),
         )
     }

@@ -2,14 +2,32 @@ use bevy_app::prelude::*;
 use bevy_asset::{UntypedAssetId, prelude::*};
 use bevy_ecs::prelude::*;
 use bevy_image::{ImageArrayLayout, ImageLoaderSettings, ImageSampler, prelude::*};
+use bevy_math::prelude::*;
+use bevy_sprite::prelude::*;
+
+pub const PAWN_INDEX: usize = 0;
+pub const PAWN_RECT: URect = URect {
+    min: UVec2::new(16, 16),
+    max: UVec2::new(208, 208),
+};
+
+pub const PAWN_PROJECTILE_INDEX: usize = 1;
+pub const PAWN_PROJECTILE_RECT: URect = URect {
+    min: UVec2::new(224, 16),
+    max: UVec2::new(256, 48),
+};
 
 pub struct AssetsPlugin;
 
 #[derive(Debug, Resource)]
 pub struct AssetHandles {
-    pub tileset: Handle<Image>,
-    pub pawn: Handle<Image>,
-    pub pawn_projectile: Handle<Image>,
+    tileset: Handle<Image>,
+    atlas: Handle<Image>,
+    layout: Handle<TextureAtlasLayout>,
+}
+
+pub fn sprite_size(rect: URect) -> Vec2 {
+    rect.size().as_vec2() * 0.0025
 }
 
 impl Plugin for AssetsPlugin {
@@ -22,29 +40,68 @@ impl AssetHandles {
     pub fn asset_ids(&self) -> impl Iterator<Item = UntypedAssetId> + '_ {
         let AssetHandles {
             tileset,
-            pawn,
-            pawn_projectile,
+            atlas,
+            layout,
         } = self;
 
-        [tileset.into(), pawn.into(), pawn_projectile.into()].into_iter()
+        [tileset.into(), atlas.into(), layout.into()].into_iter()
+    }
+
+    pub fn tileset(&self) -> Handle<Image> {
+        self.tileset.clone()
+    }
+
+    pub fn atlas(&self) -> Handle<Image> {
+        self.atlas.clone()
+    }
+
+    pub fn pawn(&self) -> Sprite {
+        Sprite {
+            image: self.atlas(),
+            texture_atlas: Some(TextureAtlas {
+                layout: self.layout.clone(),
+                index: PAWN_INDEX,
+            }),
+            custom_size: Some(sprite_size(PAWN_RECT)),
+            ..Default::default()
+        }
+    }
+
+    pub fn pawn_projectile(&self) -> Sprite {
+        Sprite {
+            image: self.atlas(),
+            texture_atlas: Some(TextureAtlas {
+                layout: self.layout.clone(),
+                index: PAWN_PROJECTILE_INDEX,
+            }),
+            custom_size: Some(sprite_size(PAWN_PROJECTILE_RECT)),
+            ..Default::default()
+        }
     }
 }
 
 pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
+    let mut layout = TextureAtlasLayout::new_empty(UVec2::new(1024, 1024));
+    assert_eq!(layout.add_texture(PAWN_RECT), PAWN_INDEX);
+    assert_eq!(
+        layout.add_texture(PAWN_PROJECTILE_RECT),
+        PAWN_PROJECTILE_INDEX
+    );
+
     commands.insert_resource(AssetHandles {
-        tileset: assets.load_with_settings("image/tileset.png", set_tileset),
-        pawn: assets.load_with_settings("image/pawn.png", set_nearest),
-        pawn_projectile: assets.load_with_settings("image/pawn_projectile.png", set_nearest),
+        tileset: assets.load_with_settings("image/tileset.png", configure_tileset),
+        atlas: assets.load_with_settings("image/atlas.png", configure_atlas),
+        layout: assets.add(layout),
     });
 }
 
-fn set_tileset(settings: &mut ImageLoaderSettings) {
+fn configure_tileset(settings: &mut ImageLoaderSettings) {
     settings.sampler = ImageSampler::nearest();
     settings.array_layout = Some(ImageArrayLayout::RowCount { rows: 2 });
 }
 
-fn set_nearest(settings: &mut ImageLoaderSettings) {
-    settings.sampler = ImageSampler::nearest();
+fn configure_atlas(settings: &mut ImageLoaderSettings) {
+    settings.sampler = ImageSampler::linear();
 }
 
 #[cfg(test)]

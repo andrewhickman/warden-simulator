@@ -93,7 +93,7 @@ impl TileChunkSprite {
             .map(|tile| pack_tile_chunk(tile.material()))
             .collect::<Vec<PackedTileData>>();
 
-        let tileset = world.resource::<AssetHandles>().tileset.clone();
+        let tileset = world.resource::<AssetHandles>().tileset();
         let tile_data = world
             .resource_mut::<Assets<Image>>()
             .add(make_chunk_tile_data_image(

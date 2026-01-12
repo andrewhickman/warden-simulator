@@ -1,6 +1,10 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use bevy::{prelude::*, window::WindowPlugin};
+use bevy::{
+    ecs::schedule::{LogLevel, ScheduleBuildSettings},
+    prelude::*,
+    window::WindowPlugin,
+};
 
 use wdn_physics::{
     PhysicsPlugin as WdnPhysicsPlugin,
@@ -38,6 +42,11 @@ pub fn main() {
         ))
         .add_systems(Startup, spawn_pawn)
         .add_systems(Update, (handle_pawn_input, handle_tile_toggle))
+        .configure_schedules(ScheduleBuildSettings {
+            ambiguity_detection: LogLevel::Error,
+            report_sets: true,
+            ..default()
+        })
         .run();
 }
 

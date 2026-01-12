@@ -1,13 +1,10 @@
 use bevy_app::prelude::*;
 use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
-use bevy_math::prelude::*;
 use bevy_sprite::prelude::*;
 
 use wdn_world::pawn::{Pawn, PawnProjectile};
 
 use crate::assets::AssetHandles;
-
-const PAWN_SCALE: f32 = 3.6;
 
 pub struct PawnPlugin;
 
@@ -30,18 +27,14 @@ impl Plugin for PawnPlugin {
 
 impl PawnSprite {
     fn on_add(mut world: DeferredWorld, context: HookContext) {
-        let image = world.resource::<AssetHandles>().pawn.clone();
-        let mut sprite = world.get_mut::<Sprite>(context.entity).unwrap();
-        sprite.image = image;
-        sprite.custom_size = Some(Vec2::splat(Pawn::RADIUS as f32 * PAWN_SCALE));
+        let sprite = world.resource::<AssetHandles>().pawn();
+        *world.get_mut::<Sprite>(context.entity).unwrap() = sprite;
     }
 }
 
 impl PawnProjectileSprite {
     fn on_add(mut world: DeferredWorld, context: HookContext) {
-        let image = world.resource::<AssetHandles>().pawn_projectile.clone();
-        let mut sprite = world.get_mut::<Sprite>(context.entity).unwrap();
-        sprite.image = image;
-        sprite.custom_size = Some(Vec2::splat(PawnProjectile::RADIUS as f32 * PAWN_SCALE));
+        let sprite = world.resource::<AssetHandles>().pawn_projectile();
+        *world.get_mut::<Sprite>(context.entity).unwrap() = sprite;
     }
 }
