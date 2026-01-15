@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-bevy_app = "0.18.0-rc.2"
+bevy_app = "0.18.0"
 wdn-render = { version = "0.1.0", path = "../wdn-render" }
 wdn-save = { version = "0.1.0", path = "../wdn-save" }
 wdn-tasks = { version = "0.1.0", path = "../wdn-tasks" }

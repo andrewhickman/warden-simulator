@@ -28,7 +28,7 @@ default = ["dev"]
 dev = ["bevy/dev"]
 
 [dependencies]
-bevy = { version = "0.18.0-rc.2", default-features = false, features = ["default_app", "default_platform", "2d_bevy_render", "ui_bevy_render"] }
+bevy = { version = "0.18.0", default-features = false, features = ["default_app", "default_platform", "2d_bevy_render", "ui_bevy_render"] }
 wdn-physics = { version = "0.1.0", path = "wdn-physics" }
 wdn-render = { version = "0.1.0", path = "wdn-render" }
 wdn-save = { version = "0.1.0", path = "wdn-save" }
