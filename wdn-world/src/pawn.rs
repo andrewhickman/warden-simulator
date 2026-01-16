@@ -26,7 +26,12 @@ pub struct PawnPlugin;
     Health::new(Pawn::MAX_HEALTH),
     PawnAction
 )]
-pub struct Pawn;
+pub struct Pawn {
+    health: u32,
+    stamina: u32,
+    left_attack_cooldown: Duration,
+    right_attack_cooldown: Duration,
+}
 
 #[derive(Copy, Clone, Component, Debug)]
 #[require(

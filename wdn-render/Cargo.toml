@@ -16,6 +16,7 @@ bevy_mesh = "0.18.0"
 bevy_render = "0.18.0"
 bevy_sprite = "0.18.0"
 bevy_sprite_render = "0.18.0"
+bevy_time = "0.18.0"
 bevy_transform = "0.18.0"
 bytemuck = "1.24.0"
 wdn-physics = { version = "0.1.0", path = "../wdn-physics" }

@@ -9368,6 +9368,7 @@ dependencies = [
  "bevy_render",
  "bevy_sprite",
  "bevy_sprite_render",
+ "bevy_time",
  "bevy_transform",
  "bytemuck",
  "wdn-physics",
