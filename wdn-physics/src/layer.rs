@@ -26,6 +26,10 @@ impl LayerPosition {
         Self { isometry }
     }
 
+    pub fn inverse_isometry(&self) -> Isometry2d {
+        self.isometry.inverse()
+    }
+
     pub fn position(&self) -> Vec2 {
         self.isometry.translation
     }

@@ -59,7 +59,7 @@ pub fn apply_projectiles(
                     health.damage(projectile.damage);
 
                     if !health.is_alive() {
-                        commands.entity(target).despawn();
+                        commands.entity(target).try_despawn();
                     }
 
                     damaged_writer.write(Damaged {

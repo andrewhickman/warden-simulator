@@ -61,7 +61,7 @@ pub fn update_damage_animations(
             {
                 DamageAnimation::COLOR.mix(&Color::WHITE, t)
             } else {
-                commands.entity(id).despawn();
+                commands.entity(id).try_despawn();
                 Color::WHITE
             };
         }

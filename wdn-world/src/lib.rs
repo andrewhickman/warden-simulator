@@ -1,5 +1,6 @@
 pub mod combat;
 pub mod door;
+pub mod path;
 pub mod pawn;
 
 use bevy_app::prelude::*;

@@ -1,4 +1,4 @@
-use std::{fmt, mem};
+use std::{fmt, mem, sync::Arc};
 
 use bevy_ecs::{
     lifecycle::HookContext,
@@ -29,7 +29,7 @@ pub struct TileStorageMut<'w, 's> {
 #[component(on_add = TileChunk::on_add, on_remove = TileChunk::on_remove)]
 pub struct TileChunk {
     position: TileChunkPosition,
-    tiles: Box<[Tile; CHUNK_SIZE * CHUNK_SIZE]>,
+    tiles: Arc<[Tile; CHUNK_SIZE * CHUNK_SIZE]>,
 }
 
 #[derive(Default, Resource)]
@@ -189,7 +189,7 @@ impl TileChunk {
     pub fn empty(position: TileChunkPosition) -> Self {
         Self {
             position,
-            tiles: Box::new([Tile::empty(); CHUNK_SIZE * CHUNK_SIZE]),
+            tiles: Arc::new([Tile::empty(); CHUNK_SIZE * CHUNK_SIZE]),
         }
     }
 
@@ -202,7 +202,7 @@ impl TileChunk {
     }
 
     pub fn get_mut(&mut self, offset: TileChunkOffset) -> &mut Tile {
-        &mut self.tiles[offset.index()]
+        &mut Arc::make_mut(&mut self.tiles)[offset.index()]
     }
 
     pub fn tiles(&self) -> impl ExactSizeIterator<Item = &Tile> {

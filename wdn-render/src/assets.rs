@@ -125,6 +125,7 @@ mod tests {
                 ..Default::default()
             },
             ImagePlugin::default(),
+            TextureAtlasPlugin,
             TexturePlugin,
             AssetsPlugin,
         ));

@@ -1,3 +1,0 @@
-[submodule "wdn-rl-onnx/onnx"]
-	path = wdn-rl-onnx/onnx
-	url = https://github.com/onnx/onnx

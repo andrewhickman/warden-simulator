@@ -1,6 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use bevy::{
+    app::TaskPoolThreadAssignmentPolicy,
     ecs::schedule::{LogLevel, ScheduleBuildSettings},
     prelude::*,
     window::WindowPlugin,
@@ -24,15 +25,7 @@ use wdn_world::pawn::{Pawn, PawnAction};
 pub fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins.set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "Warden Simulator".to_string(),
-                    canvas: Some("#bevy".to_owned()),
-                    prevent_default_event_handling: false,
-                    ..default()
-                }),
-                ..default()
-            }),
+            DefaultPlugins.set(task_pool()).set(window()),
             WdnPhysicsPlugin,
             WdnWorldPlugin,
             WdnTasksPlugin,
@@ -48,6 +41,48 @@ pub fn main() {
             ..default()
         })
         .run();
+}
+
+fn task_pool() -> TaskPoolPlugin {
+    let threads = bevy::tasks::available_parallelism();
+    TaskPoolPlugin {
+        task_pool_options: TaskPoolOptions {
+            io: TaskPoolThreadAssignmentPolicy {
+                min_threads: 1,
+                max_threads: 1,
+                percent: 0.0,
+                on_thread_spawn: None,
+                on_thread_destroy: None,
+            },
+            async_compute: TaskPoolThreadAssignmentPolicy {
+                min_threads: 1,
+                max_threads: usize::MAX,
+                percent: 0.25,
+                on_thread_spawn: None,
+                on_thread_destroy: None,
+            },
+            compute: TaskPoolThreadAssignmentPolicy {
+                min_threads: threads,
+                max_threads: usize::MAX,
+                percent: 1.0,
+                on_thread_spawn: None,
+                on_thread_destroy: None,
+            },
+            ..default()
+        },
+    }
+}
+
+fn window() -> WindowPlugin {
+    WindowPlugin {
+        primary_window: Some(Window {
+            title: "Warden Simulator".to_string(),
+            canvas: Some("#bevy".to_owned()),
+            prevent_default_event_handling: false,
+            ..default()
+        }),
+        ..default()
+    }
 }
 
 #[derive(Component)]
@@ -131,13 +166,21 @@ fn handle_pawn_input(
 
                     // Threshold for considering the pawn aligned
                     const ANGLE_THRESHOLD: f32 = 0.1;
+                    const LARGE_ANGLE_THRESHOLD: f32 = 1.0;
 
-                    if angle_diff.abs() > ANGLE_THRESHOLD {
-                        // Turn towards the target
+                    if angle_diff.abs() > LARGE_ANGLE_THRESHOLD {
+                        // Turn in place for large angle differences
                         *action = if angle_diff > 0.0 {
                             PawnAction::TurnLeft
                         } else {
                             PawnAction::TurnRight
+                        };
+                    } else if angle_diff.abs() > ANGLE_THRESHOLD {
+                        // Steer while moving for small adjustments
+                        *action = if angle_diff > 0.0 {
+                            PawnAction::SteerLeft
+                        } else {
+                            PawnAction::SteerRight
                         };
                     } else {
                         // Walk forward when aligned

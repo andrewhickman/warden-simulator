@@ -3,7 +3,7 @@ use std::{f32::consts::TAU, time::Duration};
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use bevy_math::Vec2;
-use bevy_time::prelude::*;
+use bevy_time::Time;
 use bevy_transform::prelude::*;
 use wdn_physics::{
     PhysicsSystems, collision::Collider, kinematics::Velocity, lerp::Interpolated,
@@ -49,6 +49,8 @@ pub enum PawnAction {
     Walk,
     TurnLeft,
     TurnRight,
+    SteerLeft,
+    SteerRight,
     AttackLeft,
     AttackRight,
 }
@@ -80,6 +82,20 @@ pub fn apply_pawn_actions(
                 velocity.decelerate(Pawn::ACCELERATION * time.delta_secs());
                 velocity.set_angular(-Pawn::TURN_SPEED);
             }
+            PawnAction::SteerLeft => {
+                velocity.accelerate(
+                    quat_to_rot(transform.rotation) * Vec2::new(0.0, Pawn::WALK_SPEED * 0.75),
+                    Pawn::ACCELERATION * 0.75 * time.delta_secs(),
+                );
+                velocity.set_angular(Pawn::TURN_SPEED * 0.7);
+            }
+            PawnAction::SteerRight => {
+                velocity.accelerate(
+                    quat_to_rot(transform.rotation) * Vec2::new(0.0, Pawn::WALK_SPEED * 0.75),
+                    Pawn::ACCELERATION * 0.75 * time.delta_secs(),
+                );
+                velocity.set_angular(-Pawn::TURN_SPEED * 0.7);
+            }
             PawnAction::AttackLeft => commands.command_scope(|mut commands| {
                 commands.spawn(PawnProjectile::new(
                     id,
@@ -101,7 +117,9 @@ impl Plugin for PawnPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
             FixedUpdate,
-            WorldSystems::ApplyPawnActions.before(PhysicsSystems::Sync),
+            WorldSystems::ApplyPawnActions
+                .before(WorldSystems::ApplyProjectiles)
+                .before(PhysicsSystems::Sync),
         );
 
         app.add_systems(
