@@ -71,6 +71,10 @@ bitflags! {
 }
 
 impl TileStorage<'_, '_> {
+    pub fn contains(&self, tile: TilePosition) -> bool {
+        self.map.contains(tile.chunk_position())
+    }
+
     pub fn get(&self, tile: TilePosition) -> Option<&Tile> {
         self.chunk(tile.chunk_position())
             .map(|chunk| chunk.get(tile.chunk_offset()))
@@ -90,9 +94,13 @@ impl TileStorage<'_, '_> {
         }
     }
 
+    pub fn chunk_id(&self, position: TileChunkPosition) -> Option<Entity> {
+        self.map.get(position)
+    }
+
     pub fn chunk(&'_ self, position: TileChunkPosition) -> Option<&TileChunk> {
-        if let Some(chunk_entity) = self.map.get(position) {
-            Some(self.chunks.get(chunk_entity).expect("invalid chunk entity"))
+        if let Some(chunk_id) = self.chunk_id(position) {
+            Some(self.chunks.get(chunk_id).expect("invalid chunk entity"))
         } else {
             None
         }
@@ -178,6 +186,10 @@ impl TileStorageMut<'_, '_> {
 }
 
 impl TileMap {
+    pub fn contains(&self, position: TileChunkPosition) -> bool {
+        self.chunks.contains_key(&position)
+    }
+
     pub fn get(&self, position: TileChunkPosition) -> Option<Entity> {
         self.chunks.get(&position).copied()
     }

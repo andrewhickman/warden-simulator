@@ -247,6 +247,10 @@ impl TileChunkSections {
         Some(&self.sections[&section].tiles)
     }
 
+    pub fn sections(&self) -> impl Iterator<Item = TileChunkOffset> + '_ {
+        self.sections.keys().copied()
+    }
+
     fn section(&self, offset: TileChunkOffset) -> &TileChunkSection {
         &self.sections[&offset]
     }
@@ -320,14 +324,6 @@ impl Default for TileChunkSectionParents {
 }
 
 impl TileChunkSectionParents {
-    fn find_north(&mut self, offset: TileChunkOffset) -> Option<TileChunkOffset> {
-        self.find(offset.north()?)
-    }
-
-    fn find_west(&mut self, offset: TileChunkOffset) -> Option<TileChunkOffset> {
-        self.find(offset.west()?)
-    }
-
     fn get(&self, offset: TileChunkOffset) -> Option<TileChunkOffset> {
         let parent = self.parents[offset.index()]?;
         debug_assert_eq!(
@@ -342,11 +338,19 @@ impl TileChunkSectionParents {
         let mut parent = self.parents[offset.index()]?;
 
         if parent != offset && self.parents[parent.index()] != Some(parent) {
-            parent = self.find(parent).expect("Parent should exist");
+            parent = self.find(parent).expect("parent should exist");
             self.parents[offset.index()] = Some(parent);
         }
 
         Some(parent)
+    }
+
+    fn find_north(&mut self, offset: TileChunkOffset) -> Option<TileChunkOffset> {
+        self.find(offset.north()?)
+    }
+
+    fn find_west(&mut self, offset: TileChunkOffset) -> Option<TileChunkOffset> {
+        self.find(offset.west()?)
     }
 
     fn insert(&mut self, offset: TileChunkOffset) {

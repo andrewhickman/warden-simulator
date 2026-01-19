@@ -3,10 +3,12 @@ use bevy_ecs::entity::EntityHashSet;
 use bevy_ecs::{prelude::*, system::RunSystemOnce};
 use bevy_math::IVec2;
 
+use bevy_platform::collections::HashSet;
 use wdn_physics::layer::Layer;
+use wdn_physics::tile::storage::TileChunk;
 use wdn_physics::tile::{
-    TilePlugin, TilePosition,
-    storage::{TileMap, TileMaterial, TileStorageMut},
+    TileChunkOffset, TilePlugin, TilePosition,
+    storage::{TileMap, TileMaterial, TileStorage, TileStorageMut},
 };
 
 use super::{
@@ -15,7 +17,7 @@ use super::{
 };
 
 #[test]
-fn test_single_solid_tile_in_chunk() {
+fn clear_and_set_tile_updates_region() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
@@ -44,7 +46,7 @@ fn test_single_solid_tile_in_chunk() {
 }
 
 #[test]
-fn test_enclosed_region_single_chunk() {
+fn cross_pattern_isolates_center() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
@@ -72,20 +74,11 @@ fn test_enclosed_region_single_chunk() {
 }
 
 #[test]
-fn test_enclosed_region_multiple_chunks() {
+fn square_boundary_creates_regions() {
     let (mut app, layer) = make_app();
-    let center = TilePosition::new(layer, 32, 32); // At chunk boundary
+    let center = TilePosition::new(layer, 32, 32);
 
-    for dx in -2..=2 {
-        for dy in -2..=2 {
-            let pos = center.with_offset(IVec2::new(dx, dy));
-            if dx.abs() < 2 && dy.abs() < 2 {
-                clear_tile(&mut app, pos);
-            } else {
-                set_tile(&mut app, pos);
-            }
-        }
-    }
+    set_square(&mut app, center, 2);
 
     update_regions(&mut app);
 
@@ -106,18 +99,11 @@ fn test_enclosed_region_multiple_chunks() {
 }
 
 #[test]
-fn test_split_region_single_chunk() {
+fn subdivide_square_into_quadrants() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
-    for dx in -2..=2 {
-        for dy in -2..=2 {
-            let pos = center.with_offset(IVec2::new(dx, dy));
-            if dx.abs() == 2 || dy.abs() == 2 {
-                set_tile(&mut app, pos);
-            }
-        }
-    }
+    set_square(&mut app, center, 2);
 
     update_regions(&mut app);
 
@@ -163,7 +149,7 @@ fn test_split_region_single_chunk() {
 }
 
 #[test]
-fn test_split_region_multiple_chunks() {
+fn diamond_split_vertically() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 0, 0);
 
@@ -208,17 +194,13 @@ fn test_split_region_multiple_chunks() {
 }
 
 #[test]
-fn test_combine_two_regions() {
+fn horizontal_split_and_merge() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
+    set_square(&mut app, center, 2);
     for dx in -2..=2 {
-        for dy in -2..=2 {
-            let pos = center.with_offset(IVec2::new(dx, dy));
-            if dx.abs() == 2 || dy.abs() == 2 || dy == 0 {
-                set_tile(&mut app, pos);
-            }
-        }
+        set_tile(&mut app, center.with_offset(IVec2::new(dx, 0)));
     }
 
     update_regions(&mut app);
@@ -255,17 +237,13 @@ fn test_combine_two_regions() {
 }
 
 #[test]
-fn test_combine_two_regions_multiple_chunks() {
+fn vertical_split_and_merge() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 3, 0);
 
-    for dx in -5..=5 {
-        for dy in -5..=5 {
-            let pos = center.with_offset(IVec2::new(dx, dy));
-            if dx.abs() == 5 || dy.abs() == 5 || dx == 0 {
-                set_tile(&mut app, pos);
-            }
-        }
+    set_square(&mut app, center, 5);
+    for dy in -5..=5 {
+        set_tile(&mut app, center.with_offset(IVec2::new(0, dy)));
     }
 
     update_regions(&mut app);
@@ -312,7 +290,7 @@ fn test_combine_two_regions_multiple_chunks() {
 }
 
 #[test]
-fn test_combine_many_regions_single_tick() {
+fn grid_many_regions_then_merge() {
     let (mut app, layer) = make_app();
 
     for x in -15..=15 {
@@ -355,7 +333,7 @@ fn test_combine_many_regions_single_tick() {
 }
 
 #[test]
-fn test_region_entity_stability() {
+fn grid_modifications_merge_and_split() {
     let (mut app, layer) = make_app();
 
     for x in -3..=3 {
@@ -415,27 +393,24 @@ fn test_region_entity_stability() {
         tile_region(&mut app, TilePosition::new(layer, -1, -1)).unwrap(),
         tile_region(&mut app, TilePosition::new(layer, 1, -1)).unwrap(),
     );
+
+    let combined = tile_region(&mut app, TilePosition::new(layer, -1, -1)).unwrap();
+    assert!(new_regions.contains(&combined));
+    assert_ne!(combined, outside);
 }
 
 #[test]
-fn test_diagonal_wall_splits_region() {
+fn diagonal_wall_splits_region() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
-    // First create an enclosed region with a box
-    for i in -3i32..=3 {
-        set_tile(&mut app, center.with_offset(IVec2::new(i, -3)));
-        set_tile(&mut app, center.with_offset(IVec2::new(i, 3)));
-        set_tile(&mut app, center.with_offset(IVec2::new(-3, i)));
-        set_tile(&mut app, center.with_offset(IVec2::new(3, i)));
-    }
+    set_square(&mut app, center, 3);
 
     update_regions(&mut app);
 
     let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 2); // Inside and outside
+    assert_eq!(regions.len(), 2);
 
-    // Now add a diagonal wall from NW to SE inside the box
     for i in -2..=2 {
         set_tile(&mut app, center.with_offset(IVec2::new(i, i)));
     }
@@ -443,18 +418,20 @@ fn test_diagonal_wall_splits_region() {
     update_regions(&mut app);
 
     let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 3); // Outside, NE region, SW region
+    assert_eq!(regions.len(), 3);
 
-    // Check that positions on opposite sides of the diagonal are in different regions
     let ne_region = tile_region(&mut app, center.with_offset(IVec2::new(1, -1))).unwrap();
     let sw_region = tile_region(&mut app, center.with_offset(IVec2::new(-1, 1))).unwrap();
     let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
+
+    assert!(regions.contains(&ne_region));
+    assert!(regions.contains(&sw_region));
+    assert!(regions.contains(&outside));
 
     assert_ne!(ne_region, sw_region);
     assert_ne!(ne_region, outside);
     assert_ne!(sw_region, outside);
 
-    // Tiles on the diagonal itself should be solid (no region)
     for i in -2..=2 {
         assert_eq!(
             tile_region(&mut app, center.with_offset(IVec2::new(i, i))),
@@ -464,41 +441,36 @@ fn test_diagonal_wall_splits_region() {
 }
 
 #[test]
-fn test_diagonal_gap_connects_regions() {
+fn sparse_diagonal_walls_stay_connected() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
-    // Create a diagonal wall with a gap in the middle
     set_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
     set_tile(&mut app, center.with_offset(IVec2::new(1, 1)));
-    // Gap at (2, 2)
     set_tile(&mut app, center.with_offset(IVec2::new(3, 3)));
     set_tile(&mut app, center.with_offset(IVec2::new(4, 4)));
 
     update_regions(&mut app);
 
     let regions = get_regions(&mut app);
-    // Should only be 1 region since the gap connects both sides
     assert_eq!(regions.len(), 1);
 
     let ne_region = tile_region(&mut app, center.with_offset(IVec2::new(5, 0))).unwrap();
     let sw_region = tile_region(&mut app, center.with_offset(IVec2::new(0, 5))).unwrap();
 
+    assert!(regions.contains(&ne_region));
     assert_eq!(ne_region, sw_region);
 }
 
 #[test]
-fn test_l_shaped_corridor() {
+fn square_with_overlapping_corners() {
     let (mut app, layer) = make_app();
     let corner = TilePosition::new(layer, 16, 16);
 
-    // Create an L-shaped enclosed corridor
-    // Horizontal part
     for x in -3..=3 {
         set_tile(&mut app, corner.with_offset(IVec2::new(x, -2)));
         set_tile(&mut app, corner.with_offset(IVec2::new(x, 2)));
     }
-    // Vertical part
     for y in -3..=3 {
         set_tile(&mut app, corner.with_offset(IVec2::new(-2, y)));
         set_tile(&mut app, corner.with_offset(IVec2::new(2, y)));
@@ -512,9 +484,10 @@ fn test_l_shaped_corridor() {
     let inside = tile_region(&mut app, corner).unwrap();
     let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
 
+    assert!(regions.contains(&inside));
+    assert!(regions.contains(&outside));
     assert_ne!(inside, outside);
 
-    // Check connectivity within the L-shape
     assert_eq!(
         tile_region(&mut app, corner.with_offset(IVec2::new(0, 0))),
         Some(inside)
@@ -538,20 +511,12 @@ fn test_l_shaped_corridor() {
 }
 
 #[test]
-fn test_removing_non_connecting_wall() {
+fn toggle_center_tile() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
-    // Create an enclosed region with extra walls inside
-    for dx in -3..=3 {
-        for dy in -3..=3 {
-            let pos = center.with_offset(IVec2::new(dx, dy));
-            if dx.abs() == 3 || dy.abs() == 3 {
-                set_tile(&mut app, pos);
-            }
-        }
-    }
-    // Add an internal wall that doesn't separate regions
+    set_square(&mut app, center, 3);
+
     set_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
 
     update_regions(&mut app);
@@ -561,15 +526,12 @@ fn test_removing_non_connecting_wall() {
 
     let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
 
-    // Remove the internal wall
     clear_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
     update_regions(&mut app);
 
     let new_regions = get_regions(&mut app);
-    // Should still be 2 regions since the wall didn't separate anything
     assert_eq!(new_regions.len(), 2);
 
-    // The inside region should still exist (though entity may have changed)
     let inside_after = tile_region(&mut app, center.with_offset(IVec2::new(0, 0))).unwrap();
     assert_eq!(
         tile_region(&mut app, center.with_offset(IVec2::new(1, 1))),
@@ -583,23 +545,14 @@ fn test_removing_non_connecting_wall() {
 }
 
 #[test]
-fn test_cross_shaped_region() {
+fn nested_squares_single_region() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
-    // Create a fully enclosed cross-shaped region
-    // Outer perimeter
-    for i in -6i32..=6 {
-        set_tile(&mut app, center.with_offset(IVec2::new(i, -6)));
-        set_tile(&mut app, center.with_offset(IVec2::new(i, 6)));
-        set_tile(&mut app, center.with_offset(IVec2::new(-6, i)));
-        set_tile(&mut app, center.with_offset(IVec2::new(6, i)));
-    }
+    set_square(&mut app, center, 6);
 
-    // Fill in areas outside the cross arms
     for dx in -5i32..=5 {
         for dy in -5i32..=5 {
-            // Fill corners that are not part of the cross
             if dx.abs() > 2 && dy.abs() > 2 {
                 set_tile(&mut app, center.with_offset(IVec2::new(dx, dy)));
             }
@@ -614,9 +567,10 @@ fn test_cross_shaped_region() {
     let inside = tile_region(&mut app, center).unwrap();
     let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
 
+    assert!(regions.contains(&inside));
+    assert!(regions.contains(&outside));
     assert_ne!(inside, outside);
 
-    // Check that all four arms of the cross are connected
     assert_eq!(
         tile_region(&mut app, center.with_offset(IVec2::new(0, -4))),
         Some(inside)
@@ -636,16 +590,14 @@ fn test_cross_shaped_region() {
 }
 
 #[test]
-fn test_narrow_corridor() {
+fn long_corridor_single_region() {
     let (mut app, layer) = make_app();
     let start = TilePosition::new(layer, 0, 0);
 
-    // Create a narrow 1-tile wide corridor with end caps
     for x in -10i32..=10 {
         set_tile(&mut app, start.with_offset(IVec2::new(x, -1)));
         set_tile(&mut app, start.with_offset(IVec2::new(x, 1)));
     }
-    // Add end caps to enclose the corridor
     for y in -1i32..=1 {
         set_tile(&mut app, start.with_offset(IVec2::new(-10, y)));
         set_tile(&mut app, start.with_offset(IVec2::new(10, y)));
@@ -659,9 +611,10 @@ fn test_narrow_corridor() {
     let corridor = tile_region(&mut app, start).unwrap();
     let outside = tile_region(&mut app, start.with_offset(IVec2::new(0, 5))).unwrap();
 
+    assert!(regions.contains(&corridor));
+    assert!(regions.contains(&outside));
     assert_ne!(corridor, outside);
 
-    // Check connectivity along the corridor
     for x in -9i32..=9 {
         assert_eq!(
             tile_region(&mut app, start.with_offset(IVec2::new(x, 0))),
@@ -671,29 +624,12 @@ fn test_narrow_corridor() {
 }
 
 #[test]
-fn test_donut_shaped_region() {
+fn nested_regions() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
-    // Create outer walls
-    for dx in -5..=5 {
-        for dy in -5..=5 {
-            let pos = center.with_offset(IVec2::new(dx, dy));
-            if dx.abs() == 5 || dy.abs() == 5 {
-                set_tile(&mut app, pos);
-            }
-        }
-    }
-
-    // Create inner walls (the hole in the donut)
-    for dx in -2..=2 {
-        for dy in -2..=2 {
-            let pos = center.with_offset(IVec2::new(dx, dy));
-            if dx.abs() == 2 || dy.abs() == 2 {
-                set_tile(&mut app, pos);
-            }
-        }
-    }
+    set_square(&mut app, center, 5);
+    set_square(&mut app, center, 2);
 
     update_regions(&mut app);
 
@@ -708,12 +644,10 @@ fn test_donut_shaped_region() {
     assert!(regions.contains(&inside_hole));
     assert!(regions.contains(&donut));
 
-    // All three regions should be different
     assert_ne!(outside, inside_hole);
     assert_ne!(outside, donut);
     assert_ne!(inside_hole, donut);
 
-    // Check that all sides of the donut are connected
     assert_eq!(
         tile_region(&mut app, center.with_offset(IVec2::new(3, 0))),
         Some(donut)
@@ -733,19 +667,20 @@ fn test_donut_shaped_region() {
 }
 
 #[test]
-fn test_checkerboard_pattern() {
+fn checkerboard_many_regions() {
     let (mut app, layer) = make_app();
     let origin = TilePosition::new(layer, 0, 0);
 
-    // Create an enclosed area with checkerboard inside
-    for i in -1i32..=8 {
-        set_tile(&mut app, origin.with_offset(IVec2::new(i, -1)));
-        set_tile(&mut app, origin.with_offset(IVec2::new(i, 8)));
-        set_tile(&mut app, origin.with_offset(IVec2::new(-1, i)));
-        set_tile(&mut app, origin.with_offset(IVec2::new(8, i)));
+    let center = origin.with_offset(IVec2::new(3, 3));
+    for i in -4i32..=5 {
+        set_tile(&mut app, center.with_offset(IVec2::new(i, -4)));
+        set_tile(&mut app, center.with_offset(IVec2::new(i, 5)));
+    }
+    for i in -4i32..=5 {
+        set_tile(&mut app, center.with_offset(IVec2::new(-4, i)));
+        set_tile(&mut app, center.with_offset(IVec2::new(5, i)));
     }
 
-    // Create a checkerboard pattern inside
     for x in 0..8 {
         for y in 0..8 {
             if (x + y) % 2 == 0 {
@@ -757,27 +692,21 @@ fn test_checkerboard_pattern() {
     update_regions(&mut app);
 
     let regions = get_regions(&mut app);
-    // Should create many small isolated regions due to diagonal blocking
     assert!(regions.len() > 10);
 
-    // Check that diagonal tiles form separate regions
-    // (1,2) and (3,4) are empty tiles (odd sums) in different pockets
-    let region_1_2 = tile_region(&mut app, origin.with_offset(IVec2::new(1, 2)));
-    let region_3_4 = tile_region(&mut app, origin.with_offset(IVec2::new(3, 4)));
+    let region_1_2 = tile_region(&mut app, origin.with_offset(IVec2::new(1, 2))).unwrap();
+    let region_3_4 = tile_region(&mut app, origin.with_offset(IVec2::new(3, 4))).unwrap();
 
-    assert!(region_1_2.is_some());
-    assert!(region_3_4.is_some());
-    // These should be in different regions due to diagonal blocking
+    assert!(regions.contains(&region_1_2));
+    assert!(regions.contains(&region_3_4));
     assert_ne!(region_1_2, region_3_4);
 }
 
 #[test]
-fn test_maze_structure() {
+fn maze_stays_connected() {
     let (mut app, layer) = make_app();
     let origin = TilePosition::new(layer, 0, 0);
 
-    // Create a simple maze with multiple paths
-    // Outer walls
     for i in 0..10 {
         set_tile(&mut app, origin.with_offset(IVec2::new(i, 0)));
         set_tile(&mut app, origin.with_offset(IVec2::new(i, 9)));
@@ -785,7 +714,6 @@ fn test_maze_structure() {
         set_tile(&mut app, origin.with_offset(IVec2::new(9, i)));
     }
 
-    // Internal walls creating paths
     for i in 1i32..8 {
         if i != 4 {
             set_tile(&mut app, origin.with_offset(IVec2::new(5, i)));
@@ -800,37 +728,29 @@ fn test_maze_structure() {
     update_regions(&mut app);
 
     let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 2); // Inside maze and outside
+    assert_eq!(regions.len(), 2);
 
     let maze_inside = tile_region(&mut app, origin.with_offset(IVec2::new(1, 1))).unwrap();
     let outside = tile_region(&mut app, TilePosition::new(layer, 20, 20)).unwrap();
 
+    assert!(regions.contains(&maze_inside));
+    assert!(regions.contains(&outside));
     assert_ne!(maze_inside, outside);
 
-    // Check connectivity through the maze passages
     let top_left = tile_region(&mut app, origin.with_offset(IVec2::new(1, 1))).unwrap();
     let bottom_right = tile_region(&mut app, origin.with_offset(IVec2::new(7, 7))).unwrap();
 
-    assert_eq!(top_left, bottom_right); // Should be connected through the passages
+    assert_eq!(top_left, bottom_right);
 }
 
 #[test]
-fn test_spiral_pattern() {
+fn partial_boundary_stays_connected() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
-    // Create a simple spiral
-    // Outer square
-    for i in -4i32..=4 {
-        set_tile(&mut app, center.with_offset(IVec2::new(i, -4)));
-        set_tile(&mut app, center.with_offset(IVec2::new(i, 4)));
-        set_tile(&mut app, center.with_offset(IVec2::new(-4, i)));
-        set_tile(&mut app, center.with_offset(IVec2::new(4, i)));
-    }
-    // Gap in outer square
+    set_square(&mut app, center, 4);
     clear_tile(&mut app, center.with_offset(IVec2::new(4, 0)));
 
-    // Inner walls
     for i in -2i32..=3 {
         set_tile(&mut app, center.with_offset(IVec2::new(i, -2)));
     }
@@ -841,12 +761,12 @@ fn test_spiral_pattern() {
     update_regions(&mut app);
 
     let regions = get_regions(&mut app);
-    // The spiral should connect the outside to the interior through the gap
-    // So we should have just outside region
     assert_eq!(regions.len(), 1);
 
     let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
-    // The gap at (4, 0) connects everything
+
+    assert!(regions.contains(&outside));
+
     assert_eq!(
         tile_region(&mut app, center.with_offset(IVec2::new(3, 0))),
         Some(outside)
@@ -855,24 +775,17 @@ fn test_spiral_pattern() {
 }
 
 #[test]
-fn test_region_update_with_multiple_changes() {
+fn horizontal_wall_splits_region() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
-    // Create an enclosed box first
-    for i in -4i32..=4 {
-        set_tile(&mut app, center.with_offset(IVec2::new(i, -4)));
-        set_tile(&mut app, center.with_offset(IVec2::new(i, 4)));
-        set_tile(&mut app, center.with_offset(IVec2::new(-4, i)));
-        set_tile(&mut app, center.with_offset(IVec2::new(4, i)));
-    }
+    set_square(&mut app, center, 4);
 
     update_regions(&mut app);
 
     let initial_regions = get_regions(&mut app);
-    assert_eq!(initial_regions.len(), 2); // Inside and outside
+    assert_eq!(initial_regions.len(), 2);
 
-    // Now create a dividing wall inside the box
     for i in -3i32..=3 {
         set_tile(&mut app, center.with_offset(IVec2::new(i, 0)));
     }
@@ -880,11 +793,15 @@ fn test_region_update_with_multiple_changes() {
     update_regions(&mut app);
 
     let split_regions = get_regions(&mut app);
-    assert_eq!(split_regions.len(), 3); // Outside, north, and south
+    assert_eq!(split_regions.len(), 3);
 
     let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
     let north = tile_region(&mut app, center.with_offset(IVec2::new(0, 2))).unwrap();
     let south = tile_region(&mut app, center.with_offset(IVec2::new(0, -2))).unwrap();
+
+    assert!(split_regions.contains(&outside));
+    assert!(split_regions.contains(&north));
+    assert!(split_regions.contains(&south));
 
     assert_ne!(north, south);
     assert_ne!(outside, north);
@@ -914,8 +831,19 @@ fn clear_tile(app: &mut App, position: TilePosition) {
         .unwrap();
 }
 
+fn set_square(app: &mut App, center: TilePosition, radius: i32) {
+    for i in -radius..=radius {
+        set_tile(app, center.with_offset(IVec2::new(i, -radius)));
+        set_tile(app, center.with_offset(IVec2::new(i, radius)));
+        set_tile(app, center.with_offset(IVec2::new(-radius, i)));
+        set_tile(app, center.with_offset(IVec2::new(radius, i)));
+    }
+}
+
 fn update_regions(app: &mut App) {
     app.world_mut().run_schedule(FixedUpdate);
+
+    app.world_mut().run_system_once(validate_regions).unwrap();
 }
 
 fn get_regions(app: &mut App) -> Vec<Entity> {
@@ -935,4 +863,63 @@ fn tile_region(app: &mut App, position: TilePosition) -> Option<Entity> {
         .get::<TileChunkSections>(chunk_entity)?
         .region(position.chunk_offset())?;
     Some(region)
+}
+
+fn validate_regions(
+    storage: TileStorage,
+    regions: Query<(Entity, &LayerRegion)>,
+    chunks: Query<(Entity, &TileChunk, &TileChunkSections)>,
+) {
+    let mut unique_chunk_sections = HashSet::new();
+    for (region_id, region) in regions {
+        for (chunk_id, sections) in region.sections() {
+            let chunk_sections = chunks.get(chunk_id).unwrap().2;
+            for &section in sections {
+                assert!(unique_chunk_sections.insert((chunk_id, section)));
+                assert_eq!(chunk_sections.region(section).unwrap(), region_id);
+            }
+        }
+    }
+
+    let mut unique_tile_positions = HashSet::new();
+    for (chunk_id, chunk, chunk_sections) in &chunks {
+        for offset in TileChunkOffset::iter() {
+            let position = TilePosition::from_chunk_position_and_offset(chunk.position(), offset);
+            let tile = chunk.get(offset);
+            if tile.is_solid() {
+                assert!(chunk_sections.region(offset).is_none());
+            } else {
+                let region = chunk_sections.region(offset).unwrap();
+
+                for neighbor in [
+                    position.east(),
+                    position.west(),
+                    position.north(),
+                    position.south(),
+                ] {
+                    if let Some(neighbor_chunk_id) = storage.chunk_id(neighbor.chunk_position()) {
+                        let (_, neighbor_chunk, neighbor_sections) =
+                            chunks.get(neighbor_chunk_id).unwrap();
+                        if !neighbor_chunk.get(neighbor.chunk_offset()).is_solid() {
+                            let neighbor_region =
+                                neighbor_sections.region(neighbor.chunk_offset()).unwrap();
+                            assert_eq!(neighbor_region, region);
+                        }
+                    }
+                }
+            }
+        }
+
+        for section in chunk_sections.sections() {
+            let region_id = chunk_sections.region(section).unwrap();
+            for &offset in chunk_sections.tiles(section).unwrap() {
+                assert!(unique_tile_positions.insert((chunk_id, offset)));
+                assert_eq!(chunk_sections.region(offset).unwrap(), region_id);
+            }
+
+            let (_, region) = regions.get(region_id).unwrap();
+            let region_chunk = region.sections().find(|&(c, _)| c == chunk_id).unwrap().1;
+            assert!(region_chunk.contains(&section));
+        }
+    }
 }
