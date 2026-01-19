@@ -1,4 +1,4 @@
-use std::{fmt, mem, sync::Arc};
+use std::{fmt, mem};
 
 use bevy_ecs::{
     lifecycle::HookContext,
@@ -29,7 +29,7 @@ pub struct TileStorageMut<'w, 's> {
 #[component(on_add = TileChunk::on_add, on_remove = TileChunk::on_remove)]
 pub struct TileChunk {
     position: TileChunkPosition,
-    tiles: Arc<[Tile; CHUNK_SIZE * CHUNK_SIZE]>,
+    tiles: Box<[Tile; CHUNK_SIZE * CHUNK_SIZE]>,
 }
 
 #[derive(Default, Resource)]
@@ -91,12 +91,8 @@ impl TileStorage<'_, '_> {
     }
 
     pub fn chunk(&'_ self, position: TileChunkPosition) -> Option<&TileChunk> {
-        if let Some(chunk_entity) = self.map.chunks.get(&position) {
-            Some(
-                self.chunks
-                    .get(*chunk_entity)
-                    .expect("invalid chunk entity"),
-            )
+        if let Some(chunk_entity) = self.map.get(position) {
+            Some(self.chunks.get(chunk_entity).expect("invalid chunk entity"))
         } else {
             None
         }
@@ -137,21 +133,17 @@ impl TileStorageMut<'_, '_> {
     }
 
     pub fn chunk(&'_ self, position: TileChunkPosition) -> Option<&TileChunk> {
-        if let Some(chunk_entity) = self.map.chunks.get(&position) {
-            Some(
-                self.chunks
-                    .get(*chunk_entity)
-                    .expect("invalid chunk entity"),
-            )
+        if let Some(chunk_entity) = self.map.get(position) {
+            Some(self.chunks.get(chunk_entity).expect("invalid chunk entity"))
         } else {
             self.buffer.chunks.get(&position)
         }
     }
 
     fn chunk_mut(&'_ mut self, position: TileChunkPosition) -> &mut TileChunk {
-        if let Some(chunk_entity) = self.map.chunks.get(&position) {
+        if let Some(chunk_entity) = self.map.get(position) {
             self.chunks
-                .get_mut(*chunk_entity)
+                .get_mut(chunk_entity)
                 .expect("invalid chunk entity")
                 .into_inner()
         } else {
@@ -185,11 +177,25 @@ impl TileStorageMut<'_, '_> {
     }
 }
 
+impl TileMap {
+    pub fn get(&self, position: TileChunkPosition) -> Option<Entity> {
+        self.chunks.get(&position).copied()
+    }
+
+    fn insert(&mut self, position: TileChunkPosition, entity: Entity) {
+        self.chunks.insert(position, entity);
+    }
+
+    fn remove(&mut self, position: TileChunkPosition) {
+        self.chunks.remove(&position);
+    }
+}
+
 impl TileChunk {
     pub fn empty(position: TileChunkPosition) -> Self {
         Self {
             position,
-            tiles: Arc::new([Tile::empty(); CHUNK_SIZE * CHUNK_SIZE]),
+            tiles: Box::new([Tile::empty(); CHUNK_SIZE * CHUNK_SIZE]),
         }
     }
 
@@ -201,8 +207,8 @@ impl TileChunk {
         &self.tiles[offset.index()]
     }
 
-    pub fn get_mut(&mut self, offset: TileChunkOffset) -> &mut Tile {
-        &mut Arc::make_mut(&mut self.tiles)[offset.index()]
+    fn get_mut(&mut self, offset: TileChunkOffset) -> &mut Tile {
+        &mut self.tiles[offset.index()]
     }
 
     pub fn tiles(&self) -> impl ExactSizeIterator<Item = &Tile> {
@@ -213,13 +219,12 @@ impl TileChunk {
         let chunk = world.get::<TileChunk>(context.entity).unwrap().position();
         world
             .resource_mut::<TileMap>()
-            .chunks
             .insert(chunk, context.entity);
     }
 
     fn on_remove(mut world: DeferredWorld, context: HookContext) {
         let chunk = world.get::<TileChunk>(context.entity).unwrap().position();
-        world.resource_mut::<TileMap>().chunks.remove(&chunk);
+        world.resource_mut::<TileMap>().remove(chunk);
     }
 }
 
@@ -471,12 +476,7 @@ mod tests {
             })
             .unwrap();
 
-        let chunk_entity = *app
-            .world_mut()
-            .resource::<TileMap>()
-            .chunks
-            .get(&position)
-            .unwrap();
+        let chunk_entity = app.world_mut().resource::<TileMap>().get(position).unwrap();
 
         assert!(app.world_mut().get_entity(chunk_entity).is_ok());
 
@@ -485,10 +485,10 @@ mod tests {
         assert!(app.world_mut().get_entity(chunk_entity).is_err());
 
         assert!(
-            !app.world_mut()
+            app.world_mut()
                 .resource::<TileMap>()
-                .chunks
-                .contains_key(&position)
+                .get(position)
+                .is_none()
         );
 
         app.world_mut()

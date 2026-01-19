@@ -7,7 +7,8 @@ use std::fmt;
 
 use bevy_app::prelude::*;
 use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
-use bevy_math::{I16Vec2, U16Vec2, prelude::*};
+use bevy_math::{I16Vec2, prelude::*};
+use nonmax::NonMaxU16;
 
 use crate::tile::{index::TileIndex, storage::TileMap};
 
@@ -22,14 +23,14 @@ pub struct TilePosition {
     position: IVec2,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct TileChunkPosition {
     layer: Entity,
     position: I16Vec2,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct TileChunkOffset(U16Vec2);
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct TileChunkOffset(NonMaxU16);
 
 impl Plugin for TilePlugin {
     fn build(&self, app: &mut App) {
@@ -43,6 +44,17 @@ impl TilePosition {
             layer,
             position: IVec2::new(x, y),
         }
+    }
+
+    pub fn from_chunk_position_and_offset(
+        chunk_position: TileChunkPosition,
+        chunk_offset: TileChunkOffset,
+    ) -> Self {
+        TilePosition::new(
+            chunk_position.layer(),
+            chunk_position.x() as i32 * CHUNK_SIZE as i32 + chunk_offset.x() as i32,
+            chunk_position.y() as i32 * CHUNK_SIZE as i32 + chunk_offset.y() as i32,
+        )
     }
 
     pub fn from_vec(layer: Entity, position: IVec2) -> Self {
@@ -73,6 +85,22 @@ impl TilePosition {
         self.position.y
     }
 
+    pub fn north(&self) -> Self {
+        self.with_offset(IVec2::new(0, -1))
+    }
+
+    pub fn south(&self) -> Self {
+        self.with_offset(IVec2::new(0, 1))
+    }
+
+    pub fn east(&self) -> Self {
+        self.with_offset(IVec2::new(1, 0))
+    }
+
+    pub fn west(&self) -> Self {
+        self.with_offset(IVec2::new(-1, 0))
+    }
+
     pub fn chunk_position(&self) -> TileChunkPosition {
         TileChunkPosition::new(
             self.layer,
@@ -86,6 +114,10 @@ impl TilePosition {
             self.x().rem_euclid(CHUNK_SIZE as i32) as u16,
             self.y().rem_euclid(CHUNK_SIZE as i32) as u16,
         )
+    }
+
+    pub fn on_chunk_edge(&self) -> bool {
+        self.chunk_offset().on_chunk_edge()
     }
 
     pub fn neighborhood(&self) -> [TilePosition; 9] {
@@ -132,7 +164,11 @@ impl Default for TilePosition {
 
 impl fmt::Debug for TilePosition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Tile({:?}, {}, {})", self.layer(), self.x(), self.y())
+        f.debug_tuple("TilePosition")
+            .field(&self.layer())
+            .field(&self.x())
+            .field(&self.y())
+            .finish()
     }
 }
 
@@ -157,27 +193,79 @@ impl TileChunkPosition {
     }
 }
 
+impl fmt::Debug for TileChunkPosition {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "TileChunkPosition({:?}, {}, {})",
+            self.layer(),
+            self.x(),
+            self.y()
+        )
+    }
+}
+
 impl TileChunkOffset {
     pub fn new(x: u16, y: u16) -> Self {
-        TileChunkOffset(U16Vec2::new(x, y))
+        TileChunkOffset::from_index(y as usize * CHUNK_SIZE + x as usize)
+    }
+
+    pub fn iter() -> impl ExactSizeIterator<Item = TileChunkOffset> {
+        (0..(CHUNK_SIZE * CHUNK_SIZE)).map(TileChunkOffset::from_index)
     }
 
     pub fn x(&self) -> u16 {
-        self.0.x
+        (self.0.get() as usize % CHUNK_SIZE) as u16
     }
 
     pub fn y(&self) -> u16 {
-        self.0.y
+        (self.0.get() as usize / CHUNK_SIZE) as u16
+    }
+
+    pub fn north(&self) -> Option<Self> {
+        match self.y().checked_sub(1) {
+            Some(y) => Some(TileChunkOffset::new(self.x(), y)),
+            None => None,
+        }
+    }
+
+    pub fn west(&self) -> Option<Self> {
+        match self.x().checked_sub(1) {
+            Some(x) => Some(TileChunkOffset::new(x, self.y())),
+            None => None,
+        }
     }
 
     pub fn index(&self) -> usize {
-        self.0.y as usize * CHUNK_SIZE + self.0.x as usize
+        self.0.get() as usize
     }
 
     pub fn from_index(index: usize) -> Self {
-        let x = (index % CHUNK_SIZE) as u16;
-        let y = (index / CHUNK_SIZE) as u16;
-        TileChunkOffset(U16Vec2::new(x, y))
+        TileChunkOffset::from_index_u16(index as u16)
+    }
+
+    pub fn index_u16(&self) -> u16 {
+        self.0.get()
+    }
+
+    pub fn from_index_u16(index: u16) -> Self {
+        TileChunkOffset(NonMaxU16::new(index).unwrap())
+    }
+
+    pub fn on_chunk_edge(&self) -> bool {
+        self.x() == 0
+            || self.x() == (CHUNK_SIZE - 1) as u16
+            || self.y() == 0
+            || self.y() == (CHUNK_SIZE - 1) as u16
+    }
+}
+
+impl fmt::Debug for TileChunkOffset {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("TileChunkOffset")
+            .field(&self.x())
+            .field(&self.y())
+            .finish()
     }
 }
 
@@ -191,11 +279,11 @@ fn floor(value: f32) -> i32 {
 
 #[test]
 fn test_tile_chunk_offset_index() {
-    let offset = TileChunkOffset(U16Vec2::new(5, 3));
-    let index = offset.index();
-    let roundtripped = TileChunkOffset::from_index(index);
-    assert_eq!(index, 101);
-    assert_eq!(offset, roundtripped);
+    let offset = TileChunkOffset::new(5, 3);
+
+    assert_eq!(offset.x(), 5);
+    assert_eq!(offset.y(), 3);
+    assert_eq!(offset.index(), 101);
 }
 
 #[test]
