@@ -26,6 +26,7 @@ pub struct PawnPlugin;
     Health::new(Pawn::MAX_HEALTH),
     PawnAction
 )]
+#[expect(unused)]
 pub struct Pawn {
     health: u32,
     stamina: u32,

@@ -2,7 +2,9 @@ use std::collections::VecDeque;
 
 use bevy_ecs::{
     entity::{EntityHashMap, EntityHashSet},
+    lifecycle::HookContext,
     prelude::*,
+    world::DeferredWorld,
 };
 use bevy_platform::collections::{HashMap, HashSet};
 use parking_lot::Mutex;
@@ -12,7 +14,7 @@ use wdn_physics::tile::{
 };
 
 #[derive(Component)]
-#[component(immutable)]
+#[component(immutable, on_add = LayerRegion::on_add)]
 pub struct LayerRegion {
     sections: EntityHashMap<Vec<TileChunkOffset>>,
 }
@@ -103,15 +105,20 @@ pub fn update_layer_regions(
         return Ok(());
     }
 
-    let mut remaining_sections = HashSet::new();
+    // Sections which no longer exist. Their ids may overlap with some regions in `invalid_sections`
     let mut removed_sections = HashSet::new();
-    let mut invalidated_regions = EntityHashSet::new();
+    // Sections in the queue to be processed
+    let mut invalid_sections = HashSet::new();
+    // Regions that need to be removed at the end
+    let mut invalid_regions = EntityHashSet::new();
+
+    // Mark invalid sections and regions
 
     for event in events.read() {
         if let Ok((_, mut chunk)) = chunks.get_mut(event.chunk) {
             for section in &event.changed {
                 if let Some(region) = chunk.sections.remove(section) {
-                    invalidated_regions.insert(region.region);
+                    invalid_regions.insert(region.region);
                     removed_sections.insert((event.chunk, *section));
                 }
             }
@@ -123,56 +130,60 @@ pub fn update_layer_regions(
                     chunk
                         .sections
                         .entry(section)
-                        .or_insert_with(|| TileChunkSection::new(event.chunk))
+                        .or_insert_with(|| TileChunkSection::new(Entity::PLACEHOLDER))
                         .insert(offset);
 
-                    remaining_sections.insert((event.chunk, section));
+                    invalid_sections.insert((event.chunk, section));
                 }
             }
         }
     }
 
-    for &region in &invalidated_regions {
+    for &region in &invalid_regions {
         if let Ok(region) = regions.get(region) {
             for (chunk, sections) in region.sections() {
                 for &section in sections {
                     if !removed_sections.contains(&(chunk, section)) {
-                        remaining_sections.insert((chunk, section));
+                        invalid_sections.insert((chunk, section));
                     }
                 }
             }
         }
     }
 
-    let mut queue = VecDeque::with_capacity(CHUNK_SIZE * 4);
-    while let Some(&(chunk, section)) = remaining_sections.iter().next() {
-        queue.clear();
+    let invalid_sections = invalid_sections;
+    drop(removed_sections);
 
-        remaining_sections.remove(&(chunk, section));
+    // flood fill regions from invalid sections
+
+    let mut visited = HashSet::with_capacity(invalid_sections.len());
+    let mut queue = VecDeque::with_capacity(CHUNK_SIZE);
+
+    for &(chunk, section) in &invalid_sections {
+        if !visited.insert((chunk, section)) {
+            continue;
+        }
+
+        queue.clear();
         queue.push_back((chunk, section));
 
-        let region = commands.spawn_empty().id();
         let mut region_sections = EntityHashMap::<Vec<TileChunkOffset>>::new();
 
         while let Some((current_chunk_id, current_section)) = queue.pop_front() {
+            let (position, current_chunk) = chunks.get(current_chunk_id)?;
+            let current_section_data = current_chunk.section(current_section);
+
+            if !invalid_sections.contains(&(current_chunk_id, current_section)) {
+                debug_assert_ne!(current_section_data.region, Entity::PLACEHOLDER);
+                invalid_regions.insert(current_section_data.region);
+            }
+
             region_sections
                 .entry(current_chunk_id)
                 .or_default()
                 .push(current_section);
 
-            let (_, mut current_chunk) = chunks.get_mut(current_chunk_id)?;
-            {
-                let current_section_data = current_chunk.section_mut(current_section);
-                if current_section_data.region != region {
-                    if current_section_data.region != current_chunk_id {
-                        invalidated_regions.insert(current_section_data.region);
-                    }
-                    current_section_data.region = region;
-                }
-            }
-
-            let (position, current_chunk) = chunks.get(current_chunk_id)?;
-            current_chunk.section(current_section).for_each_neighbor(
+            current_section_data.for_each_neighbor(
                 position.position(),
                 |neighbor_position, neighbor_offset| {
                     if let Some(neighbor_chunk) = map.get(neighbor_position) {
@@ -180,7 +191,7 @@ pub fn update_layer_regions(
                             if let Some(neighbor_section) =
                                 neighbor_chunk_sections.parents.get(neighbor_offset)
                             {
-                                if remaining_sections.remove(&(neighbor_chunk, neighbor_section)) {
+                                if visited.insert((neighbor_chunk, neighbor_section)) {
                                     queue.push_back((neighbor_chunk, neighbor_section));
                                 }
                             }
@@ -190,12 +201,12 @@ pub fn update_layer_regions(
             );
         }
 
-        commands.entity(region).insert(LayerRegion {
+        commands.spawn(LayerRegion {
             sections: region_sections,
         });
     }
 
-    for layer in invalidated_regions {
+    for layer in invalid_regions {
         commands.entity(layer).try_despawn();
     }
 
@@ -207,6 +218,21 @@ impl LayerRegion {
         self.sections
             .iter()
             .map(|(&chunk, sections)| (chunk, sections.as_slice()))
+    }
+
+    fn on_add(mut world: DeferredWorld, context: HookContext) {
+        // TODO avoid the clone
+        let chunks = world
+            .get::<LayerRegion>(context.entity)
+            .unwrap()
+            .sections
+            .clone();
+        for (&chunk, sections) in &chunks {
+            let mut chunk = world.get_mut::<TileChunkSections>(chunk).unwrap();
+            for &section in sections {
+                chunk.section_mut(section).region = context.entity;
+            }
+        }
     }
 }
 
