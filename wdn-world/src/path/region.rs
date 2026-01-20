@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, mem::take};
 
 use bevy_ecs::{
     entity::{EntityHashMap, EntityHashSet},
@@ -13,9 +13,8 @@ use wdn_physics::tile::{
 };
 
 #[derive(Component)]
-#[component(immutable, on_add = LayerRegion::on_add)]
+#[component(on_add = LayerRegion::on_add)]
 pub struct LayerRegion {
-    // todo key by TileChunkPosition?
     sections: EntityHashMap<Vec<TileChunkOffset>>,
 }
 
@@ -63,7 +62,6 @@ pub fn update_tile_chunk_sections(
         ref mut queue,
     } = *changes;
 
-    // TODO parallelize this?
     chunks
         .p0()
         .iter_mut()
@@ -80,52 +78,36 @@ pub fn update_tile_chunk_sections(
                 }
             }
 
-            // TODO surely this can be removed?
-            let mut changed_sections = HashSet::new();
-
             for offset in TileChunkOffset::iter() {
                 let prev_section = chunk_sections.parents.get(offset);
                 let section = parents.find(offset);
 
-                match (prev_section, section) {
-                    (Some(prev_parent), Some(parent)) if parent != prev_parent => {
-                        changed_sections.insert(prev_parent);
-                        changed_sections.insert(parent);
+                if prev_section != section {
+                    for section in [prev_section, section] {
+                        if let Some(section) = section {
+                            if let Some(region) = chunk_sections.sections.remove(&section) {
+                                removed_sections.insert((chunk_id, section));
+                                invalid_regions.insert(region.region);
+                            }
+                        }
                     }
-                    (Some(prev_parent), None) => {
-                        changed_sections.insert(prev_parent);
-                    }
-                    (None, Some(parent)) => {
-                        changed_sections.insert(parent);
-                    }
-                    (Some(_), Some(_)) | (None, None) => {}
-                }
-            }
-
-            if changed_sections.is_empty() {
-                return;
-            }
-
-            for &section in &changed_sections {
-                if let Some(region) = chunk_sections.sections.remove(&section) {
-                    removed_sections.insert((chunk_id, section));
-                    invalid_regions.insert(region.region);
                 }
             }
 
             for offset in TileChunkOffset::iter() {
-                // let prev_section = chunk_sections.parents.get(offset);
                 let section = parents.get(offset);
 
-                if let Some(section) = section
-                    && changed_sections.contains(&section)
-                {
+                if let Some(section) = section {
                     match chunk_sections.sections.entry(section) {
                         hash_map::Entry::Vacant(entry) => {
                             entry.insert(TileChunkSection::default()).insert(offset);
                             invalid_sections.insert((chunk_id, section), chunk.position());
                         }
-                        hash_map::Entry::Occupied(entry) => entry.into_mut().insert(offset),
+                        hash_map::Entry::Occupied(entry) => {
+                            if invalid_sections.contains_key(&(chunk_id, section)) {
+                                entry.into_mut().insert(offset);
+                            }
+                        }
                     }
                 }
             }
@@ -169,8 +151,6 @@ pub fn update_tile_chunk_sections(
             let current_section_data = current_chunk.section(current_section);
 
             if !invalid_sections.contains_key(&(current_chunk_id, current_section)) {
-                // todo remove
-                debug_assert_ne!(current_section_data.region, Entity::PLACEHOLDER);
                 invalid_regions.insert(current_section_data.region);
             }
 
@@ -228,18 +208,24 @@ impl LayerRegion {
     }
 
     fn on_add(mut world: DeferredWorld, context: HookContext) {
-        // TODO avoid the clone
-        let chunks = world
-            .get::<LayerRegion>(context.entity)
-            .unwrap()
-            .sections
-            .clone();
+        let chunks = take(
+            &mut world
+                .get_mut::<LayerRegion>(context.entity)
+                .unwrap()
+                .sections,
+        );
+
         for (&chunk, sections) in &chunks {
             let mut chunk = world.get_mut::<TileChunkSections>(chunk).unwrap();
             for &section in sections {
                 chunk.section_mut(section).region = context.entity;
             }
         }
+
+        world
+            .get_mut::<LayerRegion>(context.entity)
+            .unwrap()
+            .sections = chunks;
     }
 }
 
@@ -365,8 +351,6 @@ impl TileChunkSectionParents {
     }
 
     fn insert(&mut self, offset: TileChunkOffset) {
-        // TODO normalize here
-
         match (self.find_west(offset), self.find_north(offset)) {
             (Some(west_parent), Some(north_parent)) => {
                 if west_parent != north_parent {
