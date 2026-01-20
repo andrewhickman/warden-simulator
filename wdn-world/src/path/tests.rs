@@ -36,7 +36,7 @@ fn clear_and_set_tile_updates_region() {
     update_regions(&mut app);
 
     let new_regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 1);
+    assert_eq!(new_regions.len(), 1);
     assert_ne!(new_regions[0], regions[0]);
     assert_eq!(tile_region(&mut app, center), None);
     assert_eq!(tile_region(&mut app, center.north()), Some(new_regions[0]));
@@ -913,7 +913,12 @@ fn validate_regions(
         for section in chunk_sections.sections() {
             let region_id = chunk_sections.region(section).unwrap();
             for &offset in chunk_sections.tiles(section).unwrap() {
-                assert!(unique_tile_positions.insert((chunk_id, offset)));
+                assert!(
+                    unique_tile_positions.insert((chunk_id, offset)),
+                    "duplicate tile position in chunk {:?} at offset {:?}",
+                    chunk_id,
+                    offset
+                );
                 assert_eq!(chunk_sections.region(offset).unwrap(), region_id);
             }
 

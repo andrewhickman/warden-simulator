@@ -180,12 +180,20 @@ impl TileChunkPosition {
         }
     }
 
+    pub fn from_vec(layer: Entity, position: I16Vec2) -> Self {
+        TileChunkPosition { layer, position }
+    }
+
     pub fn x(&self) -> i16 {
         self.position.x
     }
 
     pub fn y(&self) -> i16 {
         self.position.y
+    }
+
+    pub fn position(&self) -> I16Vec2 {
+        self.position
     }
 
     pub fn layer(&self) -> Entity {

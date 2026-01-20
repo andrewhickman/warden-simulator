@@ -12,5 +12,4 @@ bevy_platform = "0.18.0"
 bevy_time = "0.18.0-rc.0"
 bevy_transform = "0.18.0"
 bytemuck = { version = "1.24.0", features = ["derive"] }
-parking_lot = "0.12.5"
 wdn-physics = { version = "0.1.0", path = "../wdn-physics" }

@@ -4869,7 +4869,6 @@ dependencies = [
  "bevy_time",
  "bevy_transform",
  "bytemuck",
- "parking_lot",
  "wdn-physics",
 ]
 
