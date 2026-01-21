@@ -46,17 +46,6 @@ impl TilePosition {
         }
     }
 
-    pub fn from_chunk_position_and_offset(
-        chunk_position: TileChunkPosition,
-        chunk_offset: TileChunkOffset,
-    ) -> Self {
-        TilePosition::new(
-            chunk_position.layer(),
-            chunk_position.x() as i32 * CHUNK_SIZE as i32 + chunk_offset.x() as i32,
-            chunk_position.y() as i32 * CHUNK_SIZE as i32 + chunk_offset.y() as i32,
-        )
-    }
-
     pub fn from_vec(layer: Entity, position: IVec2) -> Self {
         TilePosition { layer, position }
     }
@@ -86,11 +75,11 @@ impl TilePosition {
     }
 
     pub fn north(&self) -> Self {
-        self.with_offset(IVec2::new(0, -1))
+        self.with_offset(IVec2::new(0, 1))
     }
 
     pub fn south(&self) -> Self {
-        self.with_offset(IVec2::new(0, 1))
+        self.with_offset(IVec2::new(0, -1))
     }
 
     pub fn east(&self) -> Self {
@@ -153,6 +142,16 @@ impl TilePosition {
     }
 }
 
+impl From<(TileChunkPosition, TileChunkOffset)> for TilePosition {
+    fn from((chunk_position, chunk_offset): (TileChunkPosition, TileChunkOffset)) -> Self {
+        TilePosition::new(
+            chunk_position.layer(),
+            chunk_position.x() as i32 * CHUNK_SIZE as i32 + chunk_offset.x() as i32,
+            chunk_position.y() as i32 * CHUNK_SIZE as i32 + chunk_offset.y() as i32,
+        )
+    }
+}
+
 impl Default for TilePosition {
     fn default() -> Self {
         Self {
@@ -190,6 +189,22 @@ impl TileChunkPosition {
 
     pub fn y(&self) -> i16 {
         self.position.y
+    }
+
+    pub fn west(&self) -> TileChunkPosition {
+        TileChunkPosition::new(self.layer, self.x() - 1, self.y())
+    }
+
+    pub fn east(&self) -> TileChunkPosition {
+        TileChunkPosition::new(self.layer, self.x() + 1, self.y())
+    }
+
+    pub fn north(&self) -> TileChunkPosition {
+        TileChunkPosition::new(self.layer, self.x(), self.y() + 1)
+    }
+
+    pub fn south(&self) -> TileChunkPosition {
+        TileChunkPosition::new(self.layer, self.x(), self.y() - 1)
     }
 
     pub fn position(&self) -> I16Vec2 {
@@ -237,10 +252,26 @@ impl TileChunkOffset {
         }
     }
 
+    pub fn south(&self) -> Option<Self> {
+        if self.y() + 1 < CHUNK_SIZE as u16 {
+            Some(TileChunkOffset::new(self.x(), self.y() + 1))
+        } else {
+            None
+        }
+    }
+
     pub fn west(&self) -> Option<Self> {
         match self.x().checked_sub(1) {
             Some(x) => Some(TileChunkOffset::new(x, self.y())),
             None => None,
+        }
+    }
+
+    pub fn east(&self) -> Option<Self> {
+        if self.x() + 1 < CHUNK_SIZE as u16 {
+            Some(TileChunkOffset::new(self.x() + 1, self.y()))
+        } else {
+            None
         }
     }
 

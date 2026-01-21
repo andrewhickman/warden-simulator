@@ -215,6 +215,18 @@ impl TileChunk {
         self.position
     }
 
+    pub fn layer(&self) -> Entity {
+        self.position.layer
+    }
+
+    pub fn is_solid(&self, offset: TileChunkOffset) -> bool {
+        self.get(offset).is_solid()
+    }
+
+    pub fn occupancy(&self, offset: TileChunkOffset) -> TileOccupancy {
+        self.get(offset).occupancy
+    }
+
     pub fn get(&self, offset: TileChunkOffset) -> &Tile {
         &self.tiles[offset.index()]
     }

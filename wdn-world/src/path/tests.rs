@@ -973,21 +973,22 @@ fn validate_regions(
 ) {
     let mut unique_chunk_sections = HashSet::new();
     for (region_id, region) in regions {
-        for (chunk_id, sections) in region.sections() {
+        for section in region.sections() {
+            let chunk_id = storage.chunk_id(section.chunk_position()).unwrap();
             let chunk_sections = chunks.get(chunk_id).unwrap().2;
-            for &section in sections {
-                assert!(unique_chunk_sections.insert((chunk_id, section)));
-                assert_eq!(chunk_sections.region(section).unwrap(), region_id);
-            }
+            assert!(unique_chunk_sections.insert(section));
+            assert_eq!(
+                chunk_sections.region(section.chunk_offset()).unwrap(),
+                region_id
+            );
         }
     }
 
     let mut unique_tile_positions = HashSet::new();
     for (chunk_id, chunk, chunk_sections) in &chunks {
         for offset in TileChunkOffset::iter() {
-            let position = TilePosition::from_chunk_position_and_offset(chunk.position(), offset);
-            let tile = chunk.get(offset);
-            if tile.is_solid() {
+            let position = TilePosition::from((chunk.position(), offset));
+            if chunk.is_solid(offset) {
                 assert!(chunk_sections.region(offset).is_none());
             } else {
                 let region = chunk_sections.region(offset).unwrap();
@@ -1001,7 +1002,7 @@ fn validate_regions(
                     if let Some(neighbor_chunk_id) = storage.chunk_id(neighbor.chunk_position()) {
                         let (_, neighbor_chunk, neighbor_sections) =
                             chunks.get(neighbor_chunk_id).unwrap();
-                        if !neighbor_chunk.get(neighbor.chunk_offset()).is_solid() {
+                        if !neighbor_chunk.is_solid(neighbor.chunk_offset()) {
                             let neighbor_region =
                                 neighbor_sections.region(neighbor.chunk_offset()).unwrap();
                             assert_eq!(neighbor_region, region);
@@ -1024,8 +1025,11 @@ fn validate_regions(
             }
 
             let (_, region) = regions.get(region_id).unwrap();
-            let region_chunk = region.sections().find(|&(c, _)| c == chunk_id).unwrap().1;
-            assert!(region_chunk.contains(&section));
+            assert!(
+                region
+                    .sections()
+                    .any(|s| s.chunk_position() == chunk.position() && s.chunk_offset() == section),
+            );
         }
     }
 }
