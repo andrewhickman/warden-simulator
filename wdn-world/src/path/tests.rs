@@ -973,8 +973,7 @@ fn validate_regions(
 ) {
     let mut unique_chunk_sections = HashSet::new();
     for (region_id, region) in regions {
-        for section in region.sections() {
-            let chunk_id = storage.chunk_id(section.chunk_position()).unwrap();
+        for (chunk_id, section) in region.sections() {
             let chunk_sections = chunks.get(chunk_id).unwrap().2;
             assert!(unique_chunk_sections.insert(section));
             assert_eq!(
@@ -1015,21 +1014,14 @@ fn validate_regions(
         for section in chunk_sections.sections() {
             let region_id = chunk_sections.region(section).unwrap();
             for &offset in chunk_sections.tiles(section).unwrap() {
-                assert!(
-                    unique_tile_positions.insert((chunk_id, offset)),
-                    "duplicate tile position in chunk {:?} at offset {:?}",
-                    chunk_id,
-                    offset
-                );
+                assert!(unique_tile_positions.insert((chunk_id, offset)));
                 assert_eq!(chunk_sections.region(offset).unwrap(), region_id);
             }
 
             let (_, region) = regions.get(region_id).unwrap();
-            assert!(
-                region
-                    .sections()
-                    .any(|s| s.chunk_position() == chunk.position() && s.chunk_offset() == section),
-            );
+            assert!(region.sections().any(|(c, s)| c == chunk_id
+                && s.chunk_position() == chunk.position()
+                && s.chunk_offset() == section),);
         }
     }
 }

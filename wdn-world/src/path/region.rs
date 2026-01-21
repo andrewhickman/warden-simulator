@@ -10,7 +10,7 @@ use wdn_physics::tile::{
 #[derive(Component)]
 #[component(on_add = LayerRegion::on_add)]
 pub struct LayerRegion {
-    sections: Vec<TilePosition>,
+    sections: Vec<(Entity, TilePosition)>,
 }
 
 #[derive(Component, Default, Debug)]
@@ -34,7 +34,7 @@ struct TileChunkSectionParents {
 #[derive(Default)]
 pub struct TileChunkSectionChanges {
     removed_sections: HashSet<TilePosition>,
-    invalid_sections: HashSet<TilePosition>,
+    invalid_sections: HashMap<TilePosition, Entity>,
     invalid_regions: EntityHashSet,
     queue: VecDeque<(Entity, TilePosition)>,
 }
@@ -43,7 +43,7 @@ pub fn update_tile_chunk_sections(
     mut commands: Commands,
     regions: Query<&LayerRegion>,
     mut chunks: ParamSet<(
-        Query<(&TileChunk, &mut TileChunkSections), Changed<TileChunk>>,
+        Query<(Entity, &TileChunk, &mut TileChunkSections), Changed<TileChunk>>,
         Query<(&TileChunk, &TileChunkSections)>,
     )>,
     mut changes: Local<TileChunkSectionChanges>,
@@ -59,7 +59,7 @@ pub fn update_tile_chunk_sections(
     chunks
         .p0()
         .iter_mut()
-        .for_each(|(chunk, mut chunk_sections)| {
+        .for_each(|(chunk_id, chunk, mut chunk_sections)| {
             let position = chunk.position();
             let mut parents = TileChunkSectionParents::default();
 
@@ -96,10 +96,13 @@ pub fn update_tile_chunk_sections(
                     match chunk_sections.sections.entry(parent) {
                         hash_map::Entry::Vacant(entry) => {
                             entry.insert(TileChunkSection::default()).insert(offset);
-                            invalid_sections.insert(TilePosition::from((position, parent)));
+                            invalid_sections
+                                .insert(TilePosition::from((position, parent)), chunk_id);
                         }
                         hash_map::Entry::Occupied(entry) => {
-                            if invalid_sections.contains(&TilePosition::from((position, parent))) {
+                            if invalid_sections
+                                .contains_key(&TilePosition::from((position, parent)))
+                            {
                                 entry.into_mut().insert(offset);
                             }
                         }
@@ -117,9 +120,9 @@ pub fn update_tile_chunk_sections(
 
     for &region in invalid_regions.iter() {
         let region = regions.get(region)?;
-        for section in region.sections() {
+        for (chunk_id, section) in region.sections() {
             if !removed_sections.contains(&section) {
-                invalid_sections.insert(section);
+                invalid_sections.insert(section, chunk_id);
             }
         }
     }
@@ -128,12 +131,10 @@ pub fn update_tile_chunk_sections(
     let visited_sections = removed_sections;
 
     let chunks = chunks.p1();
-    for &section in invalid_sections.iter() {
+    for (&section, &chunk_id) in invalid_sections.iter() {
         if !visited_sections.insert(section) {
             continue;
         }
-
-        let chunk_id = map.get(section.chunk_position()).ok_or("chunk not found")?;
 
         debug_assert!(queue.is_empty());
         queue.push_back((chunk_id, section));
@@ -145,11 +146,11 @@ pub fn update_tile_chunk_sections(
             let current_section_data =
                 current_chunk_sections.section(current_section.chunk_offset());
 
-            if !invalid_sections.contains(&current_section) {
+            if !invalid_sections.contains_key(&current_section) {
                 invalid_regions.insert(current_section_data.region);
             }
 
-            region_sections.push(current_section);
+            region_sections.push((current_chunk_id, current_section));
 
             current_section_data.for_each_neighbor(current_chunk, |neighbor| {
                 if let Some(neighbor_chunk_id) = map.get(neighbor.chunk_position()) {
@@ -188,7 +189,7 @@ pub fn update_tile_chunk_sections(
 }
 
 impl LayerRegion {
-    pub fn sections(&self) -> impl Iterator<Item = TilePosition> {
+    pub fn sections(&self) -> impl Iterator<Item = (Entity, TilePosition)> {
         self.sections.iter().copied()
     }
 
@@ -200,14 +201,9 @@ impl LayerRegion {
                 .sections,
         );
 
-        for section in &sections {
-            let chunk = world
-                .get_resource::<TileMap>()
-                .unwrap()
-                .get(section.chunk_position())
-                .unwrap();
+        for &(chunk_id, section) in &sections {
             world
-                .get_mut::<TileChunkSections>(chunk)
+                .get_mut::<TileChunkSections>(chunk_id)
                 .unwrap()
                 .section_mut(section.chunk_offset())
                 .region = context.entity;
