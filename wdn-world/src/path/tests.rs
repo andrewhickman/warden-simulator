@@ -5,6 +5,7 @@ use bevy_math::IVec2;
 
 use bevy_platform::collections::HashSet;
 use wdn_physics::layer::Layer;
+use wdn_physics::tile::CHUNK_SIZE;
 use wdn_physics::tile::storage::TileChunk;
 use wdn_physics::tile::{
     TileChunkOffset, TilePlugin, TilePosition,
@@ -772,6 +773,106 @@ fn partial_boundary_stays_connected() {
         Some(outside)
     );
     assert_eq!(tile_region(&mut app, center), Some(outside));
+}
+
+#[test]
+fn connect_sections_vertical() {
+    let (mut app, layer) = make_app();
+
+    let wall_x = 16;
+    for y in 0..(CHUNK_SIZE as i32) {
+        set_tile(&mut app, TilePosition::new(layer, wall_x, y));
+    }
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 1);
+
+    let region = regions[0];
+
+    assert_eq!(
+        tile_region(&mut app, TilePosition::new(layer, wall_x - 1, 16)),
+        Some(region),
+    );
+    assert_eq!(
+        tile_region(&mut app, TilePosition::new(layer, wall_x + 1, 16)),
+        Some(region),
+    );
+    assert_eq!(
+        tile_region(&mut app, TilePosition::new(layer, wall_x, 40)),
+        Some(region),
+    );
+}
+
+#[test]
+fn connect_sections_corner() {
+    let (mut app, layer) = make_app();
+
+    set_tile(&mut app, TilePosition::new(layer, 1, 0));
+    set_tile(&mut app, TilePosition::new(layer, 0, 1));
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 1);
+
+    let region = regions[0];
+
+    assert_eq!(
+        tile_region(&mut app, TilePosition::new(layer, 0, 0)),
+        Some(region),
+    );
+    assert_eq!(
+        tile_region(&mut app, TilePosition::new(layer, 1, 1)),
+        Some(region),
+    );
+}
+
+#[test]
+fn connect_sections_interior() {
+    let (mut app, layer) = make_app();
+
+    let center = TilePosition::new(layer, 32, 32);
+
+    set_square(&mut app, center, 5);
+
+    for y in -3..5 {
+        set_tile(&mut app, center.with_offset(IVec2::new(1, y)));
+    }
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    let left = tile_region(&mut app, center.with_offset(IVec2::new(-1, 0))).unwrap();
+    let right = tile_region(&mut app, center.with_offset(IVec2::new(3, 0))).unwrap();
+
+    assert_eq!(left, right);
+}
+
+#[test]
+fn connect_sections_exterior() {
+    let (mut app, layer) = make_app();
+
+    for x in 0..5 {
+        set_tile(&mut app, TilePosition::new(layer, x, 5));
+    }
+    for y in -2..5 {
+        set_tile(&mut app, TilePosition::new(layer, 0, y));
+        set_tile(&mut app, TilePosition::new(layer, 5, y));
+    }
+
+    update_regions(&mut app);
+
+    let initial_regions = get_regions(&mut app);
+    assert_eq!(initial_regions.len(), 1);
+
+    let inside = tile_region(&mut app, TilePosition::new(layer, 2, 3)).unwrap();
+    let outside = tile_region(&mut app, TilePosition::new(layer, 7, 3)).unwrap();
+
+    assert_eq!(inside, outside);
 }
 
 #[test]
