@@ -326,8 +326,8 @@ impl TileChunkSectionParents {
         Some(parent)
     }
 
-    fn find_north(&mut self, offset: TileChunkOffset) -> Option<TileChunkOffset> {
-        self.find(offset.north()?)
+    fn find_south(&mut self, offset: TileChunkOffset) -> Option<TileChunkOffset> {
+        self.find(offset.south()?)
     }
 
     fn find_west(&mut self, offset: TileChunkOffset) -> Option<TileChunkOffset> {
@@ -335,7 +335,7 @@ impl TileChunkSectionParents {
     }
 
     fn insert(&mut self, offset: TileChunkOffset) {
-        match (self.find_west(offset), self.find_north(offset)) {
+        match (self.find_west(offset), self.find_south(offset)) {
             (Some(west_parent), Some(north_parent)) => {
                 if west_parent != north_parent {
                     self.parents[west_parent.index()] = Some(north_parent);

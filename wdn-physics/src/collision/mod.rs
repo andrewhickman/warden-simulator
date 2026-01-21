@@ -294,7 +294,7 @@ impl Collisions {
         delta_secs: f32,
     ) {
         if occupancy.contains(TileOccupancy::EAST) {
-            let neighbor_pos = tile_position.with_offset(IVec2::new(1, 0));
+            let neighbor_pos = tile_position.east();
             self.check_tile_edge(
                 collider,
                 tile_colliders.get(CompassOctant::East),
@@ -308,7 +308,7 @@ impl Collisions {
         }
 
         if occupancy.contains(TileOccupancy::NORTH) {
-            let neighbor_pos = tile_position.with_offset(IVec2::new(0, 1));
+            let neighbor_pos = tile_position.north();
             self.check_tile_edge(
                 collider,
                 tile_colliders.get(CompassOctant::North),
@@ -322,7 +322,7 @@ impl Collisions {
         }
 
         if occupancy.contains(TileOccupancy::WEST) {
-            let neighbor_pos = tile_position.with_offset(IVec2::new(-1, 0));
+            let neighbor_pos = tile_position.west();
             self.check_tile_edge(
                 collider,
                 tile_colliders.get(CompassOctant::West),
@@ -336,7 +336,7 @@ impl Collisions {
         }
 
         if occupancy.contains(TileOccupancy::SOUTH) {
-            let neighbor_pos = tile_position.with_offset(IVec2::new(0, -1));
+            let neighbor_pos = tile_position.south();
             self.check_tile_edge(
                 collider,
                 tile_colliders.get(CompassOctant::South),
@@ -352,7 +352,7 @@ impl Collisions {
         if occupancy.contains(TileOccupancy::NORTH_EAST)
             && !occupancy.intersects(TileOccupancy::NORTH | TileOccupancy::EAST)
         {
-            let neighbor_pos = tile_position.with_offset(IVec2::new(1, 1));
+            let neighbor_pos = tile_position.north().east();
             self.check_tile_corner(
                 collider,
                 tile_colliders.get(CompassOctant::NorthEast),
@@ -365,7 +365,7 @@ impl Collisions {
         if occupancy.contains(TileOccupancy::NORTH_WEST)
             && !occupancy.intersects(TileOccupancy::NORTH | TileOccupancy::WEST)
         {
-            let neighbor_pos = tile_position.with_offset(IVec2::new(-1, 1));
+            let neighbor_pos = tile_position.north().west();
             self.check_tile_corner(
                 collider,
                 tile_colliders.get(CompassOctant::NorthWest),
@@ -378,7 +378,7 @@ impl Collisions {
         if occupancy.contains(TileOccupancy::SOUTH_WEST)
             && !occupancy.intersects(TileOccupancy::SOUTH | TileOccupancy::WEST)
         {
-            let neighbor_pos = tile_position.with_offset(IVec2::new(-1, -1));
+            let neighbor_pos = tile_position.south().west();
             self.check_tile_corner(
                 collider,
                 tile_colliders.get(CompassOctant::SouthWest),
@@ -391,7 +391,7 @@ impl Collisions {
         if occupancy.contains(TileOccupancy::SOUTH_EAST)
             && !occupancy.intersects(TileOccupancy::SOUTH | TileOccupancy::EAST)
         {
-            let neighbor_pos = tile_position.with_offset(IVec2::new(1, -1));
+            let neighbor_pos = tile_position.south().east();
             self.check_tile_corner(
                 collider,
                 tile_colliders.get(CompassOctant::SouthEast),
