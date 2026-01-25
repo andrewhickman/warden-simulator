@@ -10,7 +10,7 @@ pub struct InterpolatePlugin;
 
 #[derive(Default, Debug, Clone, Copy, Component)]
 #[require(InterpolateState)]
-pub struct Interpolated;
+pub struct Interpolate;
 
 #[derive(Component, Clone, Copy, Debug, Default)]
 pub enum InterpolateState {

@@ -17,7 +17,7 @@ fn transform_spawned_fixed_update() {
     let entity = app
         .world_mut()
         .spawn((
-            Interpolated,
+            Interpolate,
             Transform {
                 translation: Vec3::new(1.5, -2.0, 0.5),
                 rotation: Quat::from_rotation_y(0.5),
@@ -50,7 +50,7 @@ fn transform_spawned_render_update() {
     let entity = app
         .world_mut()
         .spawn((
-            Interpolated,
+            Interpolate,
             Transform {
                 translation: Vec3::new(1.5, -2.0, 0.5),
                 rotation: Quat::from_rotation_y(0.5),
@@ -78,7 +78,7 @@ fn fixed_update() {
     let mut app = make_app();
     let entity = app
         .world_mut()
-        .spawn((Interpolated, Transform::from_xyz(0.0, 0.0, 0.0)))
+        .spawn((Interpolate, Transform::from_xyz(0.0, 0.0, 0.0)))
         .id();
 
     run_end_interpolation(&mut app);
@@ -117,7 +117,7 @@ fn consecutive_fixed_updates() {
     let entity = app
         .world_mut()
         .spawn((
-            Interpolated,
+            Interpolate,
             Transform {
                 translation: Vec3::new(1.5, -2.0, 0.5),
                 rotation: Quat::from_rotation_z(FRAC_PI_4),
@@ -160,7 +160,7 @@ fn render_update() {
     let entity = app
         .world_mut()
         .spawn((
-            Interpolated,
+            Interpolate,
             Transform {
                 translation: Vec3::new(0.0, 0.0, 0.5),
                 rotation: Quat::IDENTITY,
@@ -248,7 +248,7 @@ fn consecutive_render_updates() {
     let entity = app
         .world_mut()
         .spawn((
-            Interpolated,
+            Interpolate,
             Transform {
                 translation: Vec3::ZERO,
                 rotation: Quat::IDENTITY,
@@ -301,7 +301,7 @@ fn transform_modified_fixed_update() {
     let entity = app
         .world_mut()
         .spawn((
-            Interpolated,
+            Interpolate,
             Transform {
                 translation: Vec3::new(0.0, 0.0, 0.0),
                 rotation: Quat::from_rotation_z(FRAC_PI_4),
@@ -356,7 +356,7 @@ fn transform_modified_render_update() {
     let entity = app
         .world_mut()
         .spawn((
-            Interpolated,
+            Interpolate,
             Transform {
                 translation: Vec3::new(0.0, 0.0, 0.0),
                 rotation: Quat::from_rotation_x(FRAC_PI_4),
@@ -407,7 +407,7 @@ fn transform_not_modified_render_update() {
     let entity = app
         .world_mut()
         .spawn((
-            Interpolated,
+            Interpolate,
             Transform {
                 translation: Vec3::new(1.0, 1.0, 0.0),
                 rotation: Quat::from_rotation_y(FRAC_PI_4),

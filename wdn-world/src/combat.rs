@@ -7,8 +7,8 @@ use bevy_time::prelude::*;
 use wdn_physics::{
     PhysicsSystems,
     collision::{CollisionTarget, Collisions},
-    kinematics::Velocity,
-    lerp::Interpolated,
+    kinematics::RelativeVelocity,
+    lerp::Interpolate,
 };
 
 use crate::WorldSystems;
@@ -28,7 +28,7 @@ pub struct Damaged {
 }
 
 #[derive(Clone, Component, Debug)]
-#[require(Velocity, Interpolated, Collisions)]
+#[require(RelativeVelocity, Interpolate, Collisions)]
 pub struct Projectile {
     pub source: Entity,
     pub damage: u32,

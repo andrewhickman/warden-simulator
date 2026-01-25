@@ -10,8 +10,8 @@ use bevy_transform::prelude::*;
 
 use crate::{
     PhysicsSystems,
-    kinematics::Velocity,
-    layer::{Layer, LayerPosition, LayerVelocity},
+    kinematics::{Position, RelativeVelocity, Velocity},
+    layer::Layer,
     lerp::start_interpolation,
     tile::TilePosition,
 };
@@ -27,12 +27,12 @@ pub fn sync_kinematics(
         Entity,
         Ref<ChildOf>,
         Ref<Transform>,
-        Option<Ref<Velocity>>,
+        Option<Ref<RelativeVelocity>>,
         Ref<TilePosition>,
-        &mut LayerPosition,
-        Option<&mut LayerVelocity>,
+        &mut Position,
+        Option<&mut Velocity>,
     )>,
-    parents: Query<(Ref<ChildOf>, Ref<Transform>, Option<Ref<Velocity>>)>,
+    parents: Query<(Ref<ChildOf>, Ref<Transform>, Option<Ref<RelativeVelocity>>)>,
     layers: Query<&Layer>,
     ticks: SystemChangeTick,
     mut last_run: ResMut<SyncChangeTick>,
@@ -89,9 +89,9 @@ pub fn sync_kinematics(
                 parent = ancestor_parent;
             }
 
-            *layer_position = LayerPosition::new(isometry);
+            *layer_position = Position::new(isometry);
             if let Some(mut layer_velocity) = layer_velocity {
-                *layer_velocity = LayerVelocity::new(linear, angular);
+                *layer_velocity = Velocity::new(linear, angular);
             }
 
             let new = TilePosition::floor(parent.get(), layer_position.position());
@@ -133,7 +133,7 @@ impl SyncChangeTick {
 fn position_changed(
     transform: &Ref<Transform>,
     parent: &Ref<ChildOf>,
-    velocity: &Option<Ref<Velocity>>,
+    velocity: &Option<Ref<RelativeVelocity>>,
     last_run: Tick,
     this_run: Tick,
 ) -> bool {

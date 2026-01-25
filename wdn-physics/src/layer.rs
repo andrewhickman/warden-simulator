@@ -1,54 +1,6 @@
 use bevy_ecs::prelude::*;
-use bevy_math::prelude::*;
 use bevy_transform::prelude::*;
-
-use crate::tile::TilePosition;
 
 #[derive(Copy, Clone, Component, Debug, Default)]
 #[require(Transform)]
 pub struct Layer {}
-
-#[derive(Copy, Clone, Component, Debug, Default)]
-#[require(Transform, TilePosition)]
-pub struct LayerPosition {
-    isometry: Isometry2d,
-}
-
-#[derive(Copy, Clone, Component, Debug, Default)]
-#[require(LayerPosition)]
-pub struct LayerVelocity {
-    linear: Vec2,
-    angular: f32,
-}
-
-impl LayerPosition {
-    pub fn new(isometry: Isometry2d) -> Self {
-        Self { isometry }
-    }
-
-    pub fn inverse_isometry(&self) -> Isometry2d {
-        self.isometry.inverse()
-    }
-
-    pub fn position(&self) -> Vec2 {
-        self.isometry.translation
-    }
-
-    pub fn rotation(&self) -> Rot2 {
-        self.isometry.rotation
-    }
-}
-
-impl LayerVelocity {
-    pub fn new(linear: Vec2, angular: f32) -> Self {
-        Self { linear, angular }
-    }
-
-    pub fn linear(&self) -> Vec2 {
-        self.linear
-    }
-
-    pub fn angular(&self) -> f32 {
-        self.angular
-    }
-}

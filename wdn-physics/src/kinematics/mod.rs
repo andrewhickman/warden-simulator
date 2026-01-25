@@ -10,20 +10,40 @@ use bevy_transform::prelude::*;
 use crate::{
     PhysicsSystems,
     collision::{Collision, Collisions},
-    layer::LayerVelocity,
+    tile::TilePosition,
 };
 
 pub struct KinematicsPlugin;
 
-#[derive(Clone, Copy, Component, Default, Debug)]
-#[require(Transform, LayerVelocity)]
+#[derive(Copy, Clone, Component, Debug, Default)]
+#[require(TilePosition)]
+pub struct Position {
+    isometry: Isometry2d,
+}
+
+#[derive(Copy, Clone, Component, Debug, Default)]
+#[require(Position)]
 pub struct Velocity {
     linear: Vec2,
     angular: f32,
 }
 
+#[derive(Clone, Copy, Component, Default, Debug)]
+#[require(Position)]
+pub struct RelativePosition {
+    position: Vec2,
+    rotation: Rot2,
+}
+
+#[derive(Clone, Copy, Component, Default, Debug)]
+#[require(RelativePosition, Velocity)]
+pub struct RelativeVelocity {
+    linear: Vec2,
+    angular: f32,
+}
+
 pub fn update_kinematics(
-    mut query: Query<(&mut Transform, &mut Velocity, Option<&Collisions>)>,
+    mut query: Query<(&mut Transform, &mut RelativeVelocity, Option<&Collisions>)>,
     time: Res<Time>,
 ) {
     query
@@ -80,9 +100,55 @@ impl Plugin for KinematicsPlugin {
     }
 }
 
+impl Position {
+    pub fn new(isometry: Isometry2d) -> Self {
+        Self { isometry }
+    }
+
+    pub fn inverse_isometry(&self) -> Isometry2d {
+        self.isometry.inverse()
+    }
+
+    pub fn position(&self) -> Vec2 {
+        self.isometry.translation
+    }
+
+    pub fn rotation(&self) -> Rot2 {
+        self.isometry.rotation
+    }
+}
+
 impl Velocity {
+    pub fn new(linear: Vec2, angular: f32) -> Self {
+        Self { linear, angular }
+    }
+
+    pub fn linear(&self) -> Vec2 {
+        self.linear
+    }
+
+    pub fn angular(&self) -> f32 {
+        self.angular
+    }
+}
+
+impl RelativePosition {
+    pub fn new(position: Vec2, rotation: Rot2) -> Self {
+        RelativePosition { position, rotation }
+    }
+
+    pub fn position(&self) -> Vec2 {
+        self.position
+    }
+
+    pub fn rotation(&self) -> Rot2 {
+        self.rotation
+    }
+}
+
+impl RelativeVelocity {
     pub fn new(linear: Vec2) -> Self {
-        Velocity {
+        RelativeVelocity {
             linear,
             angular: 0.0,
         }

@@ -15,7 +15,7 @@ use crate::{
     collision::{
         Collider, ColliderDisabled, CollisionPlugin, CollisionTarget, Collisions, TileCollider,
     },
-    kinematics::{KinematicsPlugin, Velocity},
+    kinematics::{KinematicsPlugin, RelativeVelocity},
     layer::Layer,
     sync::SyncPlugin,
     tile::{
@@ -2476,7 +2476,7 @@ fn spawn_collider(
         .spawn((
             Collider::new(radius, true),
             Transform::from_translation(position.extend(0.0)),
-            Velocity::new(velocity),
+            RelativeVelocity::new(velocity),
             ChildOf(layer),
         ))
         .id()
@@ -2493,7 +2493,7 @@ fn spawn_non_solid_collider(
         .spawn((
             Collider::new(radius, false),
             Transform::from_translation(position.extend(0.0)),
-            Velocity::new(velocity),
+            RelativeVelocity::new(velocity),
             ChildOf(layer),
         ))
         .id()
@@ -2516,7 +2516,7 @@ fn set_tile(app: &mut App, position: TilePosition) {
 fn update_collider(app: &mut App, id: Entity, position: Vec2, velocity: Vec2) {
     app.world_mut().entity_mut(id).insert((
         Transform::from_translation(position.extend(0.0)),
-        Velocity::new(velocity),
+        RelativeVelocity::new(velocity),
     ));
 }
 
