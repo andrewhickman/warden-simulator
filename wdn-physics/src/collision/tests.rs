@@ -15,7 +15,7 @@ use crate::{
     collision::{
         Collider, ColliderDisabled, CollisionPlugin, CollisionTarget, Collisions, TileCollider,
     },
-    kinematics::Velocity,
+    kinematics::{KinematicsPlugin, Velocity},
     layer::Layer,
     sync::SyncPlugin,
     tile::{
@@ -1855,6 +1855,8 @@ fn collision_collider_disabled_removed() {
     let collisions1 = app.world().get::<Collisions>(entity1).unwrap();
     assert!(collisions1.next_collision().is_none());
 
+    update_collider(&mut app, entity1, Vec2::new(0.4, 0.1), Vec2::new(-0.5, 0.2));
+    update_collider(&mut app, entity2, Vec2::new(-0.1, 0.1), Vec2::new(0.5, 0.2));
     app.world_mut()
         .entity_mut(entity1)
         .remove::<ColliderDisabled>();
@@ -2443,6 +2445,7 @@ fn make_app() -> App {
         TaskPoolPlugin::default(),
         TimePlugin,
         TilePlugin,
+        KinematicsPlugin,
         SyncPlugin,
         CollisionPlugin,
     ));
