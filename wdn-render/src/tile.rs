@@ -23,7 +23,7 @@ use wdn_physics::{
 
 use crate::assets::AssetHandles;
 
-pub const CHUNK_SPRITE_SIZE: u16 = 16;
+pub const SPRITE_CHUNK_SIZE: u16 = 16;
 
 pub const DIRT_OFFSET: u16 = 0;
 pub const WALL_OFFSET: u16 = 256;
@@ -147,8 +147,8 @@ fn tile_chunk_transform(position: TileChunkPosition) -> Transform {
 }
 
 fn dirt_sprite_offset(position: TileChunkOffset) -> u16 {
-    (CHUNK_SPRITE_SIZE - 1 - position.y().rem_euclid(CHUNK_SPRITE_SIZE)) * CHUNK_SPRITE_SIZE
-        + position.x().rem_euclid(CHUNK_SPRITE_SIZE)
+    (SPRITE_CHUNK_SIZE - 1 - position.y().rem_euclid(SPRITE_CHUNK_SIZE)) * SPRITE_CHUNK_SIZE
+        + position.x().rem_euclid(SPRITE_CHUNK_SIZE)
 }
 
 fn wall_sprite_offset(occupancy: TileOccupancy) -> u16 {

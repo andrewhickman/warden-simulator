@@ -10,18 +10,20 @@ use bevy_transform::prelude::*;
 use crate::{
     collision::{Collision, CollisionTarget, Collisions},
     kinematics::{KinematicsPlugin, RelativeVelocity},
+    layer::Layer,
     tile::TilePlugin,
 };
 
 #[test]
 fn update_kinematics() {
-    let mut app = make_app();
+    let (mut app, layer) = make_app();
 
     let entity = app
         .world_mut()
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
             RelativeVelocity::new(Vec2::new(5.0, 3.0)),
+            ChildOf(layer),
         ))
         .id();
 
@@ -33,13 +35,14 @@ fn update_kinematics() {
 
 #[test]
 fn update_kinematics_zero_velocity() {
-    let mut app = make_app();
+    let (mut app, layer) = make_app();
 
     let entity = app
         .world_mut()
         .spawn((
             Transform::from_xyz(10.0, 20.0, 0.0),
             RelativeVelocity::new(Vec2::ZERO),
+            ChildOf(layer),
         ))
         .id();
 
@@ -59,13 +62,14 @@ fn update_kinematics_zero_velocity() {
 
 #[test]
 fn update_kinematics_angular_velocity() {
-    let mut app = make_app();
+    let (mut app, layer) = make_app();
 
     let entity = app
         .world_mut()
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
             RelativeVelocity::new(Vec2::ZERO).with_angular(1.0),
+            ChildOf(layer),
         ))
         .id();
 
@@ -81,7 +85,7 @@ fn update_kinematics_angular_velocity() {
 
 #[test]
 fn update_kinematics_wall_collision_active() {
-    let mut app = make_app();
+    let (mut app, layer) = make_app();
 
     let mut collisions = Collisions::default();
     collisions.insert(
@@ -102,6 +106,7 @@ fn update_kinematics_wall_collision_active() {
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
             RelativeVelocity::new(Vec2::new(-5.0, 3.0)),
+            ChildOf(layer),
             collisions,
         ))
         .id();
@@ -117,7 +122,7 @@ fn update_kinematics_wall_collision_active() {
 
 #[test]
 fn update_kinematics_wall_collision() {
-    let mut app = make_app();
+    let (mut app, layer) = make_app();
 
     let mut collisions = Collisions::default();
     collisions.insert(
@@ -138,6 +143,7 @@ fn update_kinematics_wall_collision() {
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
             RelativeVelocity::new(Vec2::new(4.0, -2.0)),
+            ChildOf(layer),
             collisions,
         ))
         .id();
@@ -153,7 +159,7 @@ fn update_kinematics_wall_collision() {
 
 #[test]
 fn update_kinematics_multiple_collisions() {
-    let mut app = make_app();
+    let (mut app, layer) = make_app();
 
     let mut collisions = Collisions::default();
     collisions.insert(
@@ -186,6 +192,7 @@ fn update_kinematics_multiple_collisions() {
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
             RelativeVelocity::new(Vec2::new(-3.0, -4.0)),
+            ChildOf(layer),
             collisions,
         ))
         .id();
@@ -209,7 +216,7 @@ fn update_kinematics_multiple_collisions() {
 
 #[test]
 fn update_kinematics_wall_collision_receding() {
-    let mut app = make_app();
+    let (mut app, layer) = make_app();
 
     let mut collisions = Collisions::default();
     collisions.insert(
@@ -230,6 +237,7 @@ fn update_kinematics_wall_collision_receding() {
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
             RelativeVelocity::new(Vec2::new(5.0, 3.0)),
+            ChildOf(layer),
             collisions,
         ))
         .id();
@@ -245,7 +253,7 @@ fn update_kinematics_wall_collision_receding() {
 
 #[test]
 fn update_kinematics_collider_collision() {
-    let mut app = make_app();
+    let (mut app, layer) = make_app();
 
     let other_entity = app.world_mut().spawn_empty().id();
 
@@ -268,6 +276,7 @@ fn update_kinematics_collider_collision() {
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
             RelativeVelocity::new(Vec2::new(-4.0, -2.0)),
+            ChildOf(layer),
             collisions,
         ))
         .id();
@@ -287,7 +296,7 @@ fn update_kinematics_collider_collision() {
 
 #[test]
 fn update_kinematics_non_solid_collision_active() {
-    let mut app = make_app();
+    let (mut app, layer) = make_app();
 
     let other_entity = app.world_mut().spawn_empty().id();
 
@@ -310,6 +319,7 @@ fn update_kinematics_non_solid_collision_active() {
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
             RelativeVelocity::new(Vec2::new(4.0, 2.0)),
+            ChildOf(layer),
             collisions,
         ))
         .id();
@@ -325,7 +335,7 @@ fn update_kinematics_non_solid_collision_active() {
 
 #[test]
 fn update_kinematics_non_solid_wall_collision_active() {
-    let mut app = make_app();
+    let (mut app, layer) = make_app();
 
     let mut collisions = Collisions::default();
     collisions.insert(
@@ -346,6 +356,7 @@ fn update_kinematics_non_solid_wall_collision_active() {
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
             RelativeVelocity::new(Vec2::new(3.0, -5.0)),
+            ChildOf(layer),
             collisions,
         ))
         .id();
@@ -359,7 +370,7 @@ fn update_kinematics_non_solid_wall_collision_active() {
     assert_relative_eq!(transform.translation.xy(), Vec2::new(3.0, -5.0));
 }
 
-fn make_app() -> App {
+fn make_app() -> (App, Entity) {
     let mut app = App::new();
     app.add_plugins((
         TaskPoolPlugin::default(),
@@ -376,5 +387,7 @@ fn make_app() -> App {
         .resource_mut::<Time<Real>>()
         .update_with_duration(Duration::ZERO);
 
-    app
+    let layer = app.world_mut().spawn(Layer::default()).id();
+
+    (app, layer)
 }

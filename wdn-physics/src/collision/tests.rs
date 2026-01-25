@@ -15,9 +15,8 @@ use crate::{
     collision::{
         Collider, ColliderDisabled, CollisionPlugin, CollisionTarget, Collisions, TileCollider,
     },
-    kinematics::{KinematicsPlugin, RelativeVelocity},
+    kinematics::{KinematicsPlugin, Position, RelativeVelocity},
     layer::Layer,
-    sync::SyncPlugin,
     tile::{
         TilePlugin, TilePosition,
         storage::{TileMaterial, TileStorageMut},
@@ -2446,7 +2445,6 @@ fn make_app() -> App {
         TimePlugin,
         TilePlugin,
         KinematicsPlugin,
-        SyncPlugin,
         CollisionPlugin,
     ));
 
@@ -2516,6 +2514,7 @@ fn set_tile(app: &mut App, position: TilePosition) {
 fn update_collider(app: &mut App, id: Entity, position: Vec2, velocity: Vec2) {
     app.world_mut().entity_mut(id).insert((
         Transform::from_translation(position.extend(0.0)),
+        Position::new(Isometry2d::from_translation(position)),
         RelativeVelocity::new(velocity),
     ));
 }

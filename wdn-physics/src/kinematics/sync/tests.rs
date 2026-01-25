@@ -1,19 +1,18 @@
-use std::{
-    f32::consts::{FRAC_PI_2, FRAC_PI_4, PI},
-    time::Duration,
-};
+use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, PI};
 
 use approx::assert_relative_eq;
 use bevy_app::prelude::*;
-use bevy_ecs::prelude::*;
+use bevy_ecs::{prelude::*, system::RunSystemOnce};
 use bevy_math::prelude::*;
-use bevy_time::{TimePlugin, TimeUpdateStrategy, prelude::*};
+use bevy_time::TimePlugin;
 use bevy_transform::prelude::*;
 
 use crate::{
-    kinematics::{Position, RelativeVelocity, Velocity},
+    kinematics::{
+        KinematicsPlugin, Position, RelativeVelocity, Velocity,
+        sync::{quat_to_rot, sync_kinematics},
+    },
     layer::Layer,
-    sync::{SyncPlugin, quat_to_rot},
     tile::{TilePlugin, TilePosition, index::TileIndex},
 };
 
@@ -89,8 +88,6 @@ fn sync_kinematics_transform_added() {
         ))
         .id();
 
-    app.update();
-
     let tile = app.world().get::<TilePosition>(entity).unwrap();
     assert_eq!(tile.layer(), layer);
     assert_eq!(tile.position(), IVec2::new(1, -1));
@@ -118,13 +115,11 @@ fn sync_kinematics_transform_changed() {
         ))
         .id();
 
-    app.update();
-
     app.world_mut().entity_mut(entity).insert(
         Transform::from_xyz(2.1, -0.2, 0.0).with_rotation(Quat::from_rotation_z(-FRAC_PI_2)),
     );
 
-    app.update();
+    run_sync_kinematics(&mut app);
 
     let tile = app.world().get::<TilePosition>(entity).unwrap();
     assert_eq!(tile.layer(), layer);
@@ -158,11 +153,9 @@ fn sync_kinematics_tile_layer_changed() {
         ))
         .id();
 
-    app.update();
-
     app.world_mut().entity_mut(entity).insert(ChildOf(layer2));
 
-    app.update();
+    run_sync_kinematics(&mut app);
 
     let tile = app.world().get::<TilePosition>(entity).unwrap();
     assert_eq!(tile.layer(), layer2);
@@ -192,8 +185,6 @@ fn sync_kinematics_tile_unchanged() {
         ))
         .id();
 
-    app.update();
-
     app.world_mut()
         .entity_mut(entity)
         .insert(Transform::from_xyz(1.3, -0.2, 0.0));
@@ -206,7 +197,7 @@ fn sync_kinematics_tile_unchanged() {
         .last_changed();
     let index_change_tick = app.world().resource_ref::<TileIndex>().last_changed();
 
-    app.update();
+    run_sync_kinematics(&mut app);
 
     let tile = app
         .world()
@@ -250,8 +241,6 @@ fn sync_kinematics_parent_transform_changed() {
         ))
         .id();
 
-    app.update();
-
     let parent_tile = app.world().get::<TilePosition>(parent).unwrap();
     assert_eq!(parent_tile.layer(), layer);
     assert_eq!(parent_tile.position(), IVec2::new(2, 3));
@@ -280,7 +269,7 @@ fn sync_kinematics_parent_transform_changed() {
         .entity_mut(parent)
         .insert(Transform::from_xyz(4.0, 1.0, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_2)));
 
-    app.update();
+    run_sync_kinematics(&mut app);
 
     let parent_tile = app.world().get::<TilePosition>(parent).unwrap();
     assert_eq!(parent_tile.layer(), layer);
@@ -346,8 +335,6 @@ fn sync_kinematics_velocity_no_parent() {
         ))
         .id();
 
-    app.update();
-
     let velocity = app.world().get::<Velocity>(entity).unwrap();
     assert_relative_eq!(velocity.linear(), Vec2::new(3.0, 4.0));
     assert_relative_eq!(velocity.angular(), 0.5);
@@ -376,8 +363,6 @@ fn sync_kinematics_velocity_parent_linear() {
             ChildOf(parent),
         ))
         .id();
-
-    app.update();
 
     let parent_velocity = app.world().get::<Velocity>(parent).unwrap();
     assert_relative_eq!(parent_velocity.linear(), Vec2::new(2.0, 1.0));
@@ -412,8 +397,6 @@ fn sync_kinematics_velocity_parent_angular() {
         ))
         .id();
 
-    app.update();
-
     let parent_velocity = app.world().get::<Velocity>(parent).unwrap();
     assert_relative_eq!(parent_velocity.linear(), Vec2::ZERO);
     assert_relative_eq!(parent_velocity.angular(), 1.0);
@@ -447,8 +430,6 @@ fn sync_kinematics_velocity_parent_combined() {
         ))
         .id();
 
-    app.update();
-
     let parent_velocity = app.world().get::<Velocity>(parent).unwrap();
     assert_relative_eq!(parent_velocity.linear(), Vec2::new(3.0, 0.0));
     assert_relative_eq!(parent_velocity.angular(), 0.5);
@@ -481,8 +462,6 @@ fn sync_kinematics_velocity_parent_rotated() {
             ChildOf(parent),
         ))
         .id();
-
-    app.update();
 
     let parent_velocity = app.world().get::<Velocity>(parent).unwrap();
     assert_relative_eq!(
@@ -530,8 +509,6 @@ fn sync_kinematics_velocity_grandparent() {
         ))
         .id();
 
-    app.update();
-
     let grandparent_velocity = app.world().get::<Velocity>(grandparent).unwrap();
     assert_relative_eq!(grandparent_velocity.linear(), Vec2::new(1.0, 0.0));
     assert_relative_eq!(grandparent_velocity.angular(), 0.1);
@@ -573,8 +550,6 @@ fn sync_kinematics_velocity_updated_on_change() {
         ))
         .id();
 
-    app.update();
-
     let child_velocity = app.world().get::<Velocity>(child).unwrap();
     assert_relative_eq!(child_velocity.linear(), Vec2::new(1.5, 0.0), epsilon = 1e-4);
 
@@ -582,7 +557,7 @@ fn sync_kinematics_velocity_updated_on_change() {
         .entity_mut(parent)
         .insert(RelativeVelocity::new(Vec2::new(2.0, 1.0)).with_angular(0.5));
 
-    app.update();
+    run_sync_kinematics(&mut app);
 
     let child_velocity = app.world().get::<Velocity>(child).unwrap();
     assert_relative_eq!(child_velocity.linear(), Vec2::new(2.5, 2.0), epsilon = 1e-4);
@@ -621,8 +596,6 @@ fn sync_kinematics_velocity_complex_hierarchy() {
             ChildOf(parent),
         ))
         .id();
-
-    app.update();
 
     let grandparent_velocity = app.world().get::<Velocity>(grandparent).unwrap();
     assert_relative_eq!(
@@ -682,8 +655,6 @@ fn sync_kinematics_grandparent_parent_changed() {
         ))
         .id();
 
-    app.update();
-
     let grandparent_tile = app.world().get::<TilePosition>(grandparent).unwrap();
     assert_eq!(grandparent_tile.layer(), layer);
     assert_eq!(grandparent_tile.position(), IVec2::new(2, 3));
@@ -703,7 +674,7 @@ fn sync_kinematics_grandparent_parent_changed() {
         .entity_mut(grandparent)
         .insert(Transform::from_xyz(5.0, 1.0, 0.0));
 
-    app.update();
+    run_sync_kinematics(&mut app);
 
     let grandparent_tile = app.world().get::<TilePosition>(grandparent).unwrap();
     assert_eq!(grandparent_tile.layer(), layer);
@@ -735,16 +706,11 @@ fn make_app() -> App {
         TaskPoolPlugin::default(),
         TimePlugin,
         TilePlugin,
-        SyncPlugin,
+        KinematicsPlugin,
     ));
-
-    app.insert_resource(Time::<Fixed>::from_duration(Duration::from_secs(1)));
-    app.insert_resource(Time::<Virtual>::from_max_delta(Duration::MAX));
-    app.insert_resource(TimeUpdateStrategy::ManualDuration(Duration::from_secs(1)));
-
-    app.world_mut()
-        .resource_mut::<Time<Real>>()
-        .update_with_duration(Duration::ZERO);
-
     app
+}
+
+fn run_sync_kinematics(app: &mut App) {
+    app.world_mut().run_system_once(sync_kinematics).unwrap();
 }

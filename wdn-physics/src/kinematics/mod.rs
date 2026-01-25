@@ -1,3 +1,5 @@
+pub mod sync;
+
 #[cfg(test)]
 mod tests;
 
@@ -10,6 +12,7 @@ use bevy_transform::prelude::*;
 use crate::{
     PhysicsSystems,
     collision::{Collision, Collisions},
+    kinematics::sync::{sync_kinematics, sync_on_add},
     tile::TilePosition,
 };
 
@@ -88,14 +91,16 @@ impl Plugin for KinematicsPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
             FixedUpdate,
-            PhysicsSystems::Kinematics
-                .after(PhysicsSystems::Sync)
-                .after(PhysicsSystems::Collisions),
+            PhysicsSystems::Kinematics.after(PhysicsSystems::Collisions),
         );
+
+        app.add_observer(sync_on_add);
 
         app.add_systems(
             FixedUpdate,
-            update_kinematics.in_set(PhysicsSystems::Kinematics),
+            (update_kinematics, sync_kinematics)
+                .chain()
+                .in_set(PhysicsSystems::Kinematics),
         );
     }
 }

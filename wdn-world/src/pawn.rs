@@ -6,8 +6,9 @@ use bevy_math::Vec2;
 use bevy_time::Time;
 use bevy_transform::prelude::*;
 use wdn_physics::{
-    PhysicsSystems, collision::Collider, kinematics::RelativeVelocity, lerp::Interpolate,
-    sync::quat_to_rot,
+    collision::Collider,
+    kinematics::{RelativeVelocity, sync::quat_to_rot},
+    lerp::Interpolate,
 };
 
 use crate::{
@@ -118,9 +119,7 @@ impl Plugin for PawnPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
             FixedUpdate,
-            WorldSystems::ApplyPawnActions
-                .before(WorldSystems::ApplyProjectiles)
-                .before(PhysicsSystems::Sync),
+            WorldSystems::ApplyPawnActions.before(WorldSystems::ApplyProjectiles),
         );
 
         app.add_systems(

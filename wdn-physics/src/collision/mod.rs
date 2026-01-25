@@ -151,9 +151,7 @@ impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
             FixedUpdate,
-            PhysicsSystems::Collisions
-                .after(PhysicsSystems::Sync)
-                .before(PhysicsSystems::Kinematics),
+            PhysicsSystems::Collisions.before(PhysicsSystems::Kinematics),
         );
 
         app.add_systems(
