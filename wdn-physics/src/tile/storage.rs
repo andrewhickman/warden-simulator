@@ -56,7 +56,7 @@ pub enum TileMaterial {
 }
 
 bitflags! {
-    #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
+    #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
     pub struct TileOccupancy : u8 {
         const NONE = 0b0000_0000;
         const NORTH = 0b0000_0001;
@@ -235,8 +235,11 @@ impl TileChunk {
         &mut self.tiles[offset.index()]
     }
 
-    pub fn tiles(&self) -> impl ExactSizeIterator<Item = &Tile> {
-        self.tiles.iter()
+    pub fn tiles(&self) -> impl ExactSizeIterator<Item = (TileChunkOffset, Tile)> {
+        self.tiles
+            .iter()
+            .enumerate()
+            .map(|(i, &tile)| (TileChunkOffset::from_index(i), tile))
     }
 
     fn on_add(mut world: DeferredWorld, context: HookContext) {
@@ -356,7 +359,7 @@ mod tests {
         assert_eq!(chunk.position(), position);
         assert_eq!(chunk.tiles().len(), CHUNK_SIZE * CHUNK_SIZE);
 
-        for tile in chunk.tiles() {
+        for (_, tile) in chunk.tiles() {
             assert_eq!(tile.material, TileMaterial::Empty);
         }
     }

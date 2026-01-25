@@ -91,7 +91,7 @@ pub struct Player;
 #[derive(Component)]
 pub struct Target;
 
-fn spawn_pawn(mut commands: Commands) {
+fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
     commands.spawn((
         Camera2d,
         Projection::Orthographic(OrthographicProjection {
@@ -113,6 +113,11 @@ fn spawn_pawn(mut commands: Commands) {
         ChildOf(layer),
         Transform::from_xyz(0.0, 0.0, 0.0),
     ));
+
+    storage.set_material(TilePosition::new(layer, 0, 0), TileMaterial::Empty);
+    storage.set_material(TilePosition::new(layer, 1, -1), TileMaterial::Empty);
+    storage.set_material(TilePosition::new(layer, -1, 1), TileMaterial::Empty);
+    storage.set_material(TilePosition::new(layer, -1, -1), TileMaterial::Empty);
 }
 
 fn handle_pawn_input(

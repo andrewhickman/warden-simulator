@@ -4789,6 +4789,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "wdn-build"
+version = "0.1.0"
+dependencies = [
+ "image",
+]
+
+[[package]]
 name = "wdn-physics"
 version = "0.1.0"
 dependencies = [

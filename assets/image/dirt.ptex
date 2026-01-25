@@ -1,0 +1,1728 @@
+{
+	"connections": [],
+	"label": "Graph",
+	"longdesc": "",
+	"name": "_Node_4507",
+	"node_position": {
+		"x": 0.0,
+		"y": 0.0
+	},
+	"nodes": [
+		{
+			"export_paths": {
+
+			},
+			"name": "Material",
+			"node_position": {
+				"x": -192.053329467773,
+				"y": 229.0
+			},
+			"parameters": {
+				"albedo_color": {
+					"a": 1.0,
+					"b": 1.0,
+					"g": 1.0,
+					"r": 1.0,
+					"type": "Color"
+				},
+				"ao": 1.0,
+				"depth_scale": 0.5,
+				"emission_energy": 1.0,
+				"flags_transparent": true,
+				"metallic": 0.0,
+				"normal": 1.0,
+				"roughness": 1.0,
+				"size": 11.0,
+				"sss": 1.0
+			},
+			"seed_int": 0,
+			"type": "material"
+		},
+		{
+			"connections": [
+				{
+					"from": "uniform",
+					"from_port": 0,
+					"to": "graph",
+					"to_port": 0
+				}
+			],
+			"label": "Graph",
+			"longdesc": "",
+			"name": "213",
+			"node_position": {
+				"x": -72.0,
+				"y": -78.0
+			},
+			"nodes": [
+				{
+					"connections": [
+						{
+							"from": "fbm3",
+							"from_port": 0,
+							"to": "warp_2",
+							"to_port": 1
+						},
+						{
+							"from": "alter_hsv",
+							"from_port": 0,
+							"to": "gen_outputs",
+							"to_port": 0
+						},
+						{
+							"from": "gen_inputs",
+							"from_port": 0,
+							"to": "alter_hsv",
+							"to_port": 0
+						},
+						{
+							"from": "perlin_2",
+							"from_port": 0,
+							"to": "transform2",
+							"to_port": 1
+						},
+						{
+							"from": "perlin_2",
+							"from_port": 0,
+							"to": "transform2",
+							"to_port": 2
+						},
+						{
+							"from": "transform2",
+							"from_port": 0,
+							"to": "make_tileable",
+							"to_port": 0
+						},
+						{
+							"from": "make_tileable",
+							"from_port": 0,
+							"to": "warp_2",
+							"to_port": 0
+						},
+						{
+							"from": "voronoi2",
+							"from_port": 0,
+							"to": "transform2",
+							"to_port": 0
+						},
+						{
+							"from": "fbm3_2",
+							"from_port": 0,
+							"to": "tones_step_3",
+							"to_port": 0
+						},
+						{
+							"from": "fbm3_3",
+							"from_port": 0,
+							"to": "tones_step_2",
+							"to_port": 0
+						},
+						{
+							"from": "warp_2",
+							"from_port": 0,
+							"to": "tones_map",
+							"to_port": 0
+						},
+						{
+							"from": "warp_2",
+							"from_port": 0,
+							"to": "gaussian_blur",
+							"to_port": 0
+						},
+						{
+							"from": "gaussian_blur",
+							"from_port": 0,
+							"to": "blend2",
+							"to_port": 0
+						},
+						{
+							"from": "noise_white_3",
+							"from_port": 0,
+							"to": "blend2",
+							"to_port": 1
+						},
+						{
+							"from": "blend2",
+							"from_port": 0,
+							"to": "tones",
+							"to_port": 0
+						},
+						{
+							"from": "tones",
+							"from_port": 0,
+							"to": "alter_hsv",
+							"to_port": 2
+						},
+						{
+							"from": "noise_white",
+							"from_port": 0,
+							"to": "gaussian_blur_2",
+							"to_port": 0
+						},
+						{
+							"from": "gaussian_blur_2",
+							"from_port": 0,
+							"to": "alter_hsv",
+							"to_port": 1
+						},
+						{
+							"from": "noise_white_2",
+							"from_port": 0,
+							"to": "gaussian_blur_3",
+							"to_port": 0
+						},
+						{
+							"from": "gaussian_blur_3",
+							"from_port": 0,
+							"to": "alter_hsv",
+							"to_port": 3
+						}
+					],
+					"label": "Graph",
+					"longdesc": "",
+					"name": "graph",
+					"node_position": {
+						"x": -2259.71069335938,
+						"y": 1563.66357421875
+					},
+					"nodes": [
+						{
+							"name": "fbm3",
+							"node_position": {
+								"x": -2202.24633789062,
+								"y": 1820.08056640625
+							},
+							"parameters": {
+								"folds": 0.0,
+								"iterations": 2.0,
+								"noise": 2.0,
+								"offset": 0.0,
+								"persistence": 0.61,
+								"scale_x": 8.0,
+								"scale_y": 8.0
+							},
+							"seed_int": 1666631808,
+							"type": "fbm3"
+						},
+						{
+							"name": "perlin_2",
+							"node_position": {
+								"x": -2678.86376953125,
+								"y": 1654.47497558594
+							},
+							"parameters": {
+								"iterations": 6.0,
+								"persistence": 0.45,
+								"scale_x": "$scale",
+								"scale_y": "$scale"
+							},
+							"seed_int": 0,
+							"type": "perlin"
+						},
+						{
+							"generic_size": 1,
+							"name": "warp_2",
+							"node_position": {
+								"x": -1902.80505371094,
+								"y": 1719.79626464844
+							},
+							"parameters": {
+								"amount": 0.23,
+								"eps": 0.025,
+								"mode": 0.0
+							},
+							"seed_int": 0,
+							"type": "warp"
+						},
+						{
+							"name": "alter_hsv",
+							"node_position": {
+								"x": -996.46142578125,
+								"y": 1135.29431152344
+							},
+							"parameters": {
+								"all": 1.0,
+								"hue": 0.05,
+								"saturation": 0.3,
+								"value": 0.3
+							},
+							"seed_int": 0,
+							"type": "alter_hsv"
+						},
+						{
+							"name": "gen_inputs",
+							"node_position": {
+								"x": -2326.16918945312,
+								"y": 870.038879394531
+							},
+							"parameters": {
+
+							},
+							"ports": [
+								{
+									"name": "Color",
+									"type": "rgba"
+								}
+							],
+							"seed_int": 0,
+							"type": "ios"
+						},
+						{
+							"name": "gen_outputs",
+							"node_position": {
+								"x": -1130.05969238281,
+								"y": 1488.89428710938
+							},
+							"parameters": {
+
+							},
+							"ports": [
+								{
+									"name": "unnamed",
+									"type": "rgba"
+								}
+							],
+							"seed_int": 0,
+							"type": "ios"
+						},
+						{
+							"name": "gen_parameters",
+							"node_position": {
+								"x": -2354.33959960938,
+								"y": 716.994750976562
+							},
+							"parameters": {
+								"scale": 10.0
+							},
+							"seed_int": 0,
+							"type": "remote",
+							"widgets": [
+								{
+									"default": 6.0,
+									"label": "Scale",
+									"max": 32.0,
+									"min": 1.0,
+									"name": "scale",
+									"shortdesc": "Scale",
+									"step": 0.01,
+									"type": "named_parameter"
+								}
+							]
+						},
+						{
+							"connections": [
+								{
+									"from": "switch",
+									"from_port": 0,
+									"to": "switch_2",
+									"to_port": 1
+								},
+								{
+									"from": "gen_inputs",
+									"from_port": 0,
+									"to": "switch",
+									"to_port": 1
+								},
+								{
+									"from": "gaussian_blur_x",
+									"from_port": 0,
+									"to": "switch",
+									"to_port": 0
+								},
+								{
+									"from": "gaussian_blur_y",
+									"from_port": 0,
+									"to": "switch_2",
+									"to_port": 0
+								},
+								{
+									"from": "gen_inputs",
+									"from_port": 1,
+									"to": "gaussian_blur_x",
+									"to_port": 1
+								},
+								{
+									"from": "gen_inputs",
+									"from_port": 1,
+									"to": "gaussian_blur_y",
+									"to_port": 1
+								},
+								{
+									"from": "gen_inputs",
+									"from_port": 0,
+									"to": "buffer_4",
+									"to_port": 0
+								},
+								{
+									"from": "buffer_4",
+									"from_port": 0,
+									"to": "gaussian_blur_x",
+									"to_port": 0
+								},
+								{
+									"from": "switch",
+									"from_port": 0,
+									"to": "buffer_5",
+									"to_port": 0
+								},
+								{
+									"from": "buffer_5",
+									"from_port": 0,
+									"to": "gaussian_blur_y",
+									"to_port": 0
+								},
+								{
+									"from": "switch_2",
+									"from_port": 0,
+									"to": "buffer_2",
+									"to_port": 0
+								},
+								{
+									"from": "buffer_2",
+									"from_port": 0,
+									"to": "gen_outputs",
+									"to_port": 0
+								}
+							],
+							"label": "Gaussian Blur",
+							"longdesc": "Applies a gaussian blur on its input",
+							"name": "gaussian_blur",
+							"node_position": {
+								"x": -1693.06970214844,
+								"y": 1797.58813476562
+							},
+							"nodes": [
+								{
+									"name": "switch",
+									"node_position": {
+										"x": -365.452392578125,
+										"y": -238.166656494141
+									},
+									"parameters": {
+										"choices": 2.0,
+										"outputs": 1.0,
+										"source": 0.0
+									},
+									"seed": 19598.0,
+									"type": "switch"
+								},
+								{
+									"name": "switch_2",
+									"node_position": {
+										"x": -148.452392578125,
+										"y": -159.666656494141
+									},
+									"parameters": {
+										"choices": 2.0,
+										"outputs": 1.0,
+										"source": 0.0
+									},
+									"seed": 11659.0,
+									"type": "switch"
+								},
+								{
+									"name": "gen_parameters",
+									"node_position": {
+										"x": -519.666625976562,
+										"y": -694.666625976562
+									},
+									"parameters": {
+										"param0": 10,
+										"param1": 20.9,
+										"param2": 0.0,
+										"param3": false
+									},
+									"seed": 24559.0,
+									"type": "remote",
+									"widgets": [
+										{
+											"label": "Grid size:",
+											"linked_widgets": [
+												{
+													"node": "gaussian_blur_x",
+													"widget": "size"
+												},
+												{
+													"node": "gaussian_blur_y",
+													"widget": "size"
+												},
+												{
+													"node": "buffer_4",
+													"widget": "size"
+												},
+												{
+													"node": "buffer_5",
+													"widget": "size"
+												},
+												{
+													"node": "buffer_2",
+													"widget": "size"
+												}
+											],
+											"longdesc": "The resolution of the input image",
+											"name": "param0",
+											"shortdesc": "Size",
+											"type": "linked_control"
+										},
+										{
+											"label": "Sigma:",
+											"linked_widgets": [
+												{
+													"node": "gaussian_blur_x",
+													"widget": "sigma"
+												},
+												{
+													"node": "gaussian_blur_y",
+													"widget": "sigma"
+												}
+											],
+											"longdesc": "The strength of the blur filter",
+											"name": "param1",
+											"shortdesc": "Sigma",
+											"type": "linked_control"
+										},
+										{
+											"configurations": {
+												"Both": [
+													{
+														"node": "switch",
+														"value": 0.0,
+														"widget": "source"
+													},
+													{
+														"node": "switch_2",
+														"value": 0.0,
+														"widget": "source"
+													}
+												],
+												"X": [
+													{
+														"node": "switch",
+														"value": 0.0,
+														"widget": "source"
+													},
+													{
+														"node": "switch_2",
+														"value": 1.0,
+														"widget": "source"
+													}
+												],
+												"Y": [
+													{
+														"node": "switch",
+														"value": 1.0,
+														"widget": "source"
+													},
+													{
+														"node": "switch_2",
+														"value": 0.0,
+														"widget": "source"
+													}
+												]
+											},
+											"label": "Direction:",
+											"linked_widgets": [
+												{
+													"node": "switch",
+													"widget": "source"
+												},
+												{
+													"node": "switch_2",
+													"widget": "source"
+												}
+											],
+											"longdesc": "Apply the blur filter horizontally, vertically of in both directions",
+											"name": "param2",
+											"shortdesc": "Direction",
+											"type": "config_control"
+										},
+										{
+											"label": "32 bits",
+											"linked_widgets": [
+												{
+													"node": "buffer_4",
+													"widget": "f32"
+												},
+												{
+													"node": "buffer_5",
+													"widget": "f32"
+												},
+												{
+													"node": "buffer_2",
+													"widget": "f32"
+												}
+											],
+											"name": "param3",
+											"type": "linked_control"
+										}
+									]
+								},
+								{
+									"name": "gen_inputs",
+									"node_position": {
+										"x": -928.666625976562,
+										"y": -188.392852783203
+									},
+									"parameters": {
+
+									},
+									"ports": [
+										{
+											"group_size": 0.0,
+											"longdesc": "The input image",
+											"name": "input",
+											"shortdesc": "Input",
+											"type": "rgba"
+										},
+										{
+											"group_size": 0.0,
+											"longdesc": "A map that controls the strength of the blur filter",
+											"name": "amount",
+											"shortdesc": "Strength map",
+											"type": "f"
+										}
+									],
+									"seed": 53476.0,
+									"type": "ios"
+								},
+								{
+									"name": "gen_outputs",
+									"node_position": {
+										"x": 304.547607421875,
+										"y": -137.392852783203
+									},
+									"parameters": {
+
+									},
+									"ports": [
+										{
+											"group_size": 0.0,
+											"longdesc": "Shows the generated blurred image",
+											"name": "port0",
+											"shortdesc": "Output",
+											"type": "rgba"
+										}
+									],
+									"seed": 77778.0,
+									"seed_locked": true,
+									"type": "ios"
+								},
+								{
+									"name": "gaussian_blur_x",
+									"node_position": {
+										"x": -385.993408203125,
+										"y": -334.28173828125
+									},
+									"parameters": {
+										"sigma": 20.9,
+										"size": 10
+									},
+									"seed": 5439.0,
+									"type": "gaussian_blur_x"
+								},
+								{
+									"name": "gaussian_blur_y",
+									"node_position": {
+										"x": -384.993408203125,
+										"y": 10.71826171875
+									},
+									"parameters": {
+										"sigma": 20.9,
+										"size": 10
+									},
+									"seed": 12279.0,
+									"seed_locked": true,
+									"type": "gaussian_blur_y"
+								},
+								{
+									"name": "buffer_4",
+									"node_position": {
+										"x": -385.804931640625,
+										"y": -484.769348144531
+									},
+									"parameters": {
+										"f32": false,
+										"filter": false,
+										"mipmap": false,
+										"size": 10
+									},
+									"seed_int": 0,
+									"type": "buffer",
+									"version": 2
+								},
+								{
+									"name": "buffer_5",
+									"node_position": {
+										"x": -388.304931640625,
+										"y": -151.269348144531
+									},
+									"parameters": {
+										"f32": false,
+										"filter": false,
+										"mipmap": false,
+										"size": 10
+									},
+									"seed_int": 0,
+									"type": "buffer",
+									"version": 2
+								},
+								{
+									"name": "buffer_2",
+									"node_position": {
+										"x": 50.695068359375,
+										"y": -162.269348144531
+									},
+									"parameters": {
+										"f32": false,
+										"filter": false,
+										"mipmap": false,
+										"size": 10
+									},
+									"seed_int": 0,
+									"type": "buffer",
+									"version": 2
+								}
+							],
+							"parameters": {
+								"param0": 10,
+								"param1": 20.9,
+								"param2": 0.0,
+								"param3": false
+							},
+							"seed_int": 0,
+							"shortdesc": "Gaussian blur",
+							"type": "graph"
+						},
+						{
+							"generic_size": 1,
+							"name": "transform2",
+							"node_position": {
+								"x": -2354.1396484375,
+								"y": 1532.81384277344
+							},
+							"parameters": {
+								"mode": 2.0,
+								"rotate": 0.0,
+								"scale_x": 3.0,
+								"scale_y": 3.0,
+								"translate_x": 0.1,
+								"translate_y": 0.1
+							},
+							"seed_int": 0,
+							"type": "transform2"
+						},
+						{
+							"name": "make_tileable",
+							"node_position": {
+								"x": -2074.6123046875,
+								"y": 1591.28576660156
+							},
+							"parameters": {
+								"w": 0.25
+							},
+							"seed_int": 0,
+							"type": "make_tileable"
+						},
+						{
+							"name": "fbm3_2",
+							"node_position": {
+								"x": -2175.8828125,
+								"y": 1018.76416015625
+							},
+							"parameters": {
+								"folds": 0.0,
+								"iterations": 7.0,
+								"noise": 2.0,
+								"offset": 0.0,
+								"persistence": 2.0,
+								"scale_x": 32.0,
+								"scale_y": 32.0
+							},
+							"seed_int": 1944229632,
+							"type": "fbm3"
+						},
+						{
+							"name": "fbm3_3",
+							"node_position": {
+								"x": -2245.255859375,
+								"y": 1278.91918945312
+							},
+							"parameters": {
+								"folds": 0.0,
+								"iterations": 7.0,
+								"noise": 2,
+								"offset": 0.0,
+								"persistence": 2.0,
+								"scale_x": 32.0,
+								"scale_y": 32.0
+							},
+							"seed_int": 1944229632,
+							"type": "fbm3"
+						},
+						{
+							"name": "voronoi2",
+							"node_position": {
+								"x": -2692.83520507812,
+								"y": 1424.11987304688
+							},
+							"parameters": {
+								"intensity": 1.0,
+								"randomness": 0.85,
+								"scale_x": "$scale*2.0",
+								"scale_y": "$scale*2.0",
+								"stretch_x": 1.0,
+								"stretch_y": 1.0
+							},
+							"seed_int": 0,
+							"type": "voronoi2"
+						},
+						{
+							"name": "tones_step_3",
+							"node_position": {
+								"x": -1930.34851074219,
+								"y": 1145.60717773438
+							},
+							"parameters": {
+								"invert": false,
+								"value": 0.5,
+								"width": 0.38
+							},
+							"seed_int": 0,
+							"type": "tones_step"
+						},
+						{
+							"name": "tones_step_2",
+							"node_position": {
+								"x": -1989.56799316406,
+								"y": 1359.64526367188
+							},
+							"parameters": {
+								"invert": false,
+								"value": 0.5,
+								"width": 0.39
+							},
+							"seed_int": 0,
+							"type": "tones_step"
+						},
+						{
+							"name": "noise_white",
+							"node_position": {
+								"x": -1704.47607421875,
+								"y": 1180.7587890625
+							},
+							"parameters": {
+								"size": 10
+							},
+							"seed_int": 0,
+							"type": "noise_white"
+						},
+						{
+							"name": "noise_white_2",
+							"node_position": {
+								"x": -1682.94555664062,
+								"y": 1345.08435058594
+							},
+							"parameters": {
+								"size": 10.0
+							},
+							"seed_int": 0,
+							"type": "noise_white"
+						},
+						{
+							"generic_size": 1,
+							"name": "tones_map",
+							"node_position": {
+								"x": -1860.35498046875,
+								"y": 1519.07006835938
+							},
+							"parameters": {
+								"in_max": 1.0,
+								"in_min": 0.0,
+								"out_max": 1.0,
+								"out_min": 0.4
+							},
+							"seed_int": 0,
+							"type": "tones_map"
+						},
+						{
+							"name": "tones",
+							"node_position": {
+								"x": -1316.87316894531,
+								"y": 1672.02429199219
+							},
+							"parameters": {
+								"in_max": {
+									"a": 1.0,
+									"b": 0.720041215419769,
+									"g": 0.720041215419769,
+									"r": 0.720041215419769,
+									"type": "Color"
+								},
+								"in_mid": {
+									"a": 0.5,
+									"b": 0.383012741804123,
+									"g": 0.383012741804123,
+									"r": 0.383012741804123,
+									"type": "Color"
+								},
+								"in_min": {
+									"a": 0.0,
+									"b": 0.110124416649342,
+									"g": 0.110124416649342,
+									"r": 0.110124416649342,
+									"type": "Color"
+								},
+								"out_max": {
+									"a": 1.0,
+									"b": 0.900987446308136,
+									"g": 0.900987446308136,
+									"r": 0.900987446308136,
+									"type": "Color"
+								},
+								"out_min": {
+									"a": 0.0,
+									"b": 0.210727423429489,
+									"g": 0.210727423429489,
+									"r": 0.210727423429489,
+									"type": "Color"
+								}
+							},
+							"seed_int": 0,
+							"type": "tones"
+						},
+						{
+							"generic_size": 1,
+							"name": "blend2",
+							"node_position": {
+								"x": -1564.05493164062,
+								"y": 1505.30395507812
+							},
+							"parameters": {
+								"amount1": 0.68,
+								"blend_type1": 2
+							},
+							"seed_int": 0,
+							"type": "blend2"
+						},
+						{
+							"name": "noise_white_3",
+							"node_position": {
+								"x": -1812.08056640625,
+								"y": 1415.26550292969
+							},
+							"parameters": {
+								"size": 10.0
+							},
+							"seed_int": 0,
+							"type": "noise_white"
+						},
+						{
+							"connections": [
+								{
+									"from": "switch",
+									"from_port": 0,
+									"to": "switch_2",
+									"to_port": 1
+								},
+								{
+									"from": "gen_inputs",
+									"from_port": 0,
+									"to": "switch",
+									"to_port": 1
+								},
+								{
+									"from": "gaussian_blur_x",
+									"from_port": 0,
+									"to": "switch",
+									"to_port": 0
+								},
+								{
+									"from": "gaussian_blur_y",
+									"from_port": 0,
+									"to": "switch_2",
+									"to_port": 0
+								},
+								{
+									"from": "gen_inputs",
+									"from_port": 1,
+									"to": "gaussian_blur_x",
+									"to_port": 1
+								},
+								{
+									"from": "gen_inputs",
+									"from_port": 1,
+									"to": "gaussian_blur_y",
+									"to_port": 1
+								},
+								{
+									"from": "gen_inputs",
+									"from_port": 0,
+									"to": "buffer_4",
+									"to_port": 0
+								},
+								{
+									"from": "buffer_4",
+									"from_port": 0,
+									"to": "gaussian_blur_x",
+									"to_port": 0
+								},
+								{
+									"from": "switch",
+									"from_port": 0,
+									"to": "buffer_5",
+									"to_port": 0
+								},
+								{
+									"from": "buffer_5",
+									"from_port": 0,
+									"to": "gaussian_blur_y",
+									"to_port": 0
+								},
+								{
+									"from": "switch_2",
+									"from_port": 0,
+									"to": "buffer_2",
+									"to_port": 0
+								},
+								{
+									"from": "buffer_2",
+									"from_port": 0,
+									"to": "gen_outputs",
+									"to_port": 0
+								}
+							],
+							"label": "Gaussian Blur",
+							"longdesc": "Applies a gaussian blur on its input",
+							"name": "gaussian_blur_2",
+							"node_position": {
+								"x": -1366.80749511719,
+								"y": 1023.49627685547
+							},
+							"nodes": [
+								{
+									"name": "switch",
+									"node_position": {
+										"x": -365.452392578125,
+										"y": -238.166656494141
+									},
+									"parameters": {
+										"choices": 2.0,
+										"outputs": 1.0,
+										"source": 0.0
+									},
+									"seed": 19598.0,
+									"type": "switch"
+								},
+								{
+									"name": "switch_2",
+									"node_position": {
+										"x": -148.452392578125,
+										"y": -159.666656494141
+									},
+									"parameters": {
+										"choices": 2.0,
+										"outputs": 1.0,
+										"source": 0.0
+									},
+									"seed": 11659.0,
+									"type": "switch"
+								},
+								{
+									"name": "gen_parameters",
+									"node_position": {
+										"x": -519.666625976562,
+										"y": -694.666625976562
+									},
+									"parameters": {
+										"param0": 10.0,
+										"param1": 2.0,
+										"param2": 0.0,
+										"param3": false
+									},
+									"seed": 24559.0,
+									"type": "remote",
+									"widgets": [
+										{
+											"label": "Grid size:",
+											"linked_widgets": [
+												{
+													"node": "gaussian_blur_x",
+													"widget": "size"
+												},
+												{
+													"node": "gaussian_blur_y",
+													"widget": "size"
+												},
+												{
+													"node": "buffer_4",
+													"widget": "size"
+												},
+												{
+													"node": "buffer_5",
+													"widget": "size"
+												},
+												{
+													"node": "buffer_2",
+													"widget": "size"
+												}
+											],
+											"longdesc": "The resolution of the input image",
+											"name": "param0",
+											"shortdesc": "Size",
+											"type": "linked_control"
+										},
+										{
+											"label": "Sigma:",
+											"linked_widgets": [
+												{
+													"node": "gaussian_blur_x",
+													"widget": "sigma"
+												},
+												{
+													"node": "gaussian_blur_y",
+													"widget": "sigma"
+												}
+											],
+											"longdesc": "The strength of the blur filter",
+											"name": "param1",
+											"shortdesc": "Sigma",
+											"type": "linked_control"
+										},
+										{
+											"configurations": {
+												"Both": [
+													{
+														"node": "switch",
+														"value": 0.0,
+														"widget": "source"
+													},
+													{
+														"node": "switch_2",
+														"value": 0.0,
+														"widget": "source"
+													}
+												],
+												"X": [
+													{
+														"node": "switch",
+														"value": 0.0,
+														"widget": "source"
+													},
+													{
+														"node": "switch_2",
+														"value": 1.0,
+														"widget": "source"
+													}
+												],
+												"Y": [
+													{
+														"node": "switch",
+														"value": 1.0,
+														"widget": "source"
+													},
+													{
+														"node": "switch_2",
+														"value": 0.0,
+														"widget": "source"
+													}
+												]
+											},
+											"label": "Direction:",
+											"linked_widgets": [
+												{
+													"node": "switch",
+													"widget": "source"
+												},
+												{
+													"node": "switch_2",
+													"widget": "source"
+												}
+											],
+											"longdesc": "Apply the blur filter horizontally, vertically of in both directions",
+											"name": "param2",
+											"shortdesc": "Direction",
+											"type": "config_control"
+										},
+										{
+											"label": "32 bits",
+											"linked_widgets": [
+												{
+													"node": "buffer_4",
+													"widget": "f32"
+												},
+												{
+													"node": "buffer_5",
+													"widget": "f32"
+												},
+												{
+													"node": "buffer_2",
+													"widget": "f32"
+												}
+											],
+											"name": "param3",
+											"type": "linked_control"
+										}
+									]
+								},
+								{
+									"name": "gen_inputs",
+									"node_position": {
+										"x": -928.666625976562,
+										"y": -188.392852783203
+									},
+									"parameters": {
+
+									},
+									"ports": [
+										{
+											"group_size": 0.0,
+											"longdesc": "The input image",
+											"name": "input",
+											"shortdesc": "Input",
+											"type": "rgba"
+										},
+										{
+											"group_size": 0.0,
+											"longdesc": "A map that controls the strength of the blur filter",
+											"name": "amount",
+											"shortdesc": "Strength map",
+											"type": "f"
+										}
+									],
+									"seed": 53476.0,
+									"type": "ios"
+								},
+								{
+									"name": "gen_outputs",
+									"node_position": {
+										"x": 304.547607421875,
+										"y": -137.392852783203
+									},
+									"parameters": {
+
+									},
+									"ports": [
+										{
+											"group_size": 0.0,
+											"longdesc": "Shows the generated blurred image",
+											"name": "port0",
+											"shortdesc": "Output",
+											"type": "rgba"
+										}
+									],
+									"seed": 77778.0,
+									"seed_locked": true,
+									"type": "ios"
+								},
+								{
+									"name": "gaussian_blur_x",
+									"node_position": {
+										"x": -385.993408203125,
+										"y": -334.28173828125
+									},
+									"parameters": {
+										"sigma": 2.0,
+										"size": 10.0
+									},
+									"seed": 5439.0,
+									"type": "gaussian_blur_x"
+								},
+								{
+									"name": "gaussian_blur_y",
+									"node_position": {
+										"x": -384.993408203125,
+										"y": 10.71826171875
+									},
+									"parameters": {
+										"sigma": 2.0,
+										"size": 10.0
+									},
+									"seed": 12279.0,
+									"seed_locked": true,
+									"type": "gaussian_blur_y"
+								},
+								{
+									"name": "buffer_4",
+									"node_position": {
+										"x": -385.804931640625,
+										"y": -484.769348144531
+									},
+									"parameters": {
+										"f32": false,
+										"filter": false,
+										"mipmap": false,
+										"size": 10.0
+									},
+									"seed_int": 0,
+									"type": "buffer",
+									"version": 2
+								},
+								{
+									"name": "buffer_5",
+									"node_position": {
+										"x": -388.304931640625,
+										"y": -151.269348144531
+									},
+									"parameters": {
+										"f32": false,
+										"filter": false,
+										"mipmap": false,
+										"size": 10.0
+									},
+									"seed_int": 0,
+									"type": "buffer",
+									"version": 2
+								},
+								{
+									"name": "buffer_2",
+									"node_position": {
+										"x": 50.695068359375,
+										"y": -162.269348144531
+									},
+									"parameters": {
+										"f32": false,
+										"filter": false,
+										"mipmap": false,
+										"size": 10.0
+									},
+									"seed_int": 0,
+									"type": "buffer",
+									"version": 2
+								}
+							],
+							"parameters": {
+								"param0": 10.0,
+								"param1": 2.0,
+								"param2": 0.0,
+								"param3": false
+							},
+							"seed_int": 0,
+							"shortdesc": "Gaussian blur",
+							"type": "graph"
+						},
+						{
+							"connections": [
+								{
+									"from": "switch",
+									"from_port": 0,
+									"to": "switch_2",
+									"to_port": 1
+								},
+								{
+									"from": "gen_inputs",
+									"from_port": 0,
+									"to": "switch",
+									"to_port": 1
+								},
+								{
+									"from": "gaussian_blur_x",
+									"from_port": 0,
+									"to": "switch",
+									"to_port": 0
+								},
+								{
+									"from": "gaussian_blur_y",
+									"from_port": 0,
+									"to": "switch_2",
+									"to_port": 0
+								},
+								{
+									"from": "gen_inputs",
+									"from_port": 1,
+									"to": "gaussian_blur_x",
+									"to_port": 1
+								},
+								{
+									"from": "gen_inputs",
+									"from_port": 1,
+									"to": "gaussian_blur_y",
+									"to_port": 1
+								},
+								{
+									"from": "gen_inputs",
+									"from_port": 0,
+									"to": "buffer_4",
+									"to_port": 0
+								},
+								{
+									"from": "buffer_4",
+									"from_port": 0,
+									"to": "gaussian_blur_x",
+									"to_port": 0
+								},
+								{
+									"from": "switch",
+									"from_port": 0,
+									"to": "buffer_5",
+									"to_port": 0
+								},
+								{
+									"from": "buffer_5",
+									"from_port": 0,
+									"to": "gaussian_blur_y",
+									"to_port": 0
+								},
+								{
+									"from": "switch_2",
+									"from_port": 0,
+									"to": "buffer_2",
+									"to_port": 0
+								},
+								{
+									"from": "buffer_2",
+									"from_port": 0,
+									"to": "gen_outputs",
+									"to_port": 0
+								}
+							],
+							"label": "Gaussian Blur",
+							"longdesc": "Applies a gaussian blur on its input",
+							"name": "gaussian_blur_3",
+							"node_position": {
+								"x": -1393.78234863281,
+								"y": 1278.46118164062
+							},
+							"nodes": [
+								{
+									"name": "switch",
+									"node_position": {
+										"x": -365.452392578125,
+										"y": -238.166656494141
+									},
+									"parameters": {
+										"choices": 2.0,
+										"outputs": 1.0,
+										"source": 0.0
+									},
+									"seed": 19598.0,
+									"type": "switch"
+								},
+								{
+									"name": "switch_2",
+									"node_position": {
+										"x": -148.452392578125,
+										"y": -159.666656494141
+									},
+									"parameters": {
+										"choices": 2.0,
+										"outputs": 1.0,
+										"source": 0.0
+									},
+									"seed": 11659.0,
+									"type": "switch"
+								},
+								{
+									"name": "gen_parameters",
+									"node_position": {
+										"x": -519.666625976562,
+										"y": -694.666625976562
+									},
+									"parameters": {
+										"param0": 10.0,
+										"param1": 2.0,
+										"param2": 0.0,
+										"param3": false
+									},
+									"seed": 24559.0,
+									"type": "remote",
+									"widgets": [
+										{
+											"label": "Grid size:",
+											"linked_widgets": [
+												{
+													"node": "gaussian_blur_x",
+													"widget": "size"
+												},
+												{
+													"node": "gaussian_blur_y",
+													"widget": "size"
+												},
+												{
+													"node": "buffer_4",
+													"widget": "size"
+												},
+												{
+													"node": "buffer_5",
+													"widget": "size"
+												},
+												{
+													"node": "buffer_2",
+													"widget": "size"
+												}
+											],
+											"longdesc": "The resolution of the input image",
+											"name": "param0",
+											"shortdesc": "Size",
+											"type": "linked_control"
+										},
+										{
+											"label": "Sigma:",
+											"linked_widgets": [
+												{
+													"node": "gaussian_blur_x",
+													"widget": "sigma"
+												},
+												{
+													"node": "gaussian_blur_y",
+													"widget": "sigma"
+												}
+											],
+											"longdesc": "The strength of the blur filter",
+											"name": "param1",
+											"shortdesc": "Sigma",
+											"type": "linked_control"
+										},
+										{
+											"configurations": {
+												"Both": [
+													{
+														"node": "switch",
+														"value": 0.0,
+														"widget": "source"
+													},
+													{
+														"node": "switch_2",
+														"value": 0.0,
+														"widget": "source"
+													}
+												],
+												"X": [
+													{
+														"node": "switch",
+														"value": 0.0,
+														"widget": "source"
+													},
+													{
+														"node": "switch_2",
+														"value": 1.0,
+														"widget": "source"
+													}
+												],
+												"Y": [
+													{
+														"node": "switch",
+														"value": 1.0,
+														"widget": "source"
+													},
+													{
+														"node": "switch_2",
+														"value": 0.0,
+														"widget": "source"
+													}
+												]
+											},
+											"label": "Direction:",
+											"linked_widgets": [
+												{
+													"node": "switch",
+													"widget": "source"
+												},
+												{
+													"node": "switch_2",
+													"widget": "source"
+												}
+											],
+											"longdesc": "Apply the blur filter horizontally, vertically of in both directions",
+											"name": "param2",
+											"shortdesc": "Direction",
+											"type": "config_control"
+										},
+										{
+											"label": "32 bits",
+											"linked_widgets": [
+												{
+													"node": "buffer_4",
+													"widget": "f32"
+												},
+												{
+													"node": "buffer_5",
+													"widget": "f32"
+												},
+												{
+													"node": "buffer_2",
+													"widget": "f32"
+												}
+											],
+											"name": "param3",
+											"type": "linked_control"
+										}
+									]
+								},
+								{
+									"name": "gen_inputs",
+									"node_position": {
+										"x": -928.666625976562,
+										"y": -188.392852783203
+									},
+									"parameters": {
+
+									},
+									"ports": [
+										{
+											"group_size": 0.0,
+											"longdesc": "The input image",
+											"name": "input",
+											"shortdesc": "Input",
+											"type": "rgba"
+										},
+										{
+											"group_size": 0.0,
+											"longdesc": "A map that controls the strength of the blur filter",
+											"name": "amount",
+											"shortdesc": "Strength map",
+											"type": "f"
+										}
+									],
+									"seed": 53476.0,
+									"type": "ios"
+								},
+								{
+									"name": "gen_outputs",
+									"node_position": {
+										"x": 304.547607421875,
+										"y": -137.392852783203
+									},
+									"parameters": {
+
+									},
+									"ports": [
+										{
+											"group_size": 0.0,
+											"longdesc": "Shows the generated blurred image",
+											"name": "port0",
+											"shortdesc": "Output",
+											"type": "rgba"
+										}
+									],
+									"seed": 77778.0,
+									"seed_locked": true,
+									"type": "ios"
+								},
+								{
+									"name": "gaussian_blur_x",
+									"node_position": {
+										"x": -385.993408203125,
+										"y": -334.28173828125
+									},
+									"parameters": {
+										"sigma": 2.0,
+										"size": 10.0
+									},
+									"seed": 5439.0,
+									"type": "gaussian_blur_x"
+								},
+								{
+									"name": "gaussian_blur_y",
+									"node_position": {
+										"x": -384.993408203125,
+										"y": 10.71826171875
+									},
+									"parameters": {
+										"sigma": 2.0,
+										"size": 10.0
+									},
+									"seed": 12279.0,
+									"seed_locked": true,
+									"type": "gaussian_blur_y"
+								},
+								{
+									"name": "buffer_4",
+									"node_position": {
+										"x": -385.804931640625,
+										"y": -484.769348144531
+									},
+									"parameters": {
+										"f32": false,
+										"filter": false,
+										"mipmap": false,
+										"size": 10.0
+									},
+									"seed_int": 0,
+									"type": "buffer",
+									"version": 2
+								},
+								{
+									"name": "buffer_5",
+									"node_position": {
+										"x": -388.304931640625,
+										"y": -151.269348144531
+									},
+									"parameters": {
+										"f32": false,
+										"filter": false,
+										"mipmap": false,
+										"size": 10.0
+									},
+									"seed_int": 0,
+									"type": "buffer",
+									"version": 2
+								},
+								{
+									"name": "buffer_2",
+									"node_position": {
+										"x": 50.695068359375,
+										"y": -162.269348144531
+									},
+									"parameters": {
+										"f32": false,
+										"filter": false,
+										"mipmap": false,
+										"size": 10.0
+									},
+									"seed_int": 0,
+									"type": "buffer",
+									"version": 2
+								}
+							],
+							"parameters": {
+								"param0": 10.0,
+								"param1": 2.0,
+								"param2": 0.0,
+								"param3": false
+							},
+							"seed_int": 0,
+							"shortdesc": "Gaussian blur",
+							"type": "graph"
+						}
+					],
+					"parameters": {
+						"scale": 10.0
+					},
+					"seed_int": 1709781248,
+					"shortdesc": "",
+					"type": "graph"
+				},
+				{
+					"name": "uniform",
+					"node_position": {
+						"x": -2565.65454101562,
+						"y": 1592.369140625
+					},
+					"parameters": {
+						"color": {
+							"a": 1.0,
+							"b": 0.190400004386902,
+							"g": 0.26270666718483,
+							"r": 0.340000003576279,
+							"type": "Color"
+						}
+					},
+					"seed_int": 0,
+					"type": "uniform"
+				}
+			],
+			"parameters": {
+
+			},
+			"seed_int": 0,
+			"shortdesc": "",
+			"type": "graph"
+		}
+	],
+	"parameters": {
+
+	},
+	"seed_int": 0,
+	"shortdesc": "",
+	"type": "graph"
+}
