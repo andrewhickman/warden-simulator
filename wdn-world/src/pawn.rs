@@ -9,7 +9,6 @@ use wdn_physics::{
     PhysicsSystems,
     collision::Collider,
     kinematics::{Position, Velocity},
-    lerp::Interpolate,
 };
 
 use crate::{
@@ -24,7 +23,6 @@ pub struct PawnPlugin;
     Collider::new(Pawn::RADIUS, true),
     Transform,
     Velocity,
-    Interpolate,
     Health::new(Pawn::MAX_HEALTH),
     PawnAction
 )]
@@ -40,7 +38,6 @@ pub struct Pawn {
 #[require(
     Collider::new(PawnProjectile::RADIUS, false),
     Transform,
-    Interpolate,
     Projectile::new(Entity::PLACEHOLDER, PawnProjectile::DAMAGE, PawnProjectile::DURATION)
 )]
 pub struct PawnProjectile;

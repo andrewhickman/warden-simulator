@@ -4,7 +4,7 @@ use bevy_sprite::prelude::*;
 
 use wdn_world::pawn::{Pawn, PawnProjectile};
 
-use crate::assets::AssetHandles;
+use crate::{assets::AssetHandles, lerp::Interpolate};
 
 pub struct PawnPlugin;
 
@@ -21,7 +21,11 @@ pub struct PawnProjectileSprite;
 impl Plugin for PawnPlugin {
     fn build(&self, app: &mut App) {
         app.register_required_components::<Pawn, PawnSprite>();
+        app.register_required_components_with::<Pawn, Interpolate>(Interpolate::translation);
         app.register_required_components::<PawnProjectile, PawnProjectileSprite>();
+        app.register_required_components_with::<PawnProjectile, Interpolate>(
+            Interpolate::translation,
+        );
     }
 }
 

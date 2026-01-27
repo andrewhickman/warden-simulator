@@ -9,7 +9,6 @@ bevy_ecs = "0.18.0"
 bevy_math = { version = "0.18.0", features = ["libm"] }
 bevy_platform = "0.18.0"
 bevy_time = "0.18.0"
-bevy_transform = { version = "0.18.0", features = ["libm"] }
 bevy_utils = "0.18.0"
 bitflags = "2.10.0"
 nonmax = "0.5.5"

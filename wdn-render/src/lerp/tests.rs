@@ -397,6 +397,92 @@ fn position_not_modified_render_update() {
     }
 }
 
+#[test]
+fn translation_only_interpolation() {
+    let mut app = make_app();
+    let entity = app
+        .world_mut()
+        .spawn((
+            Interpolate::translation(),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
+            Transform::from_xyz(0.0, 0.0, 5.0).with_rotation(Quat::from_rotation_z(PI)),
+        ))
+        .id();
+
+    run_interpolate(&mut app, 0.5);
+
+    set_position(
+        &mut app,
+        entity,
+        Vec2::new(1.0, 1.0),
+        Rot2::radians(FRAC_PI_2),
+    );
+
+    run_interpolate(&mut app, 1.0);
+
+    let transform = app.world().get::<Transform>(entity).unwrap();
+    assert_relative_eq!(transform.translation, Vec3::new(0.5, 0.5, 5.0));
+    assert_relative_eq!(transform.rotation, Quat::from_rotation_z(PI));
+    assert_relative_eq!(transform.scale, Vec3::ONE);
+
+    let state = app.world().get::<InterpolateState>(entity).unwrap();
+    match state.translation {
+        ComponentInterpolateState::Interpolating { start, end } => {
+            assert_relative_eq!(start, Vec2::ZERO);
+            assert_relative_eq!(end, Vec2::new(1.0, 1.0));
+        }
+        _ => panic!("expected Interpolating translation, got {state:?}"),
+    }
+
+    match state.rotation {
+        ComponentInterpolateState::Unset => {}
+        _ => panic!("expected Unset rotation, got {state:?}"),
+    }
+}
+
+#[test]
+fn rotation_only_interpolation() {
+    let mut app = make_app();
+    let entity = app
+        .world_mut()
+        .spawn((
+            Interpolate::rotation(),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
+            Transform::from_xyz(5.0, 10.0, 3.0),
+        ))
+        .id();
+
+    run_interpolate(&mut app, 0.5);
+
+    set_position(
+        &mut app,
+        entity,
+        Vec2::new(1.0, 1.0),
+        Rot2::radians(FRAC_PI_2),
+    );
+
+    run_interpolate(&mut app, 1.0);
+
+    let transform = app.world().get::<Transform>(entity).unwrap();
+    assert_relative_eq!(transform.translation, Vec3::new(5.0, 10.0, 3.0));
+    assert_relative_eq!(transform.rotation, Quat::from_rotation_z(FRAC_PI_4));
+    assert_relative_eq!(transform.scale, Vec3::ONE);
+
+    let state = app.world().get::<InterpolateState>(entity).unwrap();
+    match state.translation {
+        ComponentInterpolateState::Unset => {}
+        _ => panic!("expected Unset translation, got {state:?}"),
+    }
+
+    match state.rotation {
+        ComponentInterpolateState::Interpolating { start, end } => {
+            assert_relative_eq!(start, Rot2::IDENTITY);
+            assert_relative_eq!(end, Rot2::radians(FRAC_PI_2));
+        }
+        _ => panic!("expected Interpolating rotation, got {state:?}"),
+    }
+}
+
 fn make_app() -> App {
     let mut app = App::new();
     app.add_plugins((TaskPoolPlugin::default(), TimePlugin, InterpolatePlugin));

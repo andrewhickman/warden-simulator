@@ -7,7 +7,9 @@ use bevy_math::prelude::*;
 use bevy_time::prelude::*;
 use bevy_transform::prelude::*;
 
-use crate::kinematics::Position;
+use wdn_physics::{kinematics::Position, layer::Layer};
+
+use crate::RenderSystems;
 
 pub struct InterpolatePlugin;
 
@@ -90,11 +92,15 @@ impl Plugin for InterpolatePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<FixedUpdateCount>();
 
+        app.register_required_components::<Layer, Transform>();
+
         app.add_systems(FixedLast, count_fixed_update);
 
         app.add_systems(
-            RunFixedMainLoop,
-            interpolate.in_set(RunFixedMainLoopSystems::AfterFixedMainLoop),
+            PostUpdate,
+            interpolate
+                .in_set(RenderSystems::Interpolate)
+                .before(TransformSystems::Propagate),
         );
     }
 }
@@ -103,6 +109,22 @@ impl Default for Interpolate {
     fn default() -> Self {
         Self {
             translation: true,
+            rotation: true,
+        }
+    }
+}
+
+impl Interpolate {
+    pub fn translation() -> Self {
+        Self {
+            translation: true,
+            rotation: false,
+        }
+    }
+
+    pub fn rotation() -> Self {
+        Self {
+            translation: false,
             rotation: true,
         }
     }

@@ -17,8 +17,12 @@ bevy_render = "0.18.0"
 bevy_sprite = "0.18.0"
 bevy_sprite_render = "0.18.0"
 bevy_time = "0.18.0"
-bevy_transform = "0.18.0"
+bevy_transform = { version = "0.18.0", features = ["libm"] }
 bytemuck = "1.24.0"
 wdn-physics = { version = "0.1.0", path = "../wdn-physics" }
 wdn-tasks = { version = "0.1.0", path = "../wdn-tasks" }
 wdn-world = { version = "0.1.0", path = "../wdn-world" }
+
+[dev-dependencies]
+approx = "0.5.1"
+bevy_math = { version = "0.18.0", features = ["approx"] }

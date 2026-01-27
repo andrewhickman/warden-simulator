@@ -1,16 +1,12 @@
 pub mod collision;
 pub mod kinematics;
 pub mod layer;
-pub mod lerp;
 pub mod tile;
 
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 
-use crate::{
-    collision::CollisionPlugin, kinematics::KinematicsPlugin, lerp::InterpolatePlugin,
-    tile::TilePlugin,
-};
+use crate::{collision::CollisionPlugin, kinematics::KinematicsPlugin, tile::TilePlugin};
 
 pub struct PhysicsPlugin;
 
@@ -22,11 +18,6 @@ pub enum PhysicsSystems {
 
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((
-            TilePlugin,
-            InterpolatePlugin,
-            CollisionPlugin,
-            KinematicsPlugin,
-        ));
+        app.add_plugins((TilePlugin, CollisionPlugin, KinematicsPlugin));
     }
 }

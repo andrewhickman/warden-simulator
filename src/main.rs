@@ -9,7 +9,7 @@ use bevy::{
 
 use wdn_physics::{
     PhysicsPlugin as WdnPhysicsPlugin,
-    kinematics::Position,
+    kinematics::{GlobalPosition, Position},
     layer::Layer,
     tile::{
         TilePosition,
@@ -126,7 +126,7 @@ fn handle_pawn_input(
     keys: Res<ButtonInput<KeyCode>>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
     window: Single<&Window>,
-    pawn_query: Single<(&mut PawnAction, &GlobalTransform), (With<Pawn>, With<Player>)>,
+    pawn_query: Single<(&mut PawnAction, &GlobalPosition), (With<Pawn>, With<Player>)>,
 ) {
     let (mut action, pawn_transform) = pawn_query.into_inner();
 
@@ -146,29 +146,17 @@ fn handle_pawn_input(
     if mouse.pressed(MouseButton::Left) {
         if let Some(cursor_pos) = window.cursor_position() {
             if let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_pos) {
-                let pawn_pos = pawn_transform.translation().truncate();
+                let pawn_pos = pawn_transform.position();
                 let direction = world_pos - pawn_pos;
 
-                if direction.length_squared() > 0.01 {
+                if let Ok(direction) = Dir2::try_from(direction) {
                     // Calculate the target angle
-                    let target_angle = direction.y.atan2(direction.x) - std::f32::consts::FRAC_PI_2;
+                    let target_angle = direction.rotation_from_y();
 
                     // Get current rotation (assuming Z-axis rotation)
-                    let current_rotation = pawn_transform.to_scale_rotation_translation().1;
-                    let (_, _, current_angle) = current_rotation.to_euler(EulerRot::XYZ);
+                    let current_angle = pawn_transform.rotation();
 
-                    // Normalize angles to [-PI, PI]
-                    let normalize_angle = |angle: f32| {
-                        let mut a = angle % std::f32::consts::TAU;
-                        if a > std::f32::consts::PI {
-                            a -= std::f32::consts::TAU;
-                        } else if a < -std::f32::consts::PI {
-                            a += std::f32::consts::TAU;
-                        }
-                        a
-                    };
-
-                    let angle_diff = normalize_angle(target_angle - current_angle);
+                    let angle_diff = current_angle.angle_to(target_angle);
 
                     // Threshold for considering the pawn aligned
                     const ANGLE_THRESHOLD: f32 = 0.1;
