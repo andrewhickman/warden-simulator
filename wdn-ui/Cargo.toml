@@ -3,6 +3,9 @@ name = "wdn-ui"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+doctest = false
+
 [dependencies]
 bevy_app = "0.18.0"
 wdn-render = { version = "0.1.0", path = "../wdn-render" }
