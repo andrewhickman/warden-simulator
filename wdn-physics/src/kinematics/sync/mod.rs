@@ -103,7 +103,7 @@ impl SyncQueryItem<'_, '_> {
             parent = ancestor.parent.get();
         }
 
-        *self.position = Position::new(isometry);
+        *self.position = Position::from_isometry(isometry);
         if let Some(velocity) = self.velocity.as_mut() {
             **velocity = Velocity::new(linear, angular);
         }

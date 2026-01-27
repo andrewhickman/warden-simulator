@@ -18,27 +18,27 @@ use crate::{
 
 pub struct KinematicsPlugin;
 
-#[derive(Copy, Clone, Component, Debug, Default)]
+#[derive(Copy, Clone, Component, Debug, Default, PartialEq)]
 #[require(TilePosition)]
 pub struct Position {
     isometry: Isometry2d,
 }
 
-#[derive(Copy, Clone, Component, Debug, Default)]
+#[derive(Copy, Clone, Component, Debug, Default, PartialEq)]
 #[require(Position)]
 pub struct Velocity {
     linear: Vec2,
     angular: f32,
 }
 
-#[derive(Clone, Copy, Component, Default, Debug)]
+#[derive(Clone, Copy, Component, Default, Debug, PartialEq)]
 #[require(Position)]
 pub struct RelativePosition {
     position: Vec2,
     rotation: Rot2,
 }
 
-#[derive(Clone, Copy, Component, Default, Debug)]
+#[derive(Clone, Copy, Component, Default, Debug, PartialEq)]
 #[require(RelativePosition, Velocity)]
 pub struct RelativeVelocity {
     linear: Vec2,
@@ -106,7 +106,13 @@ impl Plugin for KinematicsPlugin {
 }
 
 impl Position {
-    pub fn new(isometry: Isometry2d) -> Self {
+    pub fn new(position: Vec2, rotation: Rot2) -> Self {
+        Self {
+            isometry: Isometry2d::new(position, rotation),
+        }
+    }
+
+    pub fn from_isometry(isometry: Isometry2d) -> Self {
         Self { isometry }
     }
 
