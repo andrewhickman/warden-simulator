@@ -107,7 +107,7 @@ impl SyncQueryItem<'_, '_> {
 
         let new_tile = TilePosition::floor(parent, self.position.position());
         if *self.tile != new_tile {
-            commands.entity(self.id).insert(new_tile);
+            commands.entity(self.id).try_insert(new_tile);
         }
     }
 }

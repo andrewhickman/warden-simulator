@@ -2,10 +2,11 @@ use std::{f32::consts::TAU, time::Duration};
 
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
-use bevy_math::Vec2;
+use bevy_math::{Rot2, Vec2};
 use bevy_time::Time;
 use bevy_transform::prelude::*;
 use wdn_physics::{
+    PhysicsSystems,
     collision::Collider,
     kinematics::{Position, Velocity},
     lerp::Interpolate,
@@ -119,7 +120,9 @@ impl Plugin for PawnPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
             FixedUpdate,
-            WorldSystems::ApplyPawnActions.before(WorldSystems::ApplyProjectiles),
+            WorldSystems::ApplyPawnActions
+                .before(WorldSystems::ApplyProjectiles)
+                .before(PhysicsSystems::Kinematics),
         );
 
         app.add_systems(
@@ -149,7 +152,7 @@ impl PawnProjectile {
             PawnProjectile,
             Projectile::new(pawn, PawnProjectile::DAMAGE, PawnProjectile::DURATION),
             ChildOf(pawn),
-            Transform::from_translation(position.extend(1.0)),
+            Position::new(position, Rot2::IDENTITY),
             Velocity::new(velocity),
         )
     }

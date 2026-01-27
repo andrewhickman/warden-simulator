@@ -9,6 +9,7 @@ use bevy::{
 
 use wdn_physics::{
     PhysicsPlugin as WdnPhysicsPlugin,
+    kinematics::Position,
     layer::Layer,
     tile::{
         TilePosition,
@@ -104,14 +105,14 @@ fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
         Player,
         Pawn::default(),
         ChildOf(layer),
-        Transform::from_xyz(0.0, -1.0, 0.0),
+        Position::new(Vec2::new(0.0, -1.0), Rot2::IDENTITY),
     ));
 
     commands.spawn((
         Target,
         Pawn::default(),
         ChildOf(layer),
-        Transform::from_xyz(0.0, 0.0, 0.0),
+        Position::new(Vec2::new(0.0, 0.0), Rot2::IDENTITY),
     ));
 
     storage.set_material(TilePosition::new(layer, 0, 0), TileMaterial::Empty);

@@ -61,18 +61,12 @@ pub fn interpolate(
     transforms
         .par_iter_mut()
         .for_each(|(interpolate, position, mut transform, mut state)| {
-            println!(
-                "Interpolating entity: {:?} with overstep {} and value {position:?} and count {}",
-                state, overstep, count.updates
-            );
-
             if interpolate.translation {
                 if let Some(interpolated_translation) =
                     state
                         .translation
                         .interpolate(position.position(), overstep, count.updates > 0)
                 {
-                    println!("interpolated translation: {:?}", interpolated_translation);
                     transform.translation.x = interpolated_translation.x;
                     transform.translation.y = interpolated_translation.y;
                 }
@@ -87,8 +81,6 @@ pub fn interpolate(
                     transform.rotation = Quat::from_rotation_z(interpolated_rotation.as_radians());
                 }
             }
-
-            println!("new state: {:?}", *state);
         });
 
     count.updates = 0;
