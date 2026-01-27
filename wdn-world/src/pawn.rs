@@ -7,7 +7,7 @@ use bevy_time::Time;
 use bevy_transform::prelude::*;
 use wdn_physics::{
     collision::Collider,
-    kinematics::{RelativeVelocity, sync::quat_to_rot},
+    kinematics::{Velocity, sync::quat_to_rot},
     lerp::Interpolate,
 };
 
@@ -22,7 +22,7 @@ pub struct PawnPlugin;
 #[require(
     Collider::new(Pawn::RADIUS, true),
     Transform,
-    RelativeVelocity,
+    Velocity,
     Interpolate,
     Health::new(Pawn::MAX_HEALTH),
     PawnAction
@@ -59,7 +59,7 @@ pub enum PawnAction {
 
 pub fn apply_pawn_actions(
     commands: ParallelCommands,
-    mut query: Query<(Entity, &Transform, &mut RelativeVelocity, &PawnAction), With<Pawn>>,
+    mut query: Query<(Entity, &Transform, &mut Velocity, &PawnAction), With<Pawn>>,
     time: Res<Time>,
 ) {
     query
@@ -150,7 +150,7 @@ impl PawnProjectile {
             Projectile::new(pawn, PawnProjectile::DAMAGE, PawnProjectile::DURATION),
             ChildOf(pawn),
             Transform::from_translation(position.extend(1.0)),
-            RelativeVelocity::new(velocity),
+            Velocity::new(velocity),
         )
     }
 }

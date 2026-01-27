@@ -18,7 +18,7 @@ fn position_spawned_fixed_update() {
         .world_mut()
         .spawn((
             Interpolate::default(),
-            RelativePosition::new(Vec2::new(1.5, -2.0), Rot2::radians(0.5)),
+            Position::new(Vec2::new(1.5, -2.0), Rot2::radians(0.5)),
         ))
         .id();
 
@@ -52,7 +52,7 @@ fn position_spawned_render_update() {
         .world_mut()
         .spawn((
             Interpolate::default(),
-            RelativePosition::new(Vec2::new(1.5, -2.0), Rot2::radians(0.5)),
+            Position::new(Vec2::new(1.5, -2.0), Rot2::radians(0.5)),
         ))
         .id();
 
@@ -86,7 +86,7 @@ fn fixed_update() {
         .world_mut()
         .spawn((
             Interpolate::default(),
-            RelativePosition::new(Vec2::ZERO, Rot2::IDENTITY),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
         ))
         .id();
 
@@ -131,7 +131,7 @@ fn consecutive_fixed_updates() {
         .world_mut()
         .spawn((
             Interpolate::default(),
-            RelativePosition::new(Vec2::new(1.5, -2.0), Rot2::radians(FRAC_PI_2)),
+            Position::new(Vec2::new(1.5, -2.0), Rot2::radians(FRAC_PI_2)),
         ))
         .id();
 
@@ -171,7 +171,7 @@ fn render_update() {
         .world_mut()
         .spawn((
             Interpolate::default(),
-            RelativePosition::new(Vec2::new(0.5, 0.5), Rot2::radians(FRAC_PI_2)),
+            Position::new(Vec2::new(0.5, 0.5), Rot2::radians(FRAC_PI_2)),
         ))
         .id();
 
@@ -214,7 +214,7 @@ fn consecutive_render_updates() {
         .world_mut()
         .spawn((
             Interpolate::default(),
-            RelativePosition::new(Vec2::ZERO, Rot2::IDENTITY),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
         ))
         .id();
 
@@ -260,7 +260,7 @@ fn position_modified_fixed_update() {
         .world_mut()
         .spawn((
             Interpolate::default(),
-            RelativePosition::new(Vec2::ZERO, Rot2::radians(FRAC_PI_4)),
+            Position::new(Vec2::ZERO, Rot2::radians(FRAC_PI_4)),
         ))
         .id();
 
@@ -308,7 +308,7 @@ fn position_modified_render_update() {
         .world_mut()
         .spawn((
             Interpolate::default(),
-            RelativePosition::new(Vec2::ZERO, Rot2::radians(FRAC_PI_4)),
+            Position::new(Vec2::ZERO, Rot2::radians(FRAC_PI_4)),
         ))
         .id();
 
@@ -360,7 +360,7 @@ fn position_not_modified_render_update() {
         .world_mut()
         .spawn((
             Interpolate::default(),
-            RelativePosition::new(Vec2::new(1.0, 1.0), Rot2::radians(FRAC_PI_4)),
+            Position::new(Vec2::new(1.0, 1.0), Rot2::radians(FRAC_PI_4)),
         ))
         .id();
 
@@ -406,8 +406,7 @@ fn make_app() -> App {
 }
 
 fn set_position(app: &mut App, entity: Entity, position: Vec2, rotation: Rot2) {
-    *app.world_mut().get_mut::<RelativePosition>(entity).unwrap() =
-        RelativePosition::new(position, rotation);
+    *app.world_mut().get_mut::<Position>(entity).unwrap() = Position::new(position, rotation);
 }
 
 fn run_interpolate(app: &mut App, overstep: f32) {

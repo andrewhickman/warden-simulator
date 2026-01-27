@@ -20,33 +20,33 @@ pub struct KinematicsPlugin;
 
 #[derive(Copy, Clone, Component, Debug, Default, PartialEq)]
 #[require(TilePosition)]
-pub struct Position {
+pub struct GlobalPosition {
     isometry: Isometry2d,
 }
 
 #[derive(Copy, Clone, Component, Debug, Default, PartialEq)]
-#[require(Position)]
-pub struct Velocity {
+#[require(GlobalPosition)]
+pub struct GlobalVelocity {
     linear: Vec2,
     angular: f32,
 }
 
 #[derive(Clone, Copy, Component, Default, Debug, PartialEq)]
-#[require(Position)]
-pub struct RelativePosition {
+#[require(GlobalPosition)]
+pub struct Position {
     position: Vec2,
     rotation: Rot2,
 }
 
 #[derive(Clone, Copy, Component, Default, Debug, PartialEq)]
-#[require(RelativePosition, Velocity)]
-pub struct RelativeVelocity {
+#[require(Position, GlobalVelocity)]
+pub struct Velocity {
     linear: Vec2,
     angular: f32,
 }
 
 pub fn update_kinematics(
-    mut query: Query<(&mut Transform, &mut RelativeVelocity, Option<&Collisions>)>,
+    mut query: Query<(&mut Transform, &mut Velocity, Option<&Collisions>)>,
     time: Res<Time>,
 ) {
     query
@@ -105,7 +105,7 @@ impl Plugin for KinematicsPlugin {
     }
 }
 
-impl Position {
+impl GlobalPosition {
     pub fn new(position: Vec2, rotation: Rot2) -> Self {
         Self {
             isometry: Isometry2d::new(position, rotation),
@@ -129,7 +129,7 @@ impl Position {
     }
 }
 
-impl Velocity {
+impl GlobalVelocity {
     pub fn new(linear: Vec2, angular: f32) -> Self {
         Self { linear, angular }
     }
@@ -143,9 +143,9 @@ impl Velocity {
     }
 }
 
-impl RelativePosition {
+impl Position {
     pub fn new(position: Vec2, rotation: Rot2) -> Self {
-        RelativePosition { position, rotation }
+        Position { position, rotation }
     }
 
     pub fn position(&self) -> Vec2 {
@@ -157,9 +157,9 @@ impl RelativePosition {
     }
 }
 
-impl RelativeVelocity {
+impl Velocity {
     pub fn new(linear: Vec2) -> Self {
-        RelativeVelocity {
+        Velocity {
             linear,
             angular: 0.0,
         }

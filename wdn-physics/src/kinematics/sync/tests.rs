@@ -9,7 +9,7 @@ use bevy_transform::prelude::*;
 
 use crate::{
     kinematics::{
-        KinematicsPlugin, Position, RelativeVelocity, Velocity,
+        GlobalPosition, GlobalVelocity, KinematicsPlugin, Velocity,
         sync::{quat_to_rot, sync_kinematics},
     },
     layer::Layer,
@@ -84,7 +84,7 @@ fn sync_kinematics_transform_added() {
         .spawn((
             Transform::from_xyz(1.2, -0.3, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_4)),
             ChildOf(layer),
-            Position::default(),
+            GlobalPosition::default(),
         ))
         .id();
 
@@ -92,7 +92,7 @@ fn sync_kinematics_transform_added() {
     assert_eq!(tile.layer(), layer);
     assert_eq!(tile.position(), IVec2::new(1, -1));
 
-    let layer_pos = app.world().get::<Position>(entity).unwrap();
+    let layer_pos = app.world().get::<GlobalPosition>(entity).unwrap();
     assert_relative_eq!(layer_pos.position(), Vec2::new(1.2, -0.3));
     assert_relative_eq!(layer_pos.rotation().as_radians(), FRAC_PI_4);
 
@@ -111,7 +111,7 @@ fn sync_kinematics_transform_changed() {
         .spawn((
             Transform::from_xyz(1.2, -0.3, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_4)),
             ChildOf(layer),
-            Position::default(),
+            GlobalPosition::default(),
         ))
         .id();
 
@@ -125,7 +125,7 @@ fn sync_kinematics_transform_changed() {
     assert_eq!(tile.layer(), layer);
     assert_eq!(tile.position(), IVec2::new(2, -1));
 
-    let layer_pos = app.world().get::<Position>(entity).unwrap();
+    let layer_pos = app.world().get::<GlobalPosition>(entity).unwrap();
     assert_relative_eq!(layer_pos.position(), Vec2::new(2.1, -0.2));
     assert_relative_eq!(layer_pos.rotation().as_radians(), -FRAC_PI_2);
 
@@ -149,7 +149,7 @@ fn sync_kinematics_tile_layer_changed() {
             Transform::from_xyz(2.3, 1.7, 0.0),
             ChildOf(layer1),
             TilePosition::new(layer1, 2, 1),
-            Position::default(),
+            GlobalPosition::default(),
         ))
         .id();
 
@@ -161,7 +161,7 @@ fn sync_kinematics_tile_layer_changed() {
     assert_eq!(tile.layer(), layer2);
     assert_eq!(tile.position(), IVec2::new(2, 1));
 
-    let layer_pos = app.world().get::<Position>(entity).unwrap();
+    let layer_pos = app.world().get::<GlobalPosition>(entity).unwrap();
     assert_relative_eq!(layer_pos.position(), Vec2::new(2.3, 1.7));
 
     let index = app.world().resource::<TileIndex>();
@@ -181,7 +181,7 @@ fn sync_kinematics_tile_unchanged() {
         .spawn((
             Transform::from_xyz(1.2, -0.3, 0.0),
             ChildOf(layer),
-            Position::default(),
+            GlobalPosition::default(),
         ))
         .id();
 
@@ -208,7 +208,7 @@ fn sync_kinematics_tile_unchanged() {
     assert_eq!(tile.position(), IVec2::new(1, -1));
     assert_eq!(tile.last_changed(), tile_change_tick);
 
-    let layer_pos = app.world().get::<Position>(entity).unwrap();
+    let layer_pos = app.world().get::<GlobalPosition>(entity).unwrap();
     assert_relative_eq!(layer_pos.position(), Vec2::new(1.3, -0.2));
 
     let index = app.world().resource_ref::<TileIndex>();
@@ -228,7 +228,7 @@ fn sync_kinematics_parent_transform_changed() {
         .spawn((
             Transform::from_xyz(2.0, 3.0, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_4)),
             ChildOf(layer),
-            Position::default(),
+            GlobalPosition::default(),
         ))
         .id();
 
@@ -237,7 +237,7 @@ fn sync_kinematics_parent_transform_changed() {
         .spawn((
             Transform::from_xyz(1.5, 0.5, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_4)),
             ChildOf(parent),
-            Position::default(),
+            GlobalPosition::default(),
         ))
         .id();
 
@@ -245,7 +245,7 @@ fn sync_kinematics_parent_transform_changed() {
     assert_eq!(parent_tile.layer(), layer);
     assert_eq!(parent_tile.position(), IVec2::new(2, 3));
 
-    let parent_layer_pos = app.world().get::<Position>(parent).unwrap();
+    let parent_layer_pos = app.world().get::<GlobalPosition>(parent).unwrap();
     assert_relative_eq!(parent_layer_pos.position(), Vec2::new(2.0, 3.0));
     assert_relative_eq!(parent_layer_pos.rotation().as_radians(), FRAC_PI_4);
 
@@ -253,7 +253,7 @@ fn sync_kinematics_parent_transform_changed() {
     assert_eq!(child_tile.layer(), layer);
     assert_eq!(child_tile.position(), IVec2::new(2, 4));
 
-    let child_layer_pos = app.world().get::<Position>(child).unwrap();
+    let child_layer_pos = app.world().get::<GlobalPosition>(child).unwrap();
     assert_relative_eq!(
         child_layer_pos.position(),
         Vec2::new(2.707107, 4.414214),
@@ -275,7 +275,7 @@ fn sync_kinematics_parent_transform_changed() {
     assert_eq!(parent_tile.layer(), layer);
     assert_eq!(parent_tile.position(), IVec2::new(4, 1));
 
-    let parent_layer_pos = app.world().get::<Position>(parent).unwrap();
+    let parent_layer_pos = app.world().get::<GlobalPosition>(parent).unwrap();
     assert_relative_eq!(parent_layer_pos.position(), Vec2::new(4.0, 1.0));
     assert_relative_eq!(parent_layer_pos.rotation().as_radians(), FRAC_PI_2);
 
@@ -283,7 +283,7 @@ fn sync_kinematics_parent_transform_changed() {
     assert_eq!(child_tile.layer(), layer);
     assert_eq!(child_tile.position(), IVec2::new(3, 2));
 
-    let child_layer_pos = app.world().get::<Position>(child).unwrap();
+    let child_layer_pos = app.world().get::<GlobalPosition>(child).unwrap();
     assert_relative_eq!(
         child_layer_pos.position(),
         Vec2::new(3.5, 2.5),
@@ -312,7 +312,7 @@ fn sync_kinematics_tile_unset_removed() {
             Transform::from_xyz(1.2, -0.3, 0.0),
             ChildOf(layer),
             TilePosition::new(layer, 1, -1),
-            Position::default(),
+            GlobalPosition::default(),
         ))
         .despawn();
 
@@ -330,12 +330,12 @@ fn sync_kinematics_velocity_no_parent() {
         .world_mut()
         .spawn((
             Transform::from_xyz(1.0, 2.0, 0.0),
-            RelativeVelocity::new(Vec2::new(3.0, 4.0)).with_angular(0.5),
+            Velocity::new(Vec2::new(3.0, 4.0)).with_angular(0.5),
             ChildOf(layer),
         ))
         .id();
 
-    let velocity = app.world().get::<Velocity>(entity).unwrap();
+    let velocity = app.world().get::<GlobalVelocity>(entity).unwrap();
     assert_relative_eq!(velocity.linear(), Vec2::new(3.0, 4.0));
     assert_relative_eq!(velocity.angular(), 0.5);
 }
@@ -350,7 +350,7 @@ fn sync_kinematics_velocity_parent_linear() {
         .world_mut()
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
-            RelativeVelocity::new(Vec2::new(2.0, 1.0)),
+            Velocity::new(Vec2::new(2.0, 1.0)),
             ChildOf(layer),
         ))
         .id();
@@ -359,16 +359,16 @@ fn sync_kinematics_velocity_parent_linear() {
         .world_mut()
         .spawn((
             Transform::from_xyz(1.0, 0.0, 0.0),
-            RelativeVelocity::new(Vec2::new(0.5, 0.5)),
+            Velocity::new(Vec2::new(0.5, 0.5)),
             ChildOf(parent),
         ))
         .id();
 
-    let parent_velocity = app.world().get::<Velocity>(parent).unwrap();
+    let parent_velocity = app.world().get::<GlobalVelocity>(parent).unwrap();
     assert_relative_eq!(parent_velocity.linear(), Vec2::new(2.0, 1.0));
     assert_relative_eq!(parent_velocity.angular(), 0.0);
 
-    let child_velocity = app.world().get::<Velocity>(child).unwrap();
+    let child_velocity = app.world().get::<GlobalVelocity>(child).unwrap();
     assert_relative_eq!(child_velocity.linear(), Vec2::new(2.5, 1.5), epsilon = 1e-4);
     assert_relative_eq!(child_velocity.angular(), 0.0);
 }
@@ -383,7 +383,7 @@ fn sync_kinematics_velocity_parent_angular() {
         .world_mut()
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
-            RelativeVelocity::new(Vec2::ZERO).with_angular(1.0),
+            Velocity::new(Vec2::ZERO).with_angular(1.0),
             ChildOf(layer),
         ))
         .id();
@@ -392,16 +392,16 @@ fn sync_kinematics_velocity_parent_angular() {
         .world_mut()
         .spawn((
             Transform::from_xyz(2.0, 0.0, 0.0),
-            RelativeVelocity::new(Vec2::ZERO),
+            Velocity::new(Vec2::ZERO),
             ChildOf(parent),
         ))
         .id();
 
-    let parent_velocity = app.world().get::<Velocity>(parent).unwrap();
+    let parent_velocity = app.world().get::<GlobalVelocity>(parent).unwrap();
     assert_relative_eq!(parent_velocity.linear(), Vec2::ZERO);
     assert_relative_eq!(parent_velocity.angular(), 1.0);
 
-    let child_velocity = app.world().get::<Velocity>(child).unwrap();
+    let child_velocity = app.world().get::<GlobalVelocity>(child).unwrap();
     assert_relative_eq!(child_velocity.linear(), Vec2::new(0.0, 2.0), epsilon = 1e-4);
     assert_relative_eq!(child_velocity.angular(), 1.0);
 }
@@ -416,7 +416,7 @@ fn sync_kinematics_velocity_parent_combined() {
         .world_mut()
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
-            RelativeVelocity::new(Vec2::new(3.0, 0.0)).with_angular(0.5),
+            Velocity::new(Vec2::new(3.0, 0.0)).with_angular(0.5),
             ChildOf(layer),
         ))
         .id();
@@ -425,16 +425,16 @@ fn sync_kinematics_velocity_parent_combined() {
         .world_mut()
         .spawn((
             Transform::from_xyz(0.0, 4.0, 0.0),
-            RelativeVelocity::new(Vec2::new(1.0, 1.0)).with_angular(0.2),
+            Velocity::new(Vec2::new(1.0, 1.0)).with_angular(0.2),
             ChildOf(parent),
         ))
         .id();
 
-    let parent_velocity = app.world().get::<Velocity>(parent).unwrap();
+    let parent_velocity = app.world().get::<GlobalVelocity>(parent).unwrap();
     assert_relative_eq!(parent_velocity.linear(), Vec2::new(3.0, 0.0));
     assert_relative_eq!(parent_velocity.angular(), 0.5);
 
-    let child_velocity = app.world().get::<Velocity>(child).unwrap();
+    let child_velocity = app.world().get::<GlobalVelocity>(child).unwrap();
     assert_relative_eq!(child_velocity.linear(), Vec2::new(2.0, 1.0), epsilon = 1e-4);
     assert_relative_eq!(child_velocity.angular(), 0.7);
 }
@@ -449,7 +449,7 @@ fn sync_kinematics_velocity_parent_rotated() {
         .world_mut()
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_2)),
-            RelativeVelocity::new(Vec2::new(1.0, 0.0)),
+            Velocity::new(Vec2::new(1.0, 0.0)),
             ChildOf(layer),
         ))
         .id();
@@ -458,12 +458,12 @@ fn sync_kinematics_velocity_parent_rotated() {
         .world_mut()
         .spawn((
             Transform::from_xyz(2.0, 0.0, 0.0),
-            RelativeVelocity::new(Vec2::new(1.0, 0.0)),
+            Velocity::new(Vec2::new(1.0, 0.0)),
             ChildOf(parent),
         ))
         .id();
 
-    let parent_velocity = app.world().get::<Velocity>(parent).unwrap();
+    let parent_velocity = app.world().get::<GlobalVelocity>(parent).unwrap();
     assert_relative_eq!(
         parent_velocity.linear(),
         Vec2::new(1.0, 0.0),
@@ -471,7 +471,7 @@ fn sync_kinematics_velocity_parent_rotated() {
     );
     assert_relative_eq!(parent_velocity.angular(), 0.0);
 
-    let child_velocity = app.world().get::<Velocity>(child).unwrap();
+    let child_velocity = app.world().get::<GlobalVelocity>(child).unwrap();
     assert_relative_eq!(child_velocity.linear(), Vec2::new(1.0, 1.0), epsilon = 1e-4);
     assert_relative_eq!(child_velocity.angular(), 0.0);
 }
@@ -486,7 +486,7 @@ fn sync_kinematics_velocity_grandparent() {
         .world_mut()
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
-            RelativeVelocity::new(Vec2::new(1.0, 0.0)).with_angular(0.1),
+            Velocity::new(Vec2::new(1.0, 0.0)).with_angular(0.1),
             ChildOf(layer),
         ))
         .id();
@@ -495,7 +495,7 @@ fn sync_kinematics_velocity_grandparent() {
         .world_mut()
         .spawn((
             Transform::from_xyz(2.0, 0.0, 0.0),
-            RelativeVelocity::new(Vec2::new(0.0, 1.0)).with_angular(0.2),
+            Velocity::new(Vec2::new(0.0, 1.0)).with_angular(0.2),
             ChildOf(grandparent),
         ))
         .id();
@@ -504,16 +504,16 @@ fn sync_kinematics_velocity_grandparent() {
         .world_mut()
         .spawn((
             Transform::from_xyz(0.0, 3.0, 0.0),
-            RelativeVelocity::new(Vec2::new(0.5, 0.5)).with_angular(0.3),
+            Velocity::new(Vec2::new(0.5, 0.5)).with_angular(0.3),
             ChildOf(parent),
         ))
         .id();
 
-    let grandparent_velocity = app.world().get::<Velocity>(grandparent).unwrap();
+    let grandparent_velocity = app.world().get::<GlobalVelocity>(grandparent).unwrap();
     assert_relative_eq!(grandparent_velocity.linear(), Vec2::new(1.0, 0.0));
     assert_relative_eq!(grandparent_velocity.angular(), 0.1);
 
-    let parent_velocity = app.world().get::<Velocity>(parent).unwrap();
+    let parent_velocity = app.world().get::<GlobalVelocity>(parent).unwrap();
     assert_relative_eq!(
         parent_velocity.linear(),
         Vec2::new(1.0, 1.2),
@@ -521,7 +521,7 @@ fn sync_kinematics_velocity_grandparent() {
     );
     assert_relative_eq!(parent_velocity.angular(), 0.3);
 
-    let child_velocity = app.world().get::<Velocity>(child).unwrap();
+    let child_velocity = app.world().get::<GlobalVelocity>(child).unwrap();
     assert_relative_eq!(child_velocity.linear(), Vec2::new(0.6, 1.7), epsilon = 1e-4);
     assert_relative_eq!(child_velocity.angular(), 0.6);
 }
@@ -536,7 +536,7 @@ fn sync_kinematics_velocity_updated_on_change() {
         .world_mut()
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
-            RelativeVelocity::new(Vec2::new(1.0, 0.0)),
+            Velocity::new(Vec2::new(1.0, 0.0)),
             ChildOf(layer),
         ))
         .id();
@@ -545,21 +545,21 @@ fn sync_kinematics_velocity_updated_on_change() {
         .world_mut()
         .spawn((
             Transform::from_xyz(2.0, 0.0, 0.0),
-            RelativeVelocity::new(Vec2::new(0.5, 0.0)),
+            Velocity::new(Vec2::new(0.5, 0.0)),
             ChildOf(parent),
         ))
         .id();
 
-    let child_velocity = app.world().get::<Velocity>(child).unwrap();
+    let child_velocity = app.world().get::<GlobalVelocity>(child).unwrap();
     assert_relative_eq!(child_velocity.linear(), Vec2::new(1.5, 0.0), epsilon = 1e-4);
 
     app.world_mut()
         .entity_mut(parent)
-        .insert(RelativeVelocity::new(Vec2::new(2.0, 1.0)).with_angular(0.5));
+        .insert(Velocity::new(Vec2::new(2.0, 1.0)).with_angular(0.5));
 
     run_sync_kinematics(&mut app);
 
-    let child_velocity = app.world().get::<Velocity>(child).unwrap();
+    let child_velocity = app.world().get::<GlobalVelocity>(child).unwrap();
     assert_relative_eq!(child_velocity.linear(), Vec2::new(2.5, 2.0), epsilon = 1e-4);
     assert_relative_eq!(child_velocity.angular(), 0.5);
 }
@@ -574,7 +574,7 @@ fn sync_kinematics_velocity_complex_hierarchy() {
         .world_mut()
         .spawn((
             Transform::from_xyz(1.0, 0.0, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_4)),
-            RelativeVelocity::new(Vec2::new(2.0, 0.0)).with_angular(0.2),
+            Velocity::new(Vec2::new(2.0, 0.0)).with_angular(0.2),
             ChildOf(layer),
         ))
         .id();
@@ -583,7 +583,7 @@ fn sync_kinematics_velocity_complex_hierarchy() {
         .world_mut()
         .spawn((
             Transform::from_xyz(3.0, 1.0, 0.0).with_rotation(Quat::from_rotation_z(0.5236)),
-            RelativeVelocity::new(Vec2::new(1.0, 1.0)).with_angular(0.15),
+            Velocity::new(Vec2::new(1.0, 1.0)).with_angular(0.15),
             ChildOf(grandparent),
         ))
         .id();
@@ -592,12 +592,12 @@ fn sync_kinematics_velocity_complex_hierarchy() {
         .world_mut()
         .spawn((
             Transform::from_xyz(2.0, -1.0, 0.0).with_rotation(Quat::from_rotation_z(-FRAC_PI_4)),
-            RelativeVelocity::new(Vec2::new(0.5, 1.5)).with_angular(0.1),
+            Velocity::new(Vec2::new(0.5, 1.5)).with_angular(0.1),
             ChildOf(parent),
         ))
         .id();
 
-    let grandparent_velocity = app.world().get::<Velocity>(grandparent).unwrap();
+    let grandparent_velocity = app.world().get::<GlobalVelocity>(grandparent).unwrap();
     assert_relative_eq!(
         grandparent_velocity.linear(),
         Vec2::new(2.0, 0.0),
@@ -605,7 +605,7 @@ fn sync_kinematics_velocity_complex_hierarchy() {
     );
     assert_relative_eq!(grandparent_velocity.angular(), 0.2);
 
-    let parent_velocity = app.world().get::<Velocity>(parent).unwrap();
+    let parent_velocity = app.world().get::<GlobalVelocity>(parent).unwrap();
     assert_relative_eq!(
         parent_velocity.linear(),
         Vec2::new(1.434315, 1.697056),
@@ -613,7 +613,7 @@ fn sync_kinematics_velocity_complex_hierarchy() {
     );
     assert_relative_eq!(parent_velocity.angular(), 0.35);
 
-    let child_velocity = app.world().get::<Velocity>(child).unwrap();
+    let child_velocity = app.world().get::<GlobalVelocity>(child).unwrap();
     assert_relative_eq!(
         child_velocity.linear(),
         Vec2::new(-0.4707278, 3.087493),
@@ -633,7 +633,7 @@ fn sync_kinematics_grandparent_parent_changed() {
         .spawn((
             Transform::from_xyz(2.0, 3.0, 0.0),
             ChildOf(layer),
-            Position::default(),
+            GlobalPosition::default(),
         ))
         .id();
 
@@ -642,7 +642,7 @@ fn sync_kinematics_grandparent_parent_changed() {
         .spawn((
             Transform::from_xyz(1.0, 0.5, 0.0),
             ChildOf(grandparent),
-            Position::default(),
+            GlobalPosition::default(),
         ))
         .id();
 
@@ -651,7 +651,7 @@ fn sync_kinematics_grandparent_parent_changed() {
         .spawn((
             Transform::from_xyz(0.5, 0.25, 0.0),
             ChildOf(parent),
-            Position::default(),
+            GlobalPosition::default(),
         ))
         .id();
 
@@ -667,7 +667,7 @@ fn sync_kinematics_grandparent_parent_changed() {
     assert_eq!(child_tile.layer(), layer);
     assert_eq!(child_tile.position(), IVec2::new(3, 3));
 
-    let child_layer_pos = app.world().get::<Position>(child).unwrap();
+    let child_layer_pos = app.world().get::<GlobalPosition>(child).unwrap();
     assert_relative_eq!(child_layer_pos.position(), Vec2::new(3.5, 3.75));
 
     app.world_mut()
@@ -688,7 +688,7 @@ fn sync_kinematics_grandparent_parent_changed() {
     assert_eq!(child_tile.layer(), layer);
     assert_eq!(child_tile.position(), IVec2::new(6, 1));
 
-    let child_layer_pos = app.world().get::<Position>(child).unwrap();
+    let child_layer_pos = app.world().get::<GlobalPosition>(child).unwrap();
     assert_relative_eq!(child_layer_pos.position(), Vec2::new(6.5, 1.75));
 
     let index = app.world().resource::<TileIndex>();

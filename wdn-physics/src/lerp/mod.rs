@@ -7,7 +7,7 @@ use bevy_math::prelude::*;
 use bevy_time::prelude::*;
 use bevy_transform::prelude::*;
 
-use crate::kinematics::RelativePosition;
+use crate::kinematics::Position;
 
 pub struct InterpolatePlugin;
 
@@ -50,7 +50,7 @@ pub fn interpolate(
     mut count: ResMut<FixedUpdateCount>,
     mut transforms: Query<(
         &Interpolate,
-        &RelativePosition,
+        &Position,
         &mut Transform,
         &mut InterpolateState,
     )>,

@@ -6,7 +6,7 @@ use bevy_math::prelude::*;
 use bevy_transform::prelude::*;
 
 use crate::{
-    kinematics::{Position, RelativeVelocity, Velocity},
+    kinematics::{GlobalPosition, GlobalVelocity, Velocity},
     layer::Layer,
     tile::TilePosition,
 };
@@ -19,15 +19,15 @@ pub struct SyncQuery {
     id: Entity,
     relative: SyncRelativeQuery,
     tile: &'static TilePosition,
-    position: Mut<'static, Position>,
-    velocity: Option<Mut<'static, Velocity>>,
+    position: Mut<'static, GlobalPosition>,
+    velocity: Option<Mut<'static, GlobalVelocity>>,
 }
 
 #[derive(QueryData, Debug)]
 pub struct SyncRelativeQuery {
     parent: Ref<'static, ChildOf>,
     transform: Ref<'static, Transform>,
-    velocity: Option<Ref<'static, RelativeVelocity>>,
+    velocity: Option<Ref<'static, Velocity>>,
 }
 
 pub fn sync_kinematics(
@@ -42,7 +42,7 @@ pub fn sync_kinematics(
 }
 
 pub fn sync_on_add(
-    trigger: On<Add, Position>,
+    trigger: On<Add, GlobalPosition>,
     mut commands: Commands,
     mut entities: Query<SyncQuery>,
     parents: Query<SyncRelativeQuery>,
@@ -103,9 +103,9 @@ impl SyncQueryItem<'_, '_> {
             parent = ancestor.parent.get();
         }
 
-        *self.position = Position::from_isometry(isometry);
+        *self.position = GlobalPosition::from_isometry(isometry);
         if let Some(velocity) = self.velocity.as_mut() {
-            **velocity = Velocity::new(linear, angular);
+            **velocity = GlobalVelocity::new(linear, angular);
         }
 
         let new_tile = TilePosition::floor(parent, self.position.position());

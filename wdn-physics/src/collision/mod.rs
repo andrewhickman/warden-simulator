@@ -10,7 +10,7 @@ use bevy_time::prelude::*;
 
 use crate::{
     PhysicsSystems,
-    kinematics::{Position, Velocity},
+    kinematics::{GlobalPosition, GlobalVelocity},
     tile::{
         TilePosition,
         index::TileIndex,
@@ -21,7 +21,7 @@ use crate::{
 pub struct CollisionPlugin;
 
 #[derive(Component, Clone, Copy, Debug)]
-#[require(Collisions, TilePosition, Position)]
+#[require(Collisions, TilePosition, GlobalPosition)]
 pub struct Collider {
     radius: f32,
     solid: bool,
@@ -37,8 +37,8 @@ pub struct ColliderDisabled;
 #[derive(QueryData, Debug)]
 pub struct ColliderQuery {
     collider: &'static Collider,
-    transform: &'static Position,
-    velocity: Option<&'static Velocity>,
+    transform: &'static GlobalPosition,
+    velocity: Option<&'static GlobalVelocity>,
 }
 
 #[derive(QueryData, Debug)]
