@@ -1,78 +1,18 @@
-use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, PI};
+use std::f32::consts::{FRAC_PI_2, FRAC_PI_4};
 
 use approx::assert_relative_eq;
 use bevy_app::prelude::*;
 use bevy_ecs::{prelude::*, system::RunSystemOnce};
 use bevy_math::prelude::*;
 use bevy_time::TimePlugin;
-use bevy_transform::prelude::*;
 
 use crate::{
     kinematics::{
-        GlobalPosition, GlobalVelocity, KinematicsPlugin, Velocity,
-        sync::{quat_to_rot, sync_kinematics},
+        GlobalPosition, GlobalVelocity, KinematicsPlugin, Position, Velocity, sync::sync_kinematics,
     },
     layer::Layer,
     tile::{TilePlugin, TilePosition, index::TileIndex},
 };
-
-#[test]
-fn quat_to_rot2_identity() {
-    let rot = quat_to_rot(Quat::IDENTITY);
-    assert_relative_eq!(rot, Rot2::IDENTITY, epsilon = 1e-4);
-}
-
-#[test]
-fn quat_to_rot2_z() {
-    for angle in [
-        -0.7853982, 0.0, 0.7853982, 1.0, 1.570796, 3.141593, 4.712389, 6.283185, 10.0,
-    ] {
-        let rot = quat_to_rot(Quat::from_rotation_z(angle));
-        let expected = Rot2::radians(angle);
-        assert_relative_eq!(rot, expected, epsilon = 1e-4);
-    }
-}
-
-#[test]
-fn quat_to_rot2_x() {
-    let rot = quat_to_rot(Quat::from_rotation_x(PI / 2.0));
-    assert_relative_eq!(rot, Rot2::IDENTITY, epsilon = 1e-4);
-}
-
-#[test]
-fn quat_to_rot2_y() {
-    let rot = quat_to_rot(Quat::from_rotation_y(PI / 2.0));
-    assert_relative_eq!(rot, Rot2::IDENTITY, epsilon = 1e-4);
-}
-
-#[test]
-fn quat_to_rot2_xy() {
-    let quat = Quat::from_rotation_x(1.0) * Quat::from_rotation_y(-1.5);
-    let rot = quat_to_rot(quat);
-    assert_relative_eq!(rot, Rot2::IDENTITY, epsilon = 1e-4);
-}
-
-#[test]
-fn quat_to_rot2_xz() {
-    let angle = PI / 3.0;
-    let rot = quat_to_rot(Quat::from_rotation_x(PI / 4.0) * Quat::from_rotation_z(angle));
-    assert_relative_eq!(rot, Rot2::radians(angle), epsilon = 1e-5);
-}
-
-#[test]
-fn quat_to_rot2_yz() {
-    let angle = PI / 3.0;
-    let rot = quat_to_rot(Quat::from_rotation_y(PI / 3.0) * Quat::from_rotation_z(angle));
-    assert_relative_eq!(rot, Rot2::radians(angle), epsilon = 1e-5);
-}
-
-#[test]
-fn quat_to_rot2_xyz() {
-    let angle = 1.234;
-    let quat = Quat::from_euler(EulerRot::XYZ, 1.5, 0.4, angle);
-    let rot = quat_to_rot(quat);
-    assert_relative_eq!(rot, Rot2::radians(angle), epsilon = 1e-5);
-}
 
 #[test]
 fn sync_kinematics_transform_added() {
@@ -82,9 +22,8 @@ fn sync_kinematics_transform_added() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(1.2, -0.3, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_4)),
+            Position::new(Vec2::new(1.2, -0.3), Rot2::radians(FRAC_PI_4)),
             ChildOf(layer),
-            GlobalPosition::default(),
         ))
         .id();
 
@@ -109,15 +48,15 @@ fn sync_kinematics_transform_changed() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(1.2, -0.3, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_4)),
+            Position::new(Vec2::new(1.2, -0.3), Rot2::radians(FRAC_PI_4)),
             ChildOf(layer),
-            GlobalPosition::default(),
         ))
         .id();
 
-    app.world_mut().entity_mut(entity).insert(
-        Transform::from_xyz(2.1, -0.2, 0.0).with_rotation(Quat::from_rotation_z(-FRAC_PI_2)),
-    );
+    app.world_mut().entity_mut(entity).insert(Position::new(
+        Vec2::new(2.1, -0.2),
+        Rot2::radians(-FRAC_PI_2),
+    ));
 
     run_sync_kinematics(&mut app);
 
@@ -146,10 +85,9 @@ fn sync_kinematics_tile_layer_changed() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(2.3, 1.7, 0.0),
+            Position::new(Vec2::new(2.3, 1.7), Rot2::IDENTITY),
             ChildOf(layer1),
             TilePosition::new(layer1, 2, 1),
-            GlobalPosition::default(),
         ))
         .id();
 
@@ -179,15 +117,14 @@ fn sync_kinematics_tile_unchanged() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(1.2, -0.3, 0.0),
+            Position::new(Vec2::new(1.2, -0.3), Rot2::IDENTITY),
             ChildOf(layer),
-            GlobalPosition::default(),
         ))
         .id();
 
     app.world_mut()
         .entity_mut(entity)
-        .insert(Transform::from_xyz(1.3, -0.2, 0.0));
+        .insert(Position::new(Vec2::new(1.3, -0.2), Rot2::IDENTITY));
 
     let tile_change_tick = app
         .world()
@@ -226,18 +163,16 @@ fn sync_kinematics_parent_transform_changed() {
     let parent = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(2.0, 3.0, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_4)),
+            Position::new(Vec2::new(2.0, 3.0), Rot2::radians(FRAC_PI_4)),
             ChildOf(layer),
-            GlobalPosition::default(),
         ))
         .id();
 
     let child = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(1.5, 0.5, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_4)),
+            Position::new(Vec2::new(1.5, 0.5), Rot2::radians(FRAC_PI_4)),
             ChildOf(parent),
-            GlobalPosition::default(),
         ))
         .id();
 
@@ -267,7 +202,7 @@ fn sync_kinematics_parent_transform_changed() {
 
     app.world_mut()
         .entity_mut(parent)
-        .insert(Transform::from_xyz(4.0, 1.0, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_2)));
+        .insert(Position::new(Vec2::new(4.0, 1.0), Rot2::radians(FRAC_PI_2)));
 
     run_sync_kinematics(&mut app);
 
@@ -309,10 +244,9 @@ fn sync_kinematics_tile_unset_removed() {
     let layer = app.world_mut().spawn(Layer::default()).id();
     app.world_mut()
         .spawn((
-            Transform::from_xyz(1.2, -0.3, 0.0),
+            Position::new(Vec2::new(1.2, -0.3), Rot2::IDENTITY),
             ChildOf(layer),
             TilePosition::new(layer, 1, -1),
-            GlobalPosition::default(),
         ))
         .despawn();
 
@@ -329,7 +263,7 @@ fn sync_kinematics_velocity_no_parent() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(1.0, 2.0, 0.0),
+            Position::new(Vec2::new(1.0, 2.0), Rot2::IDENTITY),
             Velocity::new(Vec2::new(3.0, 4.0)).with_angular(0.5),
             ChildOf(layer),
         ))
@@ -349,7 +283,7 @@ fn sync_kinematics_velocity_parent_linear() {
     let parent = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
             Velocity::new(Vec2::new(2.0, 1.0)),
             ChildOf(layer),
         ))
@@ -358,7 +292,7 @@ fn sync_kinematics_velocity_parent_linear() {
     let child = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(1.0, 0.0, 0.0),
+            Position::new(Vec2::new(1.0, 0.0), Rot2::IDENTITY),
             Velocity::new(Vec2::new(0.5, 0.5)),
             ChildOf(parent),
         ))
@@ -382,7 +316,7 @@ fn sync_kinematics_velocity_parent_angular() {
     let parent = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
             Velocity::new(Vec2::ZERO).with_angular(1.0),
             ChildOf(layer),
         ))
@@ -391,7 +325,7 @@ fn sync_kinematics_velocity_parent_angular() {
     let child = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(2.0, 0.0, 0.0),
+            Position::new(Vec2::new(2.0, 0.0), Rot2::IDENTITY),
             Velocity::new(Vec2::ZERO),
             ChildOf(parent),
         ))
@@ -415,7 +349,7 @@ fn sync_kinematics_velocity_parent_combined() {
     let parent = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
             Velocity::new(Vec2::new(3.0, 0.0)).with_angular(0.5),
             ChildOf(layer),
         ))
@@ -424,7 +358,7 @@ fn sync_kinematics_velocity_parent_combined() {
     let child = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 4.0, 0.0),
+            Position::new(Vec2::new(0.0, 4.0), Rot2::IDENTITY),
             Velocity::new(Vec2::new(1.0, 1.0)).with_angular(0.2),
             ChildOf(parent),
         ))
@@ -448,7 +382,7 @@ fn sync_kinematics_velocity_parent_rotated() {
     let parent = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_2)),
+            Position::new(Vec2::ZERO, Rot2::radians(FRAC_PI_2)),
             Velocity::new(Vec2::new(1.0, 0.0)),
             ChildOf(layer),
         ))
@@ -457,7 +391,7 @@ fn sync_kinematics_velocity_parent_rotated() {
     let child = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(2.0, 0.0, 0.0),
+            Position::new(Vec2::new(2.0, 0.0), Rot2::IDENTITY),
             Velocity::new(Vec2::new(1.0, 0.0)),
             ChildOf(parent),
         ))
@@ -485,7 +419,7 @@ fn sync_kinematics_velocity_grandparent() {
     let grandparent = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
             Velocity::new(Vec2::new(1.0, 0.0)).with_angular(0.1),
             ChildOf(layer),
         ))
@@ -494,7 +428,7 @@ fn sync_kinematics_velocity_grandparent() {
     let parent = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(2.0, 0.0, 0.0),
+            Position::new(Vec2::new(2.0, 0.0), Rot2::IDENTITY),
             Velocity::new(Vec2::new(0.0, 1.0)).with_angular(0.2),
             ChildOf(grandparent),
         ))
@@ -503,7 +437,7 @@ fn sync_kinematics_velocity_grandparent() {
     let child = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 3.0, 0.0),
+            Position::new(Vec2::new(0.0, 3.0), Rot2::IDENTITY),
             Velocity::new(Vec2::new(0.5, 0.5)).with_angular(0.3),
             ChildOf(parent),
         ))
@@ -535,7 +469,7 @@ fn sync_kinematics_velocity_updated_on_change() {
     let parent = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
             Velocity::new(Vec2::new(1.0, 0.0)),
             ChildOf(layer),
         ))
@@ -544,7 +478,7 @@ fn sync_kinematics_velocity_updated_on_change() {
     let child = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(2.0, 0.0, 0.0),
+            Position::new(Vec2::new(2.0, 0.0), Rot2::IDENTITY),
             Velocity::new(Vec2::new(0.5, 0.0)),
             ChildOf(parent),
         ))
@@ -573,7 +507,7 @@ fn sync_kinematics_velocity_complex_hierarchy() {
     let grandparent = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(1.0, 0.0, 0.0).with_rotation(Quat::from_rotation_z(FRAC_PI_4)),
+            Position::new(Vec2::new(1.0, 0.0), Rot2::radians(FRAC_PI_4)),
             Velocity::new(Vec2::new(2.0, 0.0)).with_angular(0.2),
             ChildOf(layer),
         ))
@@ -582,7 +516,7 @@ fn sync_kinematics_velocity_complex_hierarchy() {
     let parent = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(3.0, 1.0, 0.0).with_rotation(Quat::from_rotation_z(0.5236)),
+            Position::new(Vec2::new(3.0, 1.0), Rot2::radians(0.5236)),
             Velocity::new(Vec2::new(1.0, 1.0)).with_angular(0.15),
             ChildOf(grandparent),
         ))
@@ -591,7 +525,7 @@ fn sync_kinematics_velocity_complex_hierarchy() {
     let child = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(2.0, -1.0, 0.0).with_rotation(Quat::from_rotation_z(-FRAC_PI_4)),
+            Position::new(Vec2::new(2.0, -1.0), Rot2::radians(-FRAC_PI_4)),
             Velocity::new(Vec2::new(0.5, 1.5)).with_angular(0.1),
             ChildOf(parent),
         ))
@@ -631,27 +565,24 @@ fn sync_kinematics_grandparent_parent_changed() {
     let grandparent = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(2.0, 3.0, 0.0),
+            Position::new(Vec2::new(2.0, 3.0), Rot2::IDENTITY),
             ChildOf(layer),
-            GlobalPosition::default(),
         ))
         .id();
 
     let parent = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(1.0, 0.5, 0.0),
+            Position::new(Vec2::new(1.0, 0.5), Rot2::IDENTITY),
             ChildOf(grandparent),
-            GlobalPosition::default(),
         ))
         .id();
 
     let child = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.5, 0.25, 0.0),
+            Position::new(Vec2::new(0.5, 0.25), Rot2::IDENTITY),
             ChildOf(parent),
-            GlobalPosition::default(),
         ))
         .id();
 
@@ -672,7 +603,7 @@ fn sync_kinematics_grandparent_parent_changed() {
 
     app.world_mut()
         .entity_mut(grandparent)
-        .insert(Transform::from_xyz(5.0, 1.0, 0.0));
+        .insert(Position::new(Vec2::new(5.0, 1.0), Rot2::IDENTITY));
 
     run_sync_kinematics(&mut app);
 

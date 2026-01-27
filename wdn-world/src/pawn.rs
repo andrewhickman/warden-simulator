@@ -7,7 +7,7 @@ use bevy_time::Time;
 use bevy_transform::prelude::*;
 use wdn_physics::{
     collision::Collider,
-    kinematics::{Velocity, sync::quat_to_rot},
+    kinematics::{Position, Velocity},
     lerp::Interpolate,
 };
 
@@ -59,19 +59,19 @@ pub enum PawnAction {
 
 pub fn apply_pawn_actions(
     commands: ParallelCommands,
-    mut query: Query<(Entity, &Transform, &mut Velocity, &PawnAction), With<Pawn>>,
+    mut query: Query<(Entity, &Position, &mut Velocity, &PawnAction), With<Pawn>>,
     time: Res<Time>,
 ) {
     query
         .par_iter_mut()
-        .for_each(|(id, transform, mut velocity, action)| match action {
+        .for_each(|(id, position, mut velocity, action)| match action {
             PawnAction::Stand => {
                 velocity.decelerate(Pawn::ACCELERATION * time.delta_secs());
                 velocity.set_angular(0.0);
             }
             PawnAction::Walk => {
                 velocity.accelerate(
-                    quat_to_rot(transform.rotation) * Vec2::new(0.0, Pawn::WALK_SPEED),
+                    position.rotation() * Vec2::new(0.0, Pawn::WALK_SPEED),
                     Pawn::ACCELERATION * time.delta_secs(),
                 );
                 velocity.set_angular(0.0);
@@ -86,14 +86,14 @@ pub fn apply_pawn_actions(
             }
             PawnAction::SteerLeft => {
                 velocity.accelerate(
-                    quat_to_rot(transform.rotation) * Vec2::new(0.0, Pawn::WALK_SPEED * 0.75),
+                    position.rotation() * Vec2::new(0.0, Pawn::WALK_SPEED * 0.75),
                     Pawn::ACCELERATION * 0.75 * time.delta_secs(),
                 );
                 velocity.set_angular(Pawn::TURN_SPEED * 0.7);
             }
             PawnAction::SteerRight => {
                 velocity.accelerate(
-                    quat_to_rot(transform.rotation) * Vec2::new(0.0, Pawn::WALK_SPEED * 0.75),
+                    position.rotation() * Vec2::new(0.0, Pawn::WALK_SPEED * 0.75),
                     Pawn::ACCELERATION * 0.75 * time.delta_secs(),
                 );
                 velocity.set_angular(-Pawn::TURN_SPEED * 0.7);

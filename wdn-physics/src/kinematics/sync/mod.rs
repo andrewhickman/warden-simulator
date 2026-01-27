@@ -3,10 +3,9 @@ mod tests;
 
 use bevy_ecs::{prelude::*, query::QueryData, relationship::Relationship};
 use bevy_math::prelude::*;
-use bevy_transform::prelude::*;
 
 use crate::{
-    kinematics::{GlobalPosition, GlobalVelocity, Velocity},
+    kinematics::{GlobalPosition, GlobalVelocity, Position, Velocity},
     layer::Layer,
     tile::TilePosition,
 };
@@ -26,7 +25,7 @@ pub struct SyncQuery {
 #[derive(QueryData, Debug)]
 pub struct SyncRelativeQuery {
     parent: Ref<'static, ChildOf>,
-    transform: Ref<'static, Transform>,
+    position: Ref<'static, Position>,
     velocity: Option<Ref<'static, Velocity>>,
 }
 
@@ -69,7 +68,7 @@ impl SyncQueryItem<'_, '_> {
             return;
         }
 
-        let mut isometry = transform_to_isometry(&self.relative.transform);
+        let mut isometry = self.relative.position.isometry;
         let mut angular = self.relative.velocity.as_ref().map_or(0.0, |v| v.angular());
         let mut linear = self
             .relative
@@ -86,20 +85,18 @@ impl SyncQueryItem<'_, '_> {
                 return;
             }
 
-            let ancestor_isometry = transform_to_isometry(&ancestor.transform);
-
             if let Some(ancestor_velocity) = &ancestor.velocity {
                 linear += isometry.translation.perp() * ancestor_velocity.angular();
             }
 
-            linear = ancestor_isometry.rotation * linear;
+            linear = ancestor.position.rotation() * linear;
 
             if let Some(ancestor_velocity) = &ancestor.velocity {
                 linear += ancestor_velocity.linear();
                 angular += ancestor_velocity.angular();
             }
 
-            isometry = ancestor_isometry * isometry;
+            isometry = ancestor.position.isometry * isometry;
             parent = ancestor.parent.get();
         }
 
@@ -117,26 +114,8 @@ impl SyncQueryItem<'_, '_> {
 
 impl SyncRelativeQueryItem<'_, '_> {
     fn changed(&self) -> bool {
-        self.transform.is_changed()
+        self.position.is_changed()
             || self.parent.is_changed()
             || self.velocity.as_ref().is_some_and(|v| v.is_changed())
-    }
-}
-
-pub fn transform_to_isometry(transform: &Transform) -> Isometry2d {
-    let translation = transform.translation.xy();
-    let rotation = quat_to_rot(transform.rotation);
-    Isometry2d::new(translation, rotation)
-}
-
-pub fn quat_to_rot(quat: Quat) -> Rot2 {
-    let y2 = quat.y + quat.y;
-    let z2 = quat.z + quat.z;
-    let cx = 1.0 - (quat.y * y2 + quat.z * z2);
-    let cy = quat.w * z2 - quat.x * y2;
-
-    match Dir2::from_xy(cx, cy) {
-        Ok(dir) => Rot2::from_sin_cos(dir.y, dir.x),
-        Err(_) => Rot2::IDENTITY,
     }
 }

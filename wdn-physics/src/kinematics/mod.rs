@@ -7,7 +7,6 @@ use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use bevy_math::prelude::*;
 use bevy_time::prelude::*;
-use bevy_transform::prelude::*;
 
 use crate::{
     PhysicsSystems,
@@ -34,8 +33,7 @@ pub struct GlobalVelocity {
 #[derive(Clone, Copy, Component, Default, Debug, PartialEq)]
 #[require(GlobalPosition)]
 pub struct Position {
-    position: Vec2,
-    rotation: Rot2,
+    isometry: Isometry2d,
 }
 
 #[derive(Clone, Copy, Component, Default, Debug, PartialEq)]
@@ -46,12 +44,12 @@ pub struct Velocity {
 }
 
 pub fn update_kinematics(
-    mut query: Query<(&mut Transform, &mut Velocity, Option<&Collisions>)>,
+    mut query: Query<(&mut Position, &mut Velocity, Option<&Collisions>)>,
     time: Res<Time>,
 ) {
     query
         .par_iter_mut()
-        .for_each(|(mut transform, mut velocity, collisions)| {
+        .for_each(|(mut position, mut velocity, collisions)| {
             if velocity.is_zero() {
                 return;
             }
@@ -67,8 +65,7 @@ pub fn update_kinematics(
                     }
 
                     if let Some((collision, t)) = collisions.next() {
-                        transform.translation.x = collision.position.x;
-                        transform.translation.y = collision.position.y;
+                        position.isometry.translation = collision.position;
                         delta_secs -= t;
 
                         velocity.collide(collision);
@@ -76,13 +73,12 @@ pub fn update_kinematics(
                 }
 
                 if velocity.linear != Vec2::ZERO {
-                    transform.translation.x += velocity.linear.x * delta_secs;
-                    transform.translation.y += velocity.linear.y * delta_secs;
+                    position.isometry.translation += velocity.linear * delta_secs;
                 }
             }
 
             if velocity.angular != 0.0 {
-                transform.rotate_z(velocity.angular * delta_secs);
+                position.isometry.rotation *= Rot2::radians(velocity.angular * delta_secs);
             }
         });
 }
@@ -145,15 +141,17 @@ impl GlobalVelocity {
 
 impl Position {
     pub fn new(position: Vec2, rotation: Rot2) -> Self {
-        Position { position, rotation }
+        Self {
+            isometry: Isometry2d::new(position, rotation),
+        }
     }
 
     pub fn position(&self) -> Vec2 {
-        self.position
+        self.isometry.translation
     }
 
     pub fn rotation(&self) -> Rot2 {
-        self.rotation
+        self.isometry.rotation
     }
 }
 

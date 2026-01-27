@@ -9,13 +9,12 @@ use bevy_app::prelude::*;
 use bevy_ecs::{prelude::*, system::RunSystemOnce};
 use bevy_math::{FloatOrd, prelude::*};
 use bevy_time::{TimePlugin, TimeUpdateStrategy, prelude::*};
-use bevy_transform::prelude::*;
 
 use crate::{
     collision::{
         Collider, ColliderDisabled, CollisionPlugin, CollisionTarget, Collisions, TileCollider,
     },
-    kinematics::{KinematicsPlugin, GlobalPosition, Velocity},
+    kinematics::{GlobalPosition, KinematicsPlugin, Position, Velocity},
     layer::Layer,
     tile::{
         TilePlugin, TilePosition,
@@ -2473,7 +2472,7 @@ fn spawn_collider(
     app.world_mut()
         .spawn((
             Collider::new(radius, true),
-            Transform::from_translation(position.extend(0.0)),
+            Position::new(position, Rot2::IDENTITY),
             Velocity::new(velocity),
             ChildOf(layer),
         ))
@@ -2490,7 +2489,7 @@ fn spawn_non_solid_collider(
     app.world_mut()
         .spawn((
             Collider::new(radius, false),
-            Transform::from_translation(position.extend(0.0)),
+            Position::new(position, Rot2::IDENTITY),
             Velocity::new(velocity),
             ChildOf(layer),
         ))
@@ -2513,7 +2512,7 @@ fn set_tile(app: &mut App, position: TilePosition) {
 
 fn update_collider(app: &mut App, id: Entity, position: Vec2, velocity: Vec2) {
     app.world_mut().entity_mut(id).insert((
-        Transform::from_translation(position.extend(0.0)),
+        Position::new(position, Rot2::IDENTITY),
         GlobalPosition::new(position, Rot2::IDENTITY),
         Velocity::new(velocity),
     ));

@@ -5,11 +5,10 @@ use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use bevy_math::prelude::*;
 use bevy_time::{TimePlugin, TimeUpdateStrategy, prelude::*};
-use bevy_transform::prelude::*;
 
 use crate::{
     collision::{Collision, CollisionTarget, Collisions},
-    kinematics::{KinematicsPlugin, Velocity},
+    kinematics::{KinematicsPlugin, Position, Velocity},
     layer::Layer,
     tile::TilePlugin,
 };
@@ -21,7 +20,7 @@ fn update_kinematics() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
             Velocity::new(Vec2::new(5.0, 3.0)),
             ChildOf(layer),
         ))
@@ -29,8 +28,8 @@ fn update_kinematics() {
 
     app.update();
 
-    let transform = app.world().get::<Transform>(entity).unwrap();
-    assert_relative_eq!(transform.translation.xy(), Vec2::new(5.0, 3.0));
+    let position = app.world().get::<Position>(entity).unwrap();
+    assert_relative_eq!(position.position(), Vec2::new(5.0, 3.0));
 }
 
 #[test]
@@ -40,7 +39,7 @@ fn update_kinematics_zero_velocity() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(10.0, 20.0, 0.0),
+            Position::new(Vec2::new(10.0, 20.0), Rot2::IDENTITY),
             Velocity::new(Vec2::ZERO),
             ChildOf(layer),
         ))
@@ -49,15 +48,15 @@ fn update_kinematics_zero_velocity() {
     let change_tick = app
         .world()
         .entity(entity)
-        .get_ref::<Transform>()
+        .get_ref::<Position>()
         .unwrap()
         .last_changed();
 
     app.update();
 
-    let transform = app.world().entity(entity).get_ref::<Transform>().unwrap();
-    assert_relative_eq!(transform.translation.xy(), Vec2::new(10.0, 20.0));
-    assert_eq!(transform.last_changed(), change_tick);
+    let position = app.world().entity(entity).get_ref::<Position>().unwrap();
+    assert_relative_eq!(position.position(), Vec2::new(10.0, 20.0));
+    assert_eq!(position.last_changed(), change_tick);
 }
 
 #[test]
@@ -67,7 +66,7 @@ fn update_kinematics_angular_velocity() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
             Velocity::new(Vec2::ZERO).with_angular(1.0),
             ChildOf(layer),
         ))
@@ -75,12 +74,10 @@ fn update_kinematics_angular_velocity() {
 
     app.update();
 
-    let transform = app.world().get::<Transform>(entity).unwrap();
-    let expected = Quat::from_rotation_z(1.0);
-    assert_relative_eq!(transform.rotation.x, expected.x, epsilon = 1e-6);
-    assert_relative_eq!(transform.rotation.y, expected.y, epsilon = 1e-6);
-    assert_relative_eq!(transform.rotation.z, expected.z, epsilon = 1e-6);
-    assert_relative_eq!(transform.rotation.w, expected.w, epsilon = 1e-6);
+    let position = app.world().get::<Position>(entity).unwrap();
+    let expected = Rot2::radians(1.0);
+    assert_relative_eq!(position.rotation().cos, expected.cos, epsilon = 1e-6);
+    assert_relative_eq!(position.rotation().sin, expected.sin, epsilon = 1e-6);
 }
 
 #[test]
@@ -104,7 +101,7 @@ fn update_kinematics_wall_collision_active() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
             Velocity::new(Vec2::new(-5.0, 3.0)),
             ChildOf(layer),
             collisions,
@@ -116,8 +113,8 @@ fn update_kinematics_wall_collision_active() {
     let velocity = app.world().get::<Velocity>(entity).unwrap();
     assert_relative_eq!(velocity.linear(), Vec2::new(0.0, 3.0));
 
-    let transform = app.world().get::<Transform>(entity).unwrap();
-    assert_relative_eq!(transform.translation.xy(), Vec2::new(0.0, 3.0));
+    let position = app.world().get::<Position>(entity).unwrap();
+    assert_relative_eq!(position.position(), Vec2::new(0.0, 3.0));
 }
 
 #[test]
@@ -141,7 +138,7 @@ fn update_kinematics_wall_collision() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
             Velocity::new(Vec2::new(4.0, -2.0)),
             ChildOf(layer),
             collisions,
@@ -153,8 +150,8 @@ fn update_kinematics_wall_collision() {
     let velocity = app.world().get::<Velocity>(entity).unwrap();
     assert_relative_eq!(velocity.linear(), Vec2::new(4.0, 0.0));
 
-    let transform = app.world().get::<Transform>(entity).unwrap();
-    assert_relative_eq!(transform.translation.xy(), Vec2::new(4.0, -1.0));
+    let position = app.world().get::<Position>(entity).unwrap();
+    assert_relative_eq!(position.position(), Vec2::new(4.0, -1.0));
 }
 
 #[test]
@@ -190,7 +187,7 @@ fn update_kinematics_multiple_collisions() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
             Velocity::new(Vec2::new(-3.0, -4.0)),
             ChildOf(layer),
             collisions,
@@ -200,7 +197,7 @@ fn update_kinematics_multiple_collisions() {
     let change_tick = app
         .world()
         .entity(entity)
-        .get_ref::<Transform>()
+        .get_ref::<Position>()
         .unwrap()
         .last_changed();
 
@@ -209,9 +206,9 @@ fn update_kinematics_multiple_collisions() {
     let velocity = app.world().get::<Velocity>(entity).unwrap();
     assert_relative_eq!(velocity.linear(), Vec2::ZERO);
 
-    let transform = app.world().entity(entity).get_ref::<Transform>().unwrap();
-    assert_relative_eq!(transform.translation.xy(), Vec2::ZERO);
-    assert_eq!(transform.last_changed(), change_tick);
+    let position = app.world().entity(entity).get_ref::<Position>().unwrap();
+    assert_relative_eq!(position.position(), Vec2::ZERO);
+    assert_eq!(position.last_changed(), change_tick);
 }
 
 #[test]
@@ -235,7 +232,7 @@ fn update_kinematics_wall_collision_receding() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
             Velocity::new(Vec2::new(5.0, 3.0)),
             ChildOf(layer),
             collisions,
@@ -247,8 +244,8 @@ fn update_kinematics_wall_collision_receding() {
     let velocity = app.world().get::<Velocity>(entity).unwrap();
     assert_relative_eq!(velocity.linear(), Vec2::new(5.0, 3.0));
 
-    let transform = app.world().get::<Transform>(entity).unwrap();
-    assert_relative_eq!(transform.translation.xy(), Vec2::new(5.0, 3.0));
+    let position = app.world().get::<Position>(entity).unwrap();
+    assert_relative_eq!(position.position(), Vec2::new(5.0, 3.0));
 }
 
 #[test]
@@ -274,7 +271,7 @@ fn update_kinematics_collider_collision() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
             Velocity::new(Vec2::new(-4.0, -2.0)),
             ChildOf(layer),
             collisions,
@@ -286,12 +283,8 @@ fn update_kinematics_collider_collision() {
     let velocity = app.world().get::<Velocity>(entity).unwrap();
     assert_relative_eq!(velocity.linear(), Vec2::new(-1.0, 1.0), epsilon = 1e-4);
 
-    let transform = app.world().get::<Transform>(entity).unwrap();
-    assert_relative_eq!(
-        transform.translation.xy(),
-        Vec2::new(-2.5, 1.5),
-        epsilon = 1e-4
-    );
+    let position = app.world().get::<Position>(entity).unwrap();
+    assert_relative_eq!(position.position(), Vec2::new(-2.5, 1.5), epsilon = 1e-4);
 }
 
 #[test]
@@ -317,7 +310,7 @@ fn update_kinematics_non_solid_collision_active() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
             Velocity::new(Vec2::new(4.0, 2.0)),
             ChildOf(layer),
             collisions,
@@ -329,8 +322,8 @@ fn update_kinematics_non_solid_collision_active() {
     let velocity = app.world().get::<Velocity>(entity).unwrap();
     assert_relative_eq!(velocity.linear(), Vec2::new(4.0, 2.0));
 
-    let transform = app.world().get::<Transform>(entity).unwrap();
-    assert_relative_eq!(transform.translation.xy(), Vec2::new(4.0, 2.0));
+    let position = app.world().get::<Position>(entity).unwrap();
+    assert_relative_eq!(position.position(), Vec2::new(4.0, 2.0));
 }
 
 #[test]
@@ -354,7 +347,7 @@ fn update_kinematics_non_solid_wall_collision_active() {
     let entity = app
         .world_mut()
         .spawn((
-            Transform::from_xyz(0.0, 0.0, 0.0),
+            Position::new(Vec2::ZERO, Rot2::IDENTITY),
             Velocity::new(Vec2::new(3.0, -5.0)),
             ChildOf(layer),
             collisions,
@@ -366,8 +359,8 @@ fn update_kinematics_non_solid_wall_collision_active() {
     let velocity = app.world().get::<Velocity>(entity).unwrap();
     assert_relative_eq!(velocity.linear(), Vec2::new(3.0, -5.0));
 
-    let transform = app.world().get::<Transform>(entity).unwrap();
-    assert_relative_eq!(transform.translation.xy(), Vec2::new(3.0, -5.0));
+    let position = app.world().get::<Position>(entity).unwrap();
+    assert_relative_eq!(position.position(), Vec2::new(3.0, -5.0));
 }
 
 fn make_app() -> (App, Entity) {
