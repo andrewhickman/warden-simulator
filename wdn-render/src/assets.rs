@@ -17,6 +17,12 @@ pub const PAWN_PROJECTILE_RECT: URect = URect {
     max: UVec2::new(256, 48),
 };
 
+pub const DOOR_INDEX: usize = 2;
+pub const DOOR_RECT: URect = URect {
+    min: UVec2::new(16, 224),
+    max: UVec2::new(400, 608),
+};
+
 pub struct AssetsPlugin;
 
 #[derive(Debug, Resource)]
@@ -78,6 +84,18 @@ impl AssetHandles {
             ..Default::default()
         }
     }
+
+    pub fn door(&self) -> Sprite {
+        Sprite {
+            image: self.atlas(),
+            texture_atlas: Some(TextureAtlas {
+                layout: self.layout.clone(),
+                index: DOOR_INDEX,
+            }),
+            custom_size: Some(sprite_size(DOOR_RECT)),
+            ..Default::default()
+        }
+    }
 }
 
 pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
@@ -87,6 +105,7 @@ pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
         layout.add_texture(PAWN_PROJECTILE_RECT),
         PAWN_PROJECTILE_INDEX
     );
+    assert_eq!(layout.add_texture(DOOR_RECT), DOOR_INDEX);
 
     commands.insert_resource(AssetHandles {
         tileset: assets.load_with_settings("image/tileset.png", configure_tileset),

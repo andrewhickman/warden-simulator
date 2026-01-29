@@ -26,15 +26,15 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#505050"
      showgrid="true"
-     inkscape:zoom="1.32"
-     inkscape:cx="332.95455"
-     inkscape:cy="248.10606"
+     inkscape:zoom="0.93338095"
+     inkscape:cx="390.51579"
+     inkscape:cy="396.94403"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="1912"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g4"
+     inkscape:current-layer="layer3"
      inkscape:export-bgcolor="#00000000">
     <inkscape:grid
        id="grid4"
@@ -70,6 +70,13 @@
        x="8"
        y="8" />
     <rect
+       style="display:inline;fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:16;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+       id="rect7-1"
+       width="400"
+       height="400"
+       x="8"
+       y="215.99998" />
+    <rect
        style="fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:16;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
        id="rect8"
        width="48"
@@ -82,6 +89,45 @@
      id="layer3"
      inkscape:label="Sprites">
     <g
+       id="g196"
+       inkscape:label="Door"
+       transform="matrix(6,0,0,6,16,224)"
+       style="display:inline;stroke-width:0.166666">
+      <path
+         id="rect169-1"
+         style="fill:#000000;fill-opacity:1;stroke-width:0.500155;stroke-opacity:0.906301;paint-order:stroke markers fill"
+         inkscape:label="Border"
+         d="M 0,0 V 9 H 2 V 55 H 0 v 9 H 64 V 55 H 62 V 36 h 1 V 24 H 62 V 9 h 2 V 0 Z M 6,9 H 9 V 55 H 6 Z m 7,0 h 3 v 46 h -3 z m 7,0 h 3 v 46 h -3 z m 7,0 h 3 v 46 h -3 z m 7,0 h 3 v 46 h -3 z m 7,0 h 3 v 46 h -3 z m 7,0 h 3 v 15 h -1 v 12 h 1 v 19 h -3 z m 7,0 h 3 v 15 h -3 z m 0,27 h 3 v 19 h -3 z"
+         sodipodi:nodetypes="cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" />
+      <path
+         id="rect170"
+         style="display:inline;fill:#636363;fill-opacity:1;stroke-width:0.500155;stroke-opacity:0.906301;paint-order:stroke markers fill"
+         inkscape:label="Color"
+         d="M 1,1 V 8 H 63 V 1 Z m 49.5,23.5 v 11 h 12 v -11 z M 1,56 v 7 h 62 v -7 z" />
+      <path
+         id="rect167"
+         style="display:inline;fill:#000000;fill-opacity:0.74902;stroke-width:0.500155;stroke-opacity:0.906301;paint-order:stroke markers fill"
+         inkscape:label="Top"
+         d="M 1,1 V 5 H 63 V 1 Z m 49.5,23.5 v 1.569633 l 12,-0.03689 V 24.5 Z M 1,56 v 4 h 62 v -4 z"
+         sodipodi:nodetypes="ccccccccccccccc" />
+      <path
+         id="path170"
+         style="fill:#636363;fill-opacity:1;stroke-width:0.500155;stroke-opacity:0.906301;paint-order:stroke markers fill"
+         inkscape:label="Bars"
+         d="m 2.5,8 v 50.115234 0.138672 H 2.519531 A 1.5,0.88545487 0 0 0 4,59 1.5,0.88545487 0 0 0 5.480469,58.253906 H 5.5 V 58.115234 8 Z m 7,0 v 50.115234 0.138672 H 9.519531 A 1.5,0.88545487 0 0 0 11,59 1.5,0.88545487 0 0 0 12.480469,58.253906 H 12.5 V 58.115234 8 Z m 7,0 v 50.115234 0.138672 h 0.01953 A 1.5,0.88545487 0 0 0 18,59 1.5,0.88545487 0 0 0 19.480469,58.253906 H 19.5 V 58.115234 8 Z m 7,0 v 50.115234 0.138672 h 0.01953 A 1.5,0.88545487 0 0 0 25,59 1.5,0.88545487 0 0 0 26.480469,58.253906 H 26.5 V 58.115234 8 Z m 7,0 v 50.115234 0.138672 h 0.01953 A 1.5,0.88545487 0 0 0 32,59 1.5,0.88545487 0 0 0 33.480469,58.253906 H 33.5 V 58.115234 8 Z m 7,0 v 50.115234 0.138672 h 0.01953 A 1.5,0.88545487 0 0 0 39,59 1.5,0.88545487 0 0 0 40.48047,58.253906 H 40.5 V 58.115234 8 Z m 7,0 v 50.115234 0.138672 h 0.01953 A 1.5,0.88545487 0 0 0 46,59 1.5,0.88545487 0 0 0 47.48047,58.253906 H 47.5 V 58.115234 8 Z m 7,0 v 16.5 a 1.5,1 0 0 0 1.5,1 1.5,1 0 0 0 1.5,-1 V 8 Z m 7,0 v 16.5 a 1.5,1 0 0 0 1.5,1 1.5,1 0 0 0 1.5,-1 V 8 Z m -7,27.5 v 22.615234 0.138672 h 0.01953 A 1.5,0.88545487 0 0 0 53,59 1.5,0.88545487 0 0 0 54.48047,58.253906 H 54.5 V 58.115234 35.5 Z m 7,0 v 22.615234 0.138672 h 0.01953 A 1.5,0.88545487 0 0 0 60,59 1.5,0.88545487 0 0 0 61.48047,58.253906 H 61.5 V 58.115234 35.5 Z" />
+      <path
+         id="rect172"
+         style="fill:#000000;fill-opacity:0.247059;stroke-width:0.500155;stroke-opacity:0.906301;paint-order:stroke markers fill"
+         inkscape:label="Front"
+         d="M 1,5 V 8 H 63 V 5 Z M 50.5,26.069633 V 35.5 h 12 V 26.032743 Z M 1,60 v 3 h 62 v -3 z"
+         sodipodi:nodetypes="ccccccccccccccc" />
+      <path
+         id="path195"
+         style="fill:#000000;fill-opacity:1;stroke-width:0.500155;stroke-opacity:0.906301;paint-order:stroke markers fill"
+         d="m 60,29 a 1,1 0 0 0 -1,1 1,1 0 0 0 0.5293,0.882812 L 59,33 h 2 L 60.4707,30.882812 A 1,1 0 0 0 61,30 1,1 0 0 0 60,29 Z"
+         inkscape:label="Keyhole" />
+    </g>
+    <g
        stroke-width="8"
        id="g4"
        inkscape:label="Pawn"
@@ -90,36 +136,42 @@
          d="m 80,112 c 32,-16 64,-16 96,0 v 96 c -32,16 -64,16 -96,0 z"
          fill="#fdab11"
          id="path1"
-         style="stroke:#000000;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" />
+         style="stroke:#000000;stroke-width:8;stroke-linecap:round;stroke-linejoin:round"
+         inkscape:label="Body" />
       <path
          d="M 128,176 V 100"
          fill="#ffffff"
          stroke-opacity="0.4"
          id="path2"
-         style="stroke:#000000;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" />
+         style="stroke:#000000;stroke-width:8;stroke-linecap:round;stroke-linejoin:round"
+         inkscape:label="Stripe" />
       <circle
          cx="128"
          cy="80"
          fill="#f6e9d0"
          id="circle2"
          style="stroke:#000000;stroke-width:8;stroke-linecap:round;stroke-linejoin:round"
-         r="44" />
+         r="44"
+         inkscape:label="Head" />
       <circle
          cx="112"
          cy="80"
          id="circle3"
-         r="4" />
+         r="4"
+         inkscape:label="Eye1" />
       <circle
          cx="144"
          cy="80"
          id="circle4"
-         r="4" />
+         r="4"
+         inkscape:label="Eye2" />
     </g>
     <circle
        style="fill:#f6e9d0;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
        id="path5"
        cx="240"
        cy="32"
-       r="14" />
+       r="14"
+       inkscape:label="PawnProjectile" />
   </g>
 </svg>

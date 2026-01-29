@@ -139,11 +139,11 @@ fn pack_tile_chunk(offset: TileChunkOffset, tile: Tile) -> PackedTileData {
 }
 
 fn tile_chunk_transform(position: TileChunkPosition) -> Transform {
-    Transform::from_translation(Vec3::new(
+    Transform::from_xyz(
         position.x() as f32 * CHUNK_SIZE as f32 + CHUNK_SIZE as f32 / 2.0,
         position.y() as f32 * CHUNK_SIZE as f32 + CHUNK_SIZE as f32 / 2.0,
         0.0,
-    ))
+    )
 }
 
 fn dirt_sprite_offset(position: TileChunkOffset) -> u16 {

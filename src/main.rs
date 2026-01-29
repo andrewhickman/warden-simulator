@@ -20,8 +20,8 @@ use wdn_render::RenderPlugin as WdnRenderPlugin;
 use wdn_save::SavePlugin as WdnSavePlugin;
 use wdn_tasks::TasksPlugin as WdnTasksPlugin;
 use wdn_ui::UiPlugin as WdnUiPlugin;
-use wdn_world::WorldPlugin as WdnWorldPlugin;
 use wdn_world::pawn::{Pawn, PawnAction};
+use wdn_world::{WorldPlugin as WdnWorldPlugin, door::Door};
 
 pub fn main() {
     App::new()
@@ -114,6 +114,8 @@ fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
         ChildOf(layer),
         Position::new(Vec2::new(0.0, 0.0), Rot2::IDENTITY),
     ));
+
+    commands.spawn((Door, TilePosition::new(layer, 2, 2)));
 
     storage.set_material(TilePosition::new(layer, 0, 0), TileMaterial::Empty);
     storage.set_material(TilePosition::new(layer, 1, -1), TileMaterial::Empty);
