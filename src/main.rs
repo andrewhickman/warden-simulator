@@ -115,7 +115,7 @@ fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
         Position::new(Vec2::new(0.0, 0.0), Rot2::IDENTITY),
     ));
 
-    commands.spawn((Door, TilePosition::new(layer, 2, 2)));
+    commands.spawn((Door::default(), TilePosition::new(layer, 2, 2)));
 
     storage.set_material(TilePosition::new(layer, 0, 0), TileMaterial::Empty);
     storage.set_material(TilePosition::new(layer, 1, -1), TileMaterial::Empty);

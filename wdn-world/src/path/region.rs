@@ -306,7 +306,7 @@ impl TileChunkSectionParents {
         debug_assert_eq!(
             self.parents[parent.index()],
             Some(parent),
-            "Parents should normalized"
+            "parents should be normalized"
         );
         Some(parent)
     }

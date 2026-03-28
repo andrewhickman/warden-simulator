@@ -64,12 +64,6 @@
 							"to_port": 1
 						},
 						{
-							"from": "alter_hsv",
-							"from_port": 0,
-							"to": "gen_outputs",
-							"to_port": 0
-						},
-						{
 							"from": "gen_inputs",
 							"from_port": 0,
 							"to": "alter_hsv",
@@ -176,6 +170,30 @@
 							"from_port": 0,
 							"to": "alter_hsv",
 							"to_port": 3
+						},
+						{
+							"from": "alter_hsv",
+							"from_port": 0,
+							"to": "gaussian_blur_4",
+							"to_port": 0
+						},
+						{
+							"from": "gaussian_blur_4",
+							"from_port": 0,
+							"to": "quantize",
+							"to_port": 0
+						},
+						{
+							"from": "quantize",
+							"from_port": 0,
+							"to": "gaussian_blur_5",
+							"to_port": 0
+						},
+						{
+							"from": "gaussian_blur_5",
+							"from_port": 0,
+							"to": "gen_outputs",
+							"to_port": 0
 						}
 					],
 					"label": "Graph",
@@ -241,7 +259,7 @@
 								"y": 1135.29431152344
 							},
 							"parameters": {
-								"all": 1.0,
+								"all": 0.82,
 								"hue": 0.05,
 								"saturation": 0.3,
 								"value": 0.3
@@ -270,8 +288,8 @@
 						{
 							"name": "gen_outputs",
 							"node_position": {
-								"x": -1130.05969238281,
-								"y": 1488.89428710938
+								"x": -71.7915802001953,
+								"y": 1241.04211425781
 							},
 							"parameters": {
 
@@ -427,7 +445,7 @@
 										"y": -694.666625976562
 									},
 									"parameters": {
-										"param0": 10,
+										"param0": 10.0,
 										"param1": 20.9,
 										"param2": 0.0,
 										"param3": false
@@ -615,7 +633,7 @@
 									},
 									"parameters": {
 										"sigma": 20.9,
-										"size": 10
+										"size": 10.0
 									},
 									"seed": 5439.0,
 									"type": "gaussian_blur_x"
@@ -628,7 +646,7 @@
 									},
 									"parameters": {
 										"sigma": 20.9,
-										"size": 10
+										"size": 10.0
 									},
 									"seed": 12279.0,
 									"seed_locked": true,
@@ -644,7 +662,7 @@
 										"f32": false,
 										"filter": false,
 										"mipmap": false,
-										"size": 10
+										"size": 10.0
 									},
 									"seed_int": 0,
 									"type": "buffer",
@@ -660,7 +678,7 @@
 										"f32": false,
 										"filter": false,
 										"mipmap": false,
-										"size": 10
+										"size": 10.0
 									},
 									"seed_int": 0,
 									"type": "buffer",
@@ -676,7 +694,7 @@
 										"f32": false,
 										"filter": false,
 										"mipmap": false,
-										"size": 10
+										"size": 10.0
 									},
 									"seed_int": 0,
 									"type": "buffer",
@@ -684,7 +702,7 @@
 								}
 							],
 							"parameters": {
-								"param0": 10,
+								"param0": 10.0,
 								"param1": 20.9,
 								"param2": 0.0,
 								"param3": false
@@ -750,7 +768,7 @@
 							"parameters": {
 								"folds": 0.0,
 								"iterations": 7.0,
-								"noise": 2,
+								"noise": 2.0,
 								"offset": 0.0,
 								"persistence": 2.0,
 								"scale_x": 32.0,
@@ -811,7 +829,7 @@
 								"y": 1180.7587890625
 							},
 							"parameters": {
-								"size": 10
+								"size": 10.0
 							},
 							"seed_int": 0,
 							"type": "noise_white"
@@ -899,7 +917,7 @@
 							},
 							"parameters": {
 								"amount1": 0.68,
-								"blend_type1": 2
+								"blend_type1": 2.0
 							},
 							"seed_int": 0,
 							"type": "blend2"
@@ -1683,6 +1701,49 @@
 							"seed_int": 0,
 							"shortdesc": "Gaussian blur",
 							"type": "graph"
+						},
+						{
+							"name": "gaussian_blur_4",
+							"node_position": {
+								"x": -796.428894042969,
+								"y": 1009.72375488281
+							},
+							"parameters": {
+								"param0": 6,
+								"param1": 0.8,
+								"param2": 0.0,
+								"param3": false
+							},
+							"seed_int": 0,
+							"type": "gaussian_blur"
+						},
+						{
+							"generic_size": 1,
+							"name": "quantize",
+							"node_position": {
+								"x": -509.91064453125,
+								"y": 1101.54064941406
+							},
+							"parameters": {
+								"steps": 82.0
+							},
+							"seed_int": 0,
+							"type": "quantize"
+						},
+						{
+							"name": "gaussian_blur_5",
+							"node_position": {
+								"x": -356.851593017578,
+								"y": 1275.09887695312
+							},
+							"parameters": {
+								"param0": 10,
+								"param1": 5.8,
+								"param2": 0.0,
+								"param3": false
+							},
+							"seed_int": 0,
+							"type": "gaussian_blur"
 						}
 					],
 					"parameters": {

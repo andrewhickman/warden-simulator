@@ -17,6 +17,7 @@ pub enum WorldSystems {
     ApplyPawnActions,
     ApplyProjectiles,
     UpdatePaths,
+    UpdateDoors,
 }
 
 impl Plugin for WorldPlugin {

@@ -7,6 +7,7 @@ use bevy_app::prelude::*;
 use bevy_ecs::{prelude::*, query::QueryData};
 use bevy_math::{CompassOctant, prelude::*};
 use bevy_time::prelude::*;
+use tracing::warn;
 
 use crate::{
     PhysicsSystems,
@@ -27,9 +28,11 @@ pub struct Collider {
     solid: bool,
 }
 
-#[derive(Component, Clone, Copy, Debug, Default)]
+#[derive(Component, Clone, Copy, Debug)]
 #[require(TilePosition)]
-pub struct TileCollider;
+pub struct TileCollider {
+    solid: bool,
+}
 
 #[derive(Component, Clone, Copy, Debug, Default)]
 pub struct ColliderDisabled;
@@ -128,8 +131,14 @@ pub fn resolve_collisions(
                         tile_position.position(),
                         candidate_tile.position.position(),
                     ) {
-                        tile_occupancy |= TileOccupancy::from_octant(octant);
-                        tile_colliders.insert(octant, candidate);
+                        tile_occupancy
+                            .set(TileOccupancy::from_octant(octant), candidate_tile.solid());
+                        if tile_colliders.insert(octant, candidate) {
+                            warn!(
+                                "Multiple colliders found for tile {:?}",
+                                candidate_tile.position
+                            );
+                        }
                     }
                 }
             });
@@ -187,6 +196,24 @@ impl ColliderQueryItem<'_, '_> {
         self.velocity.map_or(Vec2::ZERO, |v| v.linear())
     }
 
+    pub fn solid(&self) -> bool {
+        self.collider.solid
+    }
+}
+
+impl TileCollider {
+    pub fn new(solid: bool) -> Self {
+        Self { solid }
+    }
+}
+
+impl Default for TileCollider {
+    fn default() -> Self {
+        Self { solid: true }
+    }
+}
+
+impl TileColliderQueryItem<'_, '_> {
     pub fn solid(&self) -> bool {
         self.collider.solid
     }
@@ -502,10 +529,16 @@ impl TileColliderLookup {
         }
     }
 
-    fn insert(&mut self, octant: CompassOctant, id: Entity) {
+    fn insert(&mut self, octant: CompassOctant, id: Entity) -> bool {
         match &mut self.entities[octant.to_index()] {
-            Some(old_id) if *old_id > id => {}
-            tile => *tile = Some(id),
+            Some(old_id) => {
+                *old_id = (*old_id).max(id);
+                true
+            }
+            None => {
+                self.entities[octant.to_index()] = Some(id);
+                false
+            }
         }
     }
 

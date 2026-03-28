@@ -26,12 +26,12 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#505050"
      showgrid="true"
-     inkscape:zoom="0.93338095"
-     inkscape:cx="390.51579"
-     inkscape:cy="396.94403"
+     inkscape:zoom="1.8667619"
+     inkscape:cx="7.7674609"
+     inkscape:cy="169.00923"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
-     inkscape:window-x="1912"
+     inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer3"
@@ -53,45 +53,45 @@
   </sodipodi:namedview>
   <g
      inkscape:groupmode="layer"
-     id="layer1"
-     inkscape:label="Guides"
-     style="display:none">
-    <circle
-       style="fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:2;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-       id="path7"
-       cx="112"
-       cy="112"
-       r="80" />
-    <rect
-       style="fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:16;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-       id="rect7"
-       width="208"
-       height="208"
-       x="8"
-       y="8" />
-    <rect
-       style="display:inline;fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:16;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-       id="rect7-1"
-       width="400"
-       height="400"
-       x="8"
-       y="215.99998" />
-    <rect
-       style="fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:16;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-       id="rect8"
-       width="48"
-       height="48"
-       x="216"
-       y="8" />
-  </g>
-  <g
-     inkscape:groupmode="layer"
      id="layer3"
      inkscape:label="Sprites">
     <g
+       inkscape:groupmode="layer"
+       id="layer1"
+       inkscape:label="Guides"
+       style="display:inline">
+      <circle
+         style="fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:2;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+         id="path7"
+         cx="96"
+         cy="140.21213"
+         r="80" />
+      <rect
+         style="fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:16;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+         id="rect7"
+         width="176"
+         height="272"
+         x="8"
+         y="8" />
+      <rect
+         style="display:inline;fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:16;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+         id="rect7-1"
+         width="400"
+         height="400"
+         x="8"
+         y="280" />
+      <rect
+         style="fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:15.9999;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+         id="rect8"
+         width="64.000046"
+         height="64.000046"
+         x="183.99998"
+         y="8" />
+    </g>
+    <g
        id="g196"
        inkscape:label="Door"
-       transform="matrix(6,0,0,6,16,224)"
+       transform="matrix(6,0,0,6,16,288.00003)"
        style="display:inline;stroke-width:0.166666">
       <path
          id="rect169-1"
@@ -128,29 +128,29 @@
          inkscape:label="Keyhole" />
     </g>
     <g
-       stroke-width="8"
+       stroke-width="6"
        id="g4"
        inkscape:label="Pawn"
-       transform="translate(-16,-16)">
+       transform="matrix(1.3333333,0,0,1.3333333,-74.666662,-26.666664)">
       <path
          d="m 80,112 c 32,-16 64,-16 96,0 v 96 c -32,16 -64,16 -96,0 z"
          fill="#fdab11"
          id="path1"
-         style="stroke:#000000;stroke-width:8;stroke-linecap:round;stroke-linejoin:round"
+         style="stroke:#000000;stroke-width:6;stroke-linecap:round;stroke-linejoin:round"
          inkscape:label="Body" />
       <path
          d="M 128,176 V 100"
          fill="#ffffff"
          stroke-opacity="0.4"
          id="path2"
-         style="stroke:#000000;stroke-width:8;stroke-linecap:round;stroke-linejoin:round"
+         style="stroke:#000000;stroke-width:6;stroke-linecap:round;stroke-linejoin:round"
          inkscape:label="Stripe" />
       <circle
          cx="128"
          cy="80"
          fill="#f6e9d0"
          id="circle2"
-         style="stroke:#000000;stroke-width:8;stroke-linecap:round;stroke-linejoin:round"
+         style="stroke:#000000;stroke-width:6;stroke-linecap:round;stroke-linejoin:round"
          r="44"
          inkscape:label="Head" />
       <circle
@@ -158,20 +158,31 @@
          cy="80"
          id="circle3"
          r="4"
-         inkscape:label="Eye1" />
+         inkscape:label="Eye1"
+         style="stroke-width:6" />
       <circle
          cx="144"
          cy="80"
          id="circle4"
          r="4"
-         inkscape:label="Eye2" />
+         inkscape:label="Eye2"
+         style="stroke-width:6" />
+      <rect
+         style="fill:none;fill-opacity:0.448795;stroke:none;stroke-width:0.0377953;paint-order:stroke markers fill"
+         id="rect1"
+         width="160"
+         height="256"
+         x="16"
+         y="16"
+         transform="matrix(0.75000002,0,0,0.75000002,55.999998,19.999998)"
+         inkscape:label="Bounds" />
     </g>
     <circle
-       style="fill:#f6e9d0;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+       style="fill:#f6e9d0;fill-opacity:1;stroke:#000000;stroke-width:3.99999;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
        id="path5"
-       cx="240"
-       cy="32"
-       r="14"
+       cx="216.00002"
+       cy="40"
+       r="22"
        inkscape:label="PawnProjectile" />
   </g>
 </svg>

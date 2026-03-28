@@ -6,22 +6,13 @@ use bevy_math::prelude::*;
 use bevy_sprite::prelude::*;
 
 pub const PAWN_INDEX: usize = 0;
-pub const PAWN_RECT: URect = URect {
-    min: UVec2::new(16, 16),
-    max: UVec2::new(208, 208),
-};
+pub const PAWN_RECT: URect = rect(16, 16, 160, 256);
 
 pub const PAWN_PROJECTILE_INDEX: usize = 1;
-pub const PAWN_PROJECTILE_RECT: URect = URect {
-    min: UVec2::new(224, 16),
-    max: UVec2::new(256, 48),
-};
+pub const PAWN_PROJECTILE_RECT: URect = rect(192, 16, 48, 48);
 
 pub const DOOR_INDEX: usize = 2;
-pub const DOOR_RECT: URect = URect {
-    min: UVec2::new(16, 224),
-    max: UVec2::new(400, 608),
-};
+pub const DOOR_RECT: URect = rect(16, 288, 384, 384);
 
 pub struct AssetsPlugin;
 
@@ -30,10 +21,6 @@ pub struct AssetHandles {
     tileset: Handle<Image>,
     atlas: Handle<Image>,
     layout: Handle<TextureAtlasLayout>,
-}
-
-pub fn sprite_size(rect: URect) -> Vec2 {
-    rect.size().as_vec2() * 0.0025
 }
 
 impl Plugin for AssetsPlugin {
@@ -121,6 +108,17 @@ fn configure_tileset(settings: &mut ImageLoaderSettings) {
 
 fn configure_atlas(settings: &mut ImageLoaderSettings) {
     settings.sampler = ImageSampler::linear();
+}
+
+fn sprite_size(rect: URect) -> Vec2 {
+    rect.size().as_vec2() * 0.0025
+}
+
+const fn rect(min_x: u32, min_y: u32, size_x: u32, size_y: u32) -> URect {
+    URect {
+        min: UVec2::new(min_x, min_y),
+        max: UVec2::new(min_x + size_x, min_y + size_y),
+    }
 }
 
 #[cfg(test)]
