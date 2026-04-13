@@ -1,5 +1,6 @@
 pub mod assets;
 pub mod damage;
+pub mod layers;
 pub mod lerp;
 pub mod pawn;
 pub mod tile;

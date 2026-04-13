@@ -9,7 +9,7 @@ use wdn_world::{
     pawn::{Pawn, PawnProjectile},
 };
 
-use crate::{assets::AssetHandles, lerp::Interpolate};
+use crate::{assets::AssetHandles, layers::PAWN_LAYER, lerp::Interpolate};
 
 pub struct PawnPlugin;
 
@@ -65,5 +65,9 @@ impl DoorSprite {
 }
 
 fn tile_transform(position: TilePosition) -> Transform {
-    Transform::from_xyz(position.x() as f32 + 0.5, position.y() as f32 + 0.5, 0.0)
+    Transform::from_xyz(
+        position.x() as f32 + 0.5,
+        position.y() as f32 + 0.5,
+        PAWN_LAYER,
+    )
 }

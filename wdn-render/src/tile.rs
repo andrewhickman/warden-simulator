@@ -21,22 +21,29 @@ use wdn_physics::{
     },
 };
 
-use crate::assets::AssetHandles;
+use crate::{
+    assets::AssetHandles,
+    layers::{BASE_LAYER, TOP_LAYER},
+};
 
 pub const SPRITE_CHUNK_SIZE: u16 = 16;
 
 pub const DIRT_OFFSET: u16 = 0;
-pub const WALL_OFFSET: u16 = 256;
+pub const WALL_BASE_OFFSET: u16 = DIRT_OFFSET + 256;
+pub const WALL_TOP_OFFSET: u16 = WALL_BASE_OFFSET + 13;
 
 pub struct TilePlugin;
 
 #[derive(Resource)]
 pub struct TileChunkMesh(Handle<Mesh>);
 
-#[derive(Copy, Clone, Component, Debug, Default)]
-#[require(Mesh2d, MeshMaterial2d<TilemapChunkMaterial>, Transform)]
-#[component(on_add = TileChunkSprite::on_add)]
-pub struct TileChunkSprite;
+#[derive(Clone, Component, Default, Debug)]
+#[require(Transform, Visibility)]
+#[component(on_add = TileChunkSprites::on_add)]
+pub struct TileChunkSprites {
+    base: Handle<Image>,
+    top: Handle<Image>,
+}
 
 impl Plugin for TilePlugin {
     fn build(&self, app: &mut App) {
@@ -45,7 +52,7 @@ impl Plugin for TilePlugin {
         app.add_systems(PostUpdate, update_chunk_data.before(AssetEventSystems));
 
         app.register_required_components::<Layer, Visibility>();
-        app.register_required_components::<TileChunk, TileChunkSprite>();
+        app.register_required_components::<TileChunk, TileChunkSprites>();
     }
 }
 
@@ -59,76 +66,96 @@ impl FromWorld for TileChunkMesh {
 }
 
 pub fn update_chunk_data(
-    mut query: Query<(&TileChunk, &MeshMaterial2d<TilemapChunkMaterial>), Changed<TileChunk>>,
-    mut materials: ResMut<Assets<TilemapChunkMaterial>>,
+    mut query: Query<(&TileChunk, &TileChunkSprites), Changed<TileChunk>>,
     mut images: ResMut<Assets<Image>>,
 ) {
-    query.iter_mut().for_each(|(chunk, material)| {
-        let Some(material) = materials.get_mut(material.id()) else {
-            error!("material asset not found for chunk {chunk:?}");
-            return;
-        };
-
-        let Some(image) = images.get_mut(material.tile_data.id()) else {
-            error!("image asset not found for chunk {chunk:?}");
-            return;
-        };
-
-        let Some(data) = image.data.as_mut() else {
-            error!("image data not found for chunk {chunk:?}");
-            return;
-        };
-
-        data.clear();
-        for (offset, tile) in chunk.tiles() {
-            let packed = pack_tile_chunk(offset, tile);
-            data.extend_from_slice(bytemuck::bytes_of(&packed));
-        }
+    query.iter_mut().for_each(|(chunk, sprites)| {
+        update_chunk_image(&mut images, sprites.base.id(), chunk, pack_tile_base);
+        update_chunk_image(&mut images, sprites.top.id(), chunk, pack_tile_top);
     });
 }
 
-impl TileChunkSprite {
+impl TileChunkSprites {
     fn on_add(mut world: DeferredWorld, context: HookContext) {
-        let mesh = world.resource::<TileChunkMesh>().0.clone();
-
         let chunk = world.get::<TileChunk>(context.entity).unwrap();
         let position = chunk.position();
-        let packed_data = chunk
-            .tiles()
-            .map(|(offset, tile)| pack_tile_chunk(offset, tile))
-            .collect::<Vec<PackedTileData>>();
 
-        let tileset = world.resource::<AssetHandles>().tileset();
-        let tile_data = world
-            .resource_mut::<Assets<Image>>()
-            .add(make_chunk_tile_data_image(
-                &UVec2::splat(CHUNK_SIZE as u32),
-                &packed_data,
-            ));
+        let base = spawn_chunk_image(&mut world, context.entity, BASE_LAYER, pack_tile_base);
+        let top = spawn_chunk_image(&mut world, context.entity, TOP_LAYER, pack_tile_top);
 
-        let material =
-            world
-                .resource_mut::<Assets<TilemapChunkMaterial>>()
-                .add(TilemapChunkMaterial {
-                    alpha_mode: AlphaMode2d::Opaque,
-                    tileset,
-                    tile_data,
-                });
-
-        let mut chunk = world.entity_mut(context.entity);
-        chunk
-            .get_mut::<MeshMaterial2d<TilemapChunkMaterial>>()
-            .unwrap()
-            .0 = material;
-        chunk.get_mut::<Mesh2d>().unwrap().0 = mesh;
-        *chunk.get_mut::<Transform>().unwrap() = tile_chunk_transform(position);
+        *world.get_mut::<TileChunkSprites>(context.entity).unwrap() =
+            TileChunkSprites { base, top };
+        *world.get_mut::<Transform>(context.entity).unwrap() = chunk_transform(position);
     }
 }
 
-fn pack_tile_chunk(offset: TileChunkOffset, tile: Tile) -> PackedTileData {
+fn spawn_chunk_image(
+    world: &mut DeferredWorld,
+    id: Entity,
+    layer: f32,
+    pack: impl Fn(TileChunkOffset, Tile) -> PackedTileData,
+) -> Handle<Image> {
+    let mesh = world.resource::<TileChunkMesh>().0.clone();
+
+    let chunk = world.get::<TileChunk>(id).unwrap();
+    let packed_data = chunk
+        .tiles()
+        .map(|(offset, tile)| pack(offset, tile))
+        .collect::<Vec<PackedTileData>>();
+
+    let tileset = world.resource::<AssetHandles>().tileset();
+    let tile_data = world
+        .resource_mut::<Assets<Image>>()
+        .add(make_chunk_tile_data_image(
+            &UVec2::splat(CHUNK_SIZE as u32),
+            &packed_data,
+        ));
+
+    let material = world
+        .resource_mut::<Assets<TilemapChunkMaterial>>()
+        .add(TilemapChunkMaterial {
+            alpha_mode: AlphaMode2d::Opaque,
+            tileset,
+            tile_data: tile_data.clone(),
+        });
+
+    world.commands().spawn((
+        ChildOf(id),
+        Mesh2d(mesh),
+        MeshMaterial2d(material),
+        Transform::from_xyz(0.0, 0.0, layer),
+    ));
+
+    tile_data
+}
+
+fn update_chunk_image(
+    images: &mut Assets<Image>,
+    id: AssetId<Image>,
+    chunk: &TileChunk,
+    pack: impl Fn(TileChunkOffset, Tile) -> PackedTileData,
+) {
+    let Some(image) = images.get_mut(id) else {
+        error!("image asset not found for chunk {chunk:?}");
+        return;
+    };
+
+    let Some(data) = image.data.as_mut() else {
+        error!("image data not found for chunk {chunk:?}");
+        return;
+    };
+
+    data.clear();
+    for (offset, tile) in chunk.tiles() {
+        let packed = pack(offset, tile);
+        data.extend_from_slice(bytemuck::bytes_of(&packed));
+    }
+}
+
+fn pack_tile_base(offset: TileChunkOffset, tile: Tile) -> PackedTileData {
     let tileset_index = match tile.material() {
         TileMaterial::Empty => DIRT_OFFSET + dirt_sprite_offset(offset),
-        TileMaterial::Wall => WALL_OFFSET + wall_sprite_offset(tile.occupancy()),
+        TileMaterial::Wall => WALL_BASE_OFFSET + wall_base_sprite_offset(tile.occupancy()),
     };
 
     PackedTileData::from(TileData {
@@ -138,7 +165,20 @@ fn pack_tile_chunk(offset: TileChunkOffset, tile: Tile) -> PackedTileData {
     })
 }
 
-fn tile_chunk_transform(position: TileChunkPosition) -> Transform {
+fn pack_tile_top(offset: TileChunkOffset, tile: Tile) -> PackedTileData {
+    let tileset_index = match tile.material() {
+        TileMaterial::Empty => DIRT_OFFSET + dirt_sprite_offset(offset),
+        TileMaterial::Wall => WALL_TOP_OFFSET + wall_top_sprite_offset(tile.occupancy()),
+    };
+
+    PackedTileData::from(TileData {
+        tileset_index,
+        color: Color::WHITE,
+        visible: true,
+    })
+}
+
+fn chunk_transform(position: TileChunkPosition) -> Transform {
     Transform::from_xyz(
         position.x() as f32 * CHUNK_SIZE as f32 + CHUNK_SIZE as f32 / 2.0,
         position.y() as f32 * CHUNK_SIZE as f32 + CHUNK_SIZE as f32 / 2.0,
@@ -151,31 +191,52 @@ fn dirt_sprite_offset(position: TileChunkOffset) -> u16 {
         + position.x().rem_euclid(SPRITE_CHUNK_SIZE)
 }
 
-fn wall_sprite_offset(occupancy: TileOccupancy) -> u16 {
+fn wall_base_sprite_offset(occupancy: TileOccupancy) -> u16 {
     const LOOKUP: [u8; 256] = [
-        0, 1, 0, 1, 2, 3, 2, 4, 0, 1, 0, 1, 2, 3, 2, 4, 5, 6, 5, 6, 7, 8, 7, 9, 5, 6, 5, 6, 10, 11,
-        10, 12, 0, 1, 0, 1, 2, 3, 2, 4, 0, 1, 0, 1, 2, 3, 2, 4, 5, 6, 5, 6, 7, 8, 7, 9, 5, 6, 5, 6,
-        10, 11, 10, 12, 13, 14, 13, 14, 15, 16, 15, 17, 13, 14, 13, 14, 15, 16, 15, 17, 18, 19, 18,
-        19, 20, 21, 20, 22, 18, 19, 18, 19, 23, 24, 23, 25, 13, 14, 13, 14, 15, 16, 15, 17, 13, 14,
-        13, 14, 15, 16, 15, 17, 26, 27, 26, 27, 28, 29, 28, 30, 26, 27, 26, 27, 31, 32, 31, 33, 0,
-        1, 0, 1, 2, 3, 2, 4, 0, 1, 0, 1, 2, 3, 2, 4, 5, 6, 5, 6, 7, 8, 7, 9, 5, 6, 5, 6, 10, 11,
-        10, 12, 0, 1, 0, 1, 2, 3, 2, 4, 0, 1, 0, 1, 2, 3, 2, 4, 5, 6, 5, 6, 7, 8, 7, 9, 5, 6, 5, 6,
-        10, 11, 10, 12, 13, 34, 13, 34, 15, 35, 15, 36, 13, 34, 13, 34, 15, 35, 15, 36, 18, 37, 18,
-        37, 20, 38, 20, 39, 18, 37, 18, 37, 23, 40, 23, 41, 13, 34, 13, 34, 15, 35, 15, 36, 13, 34,
-        13, 34, 15, 35, 15, 36, 26, 42, 26, 42, 28, 43, 28, 44, 26, 42, 26, 42, 31, 45, 31, 46,
+        0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4,
+        4, 4, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2,
+        4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 7, 7,
+        7, 7, 9, 9, 9, 9, 5, 5, 5, 5, 6, 6, 6, 6, 5, 5, 5, 5, 6, 6, 6, 6, 10, 10, 10, 10, 11, 11,
+        11, 11, 10, 10, 10, 10, 12, 12, 12, 12, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 2,
+        2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1,
+        1, 2, 2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 5, 5, 5, 5, 6,
+        6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 7, 7, 7, 7, 9, 9, 9, 9, 5, 5, 5, 5, 6, 6, 6, 6, 5, 5, 5,
+        5, 6, 6, 6, 6, 10, 10, 10, 10, 11, 11, 11, 11, 10, 10, 10, 10, 12, 12, 12, 12,
     ];
 
-    LOOKUP[occupancy.bits() as usize] as u16
+    dbg!(LOOKUP[occupancy.bits() as usize] as u16)
+}
+
+fn wall_top_sprite_offset(occupancy: TileOccupancy) -> u16 {
+    const LOOKUP: [u8; 256] = [
+        0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3,
+        2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1,
+        2, 3, 2, 1, 4, 5, 4, 5, 6, 7, 6, 7, 4, 5, 4, 5, 6, 7, 6, 7, 4, 5, 4, 5, 6, 7, 6, 7, 4, 5,
+        4, 5, 6, 7, 6, 7, 4, 5, 4, 5, 6, 7, 6, 7, 4, 5, 4, 5, 6, 7, 6, 7, 4, 5, 4, 5, 6, 7, 6, 7,
+        4, 5, 4, 5, 6, 7, 6, 7, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3,
+        2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1,
+        2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 4, 1, 4, 1, 6, 7, 6, 1, 4, 1, 4, 1, 6, 7, 6, 1, 4, 1,
+        4, 1, 6, 7, 6, 1, 4, 1, 4, 1, 6, 7, 6, 1, 4, 1, 4, 1, 6, 7, 6, 1, 4, 1, 4, 1, 6, 7, 6, 1,
+        4, 1, 4, 1, 6, 7, 6, 1, 4, 1, 4, 1, 6, 7, 6, 1,
+    ];
+
+    dbg!(LOOKUP[occupancy.bits() as usize] as u16)
 }
 
 #[test]
-fn test_tile_sprite_index() {
+fn test_tile_sprite_index_bottom() {
     use std::collections::{HashMap, hash_map};
 
     let mut patterns: HashMap<TileOccupancy, u16> = HashMap::new();
 
+    let bottom_mask = TileOccupancy::SOUTH
+        | TileOccupancy::SOUTH_WEST
+        | TileOccupancy::SOUTH_EAST
+        | TileOccupancy::WEST
+        | TileOccupancy::EAST;
+
     for i in 0..=255u8 {
-        let occupancy = TileOccupancy::from_bits_retain(i);
+        let occupancy = TileOccupancy::from_bits_retain(i) & bottom_mask;
         let mut normal = occupancy;
 
         if !normal.contains(TileOccupancy::NORTH | TileOccupancy::WEST) {
@@ -195,16 +256,58 @@ fn test_tile_sprite_index() {
         }
 
         let index = patterns.len() as u16;
+
         match patterns.entry(normal) {
             hash_map::Entry::Occupied(entry) => {
-                assert_eq!(wall_sprite_offset(occupancy), *entry.get() as u16,);
+                assert_eq!(wall_base_sprite_offset(occupancy), *entry.get() as u16);
             }
             hash_map::Entry::Vacant(entry) => {
-                assert_eq!(wall_sprite_offset(occupancy), index);
+                assert_eq!(wall_base_sprite_offset(occupancy), index);
                 entry.insert(index);
             }
         }
     }
 
-    assert_eq!(patterns.len(), 47);
+    assert_eq!(patterns.len(), 13);
+}
+
+#[test]
+fn test_tile_sprite_index_top() {
+    use std::collections::{HashMap, hash_map};
+
+    let mut patterns: HashMap<TileOccupancy, u16> = HashMap::new();
+
+    let top_mask = TileOccupancy::NORTH
+        | TileOccupancy::NORTH_WEST
+        | TileOccupancy::NORTH_EAST
+        | TileOccupancy::WEST
+        | TileOccupancy::EAST;
+
+    for i in 0..=255u8 {
+        let occupancy = TileOccupancy::from_bits_retain(i) & top_mask;
+        let mut normal = occupancy;
+
+        if normal.contains(TileOccupancy::NORTH)
+            && (!normal.contains(TileOccupancy::EAST) || normal.contains(TileOccupancy::NORTH_EAST))
+            && (!normal.contains(TileOccupancy::WEST) || normal.contains(TileOccupancy::NORTH_WEST))
+        {
+            normal = TileOccupancy::NORTH;
+        }
+
+        normal.remove(TileOccupancy::NORTH_WEST | TileOccupancy::NORTH_EAST);
+
+        let index = patterns.len() as u16;
+
+        match patterns.entry(normal) {
+            hash_map::Entry::Occupied(entry) => {
+                assert_eq!(wall_top_sprite_offset(occupancy), *entry.get() as u16);
+            }
+            hash_map::Entry::Vacant(entry) => {
+                assert_eq!(wall_top_sprite_offset(occupancy), index);
+                entry.insert(index);
+            }
+        }
+    }
+
+    assert_eq!(patterns.len(), 8);
 }
