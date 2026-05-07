@@ -29,8 +29,8 @@ use crate::{
 pub const SPRITE_CHUNK_SIZE: u16 = 16;
 
 pub const DIRT_OFFSET: u16 = 0;
-pub const WALL_BASE_OFFSET: u16 = DIRT_OFFSET + 256;
-pub const WALL_TOP_OFFSET: u16 = WALL_BASE_OFFSET + 13;
+pub const WALL_TOP_OFFSET: u16 = DIRT_OFFSET + 256;
+pub const WALL_BASE_OFFSET: u16 = WALL_TOP_OFFSET + 13;
 
 pub struct TilePlugin;
 
@@ -41,7 +41,9 @@ pub struct TileChunkMesh(Handle<Mesh>);
 #[require(Transform, Visibility)]
 #[component(on_add = TileChunkSprites::on_add)]
 pub struct TileChunkSprites {
+    base_material: Handle<TilemapChunkMaterial>,
     base: Handle<Image>,
+    top_material: Handle<TilemapChunkMaterial>,
     top: Handle<Image>,
 }
 
@@ -67,9 +69,14 @@ impl FromWorld for TileChunkMesh {
 
 pub fn update_chunk_data(
     mut query: Query<(&TileChunk, &TileChunkSprites), Changed<TileChunk>>,
+    mut materials: ResMut<Assets<TilemapChunkMaterial>>,
     mut images: ResMut<Assets<Image>>,
 ) {
     query.iter_mut().for_each(|(chunk, sprites)| {
+        // Mark materials as changed
+        materials.get_mut(&sprites.base_material);
+        materials.get_mut(&sprites.top_material);
+
         update_chunk_image(&mut images, sprites.base.id(), chunk, pack_tile_base);
         update_chunk_image(&mut images, sprites.top.id(), chunk, pack_tile_top);
     });
@@ -80,21 +87,42 @@ impl TileChunkSprites {
         let chunk = world.get::<TileChunk>(context.entity).unwrap();
         let position = chunk.position();
 
-        let base = spawn_chunk_image(&mut world, context.entity, BASE_LAYER, pack_tile_base);
-        let top = spawn_chunk_image(&mut world, context.entity, TOP_LAYER, pack_tile_top);
+        let (base, base_material) = spawn_chunk_image(
+            &mut world,
+            context.entity,
+            Transform::from_xyz(
+                chunk_coord_transform(position.x()),
+                chunk_coord_transform(position.y()),
+                BASE_LAYER,
+            ),
+            pack_tile_base,
+        );
+        let (top, top_material) = spawn_chunk_image(
+            &mut world,
+            context.entity,
+            Transform::from_xyz(
+                chunk_coord_transform(position.x()),
+                chunk_coord_transform(position.y()) + 1.0,
+                TOP_LAYER,
+            ),
+            pack_tile_top,
+        );
 
-        *world.get_mut::<TileChunkSprites>(context.entity).unwrap() =
-            TileChunkSprites { base, top };
-        *world.get_mut::<Transform>(context.entity).unwrap() = chunk_transform(position);
+        *world.get_mut::<TileChunkSprites>(context.entity).unwrap() = TileChunkSprites {
+            base_material,
+            base,
+            top_material,
+            top,
+        };
     }
 }
 
 fn spawn_chunk_image(
     world: &mut DeferredWorld,
     id: Entity,
-    layer: f32,
+    transform: Transform,
     pack: impl Fn(TileChunkOffset, Tile) -> PackedTileData,
-) -> Handle<Image> {
+) -> (Handle<Image>, Handle<TilemapChunkMaterial>) {
     let mesh = world.resource::<TileChunkMesh>().0.clone();
 
     let chunk = world.get::<TileChunk>(id).unwrap();
@@ -122,11 +150,11 @@ fn spawn_chunk_image(
     world.commands().spawn((
         ChildOf(id),
         Mesh2d(mesh),
-        MeshMaterial2d(material),
-        Transform::from_xyz(0.0, 0.0, layer),
+        MeshMaterial2d(material.clone()),
+        transform,
     ));
 
-    tile_data
+    (tile_data, material)
 }
 
 fn update_chunk_image(
@@ -165,9 +193,9 @@ fn pack_tile_base(offset: TileChunkOffset, tile: Tile) -> PackedTileData {
     })
 }
 
-fn pack_tile_top(offset: TileChunkOffset, tile: Tile) -> PackedTileData {
+fn pack_tile_top(_: TileChunkOffset, tile: Tile) -> PackedTileData {
     let tileset_index = match tile.material() {
-        TileMaterial::Empty => DIRT_OFFSET + dirt_sprite_offset(offset),
+        TileMaterial::Empty => return PackedTileData::from(None),
         TileMaterial::Wall => WALL_TOP_OFFSET + wall_top_sprite_offset(tile.occupancy()),
     };
 
@@ -178,12 +206,8 @@ fn pack_tile_top(offset: TileChunkOffset, tile: Tile) -> PackedTileData {
     })
 }
 
-fn chunk_transform(position: TileChunkPosition) -> Transform {
-    Transform::from_xyz(
-        position.x() as f32 * CHUNK_SIZE as f32 + CHUNK_SIZE as f32 / 2.0,
-        position.y() as f32 * CHUNK_SIZE as f32 + CHUNK_SIZE as f32 / 2.0,
-        0.0,
-    )
+fn chunk_coord_transform(d: i16) -> f32 {
+    d as f32 * CHUNK_SIZE as f32 + CHUNK_SIZE as f32 / 2.0
 }
 
 fn dirt_sprite_offset(position: TileChunkOffset) -> u16 {
@@ -204,7 +228,7 @@ fn wall_base_sprite_offset(occupancy: TileOccupancy) -> u16 {
         5, 6, 6, 6, 6, 10, 10, 10, 10, 11, 11, 11, 11, 10, 10, 10, 10, 12, 12, 12, 12,
     ];
 
-    dbg!(LOOKUP[occupancy.bits() as usize] as u16)
+    LOOKUP[occupancy.bits() as usize] as u16
 }
 
 fn wall_top_sprite_offset(occupancy: TileOccupancy) -> u16 {
@@ -220,7 +244,7 @@ fn wall_top_sprite_offset(occupancy: TileOccupancy) -> u16 {
         4, 1, 4, 1, 6, 7, 6, 1, 4, 1, 4, 1, 6, 7, 6, 1,
     ];
 
-    dbg!(LOOKUP[occupancy.bits() as usize] as u16)
+    LOOKUP[occupancy.bits() as usize] as u16
 }
 
 #[test]
