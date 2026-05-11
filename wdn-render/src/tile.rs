@@ -16,7 +16,7 @@ use bevy_transform::prelude::*;
 use wdn_physics::{
     layer::Layer,
     tile::{
-        CHUNK_SIZE, TileChunkOffset, TileChunkPosition,
+        CHUNK_SIZE, TileChunkOffset,
         storage::{Tile, TileChunk, TileMaterial, TileOccupancy},
     },
 };
@@ -235,13 +235,13 @@ fn wall_top_sprite_offset(occupancy: TileOccupancy) -> u16 {
     const LOOKUP: [u8; 256] = [
         0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3,
         2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1,
-        2, 3, 2, 1, 4, 5, 4, 5, 6, 7, 6, 7, 4, 5, 4, 5, 6, 7, 6, 7, 4, 5, 4, 5, 6, 7, 6, 7, 4, 5,
-        4, 5, 6, 7, 6, 7, 4, 5, 4, 5, 6, 7, 6, 7, 4, 5, 4, 5, 6, 7, 6, 7, 4, 5, 4, 5, 6, 7, 6, 7,
-        4, 5, 4, 5, 6, 7, 6, 7, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3,
+        2, 3, 2, 1, 4, 5, 4, 5, 6, 7, 6, 5, 4, 5, 4, 5, 6, 7, 6, 5, 4, 5, 4, 5, 6, 7, 6, 5, 4, 5,
+        4, 5, 6, 7, 6, 5, 4, 5, 4, 5, 6, 7, 6, 5, 4, 5, 4, 5, 6, 7, 6, 5, 4, 5, 4, 5, 6, 7, 6, 5,
+        4, 5, 4, 5, 6, 7, 6, 5, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3,
         2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1,
-        2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 4, 1, 4, 1, 6, 7, 6, 1, 4, 1, 4, 1, 6, 7, 6, 1, 4, 1,
-        4, 1, 6, 7, 6, 1, 4, 1, 4, 1, 6, 7, 6, 1, 4, 1, 4, 1, 6, 7, 6, 1, 4, 1, 4, 1, 6, 7, 6, 1,
-        4, 1, 4, 1, 6, 7, 6, 1, 4, 1, 4, 1, 6, 7, 6, 1,
+        2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 4, 1, 4, 1, 6, 3, 6, 1, 4, 1, 4, 1, 6, 3, 6, 1, 4, 1,
+        4, 1, 6, 3, 6, 1, 4, 1, 4, 1, 6, 3, 6, 1, 4, 1, 4, 1, 6, 3, 6, 1, 4, 1, 4, 1, 6, 3, 6, 1,
+        4, 1, 4, 1, 6, 3, 6, 1, 4, 1, 4, 1, 6, 3, 6, 1,
     ];
 
     LOOKUP[occupancy.bits() as usize] as u16
@@ -302,23 +302,27 @@ fn test_tile_sprite_index_top() {
     let mut patterns: HashMap<TileOccupancy, u16> = HashMap::new();
 
     let top_mask = TileOccupancy::NORTH
-        | TileOccupancy::NORTH_WEST
-        | TileOccupancy::NORTH_EAST
         | TileOccupancy::WEST
-        | TileOccupancy::EAST;
+        | TileOccupancy::EAST
+        | TileOccupancy::NORTH_WEST
+        | TileOccupancy::NORTH_EAST;
 
     for i in 0..=255u8 {
         let occupancy = TileOccupancy::from_bits_retain(i) & top_mask;
         let mut normal = occupancy;
 
-        if normal.contains(TileOccupancy::NORTH)
-            && (!normal.contains(TileOccupancy::EAST) || normal.contains(TileOccupancy::NORTH_EAST))
-            && (!normal.contains(TileOccupancy::WEST) || normal.contains(TileOccupancy::NORTH_WEST))
-        {
-            normal = TileOccupancy::NORTH;
-        }
+        if normal.contains(TileOccupancy::NORTH) {
+            if normal.contains(TileOccupancy::NORTH_EAST) {
+                normal.remove(TileOccupancy::EAST | TileOccupancy::NORTH_EAST);
+            }
 
-        normal.remove(TileOccupancy::NORTH_WEST | TileOccupancy::NORTH_EAST);
+            if normal.contains(TileOccupancy::NORTH_WEST) {
+                normal.remove(TileOccupancy::WEST | TileOccupancy::NORTH_WEST);
+            }
+        } else {
+            normal.remove(TileOccupancy::NORTH_EAST);
+            normal.remove(TileOccupancy::NORTH_WEST);
+        }
 
         let index = patterns.len() as u16;
 
