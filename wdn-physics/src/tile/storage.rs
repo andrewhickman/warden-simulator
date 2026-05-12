@@ -1,4 +1,4 @@
-use std::{fmt, mem};
+use std::fmt;
 
 use bevy_ecs::{
     lifecycle::HookContext,
@@ -128,15 +128,14 @@ impl TileStorageMut<'_, '_> {
     }
 
     pub fn set_material(&'_ mut self, position: TilePosition, material: TileMaterial) {
-        let tile = self
+        self
             .chunk_mut(position.chunk_position())
-            .get_mut(position.chunk_offset());
-        let prev_material = mem::replace(&mut tile.material, material);
-
-        match (prev_material.is_solid(), material.is_solid()) {
-            (false, true) => self.add_adjacent(position),
-            (true, false) => self.remove_adjacent(position),
-            _ => {}
+            .get_mut(position.chunk_offset())
+            .material = material;
+        if material.is_solid() {
+            self.add_adjacent(position);
+        } else {
+            self.remove_adjacent(position);
         }
     }
 
@@ -993,7 +992,7 @@ mod tests {
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
                 let center = TilePosition::new(layer, 5, 5);
-                let east_neighbor = TilePosition::new(layer, 6, 5);
+                let east_neighbor = center.east();
 
                 storage.set_material(center, TileMaterial::Wall);
                 storage.set_material(east_neighbor, TileMaterial::Empty);
@@ -1008,5 +1007,78 @@ mod tests {
                 assert_eq!(storage.get_occupancy(east_neighbor), TileOccupancy::WEST);
             })
             .unwrap();
+    }
+
+    #[test]
+    fn tile_storage_change_detection() {
+        let mut app = App::new();
+        app.add_plugins(TilePlugin);
+
+        let layer = app.world_mut().spawn(Layer::default()).id();
+        let tile1 = TilePosition::new(layer, 5, 5);
+        let tile2 = TilePosition::new(layer, -5, 5);
+
+        app.world_mut()
+            .run_system_once(move |mut storage: TileStorageMut| {
+                storage.set_material(tile1, TileMaterial::Wall);
+                storage.set_material(tile2, TileMaterial::Wall);
+            })
+            .unwrap();
+
+        let chunk1 = app.world().resource::<TileMap>().get(tile1.chunk_position()).unwrap();
+        let chunk2 = app.world().resource::<TileMap>().get(tile2.chunk_position()).unwrap();
+
+        assert!(app.world_mut().get_mut::<TileChunk>(chunk1).unwrap().is_added());
+        assert!(app.world_mut().get_mut::<TileChunk>(chunk2).unwrap().is_added());
+
+        app.world_mut().clear_trackers();
+
+        assert!(!app.world_mut().get_mut::<TileChunk>(chunk1).unwrap().is_changed());
+        assert!(!app.world_mut().get_mut::<TileChunk>(chunk2).unwrap().is_changed());
+
+        app.world_mut()
+            .run_system_once(move |mut storage: TileStorageMut| {
+                storage.set_material(tile1, TileMaterial::Wall);
+            })
+            .unwrap();
+
+        assert!(app.world_mut().get_mut::<TileChunk>(chunk1).unwrap().is_changed());
+        assert!(!app.world_mut().get_mut::<TileChunk>(chunk2).unwrap().is_changed());
+    }
+
+    #[test]
+    fn tile_storage_change_detection_border() {
+        let mut app = App::new();
+        app.add_plugins(TilePlugin);
+
+        let layer = app.world_mut().spawn(Layer::default()).id();
+        let edge = TilePosition::new(layer, 0, 5);
+
+        app.world_mut()
+            .run_system_once(move |mut storage: TileStorageMut| {
+                storage.set_material(edge, TileMaterial::Wall);
+            })
+            .unwrap();
+
+        let chunk1 = app.world().resource::<TileMap>().get(edge.chunk_position()).unwrap();
+        let chunk2 = app.world().resource::<TileMap>().get(edge.west().chunk_position()).unwrap();
+        assert_ne!(chunk1, chunk2);
+
+        assert!(app.world_mut().get_mut::<TileChunk>(chunk1).unwrap().is_added());
+        assert!(app.world_mut().get_mut::<TileChunk>(chunk2).unwrap().is_added());
+
+        app.world_mut().clear_trackers();
+
+        assert!(!app.world_mut().get_mut::<TileChunk>(chunk1).unwrap().is_changed());
+        assert!(!app.world_mut().get_mut::<TileChunk>(chunk2).unwrap().is_changed());
+
+        app.world_mut()
+            .run_system_once(move |mut storage: TileStorageMut| {
+                storage.set_material(edge, TileMaterial::Wall);
+            })
+            .unwrap();
+
+        assert!(app.world_mut().get_mut::<TileChunk>(chunk1).unwrap().is_changed());
+        assert!(app.world_mut().get_mut::<TileChunk>(chunk2).unwrap().is_changed());
     }
 }
