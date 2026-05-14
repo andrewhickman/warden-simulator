@@ -319,11 +319,10 @@ impl Collisions {
         delta_secs: f32,
     ) {
         if occupancy.contains(TileOccupancy::EAST) {
-            let neighbor_pos = tile_position.east();
             self.check_tile_edge(
                 collider,
                 tile_colliders.get(CompassOctant::East),
-                neighbor_pos,
+                tile_position.east(),
                 Dir2::NEG_X,
                 (tile_position.x() + 1) as f32 - collider.position().x,
                 collider.velocity().x,
@@ -333,11 +332,10 @@ impl Collisions {
         }
 
         if occupancy.contains(TileOccupancy::NORTH) {
-            let neighbor_pos = tile_position.north();
             self.check_tile_edge(
                 collider,
                 tile_colliders.get(CompassOctant::North),
-                neighbor_pos,
+                tile_position.north(),
                 Dir2::NEG_Y,
                 (tile_position.y() + 1) as f32 - collider.position().y,
                 collider.velocity().y,
@@ -347,11 +345,10 @@ impl Collisions {
         }
 
         if occupancy.contains(TileOccupancy::WEST) {
-            let neighbor_pos = tile_position.west();
             self.check_tile_edge(
                 collider,
                 tile_colliders.get(CompassOctant::West),
-                neighbor_pos,
+                tile_position.west(),
                 Dir2::X,
                 collider.position().x - tile_position.x() as f32,
                 -collider.velocity().x,
@@ -361,11 +358,10 @@ impl Collisions {
         }
 
         if occupancy.contains(TileOccupancy::SOUTH) {
-            let neighbor_pos = tile_position.south();
             self.check_tile_edge(
                 collider,
                 tile_colliders.get(CompassOctant::South),
-                neighbor_pos,
+                tile_position.south(),
                 Dir2::Y,
                 collider.position().y - tile_position.y() as f32,
                 -collider.velocity().y,
@@ -377,11 +373,10 @@ impl Collisions {
         if occupancy.contains(TileOccupancy::NORTH_EAST)
             && !occupancy.intersects(TileOccupancy::NORTH | TileOccupancy::EAST)
         {
-            let neighbor_pos = tile_position.north().east();
             self.check_tile_corner(
                 collider,
                 tile_colliders.get(CompassOctant::NorthEast),
-                neighbor_pos,
+                tile_position.north().east(),
                 tile_position.position() + IVec2::ONE,
                 delta_secs,
             );
@@ -390,11 +385,10 @@ impl Collisions {
         if occupancy.contains(TileOccupancy::NORTH_WEST)
             && !occupancy.intersects(TileOccupancy::NORTH | TileOccupancy::WEST)
         {
-            let neighbor_pos = tile_position.north().west();
             self.check_tile_corner(
                 collider,
                 tile_colliders.get(CompassOctant::NorthWest),
-                neighbor_pos,
+                tile_position.north().west(),
                 tile_position.position() + IVec2::Y,
                 delta_secs,
             );
@@ -403,11 +397,10 @@ impl Collisions {
         if occupancy.contains(TileOccupancy::SOUTH_WEST)
             && !occupancy.intersects(TileOccupancy::SOUTH | TileOccupancy::WEST)
         {
-            let neighbor_pos = tile_position.south().west();
             self.check_tile_corner(
                 collider,
                 tile_colliders.get(CompassOctant::SouthWest),
-                neighbor_pos,
+                tile_position.south().west(),
                 tile_position.position(),
                 delta_secs,
             );
@@ -416,11 +409,10 @@ impl Collisions {
         if occupancy.contains(TileOccupancy::SOUTH_EAST)
             && !occupancy.intersects(TileOccupancy::SOUTH | TileOccupancy::EAST)
         {
-            let neighbor_pos = tile_position.south().east();
             self.check_tile_corner(
                 collider,
                 tile_colliders.get(CompassOctant::SouthEast),
-                neighbor_pos,
+                tile_position.south().east(),
                 tile_position.position() + IVec2::X,
                 delta_secs,
             );

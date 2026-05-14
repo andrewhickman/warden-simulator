@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="256mm"
+   height="256mm"
+   viewBox="0 0 256 256"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   sodipodi:docname="test.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="true"
+     inkscape:zoom="4.6039281"
+     inkscape:cx="191.24973"
+     inkscape:cy="297.35477"
+     inkscape:window-width="1440"
+     inkscape:window-height="890"
+     inkscape:window-x="-6"
+     inkscape:window-y="-6"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       id="grid1"
+       units="mm"
+       originx="0"
+       originy="0"
+       spacingx="3.9999999"
+       spacingy="1.9999999"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="4"
+       enabled="true"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:none;stroke:#00003a;stroke-width:0.0701581;stroke-linejoin:round;stroke-opacity:0.416201"
+       id="rect1"
+       width="19.999998"
+       height="18"
+       x="32.000004"
+       y="78" />
+    <rect
+       style="fill:none;stroke:#00003a;stroke-width:0.264583;stroke-linejoin:round;stroke-opacity:0.416201"
+       id="rect2"
+       width="27.999998"
+       height="4.0000048"
+       x="32.000004"
+       y="91.999992" />
+    <rect
+       style="fill:none;stroke:#00003a;stroke-width:0.264583;stroke-linejoin:round;stroke-opacity:0.416201"
+       id="rect2-6"
+       width="27.999998"
+       height="4.0000048"
+       x="64"
+       y="91.999931" />
+    <rect
+       style="fill:none;stroke:#00003a;stroke-width:0.187088;stroke-linejoin:round;stroke-opacity:0.416201"
+       id="rect2-6-7"
+       width="27.999998"
+       height="2"
+       x="64"
+       y="89.999939" />
+    <path
+       id="rect3"
+       style="fill:none;stroke:#00003a;stroke-width:0.264583;stroke-linejoin:round;stroke-opacity:0.416201"
+       d="m 32.000114,77.99989 v 1.999878 H 35.99987 48.000171 V 90.000191 H 35.99987 v -4.000272 h -3.999756 v 4.000272 1.999878 h 19.999813 l 8.000075,-1.94e-4 v -1.999878 l -8.000075,1.94e-4 V 77.99989 h -3.999756 z"
+       sodipodi:nodetypes="ccccccccccccccccc" />
+    <rect
+       style="fill:none;stroke:#00003a;stroke-width:0.303646;stroke-linejoin:round;stroke-opacity:0.416201"
+       id="rect6"
+       width="15.960822"
+       height="3.960942"
+       x="32.019646"
+       y="80.019524" />
+    <path
+       style="fill:none;stroke:#0b0715;stroke-width:0.342711;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       d="m 33.999879,85.999997 1.13e-4,-6.000229"
+       id="path8"
+       sodipodi:nodetypes="cc" />
+    <rect
+       style="fill:#ff0000;stroke:none;stroke-width:0.4;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;fill-opacity:1"
+       id="rect8"
+       width="12"
+       height="1.9999999"
+       x="36"
+       y="88" />
+    <rect
+       style="fill:#fff2ea;fill-opacity:1;stroke:none;stroke-width:0.365468;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       id="rect9"
+       width="1.2355844"
+       height="1.669744"
+       x="46.590603"
+       y="88.330444" />
+    <rect
+       style="fill:#181715;stroke-width:0.187088;stroke-linejoin:round;stroke-opacity:0.416201"
+       id="rect4"
+       width="3.9999995"
+       height="4.130692"
+       x="60.000004"
+       y="90.999939" />
+  </g>
+</svg>

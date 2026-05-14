@@ -9,7 +9,11 @@ use wdn_world::{
     pawn::{Pawn, PawnProjectile},
 };
 
-use crate::{assets::AssetHandles, layers::PAWN_LAYER, lerp::Interpolate};
+use crate::{
+    assets::AssetHandles,
+    layers::{PAWN_LAYER, SPRITE_LAYER},
+    lerp::Interpolate,
+};
 
 pub struct PawnPlugin;
 
@@ -44,6 +48,12 @@ impl PawnSprite {
     fn on_add(mut world: DeferredWorld, context: HookContext) {
         let sprite = world.resource::<AssetHandles>().pawn();
         *world.get_mut::<Sprite>(context.entity).unwrap() = sprite;
+
+        world
+            .get_mut::<Transform>(context.entity)
+            .unwrap()
+            .translation
+            .z = PAWN_LAYER;
     }
 }
 
@@ -51,6 +61,12 @@ impl PawnProjectileSprite {
     fn on_add(mut world: DeferredWorld, context: HookContext) {
         let sprite = world.resource::<AssetHandles>().pawn_projectile();
         *world.get_mut::<Sprite>(context.entity).unwrap() = sprite;
+
+        world
+            .get_mut::<Transform>(context.entity)
+            .unwrap()
+            .translation
+            .z = PAWN_LAYER;
     }
 }
 
@@ -68,6 +84,6 @@ fn tile_transform(position: TilePosition) -> Transform {
     Transform::from_xyz(
         position.x() as f32 + 0.5,
         position.y() as f32 + 0.5,
-        PAWN_LAYER,
+        SPRITE_LAYER,
     )
 }

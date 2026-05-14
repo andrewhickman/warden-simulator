@@ -102,7 +102,7 @@ pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
 }
 
 fn configure_tileset(settings: &mut ImageLoaderSettings) {
-    settings.sampler = ImageSampler::linear();
+    settings.sampler = ImageSampler::nearest();
     settings.array_layout = Some(ImageArrayLayout::RowHeight { pixels: 64 });
 }
 

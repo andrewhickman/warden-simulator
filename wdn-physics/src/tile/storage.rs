@@ -128,8 +128,7 @@ impl TileStorageMut<'_, '_> {
     }
 
     pub fn set_material(&'_ mut self, position: TilePosition, material: TileMaterial) {
-        self
-            .chunk_mut(position.chunk_position())
+        self.chunk_mut(position.chunk_position())
             .get_mut(position.chunk_offset())
             .material = material;
         if material.is_solid() {
@@ -1025,16 +1024,44 @@ mod tests {
             })
             .unwrap();
 
-        let chunk1 = app.world().resource::<TileMap>().get(tile1.chunk_position()).unwrap();
-        let chunk2 = app.world().resource::<TileMap>().get(tile2.chunk_position()).unwrap();
+        let chunk1 = app
+            .world()
+            .resource::<TileMap>()
+            .get(tile1.chunk_position())
+            .unwrap();
+        let chunk2 = app
+            .world()
+            .resource::<TileMap>()
+            .get(tile2.chunk_position())
+            .unwrap();
 
-        assert!(app.world_mut().get_mut::<TileChunk>(chunk1).unwrap().is_added());
-        assert!(app.world_mut().get_mut::<TileChunk>(chunk2).unwrap().is_added());
+        assert!(
+            app.world_mut()
+                .get_mut::<TileChunk>(chunk1)
+                .unwrap()
+                .is_added()
+        );
+        assert!(
+            app.world_mut()
+                .get_mut::<TileChunk>(chunk2)
+                .unwrap()
+                .is_added()
+        );
 
         app.world_mut().clear_trackers();
 
-        assert!(!app.world_mut().get_mut::<TileChunk>(chunk1).unwrap().is_changed());
-        assert!(!app.world_mut().get_mut::<TileChunk>(chunk2).unwrap().is_changed());
+        assert!(
+            !app.world_mut()
+                .get_mut::<TileChunk>(chunk1)
+                .unwrap()
+                .is_changed()
+        );
+        assert!(
+            !app.world_mut()
+                .get_mut::<TileChunk>(chunk2)
+                .unwrap()
+                .is_changed()
+        );
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
@@ -1042,8 +1069,18 @@ mod tests {
             })
             .unwrap();
 
-        assert!(app.world_mut().get_mut::<TileChunk>(chunk1).unwrap().is_changed());
-        assert!(!app.world_mut().get_mut::<TileChunk>(chunk2).unwrap().is_changed());
+        assert!(
+            app.world_mut()
+                .get_mut::<TileChunk>(chunk1)
+                .unwrap()
+                .is_changed()
+        );
+        assert!(
+            !app.world_mut()
+                .get_mut::<TileChunk>(chunk2)
+                .unwrap()
+                .is_changed()
+        );
     }
 
     #[test]
@@ -1060,17 +1097,45 @@ mod tests {
             })
             .unwrap();
 
-        let chunk1 = app.world().resource::<TileMap>().get(edge.chunk_position()).unwrap();
-        let chunk2 = app.world().resource::<TileMap>().get(edge.west().chunk_position()).unwrap();
+        let chunk1 = app
+            .world()
+            .resource::<TileMap>()
+            .get(edge.chunk_position())
+            .unwrap();
+        let chunk2 = app
+            .world()
+            .resource::<TileMap>()
+            .get(edge.west().chunk_position())
+            .unwrap();
         assert_ne!(chunk1, chunk2);
 
-        assert!(app.world_mut().get_mut::<TileChunk>(chunk1).unwrap().is_added());
-        assert!(app.world_mut().get_mut::<TileChunk>(chunk2).unwrap().is_added());
+        assert!(
+            app.world_mut()
+                .get_mut::<TileChunk>(chunk1)
+                .unwrap()
+                .is_added()
+        );
+        assert!(
+            app.world_mut()
+                .get_mut::<TileChunk>(chunk2)
+                .unwrap()
+                .is_added()
+        );
 
         app.world_mut().clear_trackers();
 
-        assert!(!app.world_mut().get_mut::<TileChunk>(chunk1).unwrap().is_changed());
-        assert!(!app.world_mut().get_mut::<TileChunk>(chunk2).unwrap().is_changed());
+        assert!(
+            !app.world_mut()
+                .get_mut::<TileChunk>(chunk1)
+                .unwrap()
+                .is_changed()
+        );
+        assert!(
+            !app.world_mut()
+                .get_mut::<TileChunk>(chunk2)
+                .unwrap()
+                .is_changed()
+        );
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
@@ -1078,7 +1143,17 @@ mod tests {
             })
             .unwrap();
 
-        assert!(app.world_mut().get_mut::<TileChunk>(chunk1).unwrap().is_changed());
-        assert!(app.world_mut().get_mut::<TileChunk>(chunk2).unwrap().is_changed());
+        assert!(
+            app.world_mut()
+                .get_mut::<TileChunk>(chunk1)
+                .unwrap()
+                .is_changed()
+        );
+        assert!(
+            app.world_mut()
+                .get_mut::<TileChunk>(chunk2)
+                .unwrap()
+                .is_changed()
+        );
     }
 }

@@ -2,7 +2,7 @@ use bevy_app::prelude::*;
 use bevy_asset::{AssetEventSystems, prelude::*};
 use bevy_camera::prelude::*;
 use bevy_color::prelude::*;
-use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
+use bevy_ecs::{prelude::*, system::SystemParam};
 use bevy_image::prelude::*;
 use bevy_log::prelude::*;
 use bevy_math::prelude::*;
@@ -16,7 +16,7 @@ use bevy_transform::prelude::*;
 use wdn_physics::{
     layer::Layer,
     tile::{
-        CHUNK_SIZE, TileChunkOffset,
+        CHUNK_SIZE, TileChunkOffset, TileChunkPosition,
         storage::{Tile, TileChunk, TileMaterial, TileOccupancy},
     },
 };
@@ -39,12 +39,20 @@ pub struct TileChunkMesh(Handle<Mesh>);
 
 #[derive(Clone, Component, Default, Debug)]
 #[require(Transform, Visibility)]
-#[component(on_add = TileChunkSprites::on_add)]
 pub struct TileChunkSprites {
-    base_material: Handle<TilemapChunkMaterial>,
-    base: Handle<Image>,
-    top_material: Handle<TilemapChunkMaterial>,
-    top: Handle<Image>,
+    base: Handle<TilemapChunkMaterial>,
+    base_image: Handle<Image>,
+    top: Handle<TilemapChunkMaterial>,
+    top_image: Handle<Image>,
+}
+
+#[derive(SystemParam)]
+pub struct TileChunkSpriteParam<'w, 's> {
+    commands: Commands<'w, 's>,
+    assets: Res<'w, AssetHandles>,
+    mesh: Res<'w, TileChunkMesh>,
+    materials: ResMut<'w, Assets<TilemapChunkMaterial>>,
+    images: ResMut<'w, Assets<Image>>,
 }
 
 impl Plugin for TilePlugin {
@@ -68,115 +76,88 @@ impl FromWorld for TileChunkMesh {
 }
 
 pub fn update_chunk_data(
-    mut query: Query<(&TileChunk, &TileChunkSprites), Changed<TileChunk>>,
-    mut materials: ResMut<Assets<TilemapChunkMaterial>>,
-    mut images: ResMut<Assets<Image>>,
+    mut param: TileChunkSpriteParam,
+    mut chunks: Query<(Entity, &TileChunk, &mut TileChunkSprites), Changed<TileChunk>>,
 ) {
-    query.iter_mut().for_each(|(chunk, sprites)| {
-        // Mark materials as changed
-        materials.get_mut(&sprites.base_material);
-        materials.get_mut(&sprites.top_material);
+    chunks.iter_mut().for_each(|(id, chunk, mut sprites)| {
+        if sprites.is_added() {
+            let position = chunk.position();
+            let (base, base_image) = param.spawn_chunk_image(id, chunk_base_transform(position));
+            let (top, top_image) = param.spawn_chunk_image(id, chunk_top_transform(position));
 
-        update_chunk_image(&mut images, sprites.base.id(), chunk, pack_tile_base);
-        update_chunk_image(&mut images, sprites.top.id(), chunk, pack_tile_top);
+            sprites.base = base;
+            sprites.base_image = base_image;
+            sprites.top = top;
+            sprites.top_image = top_image;
+        }
+
+        param.update_chunk_image(
+            sprites.base.id(),
+            sprites.base_image.id(),
+            chunk,
+            pack_tile_base,
+        );
+        param.update_chunk_image(
+            sprites.top.id(),
+            sprites.top_image.id(),
+            chunk,
+            pack_tile_top,
+        );
     });
 }
 
-impl TileChunkSprites {
-    fn on_add(mut world: DeferredWorld, context: HookContext) {
-        let chunk = world.get::<TileChunk>(context.entity).unwrap();
-        let position = chunk.position();
-
-        let (base, base_material) = spawn_chunk_image(
-            &mut world,
-            context.entity,
-            Transform::from_xyz(
-                chunk_coord_transform(position.x()),
-                chunk_coord_transform(position.y()),
-                BASE_LAYER,
-            ),
-            pack_tile_base,
-        );
-        let (top, top_material) = spawn_chunk_image(
-            &mut world,
-            context.entity,
-            Transform::from_xyz(
-                chunk_coord_transform(position.x()),
-                chunk_coord_transform(position.y()) + 1.0,
-                TOP_LAYER,
-            ),
-            pack_tile_top,
-        );
-
-        *world.get_mut::<TileChunkSprites>(context.entity).unwrap() = TileChunkSprites {
-            base_material,
-            base,
-            top_material,
-            top,
-        };
-    }
-}
-
-fn spawn_chunk_image(
-    world: &mut DeferredWorld,
-    id: Entity,
-    transform: Transform,
-    pack: impl Fn(TileChunkOffset, Tile) -> PackedTileData,
-) -> (Handle<Image>, Handle<TilemapChunkMaterial>) {
-    let mesh = world.resource::<TileChunkMesh>().0.clone();
-
-    let chunk = world.get::<TileChunk>(id).unwrap();
-    let packed_data = chunk
-        .tiles()
-        .map(|(offset, tile)| pack(offset, tile))
-        .collect::<Vec<PackedTileData>>();
-
-    let tileset = world.resource::<AssetHandles>().tileset();
-    let tile_data = world
-        .resource_mut::<Assets<Image>>()
-        .add(make_chunk_tile_data_image(
+impl TileChunkSpriteParam<'_, '_> {
+    fn spawn_chunk_image(
+        &mut self,
+        id: Entity,
+        transform: Transform,
+    ) -> (Handle<TilemapChunkMaterial>, Handle<Image>) {
+        let tile_data = self.images.add(make_chunk_tile_data_image(
             &UVec2::splat(CHUNK_SIZE as u32),
-            &packed_data,
+            &[PackedTileData::from(None); CHUNK_SIZE * CHUNK_SIZE],
         ));
-
-    let material = world
-        .resource_mut::<Assets<TilemapChunkMaterial>>()
-        .add(TilemapChunkMaterial {
-            alpha_mode: AlphaMode2d::Opaque,
-            tileset,
+        let material = self.materials.add(TilemapChunkMaterial {
+            alpha_mode: AlphaMode2d::Blend,
+            tileset: self.assets.tileset(),
             tile_data: tile_data.clone(),
         });
+        self.commands.spawn((
+            ChildOf(id),
+            Mesh2d(self.mesh.0.clone()),
+            MeshMaterial2d(material.clone()),
+            transform,
+        ));
+        (material, tile_data)
+    }
 
-    world.commands().spawn((
-        ChildOf(id),
-        Mesh2d(mesh),
-        MeshMaterial2d(material.clone()),
-        transform,
-    ));
+    fn update_chunk_image(
+        &mut self,
+        material: AssetId<TilemapChunkMaterial>,
+        image: AssetId<Image>,
+        chunk: &TileChunk,
+        pack: impl Fn(TileChunkOffset, Tile) -> PackedTileData,
+    ) {
+        // Mark material as changed to trigger redraw
+        if self.materials.get_mut(material).is_none() {
+            error!("material asset not found for chunk {chunk:?}");
+            return;
+        }
 
-    (tile_data, material)
-}
+        let Some(image) = self.images.get_mut(image) else {
+            error!("image asset not found for chunk {chunk:?}");
+            return;
+        };
 
-fn update_chunk_image(
-    images: &mut Assets<Image>,
-    id: AssetId<Image>,
-    chunk: &TileChunk,
-    pack: impl Fn(TileChunkOffset, Tile) -> PackedTileData,
-) {
-    let Some(image) = images.get_mut(id) else {
-        error!("image asset not found for chunk {chunk:?}");
-        return;
-    };
+        let Some(data) = image.data.as_mut() else {
+            error!("image data not found for chunk {chunk:?}");
+            return;
+        };
 
-    let Some(data) = image.data.as_mut() else {
-        error!("image data not found for chunk {chunk:?}");
-        return;
-    };
-
-    data.clear();
-    for (offset, tile) in chunk.tiles() {
-        let packed = pack(offset, tile);
-        data.extend_from_slice(bytemuck::bytes_of(&packed));
+        data.clear();
+        for (offset, tile) in chunk.tiles() {
+            let packed = pack(offset, tile);
+            data.extend_from_slice(bytemuck::bytes_of(&packed));
+        }
     }
 }
 
@@ -204,6 +185,26 @@ fn pack_tile_top(_: TileChunkOffset, tile: Tile) -> PackedTileData {
         color: Color::WHITE,
         visible: true,
     })
+}
+
+fn chunk_top_transform(position: TileChunkPosition) -> Transform {
+    let t = Transform::from_xyz(
+        chunk_coord_transform(position.x()),
+        chunk_coord_transform(position.y()) + 1.0,
+        TOP_LAYER,
+    );
+    println!("base transform: {t:#?}");
+    t
+}
+
+fn chunk_base_transform(position: TileChunkPosition) -> Transform {
+    let t = Transform::from_xyz(
+        chunk_coord_transform(position.x()),
+        chunk_coord_transform(position.y()),
+        BASE_LAYER,
+    );
+    println!("base transform: {t:#?}");
+    t
 }
 
 fn chunk_coord_transform(d: i16) -> f32 {
@@ -253,14 +254,14 @@ fn test_tile_sprite_index_bottom() {
 
     let mut patterns: HashMap<TileOccupancy, u16> = HashMap::new();
 
-    let bottom_mask = TileOccupancy::SOUTH
+    let base_mask = TileOccupancy::SOUTH
         | TileOccupancy::SOUTH_WEST
         | TileOccupancy::SOUTH_EAST
         | TileOccupancy::WEST
         | TileOccupancy::EAST;
 
     for i in 0..=255u8 {
-        let occupancy = TileOccupancy::from_bits_retain(i) & bottom_mask;
+        let occupancy = TileOccupancy::from_bits_retain(i) & base_mask;
         let mut normal = occupancy;
 
         if !normal.contains(TileOccupancy::NORTH | TileOccupancy::WEST) {
