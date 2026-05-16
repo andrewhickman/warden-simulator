@@ -1,4 +1,5 @@
 use bevy_app::prelude::*;
+use bevy_camera::visibility::Visibility;
 use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
 use bevy_sprite::{Anchor, prelude::*};
 
@@ -14,7 +15,7 @@ use crate::{assets::AssetHandles, layers::PAWN_LAYER, lerp::Interpolate};
 pub struct PawnPlugin;
 
 #[derive(Copy, Clone, Component, Debug, Default)]
-#[require(Sprite, Anchor::BOTTOM_CENTER)]
+#[require(Visibility, Transform)]
 #[component(on_add = PawnSprite::on_add)]
 pub struct PawnSprite;
 
@@ -43,13 +44,12 @@ impl Plugin for PawnPlugin {
 impl PawnSprite {
     fn on_add(mut world: DeferredWorld, context: HookContext) {
         let sprite = world.resource::<AssetHandles>().pawn();
-        *world.get_mut::<Sprite>(context.entity).unwrap() = sprite;
-
-        world
-            .get_mut::<Transform>(context.entity)
-            .unwrap()
-            .translation
-            .z = PAWN_LAYER;
+        world.commands().spawn((
+            ChildOf(context.entity),
+            sprite,
+            Anchor::BOTTOM_CENTER,
+            Transform::from_xyz(0.0, -Pawn::RADIUS, PAWN_LAYER),
+        ));
     }
 }
 
