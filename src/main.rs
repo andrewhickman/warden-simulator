@@ -121,6 +121,11 @@ fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
     storage.set_material(TilePosition::new(layer, 1, -1), TileMaterial::Empty);
     storage.set_material(TilePosition::new(layer, -1, 1), TileMaterial::Empty);
     storage.set_material(TilePosition::new(layer, -1, -1), TileMaterial::Empty);
+
+    storage.set_material(TilePosition::new(layer, 2, 0), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 1, -1), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 2, -1), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 3, -1), TileMaterial::Wall);
 }
 
 fn handle_pawn_input(

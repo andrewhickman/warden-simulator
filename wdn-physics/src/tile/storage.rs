@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, mem};
 
 use bevy_ecs::{
     lifecycle::HookContext,
@@ -128,13 +128,15 @@ impl TileStorageMut<'_, '_> {
     }
 
     pub fn set_material(&'_ mut self, position: TilePosition, material: TileMaterial) {
-        self.chunk_mut(position.chunk_position())
-            .get_mut(position.chunk_offset())
-            .material = material;
-        if material.is_solid() {
-            self.add_adjacent(position);
-        } else {
-            self.remove_adjacent(position);
+        let tile = self
+            .chunk_mut(position.chunk_position())
+            .get_mut(position.chunk_offset());
+        let prev_material = mem::replace(&mut tile.material, material);
+
+        match (prev_material.is_solid(), material.is_solid()) {
+            (false, true) => self.add_adjacent(position),
+            (true, false) => self.remove_adjacent(position),
+            _ => {}
         }
     }
 

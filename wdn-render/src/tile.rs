@@ -1,14 +1,16 @@
-pub mod material;
-
 use bevy_app::prelude::*;
 use bevy_asset::{AssetEventSystems, prelude::*};
 use bevy_camera::prelude::*;
-use bevy_ecs::prelude::*;
+use bevy_color::prelude::*;
+use bevy_ecs::{prelude::*, system::SystemParam};
 use bevy_image::prelude::*;
 use bevy_log::prelude::*;
 use bevy_math::prelude::*;
 use bevy_mesh::prelude::*;
-use bevy_sprite_render::{AlphaMode2d, prelude::*};
+use bevy_sprite_render::{
+    AlphaMode2d, PackedTileData, TileData, TilemapChunkMaterial, make_chunk_tile_data_image,
+    prelude::*,
+};
 use bevy_transform::prelude::*;
 
 use wdn_physics::{
@@ -21,10 +23,7 @@ use wdn_physics::{
 
 use crate::{
     assets::AssetHandles,
-    layers::BASE_LAYER,
-    tile::material::{
-        PackedTileData, TileChunkMaterial, TileChunkMaterialPlugin, make_tile_chunk_image,
-    },
+    layers::{BASE_LAYER, TOP_LAYER},
 };
 
 pub const SPRITE_CHUNK_SIZE: u16 = 16;
@@ -38,6 +37,22 @@ pub struct TilePlugin;
 #[derive(Resource)]
 pub struct TileChunkMesh(Handle<Mesh>);
 
+#[derive(Clone, Component, Default, Debug)]
+#[require(Transform, Visibility)]
+pub struct TileChunkSprites {
+    base: Handle<TilemapChunkMaterial>,
+    top: Handle<TilemapChunkMaterial>,
+}
+
+#[derive(SystemParam)]
+pub struct TileChunkSpriteParam<'w, 's> {
+    commands: Commands<'w, 's>,
+    assets: Res<'w, AssetHandles>,
+    mesh: Res<'w, TileChunkMesh>,
+    materials: ResMut<'w, Assets<TilemapChunkMaterial>>,
+    images: ResMut<'w, Assets<Image>>,
+}
+
 impl Plugin for TilePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TileChunkMesh>();
@@ -45,10 +60,7 @@ impl Plugin for TilePlugin {
         app.add_systems(PostUpdate, update_chunk.before(AssetEventSystems));
 
         app.register_required_components::<Layer, Visibility>();
-        app.register_required_components::<TileChunk, Mesh2d>();
-        app.register_required_components::<TileChunk, MeshMaterial2d<TileChunkMaterial>>();
-
-        app.add_plugins(TileChunkMaterialPlugin);
+        app.register_required_components::<TileChunk, TileChunkSprites>();
     }
 }
 
@@ -62,76 +74,107 @@ impl FromWorld for TileChunkMesh {
 }
 
 pub fn update_chunk(
-    assets: Res<AssetHandles>,
-    mesh: Res<TileChunkMesh>,
-    mut images: ResMut<Assets<Image>>,
-    mut materials: ResMut<Assets<TileChunkMaterial>>,
+    mut param: TileChunkSpriteParam,
     mut chunks: Query<
-        (
-            Ref<TileChunk>,
-            &mut Transform,
-            &mut Mesh2d,
-            &mut MeshMaterial2d<TileChunkMaterial>,
-        ),
+        (Entity, &TileChunk, &mut Transform, &mut TileChunkSprites),
         Changed<TileChunk>,
     >,
 ) {
-    chunks.iter_mut().for_each(
-        |(chunk, mut transform, mut mesh_handle, mut material_handle)| {
-            if chunk.is_added() {
+    chunks
+        .iter_mut()
+        .for_each(|(id, chunk, mut transform, mut sprites)| {
+            if sprites.is_added() {
                 let position = chunk.position();
                 *transform = chunk_transform(position);
 
-                mesh_handle.0 = mesh.0.clone();
-
-                let image = images.add(make_tile_chunk_image());
-                material_handle.0 = materials.add(TileChunkMaterial {
-                    alpha_mode: AlphaMode2d::Blend,
-                    tileset: assets.tileset(),
-                    tile_data: image,
-                });
+                sprites.base = param.spawn_chunk_material(id, BASE_LAYER);
+                sprites.top = param.spawn_chunk_material(id, TOP_LAYER);
             }
 
-            let Some(material) = materials.get_mut(material_handle.id()) else {
-                error!("material asset not found for chunk {chunk:?}");
-                return;
-            };
-
-            let Some(image) = images.get_mut(material.tile_data.id()) else {
-                error!("image asset not found for chunk {chunk:?}");
-                return;
-            };
-
-            let Some(data) = image.data.as_mut() else {
-                error!("image data not found for chunk {chunk:?}");
-                return;
-            };
-
-            data.clear();
-            for (offset, tile) in chunk.tiles() {
-                let packed = pack_tile(offset, tile);
-                data.extend_from_slice(bytemuck::bytes_of(&packed));
-            }
-        },
-    );
+            param.update_chunk_material(sprites.base.id(), chunk, pack_tile_base);
+            param.update_chunk_material(sprites.top.id(), chunk, pack_tile_top);
+        });
 }
 
-fn pack_tile(offset: TileChunkOffset, tile: Tile) -> PackedTileData {
-    let base = match tile.material() {
+impl TileChunkSpriteParam<'_, '_> {
+    fn spawn_chunk_material(&mut self, id: Entity, depth: f32) -> Handle<TilemapChunkMaterial> {
+        let tile_data = self.images.add(make_chunk_tile_data_image(
+            &UVec2::splat(CHUNK_SIZE as u32),
+            &[PackedTileData::from(None); CHUNK_SIZE * CHUNK_SIZE],
+        ));
+        let material = self.materials.add(TilemapChunkMaterial {
+            alpha_mode: AlphaMode2d::Blend,
+            tileset: self.assets.tileset(),
+            tile_data: tile_data,
+        });
+
+        self.commands.spawn((
+            ChildOf(id),
+            Mesh2d(self.mesh.0.clone()),
+            MeshMaterial2d(material.clone()),
+            Transform::from_xyz(0.0, 0.0, depth),
+        ));
+
+        material
+    }
+
+    fn update_chunk_material(
+        &mut self,
+        material: AssetId<TilemapChunkMaterial>,
+        chunk: &TileChunk,
+        pack: impl Fn(TileChunkOffset, Tile) -> PackedTileData,
+    ) {
+        let Some(material) = self.materials.get_mut(material) else {
+            error!("material asset not found for chunk {chunk:?}");
+            return;
+        };
+
+        let Some(image) = self.images.get_mut(material.tile_data.id()) else {
+            error!("image asset not found for chunk {chunk:?}");
+            return;
+        };
+
+        let Some(data) = image.data.as_mut() else {
+            error!("image data not found for chunk {chunk:?}");
+            return;
+        };
+
+        data.clear();
+        for (offset, tile) in chunk.tiles() {
+            let packed = pack(offset, tile);
+            data.extend_from_slice(bytemuck::bytes_of(&packed));
+        }
+    }
+}
+
+fn pack_tile_base(offset: TileChunkOffset, tile: Tile) -> PackedTileData {
+    let tileset_index = match tile.material() {
         TileMaterial::Empty => DIRT_OFFSET + dirt_sprite_offset(offset),
         TileMaterial::Wall => WALL_BASE_OFFSET + wall_base_sprite_offset(tile.occupancy()),
     };
 
-    let top = WALL_TOP_OFFSET + wall_top_sprite_offset(tile.is_solid(), tile.occupancy());
+    PackedTileData::from(TileData {
+        tileset_index,
+        color: Color::WHITE,
+        visible: true,
+    })
+}
 
-    PackedTileData { base, top }
+fn pack_tile_top(_: TileChunkOffset, tile: Tile) -> PackedTileData {
+    let tileset_index = WALL_TOP_OFFSET + wall_top_sprite_offset(tile.is_solid(), tile.occupancy());
+
+    PackedTileData::from(TileData {
+        tileset_index,
+        color: Color::WHITE,
+        visible: true,
+    })
 }
 
 fn chunk_transform(position: TileChunkPosition) -> Transform {
     Transform::from_xyz(
         chunk_coord_transform(position.x()),
         chunk_coord_transform(position.y()),
-        BASE_LAYER,
+        0.0,
     )
 }
 
@@ -179,19 +222,19 @@ fn wall_top_sprite_offset(solid: bool, mut occupancy: TileOccupancy) -> u16 {
 }
 
 #[test]
-fn test_tile_sprite_index_bottom() {
+fn test_tile_sprite_index_base() {
     use std::collections::{HashMap, hash_map};
 
     let mut patterns: HashMap<TileOccupancy, u16> = HashMap::new();
 
-    let base_mask = TileOccupancy::SOUTH
+    let bottom_mask = TileOccupancy::SOUTH
         | TileOccupancy::SOUTH_WEST
         | TileOccupancy::SOUTH_EAST
         | TileOccupancy::WEST
         | TileOccupancy::EAST;
 
     for i in 0..=255u8 {
-        let occupancy = TileOccupancy::from_bits_retain(i) & base_mask;
+        let occupancy = TileOccupancy::from_bits_retain(i) & bottom_mask;
         let mut normal = occupancy;
 
         if !normal.contains(TileOccupancy::NORTH | TileOccupancy::WEST) {
