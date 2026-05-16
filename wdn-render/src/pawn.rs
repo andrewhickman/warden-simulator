@@ -1,6 +1,6 @@
 use bevy_app::prelude::*;
 use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
-use bevy_sprite::prelude::*;
+use bevy_sprite::{Anchor, prelude::*};
 
 use bevy_transform::components::Transform;
 use wdn_physics::tile::TilePosition;
@@ -14,7 +14,7 @@ use crate::{assets::AssetHandles, layers::PAWN_LAYER, lerp::Interpolate};
 pub struct PawnPlugin;
 
 #[derive(Copy, Clone, Component, Debug, Default)]
-#[require(Sprite)]
+#[require(Sprite, Anchor::BOTTOM_CENTER)]
 #[component(on_add = PawnSprite::on_add)]
 pub struct PawnSprite;
 

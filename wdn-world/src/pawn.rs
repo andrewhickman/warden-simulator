@@ -1,7 +1,9 @@
 use std::{f32::consts::TAU, time::Duration};
 
 use bevy_app::prelude::*;
+use bevy_color::Color;
 use bevy_ecs::prelude::*;
+use bevy_gizmos::gizmos::Gizmos;
 use bevy_math::{Rot2, Vec2};
 use bevy_time::Time;
 use bevy_transform::prelude::*;
@@ -113,6 +115,16 @@ pub fn apply_pawn_actions(
         });
 }
 
+pub fn draw_pawn_colliders(mut gizmos: Gizmos, pawns: Query<&Position, With<Pawn>>) {
+    pawns.iter().for_each(|position| {
+        gizmos.circle_2d(
+            position.position(),
+            Pawn::RADIUS,
+            Color::srgb(0.3, 0.95, 0.35),
+        );
+    });
+}
+
 impl Plugin for PawnPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
@@ -126,6 +138,8 @@ impl Plugin for PawnPlugin {
             FixedUpdate,
             apply_pawn_actions.in_set(WorldSystems::ApplyPawnActions),
         );
+
+        app.add_systems(Update, draw_pawn_colliders);
     }
 }
 

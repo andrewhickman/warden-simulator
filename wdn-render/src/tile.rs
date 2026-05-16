@@ -17,7 +17,7 @@ use wdn_physics::{
     layer::Layer,
     tile::{
         CHUNK_SIZE, TileChunkOffset, TileChunkPosition,
-        storage::{Tile, TileChunk, TileMaterial, TileOccupancy},
+        storage::{Tile, TileChunk, TileOccupancy},
     },
 };
 
@@ -147,11 +147,8 @@ impl TileChunkSpriteParam<'_, '_> {
     }
 }
 
-fn pack_tile_base(offset: TileChunkOffset, tile: Tile) -> PackedTileData {
-    let tileset_index = match tile.material() {
-        TileMaterial::Empty => DIRT_OFFSET + dirt_sprite_offset(offset),
-        TileMaterial::Wall => WALL_BASE_OFFSET + wall_base_sprite_offset(tile.occupancy()),
-    };
+fn pack_tile_base(offset: TileChunkOffset, _tile: Tile) -> PackedTileData {
+    let tileset_index = DIRT_OFFSET + dirt_sprite_offset(offset);
 
     PackedTileData::from(TileData {
         tileset_index,
@@ -161,7 +158,7 @@ fn pack_tile_base(offset: TileChunkOffset, tile: Tile) -> PackedTileData {
 }
 
 fn pack_tile_top(_: TileChunkOffset, tile: Tile) -> PackedTileData {
-    let tileset_index = WALL_TOP_OFFSET + wall_top_sprite_offset(tile.is_solid(), tile.occupancy());
+    let tileset_index = WALL_TOP_OFFSET + wall_sprite_offset(tile.is_solid(), tile.occupancy());
 
     PackedTileData::from(TileData {
         tileset_index,
@@ -187,142 +184,95 @@ fn dirt_sprite_offset(position: TileChunkOffset) -> u16 {
         + position.x().rem_euclid(SPRITE_CHUNK_SIZE)
 }
 
-fn wall_base_sprite_offset(occupancy: TileOccupancy) -> u16 {
-    const LOOKUP: [u8; 256] = [
-        0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4,
-        4, 4, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2,
-        4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 7, 7,
-        7, 7, 9, 9, 9, 9, 5, 5, 5, 5, 6, 6, 6, 6, 5, 5, 5, 5, 6, 6, 6, 6, 10, 10, 10, 10, 11, 11,
-        11, 11, 10, 10, 10, 10, 12, 12, 12, 12, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 2,
-        2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1,
-        1, 2, 2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 5, 5, 5, 5, 6,
-        6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 7, 7, 7, 7, 9, 9, 9, 9, 5, 5, 5, 5, 6, 6, 6, 6, 5, 5, 5,
-        5, 6, 6, 6, 6, 10, 10, 10, 10, 11, 11, 11, 11, 10, 10, 10, 10, 12, 12, 12, 12,
+fn wall_sprite_offset(solid: bool, occupancy: TileOccupancy) -> u16 {
+    const EMPTY_LOOKUP: [u8; 256] = [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2,
+        2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4,
+        4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2,
+        2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3,
+        4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+        1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3,
+        3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+        1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4,
     ];
 
-    LOOKUP[occupancy.bits() as usize] as u16
-}
-
-fn wall_top_sprite_offset(solid: bool, mut occupancy: TileOccupancy) -> u16 {
-    occupancy.set(TileOccupancy::NORTH, solid);
-
-    const LOOKUP: [u8; 256] = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 2, 3, 2, 3, 2, 0,
-        2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 4, 5, 4, 5, 4, 5, 6, 7, 6, 7,
-        6, 5, 6, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 2, 3,
-        2, 3, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 4, 0, 4, 0,
-        6, 3, 6, 3, 6, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0,
-        1, 0, 2, 3, 2, 3, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 4, 5,
-        4, 5, 4, 5, 6, 7, 6, 7, 6, 5, 6, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-        1, 0, 1, 0, 1, 0, 2, 3, 2, 3, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        4, 0, 4, 0, 4, 0, 4, 0, 6, 3, 6, 3, 6, 0, 6, 0,
+    const SOLID_LOOKUP: [u8; 256] = [
+        5, 5, 5, 5, 6, 6, 6, 6, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 9, 10, 10,
+        10, 10, 5, 5, 5, 5, 6, 6, 6, 6, 5, 5, 5, 5, 6, 6, 6, 6, 11, 11, 11, 11, 12, 12, 12, 12, 13,
+        13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 15, 15, 15, 15, 16, 16, 16, 16,
+        17, 17, 17, 17, 18, 18, 18, 18, 19, 19, 19, 19, 20, 20, 20, 20, 15, 15, 15, 15, 16, 16, 16,
+        16, 15, 15, 15, 15, 16, 16, 16, 16, 21, 21, 21, 21, 22, 22, 22, 22, 23, 23, 23, 23, 24, 24,
+        24, 24, 5, 5, 5, 5, 6, 6, 6, 6, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 9,
+        10, 10, 10, 10, 5, 5, 5, 5, 6, 6, 6, 6, 5, 5, 5, 5, 6, 6, 6, 6, 11, 11, 11, 11, 12, 12, 12,
+        12, 13, 13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 15, 15, 15, 15, 16, 16,
+        16, 16, 17, 17, 17, 17, 18, 18, 18, 18, 19, 19, 19, 19, 20, 20, 20, 20, 15, 15, 15, 15, 16,
+        16, 16, 16, 15, 15, 15, 15, 16, 16, 16, 16, 21, 21, 21, 21, 22, 22, 22, 22, 23, 23, 23, 23,
+        24, 24, 24, 24,
     ];
 
-    LOOKUP[occupancy.bits() as usize] as u16
+    if solid {
+        SOLID_LOOKUP[occupancy.bits() as usize] as u16
+    } else {
+        EMPTY_LOOKUP[occupancy.bits() as usize] as u16
+    }
 }
 
 #[test]
-fn test_tile_sprite_index_base() {
+fn test_tile_sprite_index() {
     use std::collections::{HashMap, hash_map};
 
-    let mut patterns: HashMap<TileOccupancy, u16> = HashMap::new();
+    let mut patterns: HashMap<(bool, TileOccupancy), u16> = HashMap::new();
 
-    let bottom_mask = TileOccupancy::SOUTH
-        | TileOccupancy::SOUTH_WEST
-        | TileOccupancy::SOUTH_EAST
-        | TileOccupancy::WEST
-        | TileOccupancy::EAST;
+    for solid in [false, true] {
+        for i in 0..=255u8 {
+            let occupancy = TileOccupancy::from_bits_retain(i);
+            let mut normal = occupancy.intersection(
+                TileOccupancy::SOUTH
+                    | TileOccupancy::SOUTH_WEST
+                    | TileOccupancy::SOUTH_EAST
+                    | TileOccupancy::WEST
+                    | TileOccupancy::EAST,
+            );
 
-    for i in 0..=255u8 {
-        let occupancy = TileOccupancy::from_bits_retain(i) & bottom_mask;
-        let mut normal = occupancy;
+            if solid {
+                if !normal.contains(TileOccupancy::SOUTH) {
+                    normal.remove(TileOccupancy::SOUTH_WEST);
+                    normal.remove(TileOccupancy::SOUTH_EAST);
+                }
+            } else {
+                if !normal.contains(TileOccupancy::SOUTH) {
+                    normal = TileOccupancy::NONE;
+                }
 
-        if !normal.contains(TileOccupancy::NORTH | TileOccupancy::WEST) {
-            normal.remove(TileOccupancy::NORTH_WEST);
-        }
-
-        if !normal.contains(TileOccupancy::NORTH | TileOccupancy::EAST) {
-            normal.remove(TileOccupancy::NORTH_EAST);
-        }
-
-        if !normal.contains(TileOccupancy::SOUTH | TileOccupancy::WEST) {
-            normal.remove(TileOccupancy::SOUTH_WEST);
-        }
-
-        if !normal.contains(TileOccupancy::SOUTH | TileOccupancy::EAST) {
-            normal.remove(TileOccupancy::SOUTH_EAST);
-        }
-
-        let index = patterns.len() as u16;
-
-        match patterns.entry(normal) {
-            hash_map::Entry::Occupied(entry) => {
-                assert_eq!(wall_base_sprite_offset(occupancy), *entry.get() as u16);
+                normal.remove(TileOccupancy::EAST);
+                normal.remove(TileOccupancy::WEST);
             }
-            hash_map::Entry::Vacant(entry) => {
-                assert_eq!(wall_base_sprite_offset(occupancy), index);
-                entry.insert(index);
+
+            let index = patterns.len() as u16;
+
+            match patterns.entry((solid, normal)) {
+                hash_map::Entry::Occupied(entry) => {
+                    assert_eq!(
+                        wall_sprite_offset(solid, occupancy),
+                        *entry.get() as u16,
+                        "unexpected sprite index for solid={solid}, occupancy={occupancy:?}, normal={normal:?}"
+                    );
+                }
+                hash_map::Entry::Vacant(entry) => {
+                    println!(
+                        "new pattern: solid={solid}, occupancy={occupancy:?}, normal={normal:?} => index={index}"
+                    );
+                    assert_eq!(
+                        wall_sprite_offset(solid, occupancy),
+                        index,
+                        "unexpected sprite index for solid={solid}, occupancy={occupancy:?}, normal={normal:?}"
+                    );
+                    entry.insert(index);
+                }
             }
         }
     }
 
-    assert_eq!(patterns.len(), 13);
-}
-
-#[test]
-fn test_tile_sprite_index_top() {
-    use std::collections::{HashMap, hash_map};
-
-    let mut patterns: HashMap<TileOccupancy, u16> = HashMap::new();
-
-    let top_mask = TileOccupancy::NORTH
-        | TileOccupancy::SOUTH
-        | TileOccupancy::SOUTH_WEST
-        | TileOccupancy::SOUTH_EAST
-        | TileOccupancy::WEST
-        | TileOccupancy::EAST;
-
-    for i in 0..=255u8 {
-        let occupancy = TileOccupancy::from_bits_retain(i) & top_mask;
-        let mut normal = occupancy;
-
-        if !normal.contains(TileOccupancy::SOUTH) {
-            normal = TileOccupancy::NONE;
-        } else if normal.contains(TileOccupancy::NORTH) {
-            if normal.contains(TileOccupancy::EAST) {
-                normal.remove(TileOccupancy::SOUTH_EAST | TileOccupancy::EAST);
-            }
-
-            if normal.contains(TileOccupancy::WEST) {
-                normal.remove(TileOccupancy::SOUTH_WEST | TileOccupancy::WEST);
-            }
-
-            if normal == (TileOccupancy::SOUTH | TileOccupancy::NORTH) {
-                normal = TileOccupancy::NONE;
-            }
-        } else {
-            normal.remove(TileOccupancy::EAST);
-            normal.remove(TileOccupancy::WEST);
-        }
-
-        let index = patterns.len() as u16;
-
-        match patterns.entry(normal) {
-            hash_map::Entry::Occupied(entry) => {
-                assert_eq!(
-                    wall_top_sprite_offset(occupancy.contains(TileOccupancy::NORTH), occupancy),
-                    *entry.get() as u16
-                );
-            }
-            hash_map::Entry::Vacant(entry) => {
-                assert_eq!(
-                    wall_top_sprite_offset(occupancy.contains(TileOccupancy::NORTH), occupancy),
-                    index
-                );
-                entry.insert(index);
-            }
-        }
-    }
-
-    assert_eq!(patterns.len(), 8);
+    assert_eq!(patterns.len(), 25);
 }
