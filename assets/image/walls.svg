@@ -29,12 +29,12 @@
      inkscape:document-units="px"
      showgrid="true"
      inkscape:zoom="1.4142136"
-     inkscape:cx="419.66786"
-     inkscape:cy="-6.7175142"
-     inkscape:window-width="1920"
-     inkscape:window-height="1017"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:cx="277.5394"
+     inkscape:cy="-6.3639609"
+     inkscape:window-width="1440"
+     inkscape:window-height="890"
+     inkscape:window-x="-6"
+     inkscape:window-y="-6"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1"
      inkscape:export-bgcolor="#00000000">
@@ -5097,7 +5097,8 @@
        id="g5-0"
        clip-path="url(#clipPath5-0)"
        inkscape:label="Top1"
-       style="display:inline">
+       style="display:inline"
+       transform="translate(64)">
       <g
          inkscape:label="Clip"
          id="g4-87">
