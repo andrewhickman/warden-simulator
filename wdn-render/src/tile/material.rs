@@ -3,10 +3,11 @@ use std::mem;
 use bevy_app::{App, Plugin};
 use bevy_asset::{Asset, AssetPath, Handle, RenderAssetUsages, embedded_asset, embedded_path};
 use bevy_image::{Image, ImageSampler};
+use bevy_mesh::MeshVertexBufferLayoutRef;
 use bevy_reflect::TypePath;
 use bevy_render::render_resource::*;
 use bevy_shader::ShaderRef;
-use bevy_sprite_render::{AlphaMode2d, Material2d, Material2dPlugin};
+use bevy_sprite_render::{AlphaMode2d, Material2d, Material2dKey, Material2dPlugin};
 use bytemuck::{Pod, Zeroable};
 use wdn_physics::tile::CHUNK_SIZE;
 
@@ -41,6 +42,19 @@ impl Material2d for TileChunkMaterial {
 
     fn alpha_mode(&self) -> AlphaMode2d {
         AlphaMode2d::Blend
+    }
+
+    fn specialize(
+        descriptor: &mut RenderPipelineDescriptor,
+        _: &MeshVertexBufferLayoutRef,
+        _: Material2dKey<Self>,
+    ) -> Result<(), SpecializedMeshPipelineError> {
+        descriptor
+            .depth_stencil
+            .as_mut()
+            .expect("no depth stencil for Mesh2d pipeline")
+            .depth_write_enabled = true;
+        Ok(())
     }
 }
 

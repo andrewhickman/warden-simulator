@@ -8,8 +8,13 @@
 @group(#{MATERIAL_BIND_GROUP}) @binding(1) var tileset_sampler: sampler;
 @group(#{MATERIAL_BIND_GROUP}) @binding(2) var tile_data: texture_2d<u32>;
 
+struct FragmentOutput {
+    @location(0) color: vec4<f32>,
+    @builtin(frag_depth) depth: f32,
+}
+
 @fragment
-fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
+fn fragment(in: VertexOutput) -> FragmentOutput {
     let chunk_size = textureDimensions(tile_data, 0);
     let tile_uv = in.uv * vec2<f32>(chunk_size);
     var tile_coord = clamp(vec2<u32>(floor(tile_uv)), vec2<u32>(0), chunk_size - 1);
@@ -24,5 +29,7 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let base_color = textureSample(tileset, tileset_sampler, local_uv, base_index);
     let top_color = textureSample(tileset, tileset_sampler, local_uv, top_index);
 
-    return mix(base_color, top_color, top_color.a);
+    let color = mix(base_color, top_color, top_color.a);
+    let depth = select(0.0, 1.0, top_color.a > 0.0);
+    return FragmentOutput(color, depth);
 }

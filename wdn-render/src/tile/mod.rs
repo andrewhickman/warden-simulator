@@ -47,7 +47,6 @@ impl Plugin for TilePlugin {
         app.register_required_components::<Layer, Visibility>();
         app.register_required_components::<TileChunk, Mesh2d>();
         app.register_required_components::<TileChunk, MeshMaterial2d<TileChunkMaterial>>();
-        app.register_required_components::<TileChunk, Visibility>();
 
         app.add_plugins(TileChunkMaterialPlugin);
     }
