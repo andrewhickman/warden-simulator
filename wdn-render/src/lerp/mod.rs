@@ -142,32 +142,25 @@ where
             }
             ComponentInterpolateState::Static { value: old_value } => {
                 if old_value != value {
-                    if updated {
-                        *self = ComponentInterpolateState::Interpolating {
-                            start: old_value,
-                            end: value,
-                        };
-                        Some(old_value.interpolate_stable(&value, t))
-                    } else {
-                        *self = ComponentInterpolateState::Static { value };
-                        Some(value)
-                    }
+                    *self = ComponentInterpolateState::Interpolating {
+                        start: old_value,
+                        end: value,
+                    };
+                    Some(old_value.interpolate_stable(&value, t))
                 } else {
                     None
                 }
             }
             ComponentInterpolateState::Interpolating { start, end } => {
                 if end != value {
-                    if updated {
-                        *self = ComponentInterpolateState::Interpolating {
-                            start: end,
-                            end: value,
-                        };
-                        Some(end.interpolate_stable(&value, t))
-                    } else {
-                        *self = ComponentInterpolateState::Static { value };
-                        Some(value)
-                    }
+                    *self = ComponentInterpolateState::Interpolating {
+                        start: end,
+                        end: value,
+                    };
+                    Some(end.interpolate_stable(&value, t))
+                } else if updated {
+                    *self = ComponentInterpolateState::Static { value };
+                    Some(value)
                 } else {
                     Some(start.interpolate_stable(&end, t))
                 }

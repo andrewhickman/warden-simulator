@@ -75,7 +75,7 @@ fn test_tile_sprite_index() {
                 hash_map::Entry::Occupied(entry) => {
                     assert_eq!(
                         wall_sprite_offset(solid, occupancy),
-                        *entry.get() as u16,
+                        WALL_OFFSET + *entry.get() as u16,
                         "unexpected sprite index for solid={solid}, occupancy={occupancy:?}, normal={normal:?}"
                     );
                 }
@@ -85,7 +85,7 @@ fn test_tile_sprite_index() {
                     );
                     assert_eq!(
                         wall_sprite_offset(solid, occupancy),
-                        index,
+                        WALL_OFFSET + index,
                         "unexpected sprite index for solid={solid}, occupancy={occupancy:?}, normal={normal:?}"
                     );
                     entry.insert(index);

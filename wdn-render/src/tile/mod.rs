@@ -23,6 +23,7 @@ use wdn_physics::{
 use crate::{
     assets::AssetHandles,
     layers::{GROUND_LAYER, WALL_BASE_LAYER, WALL_TOP_LAYER},
+    lerp::Interpolate,
     tile::{
         material::{
             PackedTileData, TileChunkMaterial, TileChunkMaterialPlugin, make_tile_chunk_image,
@@ -83,7 +84,7 @@ pub fn update_chunk(
     mut param: TileChunkSpriteParam,
     mut chunks: Query<
         (Entity, &TileChunk, &mut Transform, &mut TileChunkSprites),
-        Changed<TileChunk>,
+        (Changed<TileChunk>, Without<Interpolate>),
     >,
 ) {
     chunks

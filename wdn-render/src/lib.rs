@@ -29,7 +29,5 @@ impl Plugin for RenderPlugin {
             PawnPlugin,
             InterpolatePlugin,
         ));
-
-        app.ignore_ambiguity(PostUpdate, lerp::interpolate, tile::update_chunk);
     }
 }
