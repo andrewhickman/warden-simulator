@@ -1067,7 +1067,7 @@ mod tests {
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
-                storage.set_material(tile1, TileMaterial::Wall);
+                storage.set_material(tile1, TileMaterial::Empty);
             })
             .unwrap();
 
@@ -1141,7 +1141,7 @@ mod tests {
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
-                storage.set_material(edge, TileMaterial::Wall);
+                storage.set_material(edge, TileMaterial::Empty);
             })
             .unwrap();
 
