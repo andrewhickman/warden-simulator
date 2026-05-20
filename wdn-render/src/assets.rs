@@ -12,7 +12,13 @@ pub const PAWN_PROJECTILE_INDEX: usize = 1;
 pub const PAWN_PROJECTILE_RECT: URect = rect(192, 16, 48, 48);
 
 pub const DOOR_INDEX: usize = 2;
-pub const DOOR_RECT: URect = rect(16, 288, 384, 384);
+pub const DOOR_RECT: URect = rect(16, 288, 384, 320);
+
+pub const DOOR_LEFT_INDEX: usize = 3;
+pub const DOOR_LEFT_RECT: URect = rect(16, 624, 96, 348);
+
+pub const DOOR_RIGHT_INDEX: usize = 4;
+pub const DOOR_RIGHT_RECT: URect = rect(128, 624, 96, 348);
 
 pub struct AssetsPlugin;
 
@@ -83,6 +89,31 @@ impl AssetHandles {
             ..Default::default()
         }
     }
+
+    pub fn door_left(&self) -> Sprite {
+        Sprite {
+            image: self.atlas(),
+            texture_atlas: Some(TextureAtlas {
+                layout: self.layout.clone(),
+                index: DOOR_LEFT_INDEX,
+            }),
+            custom_size: Some(sprite_size(DOOR_LEFT_RECT)),
+            ..Default::default()
+        }
+    }
+
+    pub fn door_right(&self) -> Sprite {
+        Sprite {
+            image: self.atlas(),
+            texture_atlas: Some(TextureAtlas {
+                layout: self.layout.clone(),
+                index: DOOR_LEFT_INDEX,
+            }),
+            custom_size: Some(sprite_size(DOOR_LEFT_RECT)),
+            flip_x: true,
+            ..Default::default()
+        }
+    }
 }
 
 pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
@@ -93,6 +124,8 @@ pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
         PAWN_PROJECTILE_INDEX
     );
     assert_eq!(layout.add_texture(DOOR_RECT), DOOR_INDEX);
+    assert_eq!(layout.add_texture(DOOR_LEFT_RECT), DOOR_LEFT_INDEX);
+    assert_eq!(layout.add_texture(DOOR_RIGHT_RECT), DOOR_RIGHT_INDEX);
 
     commands.insert_resource(AssetHandles {
         tileset: assets.load_with_settings("image/tileset.png", configure_tileset),

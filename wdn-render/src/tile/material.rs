@@ -56,7 +56,6 @@ impl Material2d for TileChunkMaterial {
     }
 }
 
-/// Packed per-tile data for use in the `Rgba16Uint` tile data texture in `TilemapChunkMaterial`.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]
 pub struct PackedTileData {

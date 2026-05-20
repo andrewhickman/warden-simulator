@@ -10,7 +10,11 @@ use wdn_world::{
     pawn::{Pawn, PawnProjectile},
 };
 
-use crate::{assets::AssetHandles, layers::PAWN_LAYER, lerp::Interpolate};
+use crate::{
+    assets::AssetHandles,
+    layers::{DOOR_LAYER, PAWN_LAYER, SPRITE_LAYER},
+    lerp::Interpolate,
+};
 
 pub struct PawnPlugin;
 
@@ -25,7 +29,7 @@ pub struct PawnSprite;
 pub struct PawnProjectileSprite;
 
 #[derive(Copy, Clone, Component, Debug, Default)]
-#[require(Sprite)]
+#[require(Visibility, Transform)]
 #[component(on_add = DoorSprite::on_add)]
 pub struct DoorSprite;
 
@@ -68,18 +72,34 @@ impl PawnProjectileSprite {
 
 impl DoorSprite {
     fn on_add(mut world: DeferredWorld, context: HookContext) {
-        let sprite = world.resource::<AssetHandles>().door();
-        *world.get_mut::<Sprite>(context.entity).unwrap() = sprite;
+        let handles = world.resource::<AssetHandles>();
+        let door = handles.door();
+        let left = handles.door_left();
+        let right = handles.door_right();
 
         let tile = *world.get::<TilePosition>(context.entity).unwrap();
-        *world.get_mut::<Transform>(context.entity).unwrap() = tile_transform(tile);
-    }
-}
+        *world.get_mut::<Transform>(context.entity).unwrap() =
+            Transform::from_xyz(tile.x() as f32 + 0.5, tile.y() as f32, DOOR_LAYER);
 
-fn tile_transform(position: TilePosition) -> Transform {
-    Transform::from_xyz(
-        position.x() as f32 + 0.5,
-        position.y() as f32 + 0.5,
-        PAWN_LAYER,
-    )
+        world.commands().spawn_batch([
+            (
+                ChildOf(context.entity),
+                door,
+                Anchor::CENTER,
+                Transform::from_xyz(0.0, 0.65625, 0.0),
+            ),
+            (
+                ChildOf(context.entity),
+                left,
+                Anchor::BOTTOM_RIGHT,
+                Transform::from_xyz(-0.5, 0.1875, 0.0),
+            ),
+            (
+                ChildOf(context.entity),
+                right,
+                Anchor::BOTTOM_LEFT,
+                Transform::from_xyz(0.5, 0.1875, 0.0),
+            ),
+        ]);
+    }
 }
