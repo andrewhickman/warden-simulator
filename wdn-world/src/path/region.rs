@@ -4,7 +4,7 @@ use bevy_ecs::{entity::EntityHashSet, lifecycle::HookContext, prelude::*, world:
 use bevy_platform::collections::{HashMap, HashSet, hash_map};
 use wdn_physics::tile::{
     CHUNK_SIZE, TileChunkOffset, TilePosition,
-    storage::{TileChunk, TileMap, TileOccupancy},
+    storage::{TileChunk, TileMap, WallAdjacency},
 };
 
 #[derive(Component)]
@@ -262,18 +262,18 @@ impl TileChunkSection {
         let chunk_position = chunk.position();
         self.edges().iter().try_for_each(|&offset| {
             let edge = CHUNK_SIZE as u16 - 1;
-            let occupancy = chunk.get(offset).occupancy();
+            let adjacency = chunk.get(offset).wall_adjacency();
             let position = TilePosition::from((chunk_position, offset));
 
-            if offset.x() == 0 && !occupancy.contains(TileOccupancy::WEST) {
+            if offset.x() == 0 && !adjacency.contains(WallAdjacency::WEST) {
                 f(position.west())?;
-            } else if offset.x() == edge && !occupancy.contains(TileOccupancy::EAST) {
+            } else if offset.x() == edge && !adjacency.contains(WallAdjacency::EAST) {
                 f(position.east())?;
             }
 
-            if offset.y() == 0 && !occupancy.contains(TileOccupancy::SOUTH) {
+            if offset.y() == 0 && !adjacency.contains(WallAdjacency::SOUTH) {
                 f(position.south())?;
-            } else if offset.y() == edge && !occupancy.contains(TileOccupancy::NORTH) {
+            } else if offset.y() == edge && !adjacency.contains(WallAdjacency::NORTH) {
                 f(position.north())?;
             }
 

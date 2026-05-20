@@ -158,7 +158,7 @@ fn pack_ground_tile(offset: TileChunkOffset, _tile: Tile) -> PackedTileData {
 
 fn pack_wall_tile(_: TileChunkOffset, tile: Tile) -> PackedTileData {
     let solid = tile.is_solid();
-    let index = wall_sprite_offset(solid, tile.occupancy());
+    let index = wall_sprite_offset(solid, tile.wall_adjacency());
     let depth = if solid {
         0
     } else {

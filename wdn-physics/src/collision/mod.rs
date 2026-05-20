@@ -15,7 +15,7 @@ use crate::{
     tile::{
         TilePosition,
         index::TileIndex,
-        storage::{TileOccupancy, TileStorage},
+        storage::{TileStorage, WallAdjacency},
     },
 };
 
@@ -105,7 +105,7 @@ pub fn resolve_collisions(
                 return;
             }
 
-            let mut tile_occupancy = storage.get_occupancy(tile_position);
+            let mut tile_occupancy = storage.get_wall_adjacency(tile_position);
             let mut tile_colliders = TileColliderLookup::new();
 
             index.get_neighborhood(tile_position).for_each(|candidate| {
@@ -132,7 +132,7 @@ pub fn resolve_collisions(
                         candidate_tile.position.position(),
                     ) {
                         tile_occupancy
-                            .set(TileOccupancy::from_octant(octant), candidate_tile.solid());
+                            .set(WallAdjacency::from_octant(octant), candidate_tile.solid());
                         if tile_colliders.insert(octant, candidate) {
                             warn!(
                                 "Multiple colliders found for tile {:?}",
@@ -143,7 +143,7 @@ pub fn resolve_collisions(
                 }
             });
 
-            if tile_occupancy != TileOccupancy::NONE {
+            if tile_occupancy != WallAdjacency::NONE {
                 collisions.check_tile(
                     &collider,
                     &tile_colliders,
@@ -315,10 +315,10 @@ impl Collisions {
         collider: &ColliderQueryItem,
         tile_colliders: &TileColliderLookup,
         tile_position: TilePosition,
-        occupancy: TileOccupancy,
+        adjacency: WallAdjacency,
         delta_secs: f32,
     ) {
-        if occupancy.contains(TileOccupancy::EAST) {
+        if adjacency.contains(WallAdjacency::EAST) {
             self.check_tile_edge(
                 collider,
                 tile_colliders.get(CompassOctant::East),
@@ -331,7 +331,7 @@ impl Collisions {
             );
         }
 
-        if occupancy.contains(TileOccupancy::NORTH) {
+        if adjacency.contains(WallAdjacency::NORTH) {
             self.check_tile_edge(
                 collider,
                 tile_colliders.get(CompassOctant::North),
@@ -344,7 +344,7 @@ impl Collisions {
             );
         }
 
-        if occupancy.contains(TileOccupancy::WEST) {
+        if adjacency.contains(WallAdjacency::WEST) {
             self.check_tile_edge(
                 collider,
                 tile_colliders.get(CompassOctant::West),
@@ -357,7 +357,7 @@ impl Collisions {
             );
         }
 
-        if occupancy.contains(TileOccupancy::SOUTH) {
+        if adjacency.contains(WallAdjacency::SOUTH) {
             self.check_tile_edge(
                 collider,
                 tile_colliders.get(CompassOctant::South),
@@ -370,8 +370,8 @@ impl Collisions {
             );
         }
 
-        if occupancy.contains(TileOccupancy::NORTH_EAST)
-            && !occupancy.intersects(TileOccupancy::NORTH | TileOccupancy::EAST)
+        if adjacency.contains(WallAdjacency::NORTH_EAST)
+            && !adjacency.intersects(WallAdjacency::NORTH | WallAdjacency::EAST)
         {
             self.check_tile_corner(
                 collider,
@@ -382,8 +382,8 @@ impl Collisions {
             );
         }
 
-        if occupancy.contains(TileOccupancy::NORTH_WEST)
-            && !occupancy.intersects(TileOccupancy::NORTH | TileOccupancy::WEST)
+        if adjacency.contains(WallAdjacency::NORTH_WEST)
+            && !adjacency.intersects(WallAdjacency::NORTH | WallAdjacency::WEST)
         {
             self.check_tile_corner(
                 collider,
@@ -394,8 +394,8 @@ impl Collisions {
             );
         }
 
-        if occupancy.contains(TileOccupancy::SOUTH_WEST)
-            && !occupancy.intersects(TileOccupancy::SOUTH | TileOccupancy::WEST)
+        if adjacency.contains(WallAdjacency::SOUTH_WEST)
+            && !adjacency.intersects(WallAdjacency::SOUTH | WallAdjacency::WEST)
         {
             self.check_tile_corner(
                 collider,
@@ -406,8 +406,8 @@ impl Collisions {
             );
         }
 
-        if occupancy.contains(TileOccupancy::SOUTH_EAST)
-            && !occupancy.intersects(TileOccupancy::SOUTH | TileOccupancy::EAST)
+        if adjacency.contains(WallAdjacency::SOUTH_EAST)
+            && !adjacency.intersects(WallAdjacency::SOUTH | WallAdjacency::EAST)
         {
             self.check_tile_corner(
                 collider,
