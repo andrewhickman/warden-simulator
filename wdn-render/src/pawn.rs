@@ -12,7 +12,7 @@ use wdn_world::{
 
 use crate::{
     assets::AssetHandles,
-    layers::{DOOR_LAYER, PAWN_LAYER, SPRITE_LAYER},
+    layers::{DOOR_LAYER, PAWN_LAYER},
     lerp::Interpolate,
 };
 

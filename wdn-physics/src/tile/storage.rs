@@ -53,6 +53,7 @@ pub enum TileMaterial {
     #[default]
     Empty,
     Wall,
+    Door,
 }
 
 bitflags! {
@@ -309,7 +310,7 @@ impl Tile {
 impl TileMaterial {
     pub fn is_solid(&self) -> bool {
         match self {
-            TileMaterial::Empty => false,
+            TileMaterial::Empty | TileMaterial::Door => false,
             TileMaterial::Wall => true,
         }
     }
