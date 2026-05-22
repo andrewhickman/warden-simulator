@@ -24,11 +24,8 @@ use crate::{
     assets::AssetHandles,
     layers::{GROUND_LAYER, WALL_BASE_LAYER, WALL_TOP_LAYER},
     lerp::Interpolate,
-    tile::{
-        material::{
-            PackedTileData, TileChunkMaterial, TileChunkMaterialPlugin, make_tile_chunk_image,
-        },
-        wall::wall_sprite_offset,
+    tile::material::{
+        PackedTileData, TileChunkMaterial, TileChunkMaterialPlugin, make_tile_chunk_image,
     },
 };
 
@@ -158,7 +155,8 @@ fn pack_ground_tile(offset: TileChunkOffset, _tile: Tile) -> PackedTileData {
 
 fn pack_wall_tile(_: TileChunkOffset, tile: Tile) -> PackedTileData {
     let solid = tile.is_solid();
-    let index = wall_sprite_offset(solid, tile.wall_adjacency());
+    // let index = wall_sprite_offset(solid, tile.wall_adjacency());
+    let index = todo!();
     let depth = if solid {
         0
     } else {

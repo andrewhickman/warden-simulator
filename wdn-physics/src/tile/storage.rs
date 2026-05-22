@@ -60,14 +60,14 @@ bitflags! {
     #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
     pub struct WallAdjacency : u8 {
         const NONE = 0b0000_0000;
-        const NORTH = 0b0000_0001;
-        const NORTH_EAST = 0b0000_0010;
-        const EAST = 0b0000_0100;
-        const SOUTH_EAST = 0b0000_1000;
-        const SOUTH = 0b0001_0000;
-        const SOUTH_WEST = 0b0010_0000;
-        const WEST = 0b0100_0000;
-        const NORTH_WEST = 0b1000_0000;
+        const NORTH_WEST = 0b0000_0001;
+        const NORTH = 0b0000_0010;
+        const NORTH_EAST = 0b0000_0100;
+        const EAST = 0b0000_1000;
+        const SOUTH_EAST = 0b0001_0000;
+        const SOUTH = 0b0010_0000;
+        const SOUTH_WEST = 0b0100_0000;
+        const WEST = 0b1000_0000;
     }
 
     #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -339,6 +339,16 @@ impl WallAdjacency {
             CompassOctant::West => WallAdjacency::WEST,
             CompassOctant::NorthWest => WallAdjacency::NORTH_WEST,
         }
+    }
+
+    pub fn values() -> impl Iterator<Item = Self> {
+        (0..=255u8).map(Self::from_bits_retain)
+    }
+}
+
+impl DoorAdjacency {
+    pub fn values() -> impl Iterator<Item = Self> {
+        (0..=15u8).map(Self::from_bits_retain)
     }
 }
 
