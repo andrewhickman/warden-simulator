@@ -46,6 +46,7 @@ pub struct TileStorageBuffer {
 pub struct Tile {
     material: TileMaterial,
     wall_adjacency: WallAdjacency,
+    door_adjacency: DoorAdjacency,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -143,10 +144,30 @@ impl TileStorageMut<'_, '_> {
             .get_mut(position.chunk_offset());
         let prev_material = mem::replace(&mut tile.material, material);
 
-        match (prev_material.is_solid(), material.is_solid()) {
-            (false, true) => self.add_adjacent(position),
-            (true, false) => self.remove_adjacent(position),
-            _ => {}
+        match (prev_material, material) {
+            (TileMaterial::Empty, TileMaterial::Wall) => {
+                self.add_adjacent_wall(position);
+            }
+            (TileMaterial::Empty, TileMaterial::Door) => {
+                self.add_adjacent_door(position);
+            }
+            (TileMaterial::Wall, TileMaterial::Empty) => {
+                self.remove_adjacent_wall(position);
+            }
+            (TileMaterial::Wall, TileMaterial::Door) => {
+                self.remove_adjacent_wall(position);
+                self.add_adjacent_door(position);
+            }
+            (TileMaterial::Door, TileMaterial::Empty) => {
+                self.remove_adjacent_door(position);
+            }
+            (TileMaterial::Door, TileMaterial::Wall) => {
+                self.remove_adjacent_door(position);
+                self.add_adjacent_wall(position);
+            }
+            (TileMaterial::Empty, TileMaterial::Empty)
+            | (TileMaterial::Wall, TileMaterial::Wall)
+            | (TileMaterial::Door, TileMaterial::Door) => {}
         }
     }
 
@@ -172,7 +193,7 @@ impl TileStorageMut<'_, '_> {
         }
     }
 
-    fn add_adjacent(&mut self, position: TilePosition) {
+    fn add_adjacent_wall(&mut self, position: TilePosition) {
         for (adj, offset) in WallAdjacency::OFFSETS {
             let neighbor_pos = position.with_offset(offset);
 
@@ -183,7 +204,7 @@ impl TileStorageMut<'_, '_> {
         }
     }
 
-    fn remove_adjacent(&mut self, position: TilePosition) {
+    fn remove_adjacent_wall(&mut self, position: TilePosition) {
         for (adj, offset) in WallAdjacency::OFFSETS {
             let neighbor_pos = position.with_offset(offset);
 
@@ -191,6 +212,28 @@ impl TileStorageMut<'_, '_> {
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
             neighbour_tile.wall_adjacency.remove(adj);
+        }
+    }
+
+    fn add_adjacent_door(&mut self, position: TilePosition) {
+        for (adj, offset) in DoorAdjacency::OFFSETS {
+            let neighbor_pos = position.with_offset(offset);
+
+            let neighbour_tile = self
+                .chunk_mut(neighbor_pos.chunk_position())
+                .get_mut(neighbor_pos.chunk_offset());
+            neighbour_tile.door_adjacency.insert(adj);
+        }
+    }
+
+    fn remove_adjacent_door(&mut self, position: TilePosition) {
+        for (adj, offset) in DoorAdjacency::OFFSETS {
+            let neighbor_pos = position.with_offset(offset);
+
+            let neighbour_tile = self
+                .chunk_mut(neighbor_pos.chunk_position())
+                .get_mut(neighbor_pos.chunk_offset());
+            neighbour_tile.door_adjacency.remove(adj);
         }
     }
 }
@@ -229,12 +272,17 @@ impl TileChunk {
         self.position.layer
     }
 
+    #[deprecated = "TODO: use material instead"]
     pub fn is_solid(&self, offset: TileChunkOffset) -> bool {
-        self.get(offset).is_solid()
+        self.get(offset).material() == TileMaterial::Wall
+    }
+
+    pub fn material(&self, offset: TileChunkOffset) -> TileMaterial {
+        self.get(offset).material()
     }
 
     pub fn adjacency(&self, offset: TileChunkOffset) -> WallAdjacency {
-        self.get(offset).wall_adjacency
+        self.get(offset).wall_adjacency()
     }
 
     pub fn get(&self, offset: TileChunkOffset) -> &Tile {
@@ -291,11 +339,13 @@ impl Tile {
         Self {
             material: TileMaterial::Empty,
             wall_adjacency: WallAdjacency::NONE,
+            door_adjacency: DoorAdjacency::NONE,
         }
     }
 
+    #[deprecated = "TODO: use material instead"]
     pub fn is_solid(&self) -> bool {
-        self.material.is_solid()
+        self.material() == TileMaterial::Wall
     }
 
     pub fn material(&self) -> TileMaterial {
@@ -305,19 +355,15 @@ impl Tile {
     pub fn wall_adjacency(&self) -> WallAdjacency {
         self.wall_adjacency
     }
-}
 
-impl TileMaterial {
-    pub fn is_solid(&self) -> bool {
-        match self {
-            TileMaterial::Empty | TileMaterial::Door => false,
-            TileMaterial::Wall => true,
-        }
+    pub fn door_adjacency(&self) -> DoorAdjacency {
+        self.door_adjacency
     }
 }
 
 impl WallAdjacency {
     const OFFSETS: [(WallAdjacency, IVec2); 8] = [
+        (WallAdjacency::NORTH_WEST, IVec2::new(1, -1)),
         (WallAdjacency::NORTH, IVec2::new(0, -1)),
         (WallAdjacency::NORTH_EAST, IVec2::new(-1, -1)),
         (WallAdjacency::EAST, IVec2::new(-1, 0)),
@@ -325,7 +371,6 @@ impl WallAdjacency {
         (WallAdjacency::SOUTH, IVec2::new(0, 1)),
         (WallAdjacency::SOUTH_WEST, IVec2::new(1, 1)),
         (WallAdjacency::WEST, IVec2::new(1, 0)),
-        (WallAdjacency::NORTH_WEST, IVec2::new(1, -1)),
     ];
 
     pub fn from_octant(octant: CompassOctant) -> Self {
@@ -347,6 +392,13 @@ impl WallAdjacency {
 }
 
 impl DoorAdjacency {
+    const OFFSETS: [(DoorAdjacency, IVec2); 4] = [
+        (DoorAdjacency::NORTH, IVec2::new(0, -1)),
+        (DoorAdjacency::EAST, IVec2::new(-1, 0)),
+        (DoorAdjacency::SOUTH, IVec2::new(0, 1)),
+        (DoorAdjacency::WEST, IVec2::new(1, 0)),
+    ];
+
     pub fn values() -> impl Iterator<Item = Self> {
         (0..=15u8).map(Self::from_bits_retain)
     }

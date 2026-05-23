@@ -987,7 +987,7 @@ fn validate_regions(
     for (chunk_id, chunk, chunk_sections) in &chunks {
         for offset in TileChunkOffset::iter() {
             let position = TilePosition::from((chunk.position(), offset));
-            if chunk.is_solid(offset) {
+            if chunk.material(offset) != TileMaterial::Empty {
                 assert!(chunk_sections.region(offset).is_none());
             } else {
                 let region = chunk_sections.region(offset).unwrap();
@@ -1001,7 +1001,7 @@ fn validate_regions(
                     if let Some(neighbor_chunk_id) = storage.chunk_id(neighbor.chunk_position()) {
                         let (_, neighbor_chunk, neighbor_sections) =
                             chunks.get(neighbor_chunk_id).unwrap();
-                        if !neighbor_chunk.is_solid(neighbor.chunk_offset()) {
+                        if neighbor_chunk.material(neighbor.chunk_offset()) == TileMaterial::Empty {
                             let neighbor_region =
                                 neighbor_sections.region(neighbor.chunk_offset()).unwrap();
                             assert_eq!(neighbor_region, region);

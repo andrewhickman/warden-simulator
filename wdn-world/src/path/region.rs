@@ -4,7 +4,7 @@ use bevy_ecs::{entity::EntityHashSet, lifecycle::HookContext, prelude::*, world:
 use bevy_platform::collections::{HashMap, HashSet, hash_map};
 use wdn_physics::tile::{
     CHUNK_SIZE, TileChunkOffset, TilePosition,
-    storage::{TileChunk, TileMap, WallAdjacency},
+    storage::{TileChunk, TileMap, TileMaterial, WallAdjacency},
 };
 
 #[derive(Component)]
@@ -66,10 +66,10 @@ pub fn update_tile_chunk_sections(
             for offset in TileChunkOffset::iter() {
                 let tile = chunk.get(offset);
 
-                if tile.is_solid() {
-                    parents.remove(offset);
-                } else {
+                if tile.material() != TileMaterial::Wall {
                     parents.insert(offset);
+                } else {
+                    parents.remove(offset);
                 }
             }
 

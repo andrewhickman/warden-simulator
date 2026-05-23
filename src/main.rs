@@ -215,7 +215,8 @@ fn handle_tile_toggle(
                 let current_material = tile_storage.get_material(tile_pos);
                 let new_material = match current_material {
                     TileMaterial::Empty => TileMaterial::Wall,
-                    TileMaterial::Wall | TileMaterial::Door => TileMaterial::Empty,
+                    TileMaterial::Wall => TileMaterial::Door,
+                    TileMaterial::Door => TileMaterial::Empty,
                 };
 
                 tile_storage.set_material(tile_pos, new_material);
