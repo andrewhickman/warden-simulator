@@ -272,11 +272,6 @@ impl TileChunk {
         self.position.layer
     }
 
-    #[deprecated = "TODO: use material instead"]
-    pub fn is_solid(&self, offset: TileChunkOffset) -> bool {
-        self.get(offset).material() == TileMaterial::Wall
-    }
-
     pub fn material(&self, offset: TileChunkOffset) -> TileMaterial {
         self.get(offset).material()
     }
@@ -341,11 +336,6 @@ impl Tile {
             wall_adjacency: WallAdjacency::NONE,
             door_adjacency: DoorAdjacency::NONE,
         }
-    }
-
-    #[deprecated = "TODO: use material instead"]
-    pub fn is_solid(&self) -> bool {
-        self.material() == TileMaterial::Wall
     }
 
     pub fn material(&self) -> TileMaterial {

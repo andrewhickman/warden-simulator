@@ -6,7 +6,7 @@ use bevy_image::{Image, ImageSampler};
 use bevy_mesh::MeshVertexBufferLayoutRef;
 use bevy_reflect::TypePath;
 use bevy_render::render_resource::*;
-use bevy_shader::ShaderRef;
+use bevy_shader::{ShaderDefVal, ShaderRef};
 use bevy_sprite_render::{AlphaMode2d, Material2d, Material2dKey, Material2dPlugin};
 use bytemuck::{Pod, Zeroable};
 use wdn_physics::tile::CHUNK_SIZE;
@@ -47,6 +47,13 @@ impl Material2d for TileChunkMaterial {
         _: &MeshVertexBufferLayoutRef,
         _: Material2dKey<Self>,
     ) -> Result<(), SpecializedMeshPipelineError> {
+        descriptor
+            .fragment
+            .as_mut()
+            .expect("no fragment shader for Mesh2d pipeline")
+            .shader_defs
+            .push(ShaderDefVal::UInt("CHUNK_SIZE".into(), CHUNK_SIZE as u32));
+
         descriptor
             .depth_stencil
             .as_mut()

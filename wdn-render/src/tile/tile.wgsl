@@ -1,4 +1,4 @@
-#import bevy_sprite::{
+# import bevy_sprite::{
     mesh2d_functions as mesh_functions,
     mesh2d_view_bindings::view,
     mesh2d_vertex_output::VertexOutput,
@@ -15,16 +15,16 @@ struct FragmentOutput {
 
 @fragment
 fn fragment(in: VertexOutput) -> FragmentOutput {
-    let chunk_size = textureDimensions(tile_data, 0);
+    let chunk_size = vec2<u32>(#{CHUNK_SIZE});
     let tile_uv = in.uv * vec2<f32>(chunk_size);
-    var tile_coord = clamp(vec2<u32>(floor(tile_uv)), vec2<u32>(0), chunk_size - 1);
+    var tile_coord = clamp(vec2<u32>(floor(tile_uv)), vec2<u32>(0), chunk_size - 1u);
     var local_uv = tile_uv - vec2<f32>(tile_coord);
 
-    tile_coord.y = chunk_size.y - 1 - tile_coord.y;
+    tile_coord.y = chunk_size.y - 1u - tile_coord.y;
 
     let data = textureLoad(tile_data, tile_coord, 0);
     let index = data.r;
-    let depth = f32(data.g);
+    let depth = select(f32(data.g), 0.0, local_uv.y < 0.5);
 
     let color = textureSample(tileset, tileset_sampler, local_uv, index);
     if color.a < 0.5 {
