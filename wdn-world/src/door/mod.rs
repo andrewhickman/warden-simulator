@@ -1,9 +1,14 @@
 use std::time::Duration;
 
+use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use bevy_time::prelude::*;
 
 use wdn_physics::collision::{ColliderDisabled, TileCollider};
+
+use crate::WorldSystems;
+
+pub struct DoorPlugin;
 
 #[derive(Component, Clone, Copy, Debug, Default)]
 #[require(TileCollider)]
@@ -38,6 +43,12 @@ pub fn update_doors(
     });
 }
 
+impl Plugin for DoorPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(FixedUpdate, update_doors.in_set(WorldSystems::UpdateDoors));
+    }
+}
+
 impl Door {
     const OPEN_SPEED: f32 = 1.0;
     const OPEN_DURATION: Duration = Duration::from_secs(3);
@@ -67,6 +78,25 @@ impl Door {
                 self.state = DoorState::Opening { position };
             }
             _ => {}
+        }
+    }
+
+    pub fn close(&mut self) {
+        match self.state {
+            DoorState::Open { .. } => {
+                self.state = DoorState::Closing { position: 1.0 };
+            }
+            DoorState::Opening { position } => {
+                self.state = DoorState::Closing { position };
+            }
+            _ => {}
+        }
+    }
+
+    pub fn toggle(&mut self) {
+        match self.state {
+            DoorState::Closed | DoorState::Closing { .. } => self.open(),
+            DoorState::Opening { .. } | DoorState::Open { .. } => self.close(),
         }
     }
 

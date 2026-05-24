@@ -202,6 +202,7 @@ fn handle_tile_toggle(
     camera_query: Single<(&Camera, &GlobalTransform)>,
     window: Single<&Window>,
     layer: Single<Entity, With<Layer>>,
+    mut doors: Query<(&TilePosition, &mut Door)>,
     mut tile_storage: TileStorageMut,
 ) {
     if mouse.just_pressed(MouseButton::Right) {
@@ -210,6 +211,14 @@ fn handle_tile_toggle(
             if let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_pos) {
                 // Convert world position to tile position
                 let tile_pos = TilePosition::floor(*layer, world_pos);
+
+                // Toggle an existing door entity on this tile.
+                for (door_tile, mut door) in doors.iter_mut() {
+                    if *door_tile == tile_pos {
+                        door.toggle();
+                        return;
+                    }
+                }
 
                 // Toggle tile material between Empty and Wall
                 let current_material = tile_storage.get_material(tile_pos);

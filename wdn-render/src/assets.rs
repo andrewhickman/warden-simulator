@@ -11,14 +11,11 @@ pub const PAWN_RECT: URect = rect(16, 16, 160, 256);
 pub const PAWN_PROJECTILE_INDEX: usize = 1;
 pub const PAWN_PROJECTILE_RECT: URect = rect(192, 16, 48, 48);
 
-pub const DOOR_INDEX: usize = 2;
-pub const DOOR_RECT: URect = rect(16, 288, 384, 320);
+pub const DOOR_HORIZONTAL_INDEX: usize = 2;
+pub const DOOR_HORIZONTAL_RECT: URect = rect(16, 288, 400, 352);
 
-pub const DOOR_LEFT_INDEX: usize = 3;
-pub const DOOR_LEFT_RECT: URect = rect(16, 624, 96, 348);
-
-pub const DOOR_RIGHT_INDEX: usize = 4;
-pub const DOOR_RIGHT_RECT: URect = rect(128, 624, 96, 348);
+pub const DOOR_VERTICAL_INDEX: usize = 3;
+pub const DOOR_VERTICAL_RECT: URect = rect(432, 16, 64, 800);
 
 pub struct AssetsPlugin;
 
@@ -78,39 +75,26 @@ impl AssetHandles {
         }
     }
 
-    pub fn door(&self) -> Sprite {
+    pub fn door_horizontal(&self) -> Sprite {
         Sprite {
             image: self.atlas(),
             texture_atlas: Some(TextureAtlas {
                 layout: self.layout.clone(),
-                index: DOOR_INDEX,
+                index: DOOR_HORIZONTAL_INDEX,
             }),
-            custom_size: Some(sprite_size(DOOR_RECT)),
+            custom_size: Some(sprite_size(DOOR_HORIZONTAL_RECT)),
             ..Default::default()
         }
     }
 
-    pub fn door_left(&self) -> Sprite {
+    pub fn door_vertical(&self) -> Sprite {
         Sprite {
             image: self.atlas(),
             texture_atlas: Some(TextureAtlas {
                 layout: self.layout.clone(),
-                index: DOOR_LEFT_INDEX,
+                index: DOOR_VERTICAL_INDEX,
             }),
-            custom_size: Some(sprite_size(DOOR_LEFT_RECT)),
-            ..Default::default()
-        }
-    }
-
-    pub fn door_right(&self) -> Sprite {
-        Sprite {
-            image: self.atlas(),
-            texture_atlas: Some(TextureAtlas {
-                layout: self.layout.clone(),
-                index: DOOR_LEFT_INDEX,
-            }),
-            custom_size: Some(sprite_size(DOOR_LEFT_RECT)),
-            flip_x: true,
+            custom_size: Some(sprite_size(DOOR_VERTICAL_RECT)),
             ..Default::default()
         }
     }
@@ -123,9 +107,10 @@ pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
         layout.add_texture(PAWN_PROJECTILE_RECT),
         PAWN_PROJECTILE_INDEX
     );
-    assert_eq!(layout.add_texture(DOOR_RECT), DOOR_INDEX);
-    assert_eq!(layout.add_texture(DOOR_LEFT_RECT), DOOR_LEFT_INDEX);
-    assert_eq!(layout.add_texture(DOOR_RIGHT_RECT), DOOR_RIGHT_INDEX);
+    assert_eq!(
+        layout.add_texture(DOOR_HORIZONTAL_RECT),
+        DOOR_HORIZONTAL_INDEX
+    );
 
     commands.insert_resource(AssetHandles {
         tileset: assets.load_with_settings("image/tileset.png", configure_tileset),
