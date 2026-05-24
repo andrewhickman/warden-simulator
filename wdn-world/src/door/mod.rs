@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod tests;
+
 use std::time::Duration;
 
 use bevy_app::prelude::*;
@@ -130,12 +133,12 @@ impl Door {
             }
         }
 
-        match (was_open, self.is_open()) {
+        match dbg!((was_open, self.is_open())) {
             (false, true) => {
-                commands.entity(id).remove::<ColliderDisabled>();
+                commands.entity(id).insert(ColliderDisabled);
             }
             (true, false) => {
-                commands.entity(id).insert(ColliderDisabled);
+                commands.entity(id).remove::<ColliderDisabled>();
             }
             _ => {}
         }
