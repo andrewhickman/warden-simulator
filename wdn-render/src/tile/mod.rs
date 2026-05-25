@@ -13,17 +13,18 @@ use bevy_sprite_render::prelude::*;
 use bevy_transform::prelude::*;
 
 use wdn_physics::{
+    kinematics::Position,
     layer::Layer,
     tile::{
         CHUNK_SIZE, TileChunkOffset, TileChunkPosition,
         storage::{Tile, TileChunk, TileMaterial},
     },
 };
+use wdn_world::door::Door;
 
 use crate::{
     assets::AssetHandles,
     layers::{GROUND_LAYER, WALL_BASE_LAYER, WALL_TOP_LAYER},
-    lerp::Interpolate,
     tile::material::{
         PackedTileData, TileChunkMaterial, TileChunkMaterialPlugin, make_tile_chunk_image,
     },
@@ -81,7 +82,7 @@ pub fn update_chunk(
     mut param: TileChunkSpriteParam,
     mut chunks: Query<
         (Entity, &TileChunk, &mut Transform, &mut TileChunkSprites),
-        (Changed<TileChunk>, Without<Interpolate>),
+        (Changed<TileChunk>, Without<Position>, Without<Door>),
     >,
 ) {
     chunks

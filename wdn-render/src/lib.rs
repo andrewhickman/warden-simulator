@@ -19,6 +19,7 @@ pub struct RenderPlugin;
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemSet)]
 pub enum RenderSystems {
     Interpolate,
+    RenderDoors,
 }
 
 impl Plugin for RenderPlugin {

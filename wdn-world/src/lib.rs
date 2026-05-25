@@ -7,6 +7,7 @@ use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 
 use crate::combat::CombatPlugin;
+use crate::door::DoorPlugin;
 use crate::path::PathPlugin;
 use crate::pawn::PawnPlugin;
 
@@ -22,6 +23,6 @@ pub enum WorldSystems {
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((CombatPlugin, PawnPlugin, PathPlugin));
+        app.add_plugins((CombatPlugin, DoorPlugin, PawnPlugin, PathPlugin));
     }
 }

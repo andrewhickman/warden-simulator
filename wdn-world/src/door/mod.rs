@@ -14,9 +14,16 @@ use crate::WorldSystems;
 pub struct DoorPlugin;
 
 #[derive(Component, Clone, Copy, Debug, Default)]
-#[require(TileCollider)]
+#[require(TileCollider, DoorDirection)]
 pub struct Door {
     state: DoorState,
+}
+
+#[derive(Component, Clone, Copy, Debug, Default)]
+pub enum DoorDirection {
+    #[default]
+    Horizontal,
+    Vertical,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -133,7 +140,7 @@ impl Door {
             }
         }
 
-        match dbg!((was_open, self.is_open())) {
+        match (was_open, self.is_open()) {
             (false, true) => {
                 commands.entity(id).insert(ColliderDisabled);
             }

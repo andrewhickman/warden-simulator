@@ -20,8 +20,11 @@ use wdn_render::RenderPlugin as WdnRenderPlugin;
 use wdn_save::SavePlugin as WdnSavePlugin;
 use wdn_tasks::TasksPlugin as WdnTasksPlugin;
 use wdn_ui::UiPlugin as WdnUiPlugin;
-use wdn_world::pawn::{Pawn, PawnAction};
 use wdn_world::{WorldPlugin as WdnWorldPlugin, door::Door};
+use wdn_world::{
+    door::DoorDirection,
+    pawn::{Pawn, PawnAction},
+};
 
 pub fn main() {
     App::new()
@@ -116,16 +119,16 @@ fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
     ));
 
     commands.spawn((Door::default(), TilePosition::new(layer, 2, 2)));
+    storage.set_material(TilePosition::new(layer, 1, 2), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 2, 2), TileMaterial::Door);
+    storage.set_material(TilePosition::new(layer, 3, 2), TileMaterial::Wall);
 
-    storage.set_material(TilePosition::new(layer, 0, 0), TileMaterial::Empty);
-    storage.set_material(TilePosition::new(layer, 1, -1), TileMaterial::Empty);
-    storage.set_material(TilePosition::new(layer, -1, 1), TileMaterial::Empty);
-    storage.set_material(TilePosition::new(layer, -1, -1), TileMaterial::Empty);
-
-    storage.set_material(TilePosition::new(layer, 2, 0), TileMaterial::Wall);
-    storage.set_material(TilePosition::new(layer, 1, -1), TileMaterial::Wall);
-    storage.set_material(TilePosition::new(layer, 2, -1), TileMaterial::Wall);
-    storage.set_material(TilePosition::new(layer, 3, -1), TileMaterial::Wall);
+    commands.spawn((
+        (Door::default(), DoorDirection::Vertical),
+        TilePosition::new(layer, 1, 1),
+    ));
+    storage.set_material(TilePosition::new(layer, 1, 1), TileMaterial::Door);
+    storage.set_material(TilePosition::new(layer, 1, 0), TileMaterial::Wall);
 }
 
 fn handle_pawn_input(
@@ -215,6 +218,7 @@ fn handle_tile_toggle(
                 // Toggle an existing door entity on this tile.
                 for (door_tile, mut door) in doors.iter_mut() {
                     if *door_tile == tile_pos {
+                        info!("Toggling door at {:?}", tile_pos);
                         door.toggle();
                         return;
                     }

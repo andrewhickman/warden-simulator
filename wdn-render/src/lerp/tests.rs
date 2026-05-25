@@ -27,9 +27,9 @@ fn interpolate_added() {
     assert_relative_eq!(transform.translation.truncate(), Vec2::new(1.0, 2.0));
     assert_relative_eq!(transform.rotation, Quat::from_rotation_z(FRAC_PI_2));
 
-    let state = app.world().get::<InterpolateState>(entity).unwrap();
+    let state = app.world().get::<PositionInterpolateState>(entity).unwrap();
     match state.translation {
-        ComponentInterpolateState::Static { value } => {
+        InterpolateState::Static { value } => {
             assert_relative_eq!(value, Vec2::new(1.0, 2.0));
         }
         _ => panic!(
@@ -39,7 +39,7 @@ fn interpolate_added() {
     }
 
     match state.rotation {
-        ComponentInterpolateState::Static { value } => {
+        InterpolateState::Static { value } => {
             assert_relative_eq!(value, Rot2::radians(FRAC_PI_2));
         }
         _ => panic!(
@@ -73,9 +73,9 @@ fn interpolate_start() {
     assert_relative_eq!(transform.translation.truncate(), Vec2::new(0.5, 0.5));
     assert_relative_eq!(transform.rotation, Quat::from_rotation_z(FRAC_PI_2 * 0.5));
 
-    let state = app.world().get::<InterpolateState>(entity).unwrap();
+    let state = app.world().get::<PositionInterpolateState>(entity).unwrap();
     match state.translation {
-        ComponentInterpolateState::Interpolating { start, end } => {
+        InterpolateState::Interpolating { start, end } => {
             assert_relative_eq!(start, Vec2::new(0.0, 0.0));
             assert_relative_eq!(end, Vec2::new(1.0, 1.0));
         }
@@ -86,7 +86,7 @@ fn interpolate_start() {
     }
 
     match state.rotation {
-        ComponentInterpolateState::Interpolating { start, end } => {
+        InterpolateState::Interpolating { start, end } => {
             assert_relative_eq!(start, Rot2::IDENTITY);
             assert_relative_eq!(end, Rot2::radians(FRAC_PI_2));
         }
@@ -129,9 +129,9 @@ fn interpolate_unchanged() {
     assert_relative_eq!(transform.rotation, Quat::from_rotation_z(FRAC_PI_2));
     assert_eq!(transform.last_changed(), initial_transform_tick);
 
-    let state = app.world().get::<InterpolateState>(entity).unwrap();
+    let state = app.world().get::<PositionInterpolateState>(entity).unwrap();
     match state.translation {
-        ComponentInterpolateState::Static { value } => {
+        InterpolateState::Static { value } => {
             assert_relative_eq!(value, Vec2::new(1.0, 1.0));
         }
         _ => panic!(
@@ -141,7 +141,7 @@ fn interpolate_unchanged() {
     }
 
     match state.rotation {
-        ComponentInterpolateState::Static { value } => {
+        InterpolateState::Static { value } => {
             assert_relative_eq!(value, Rot2::radians(FRAC_PI_2));
         }
         _ => panic!(
@@ -183,9 +183,9 @@ fn interpolate_changed() {
     assert_relative_eq!(transform.translation.truncate(), Vec2::new(0.75, 0.75));
     assert_relative_eq!(transform.rotation, Quat::from_rotation_z(FRAC_PI_2 * 0.75));
 
-    let state = app.world().get::<InterpolateState>(entity).unwrap();
+    let state = app.world().get::<PositionInterpolateState>(entity).unwrap();
     match state.translation {
-        ComponentInterpolateState::Interpolating { start, end } => {
+        InterpolateState::Interpolating { start, end } => {
             assert_relative_eq!(start, Vec2::new(0.5, 0.5));
             assert_relative_eq!(end, Vec2::new(1.0, 1.0));
         }
@@ -196,7 +196,7 @@ fn interpolate_changed() {
     }
 
     match state.rotation {
-        ComponentInterpolateState::Interpolating { start, end } => {
+        InterpolateState::Interpolating { start, end } => {
             assert_relative_eq!(start, Rot2::radians(FRAC_PI_4));
             assert_relative_eq!(end, Rot2::radians(FRAC_PI_2));
         }
@@ -232,9 +232,9 @@ fn interpolate_continue() {
     assert_relative_eq!(transform.translation.truncate(), Vec2::new(0.66, 0.66));
     assert_relative_eq!(transform.rotation, Quat::from_rotation_z(FRAC_PI_2 * 0.66));
 
-    let state = app.world().get::<InterpolateState>(entity).unwrap();
+    let state = app.world().get::<PositionInterpolateState>(entity).unwrap();
     match state.translation {
-        ComponentInterpolateState::Interpolating { start, end } => {
+        InterpolateState::Interpolating { start, end } => {
             assert_relative_eq!(start, Vec2::new(0.0, 0.0));
             assert_relative_eq!(end, Vec2::new(1.0, 1.0));
         }
@@ -245,7 +245,7 @@ fn interpolate_continue() {
     }
 
     match state.rotation {
-        ComponentInterpolateState::Interpolating { start, end } => {
+        InterpolateState::Interpolating { start, end } => {
             assert_relative_eq!(start, Rot2::IDENTITY);
             assert_relative_eq!(end, Rot2::radians(FRAC_PI_2));
         }
@@ -288,9 +288,9 @@ fn interpolate_finish() {
     assert_relative_eq!(transform.translation.truncate(), Vec2::new(0.5, 0.5));
     assert_relative_eq!(transform.rotation, Quat::from_rotation_z(FRAC_PI_4));
 
-    let state = app.world().get::<InterpolateState>(entity).unwrap();
+    let state = app.world().get::<PositionInterpolateState>(entity).unwrap();
     match state.translation {
-        ComponentInterpolateState::Static { value } => {
+        InterpolateState::Static { value } => {
             assert_relative_eq!(value, Vec2::new(0.5, 0.5));
         }
         _ => panic!(
@@ -300,7 +300,7 @@ fn interpolate_finish() {
     }
 
     match state.rotation {
-        ComponentInterpolateState::Static { value } => {
+        InterpolateState::Static { value } => {
             assert_relative_eq!(value, Rot2::radians(FRAC_PI_4));
         }
         _ => panic!(
@@ -334,9 +334,9 @@ fn interpolate_position() {
     assert_relative_eq!(transform.translation.truncate(), Vec2::new(0.5, 0.5));
     assert_relative_eq!(transform.rotation, Quat::IDENTITY);
 
-    let state = app.world().get::<InterpolateState>(entity).unwrap();
+    let state = app.world().get::<PositionInterpolateState>(entity).unwrap();
     match state.translation {
-        ComponentInterpolateState::Interpolating { start, end } => {
+        InterpolateState::Interpolating { start, end } => {
             assert_relative_eq!(start, Vec2::new(0.0, 0.0));
             assert_relative_eq!(end, Vec2::new(1.0, 1.0));
         }
@@ -347,7 +347,7 @@ fn interpolate_position() {
     }
 
     match state.rotation {
-        ComponentInterpolateState::Unset => {}
+        InterpolateState::Unset => {}
         _ => panic!(
             "expected interpolation state {:?} to be Unset",
             state.rotation
@@ -379,9 +379,9 @@ fn interpolate_rotation() {
     assert_relative_eq!(transform.translation.truncate(), Vec2::ZERO);
     assert_relative_eq!(transform.rotation, Quat::from_rotation_z(FRAC_PI_2 * 0.5));
 
-    let state = app.world().get::<InterpolateState>(entity).unwrap();
+    let state = app.world().get::<PositionInterpolateState>(entity).unwrap();
     match state.translation {
-        ComponentInterpolateState::Unset => {}
+        InterpolateState::Unset => {}
         _ => panic!(
             "expected interpolation state {:?} to be Unset",
             state.translation
@@ -389,7 +389,7 @@ fn interpolate_rotation() {
     }
 
     match state.rotation {
-        ComponentInterpolateState::Interpolating { start, end } => {
+        InterpolateState::Interpolating { start, end } => {
             assert_relative_eq!(start, Rot2::IDENTITY);
             assert_relative_eq!(end, Rot2::radians(FRAC_PI_2));
         }

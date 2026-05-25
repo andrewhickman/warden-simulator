@@ -5,6 +5,8 @@ use bevy_image::{ImageArrayLayout, ImageLoaderSettings, ImageSampler, prelude::*
 use bevy_math::prelude::*;
 use bevy_sprite::prelude::*;
 
+pub const SPRITE_SCALE_FACTOR: f32 = 0.0025;
+
 pub const PAWN_INDEX: usize = 0;
 pub const PAWN_RECT: URect = rect(16, 16, 160, 256);
 
@@ -111,6 +113,7 @@ pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
         layout.add_texture(DOOR_HORIZONTAL_RECT),
         DOOR_HORIZONTAL_INDEX
     );
+    assert_eq!(layout.add_texture(DOOR_VERTICAL_RECT), DOOR_VERTICAL_INDEX);
 
     commands.insert_resource(AssetHandles {
         tileset: assets.load_with_settings("image/tileset.png", configure_tileset),
@@ -128,8 +131,8 @@ fn configure_atlas(settings: &mut ImageLoaderSettings) {
     settings.sampler = ImageSampler::linear();
 }
 
-fn sprite_size(rect: URect) -> Vec2 {
-    rect.size().as_vec2() * 0.0025
+pub fn sprite_size(rect: URect) -> Vec2 {
+    rect.size().as_vec2() * SPRITE_SCALE_FACTOR
 }
 
 const fn rect(min_x: u32, min_y: u32, size_x: u32, size_y: u32) -> URect {

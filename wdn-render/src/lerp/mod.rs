@@ -14,20 +14,20 @@ use crate::RenderSystems;
 pub struct InterpolatePlugin;
 
 #[derive(Debug, Clone, Copy, Component)]
-#[require(InterpolateState, Transform)]
+#[require(PositionInterpolateState, Transform)]
 pub struct Interpolate {
     pub translation: bool,
     pub rotation: bool,
 }
 
 #[derive(Component, Clone, Copy, Debug, Default)]
-pub struct InterpolateState {
-    translation: ComponentInterpolateState<Vec2>,
-    rotation: ComponentInterpolateState<Rot2>,
+pub struct PositionInterpolateState {
+    translation: InterpolateState<Vec2>,
+    rotation: InterpolateState<Rot2>,
 }
 
 #[derive(Component, Clone, Copy, Debug, Default)]
-enum ComponentInterpolateState<T> {
+pub enum InterpolateState<T> {
     #[default]
     Unset,
     Static {
@@ -45,16 +45,20 @@ pub struct FixedUpdateCount {
 }
 
 pub fn count_fixed_update(mut count: ResMut<FixedUpdateCount>) {
-    count.updates += 1;
+    count.increment();
 }
 
-pub fn interpolate(
-    mut count: ResMut<FixedUpdateCount>,
+pub fn reset_fixed_update(mut count: ResMut<FixedUpdateCount>) {
+    count.reset();
+}
+
+pub fn interpolate_position(
+    count: Res<FixedUpdateCount>,
     mut transforms: Query<(
         &Interpolate,
         &Position,
         &mut Transform,
-        &mut InterpolateState,
+        &mut PositionInterpolateState,
     )>,
     time: Res<Time<Fixed>>,
 ) {
@@ -67,7 +71,7 @@ pub fn interpolate(
                 if let Some(interpolated_translation) =
                     state
                         .translation
-                        .interpolate(position.position(), overstep, count.updates > 0)
+                        .interpolate(position.position(), overstep, count.updated())
                 {
                     transform.translation.x = interpolated_translation.x;
                     transform.translation.y = interpolated_translation.y;
@@ -78,29 +82,31 @@ pub fn interpolate(
                 if let Some(interpolated_rotation) =
                     state
                         .rotation
-                        .interpolate(position.rotation(), overstep, count.updates > 0)
+                        .interpolate(position.rotation(), overstep, count.updated())
                 {
                     transform.rotation = Quat::from_rotation_z(interpolated_rotation.as_radians());
                 }
             }
         });
-
-    count.updates = 0;
 }
 
 impl Plugin for InterpolatePlugin {
     fn build(&self, app: &mut App) {
+        app.configure_sets(
+            PostUpdate,
+            RenderSystems::Interpolate.before(TransformSystems::Propagate),
+        );
+
         app.init_resource::<FixedUpdateCount>();
 
         app.register_required_components::<Layer, Transform>();
 
         app.add_systems(FixedLast, count_fixed_update);
+        app.add_systems(Last, reset_fixed_update);
 
         app.add_systems(
             PostUpdate,
-            interpolate
-                .in_set(RenderSystems::Interpolate)
-                .before(TransformSystems::Propagate),
+            interpolate_position.in_set(RenderSystems::Interpolate),
         );
     }
 }
@@ -130,19 +136,19 @@ impl Interpolate {
     }
 }
 
-impl<T> ComponentInterpolateState<T>
+impl<T> InterpolateState<T>
 where
     T: Copy + PartialEq + StableInterpolate,
 {
-    fn interpolate(&mut self, value: T, t: f32, updated: bool) -> Option<T> {
+    pub fn interpolate(&mut self, value: T, t: f32, updated: bool) -> Option<T> {
         match *self {
-            ComponentInterpolateState::Unset => {
-                *self = ComponentInterpolateState::Static { value };
+            InterpolateState::Unset => {
+                *self = InterpolateState::Static { value };
                 Some(value)
             }
-            ComponentInterpolateState::Static { value: old_value } => {
+            InterpolateState::Static { value: old_value } => {
                 if old_value != value {
-                    *self = ComponentInterpolateState::Interpolating {
+                    *self = InterpolateState::Interpolating {
                         start: old_value,
                         end: value,
                     };
@@ -151,20 +157,34 @@ where
                     None
                 }
             }
-            ComponentInterpolateState::Interpolating { start, end } => {
+            InterpolateState::Interpolating { start, end } => {
                 if end != value {
-                    *self = ComponentInterpolateState::Interpolating {
+                    *self = InterpolateState::Interpolating {
                         start: end,
                         end: value,
                     };
                     Some(end.interpolate_stable(&value, t))
                 } else if updated {
-                    *self = ComponentInterpolateState::Static { value };
+                    *self = InterpolateState::Static { value };
                     Some(value)
                 } else {
                     Some(start.interpolate_stable(&end, t))
                 }
             }
         }
+    }
+}
+
+impl FixedUpdateCount {
+    pub fn increment(&mut self) {
+        self.updates += 1;
+    }
+
+    pub fn updated(&self) -> bool {
+        self.updates > 0
+    }
+
+    pub fn reset(&mut self) {
+        self.updates = 0;
     }
 }
