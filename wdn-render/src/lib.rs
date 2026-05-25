@@ -1,5 +1,6 @@
 pub mod assets;
 pub mod damage;
+pub mod dev;
 pub mod door;
 pub mod layers;
 pub mod lerp;
@@ -10,8 +11,8 @@ use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 
 use crate::{
-    assets::AssetsPlugin, damage::DamagePlugin, door::DoorPlugin, lerp::InterpolatePlugin,
-    pawn::PawnPlugin, tile::TilePlugin,
+    assets::AssetsPlugin, damage::DamagePlugin, dev::DevPlugin, door::DoorPlugin,
+    lerp::InterpolatePlugin, pawn::PawnPlugin, tile::TilePlugin,
 };
 
 pub struct RenderPlugin;
@@ -27,6 +28,7 @@ impl Plugin for RenderPlugin {
         app.add_plugins((
             AssetsPlugin,
             DamagePlugin,
+            DevPlugin,
             DoorPlugin,
             TilePlugin,
             PawnPlugin,

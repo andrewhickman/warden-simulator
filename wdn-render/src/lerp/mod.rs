@@ -92,11 +92,6 @@ pub fn interpolate_position(
 
 impl Plugin for InterpolatePlugin {
     fn build(&self, app: &mut App) {
-        app.configure_sets(
-            PostUpdate,
-            RenderSystems::Interpolate.before(TransformSystems::Propagate),
-        );
-
         app.init_resource::<FixedUpdateCount>();
 
         app.register_required_components::<Layer, Transform>();
@@ -105,7 +100,7 @@ impl Plugin for InterpolatePlugin {
         app.add_systems(Last, reset_fixed_update);
 
         app.add_systems(
-            PostUpdate,
+            Update,
             interpolate_position.in_set(RenderSystems::Interpolate),
         );
     }

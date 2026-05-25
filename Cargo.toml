@@ -32,3 +32,7 @@ wdn-save = { version = "0.1.0", path = "wdn-save" }
 wdn-tasks = { version = "0.1.0", path = "wdn-tasks" }
 wdn-ui = { version = "0.1.0", path = "wdn-ui" }
 wdn-world = { version = "0.1.0", path = "wdn-world" }
+
+[dev-dependencies]
+bevy = { version = "0.18.0", default-features = false, features = ["pan_camera", "trace_tracy", "debug"] }
+rand = "0.10.1"

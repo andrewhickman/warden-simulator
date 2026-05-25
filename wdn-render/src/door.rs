@@ -1,7 +1,6 @@
 use bevy_app::prelude::*;
 use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
 use bevy_sprite::{Anchor, prelude::*};
-use bevy_sprite_render::SpriteSystems;
 use bevy_time::prelude::*;
 use bevy_transform::prelude::*;
 use wdn_physics::{
@@ -28,16 +27,11 @@ pub struct DoorSprite {
 
 impl Plugin for DoorPlugin {
     fn build(&self, app: &mut App) {
-        app.configure_sets(
-            PostUpdate,
-            RenderSystems::RenderDoors
-                .before(TransformSystems::Propagate)
-                .before(SpriteSystems::ComputeSlices),
-        );
+        app.configure_sets(Update, RenderSystems::RenderDoors);
 
         app.register_required_components::<Door, DoorSprite>();
 
-        app.add_systems(PostUpdate, update_doors.in_set(RenderSystems::RenderDoors));
+        app.add_systems(Update, update_doors.in_set(RenderSystems::RenderDoors));
     }
 }
 

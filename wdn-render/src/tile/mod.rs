@@ -2,7 +2,7 @@ pub mod material;
 pub mod wall;
 
 use bevy_app::prelude::*;
-use bevy_asset::{AssetEventSystems, prelude::*};
+use bevy_asset::prelude::*;
 use bevy_camera::prelude::*;
 use bevy_ecs::{prelude::*, system::SystemParam};
 use bevy_image::prelude::*;
@@ -62,7 +62,7 @@ impl Plugin for TilePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TileChunkMesh>();
 
-        app.add_systems(PostUpdate, update_chunk.before(AssetEventSystems));
+        app.add_systems(Update, update_chunk);
 
         app.register_required_components::<Layer, Visibility>();
         app.register_required_components::<TileChunk, TileChunkSprites>();
