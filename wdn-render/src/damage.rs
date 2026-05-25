@@ -8,6 +8,8 @@ use bevy_sprite::prelude::*;
 use bevy_time::{common_conditions::paused, prelude::*};
 use wdn_world::combat::Damaged;
 
+use crate::RenderSystems;
+
 pub struct DamagePlugin;
 
 #[derive(Copy, Clone, Component, Debug)]
@@ -24,6 +26,7 @@ impl Plugin for DamagePlugin {
                 spawn_damage_animations,
                 update_damage_animations.run_if(not(paused)),
             )
+                .in_set(RenderSystems::RenderDamage)
                 .chain(),
         );
     }

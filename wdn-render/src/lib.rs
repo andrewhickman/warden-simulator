@@ -19,12 +19,19 @@ pub struct RenderPlugin;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemSet)]
 pub enum RenderSystems {
-    Interpolate,
+    InterpolatePosition,
     RenderDoors,
+    RenderDamage,
+    RenderTiles,
 }
 
 impl Plugin for RenderPlugin {
     fn build(&self, app: &mut App) {
+        app.configure_sets(
+            Update,
+            RenderSystems::RenderDoors.before(RenderSystems::RenderDamage),
+        );
+
         app.add_plugins((
             AssetsPlugin,
             DamagePlugin,

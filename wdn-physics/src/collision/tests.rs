@@ -1,8 +1,4 @@
-use std::{
-    cmp::{self, Reverse},
-    f32::consts::FRAC_1_SQRT_2,
-    time::Duration,
-};
+use std::{cmp::Reverse, f32::consts::FRAC_1_SQRT_2, time::Duration};
 
 use approx::assert_relative_eq;
 use bevy_app::prelude::*;
@@ -1697,42 +1693,6 @@ fn collision_collider_ordering() {
 }
 
 #[test]
-fn collision_tile_collider_ordering() {
-    let mut app = make_app();
-    let layer = spawn_layer(&mut app);
-
-    let tile_position = TilePosition::new(layer, 0, 1);
-
-    let tile_entity1 = spawn_tile_collider(&mut app, tile_position);
-    let tile_entity2 = spawn_tile_collider(&mut app, tile_position);
-
-    let entity = spawn_collider(
-        &mut app,
-        layer,
-        Vec2::new(0.0, 0.8),
-        Vec2::new(0.0, 0.5),
-        0.1,
-    );
-
-    app.update();
-
-    let collisions = app.world().get::<Collisions>(entity).unwrap();
-    assert_eq!(collisions.active().len(), 0);
-    assert_relative_eq!(collisions.next_time().unwrap(), 0.2);
-    let collision = collisions.next_collision().unwrap();
-    assert_relative_eq!(collision.position, Vec2::new(0.0, 0.9));
-    assert_eq!(collision.normal, Dir2::NEG_Y);
-    assert!(collision.solid);
-    match collision.target {
-        CollisionTarget::Tile { id, position } => {
-            assert_eq!(position, tile_position);
-            assert_eq!(id, Some(cmp::max(tile_entity1, tile_entity2)));
-        }
-        _ => panic!("Expected wall collision"),
-    }
-}
-
-#[test]
 fn collision_colliders_tile_boundary() {
     let mut app = make_app();
     let layer = spawn_layer(&mut app);
@@ -2415,8 +2375,8 @@ fn collision_tile_collider_events() {
     assert_eq!(collisions.started().count(), 0);
     assert_eq!(collisions.ended().count(), 0);
 
-    set_tile(&mut app, TilePosition::new(layer, 0, 1));
     app.world_mut().despawn(tile_entity);
+    set_tile(&mut app, TilePosition::new(layer, 0, 1));
     app.update();
 
     let collisions = app.world().get::<Collisions>(entity).unwrap();

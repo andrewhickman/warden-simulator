@@ -13,7 +13,7 @@ use wdn_physics::{
     layer::Layer,
     tile::{material::TileMaterial, position::TilePosition, storage::TileStorageMut},
 };
-use wdn_render::RenderPlugin as WdnRenderPlugin;
+use wdn_render::{RenderPlugin as WdnRenderPlugin, RenderSystems};
 use wdn_save::SavePlugin as WdnSavePlugin;
 use wdn_tasks::TasksPlugin as WdnTasksPlugin;
 use wdn_ui::UiPlugin as WdnUiPlugin;
@@ -35,7 +35,15 @@ pub fn main() {
             WdnUiPlugin,
         ))
         .add_systems(Startup, spawn_pawn)
-        .add_systems(Update, (handle_pawn_input, handle_tile_toggle))
+        .add_systems(
+            Update,
+            (
+                handle_pawn_input,
+                handle_tile_toggle
+                    .before(RenderSystems::RenderDoors)
+                    .before(RenderSystems::RenderTiles),
+            ),
+        )
         .configure_schedules(ScheduleBuildSettings {
             ambiguity_detection: LogLevel::Error,
             report_sets: true,

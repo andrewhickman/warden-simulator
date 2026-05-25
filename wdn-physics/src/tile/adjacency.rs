@@ -1,4 +1,4 @@
-use bevy_math::{CompassOctant, prelude::*};
+use bevy_math::prelude::*;
 use bitflags::bitflags;
 
 bitflags! {
@@ -36,19 +36,6 @@ impl WallAdjacency {
         (WallAdjacency::SOUTH_WEST, IVec2::new(1, 1)),
         (WallAdjacency::WEST, IVec2::new(1, 0)),
     ];
-
-    pub fn from_octant(octant: CompassOctant) -> Self {
-        match octant {
-            CompassOctant::North => WallAdjacency::NORTH,
-            CompassOctant::NorthEast => WallAdjacency::NORTH_EAST,
-            CompassOctant::East => WallAdjacency::EAST,
-            CompassOctant::SouthEast => WallAdjacency::SOUTH_EAST,
-            CompassOctant::South => WallAdjacency::SOUTH,
-            CompassOctant::SouthWest => WallAdjacency::SOUTH_WEST,
-            CompassOctant::West => WallAdjacency::WEST,
-            CompassOctant::NorthWest => WallAdjacency::NORTH_WEST,
-        }
-    }
 
     pub fn values() -> impl Iterator<Item = Self> {
         (0..=255u8).map(Self::from_bits_retain)

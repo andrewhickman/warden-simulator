@@ -23,7 +23,7 @@ fn tile_position_added() {
     assert_eq!(tile.position(), IVec2::new(1, -1));
 
     let index = app.world().resource::<TileIndex>();
-    let entities = index.get(TilePosition::new(layer, 1, -1));
+    let entities = index.get_objects(TilePosition::new(layer, 1, -1));
     assert_eq!(entities, &[entity]);
 }
 
@@ -39,7 +39,11 @@ fn tile_position_replaced() {
         .id();
 
     let index = app.world().resource::<TileIndex>();
-    assert!(index.get(TilePosition::new(layer, 2, -1)).is_empty());
+    assert!(
+        index
+            .get_objects(TilePosition::new(layer, 2, -1))
+            .is_empty()
+    );
 
     app.world_mut()
         .entity_mut(entity)
@@ -50,9 +54,9 @@ fn tile_position_replaced() {
     assert_eq!(tile.position(), IVec2::new(2, -1));
 
     let index = app.world().resource::<TileIndex>();
-    let entities = index.get(TilePosition::new(layer, 2, -1));
+    let entities = index.get_objects(TilePosition::new(layer, 2, -1));
     assert_eq!(entities, &[entity]);
-    let prev_entities = index.get(TilePosition::new(layer, 1, -1));
+    let prev_entities = index.get_objects(TilePosition::new(layer, 1, -1));
     assert_eq!(prev_entities, &[]);
 }
 
@@ -68,11 +72,11 @@ fn tile_position_removed() {
         .id();
 
     let index = app.world().resource::<TileIndex>();
-    assert_eq!(index.get(TilePosition::new(layer, 1, -1)).len(), 1);
+    assert_eq!(index.get_objects(TilePosition::new(layer, 1, -1)).len(), 1);
 
     app.world_mut().entity_mut(entity).despawn();
 
     let index = app.world().resource::<TileIndex>();
-    let entities = index.get(TilePosition::new(layer, 1, -1));
+    let entities = index.get_objects(TilePosition::new(layer, 1, -1));
     assert_eq!(entities, &[]);
 }

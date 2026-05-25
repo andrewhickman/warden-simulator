@@ -3,8 +3,9 @@ use std::fmt;
 use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
 use bevy_math::{I16Vec2, prelude::*};
 use nonmax::NonMaxU16;
+use tracing::error;
 
-use crate::tile::{CHUNK_SIZE, index::TileIndex};
+use crate::tile::{CHUNK_SIZE, Tile, index::TileIndex};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Component)]
 #[component(immutable, on_insert = TilePosition::on_insert, on_replace = TilePosition::on_replace)]
@@ -93,35 +94,35 @@ impl TilePosition {
         self.chunk_offset().on_chunk_edge()
     }
 
-    pub fn neighborhood(&self) -> [TilePosition; 9] {
-        [
-            self.with_offset(IVec2::new(-1, -1)),
-            self.with_offset(IVec2::new(0, -1)),
-            self.with_offset(IVec2::new(1, -1)),
-            self.with_offset(IVec2::new(-1, 0)),
-            self.with_offset(IVec2::new(0, 0)),
-            self.with_offset(IVec2::new(1, 0)),
-            self.with_offset(IVec2::new(-1, 1)),
-            self.with_offset(IVec2::new(0, 1)),
-            self.with_offset(IVec2::new(1, 1)),
-        ]
-    }
-
     fn on_insert(mut world: DeferredWorld, context: HookContext) {
-        let tile = *world.get::<TilePosition>(context.entity).unwrap();
-        if tile != TilePosition::default() {
-            world
-                .resource_mut::<TileIndex>()
-                .insert(context.entity, tile);
+        let entity = world.entity(context.entity);
+        let is_tile = entity.contains::<Tile>();
+
+        let position = *entity.get::<TilePosition>().unwrap();
+        if position != TilePosition::default() {
+            let mut index = world.resource_mut::<TileIndex>();
+            if is_tile {
+                if index.insert_tile(context.entity, position).is_some() {
+                    error!("multiple tile entities at position {position:?}");
+                }
+            } else {
+                index.insert_object(context.entity, position);
+            }
         }
     }
 
     fn on_replace(mut world: DeferredWorld, context: HookContext) {
-        let tile = *world.get::<TilePosition>(context.entity).unwrap();
-        if tile != TilePosition::default() {
-            world
-                .resource_mut::<TileIndex>()
-                .remove(context.entity, tile);
+        let entity = world.entity(context.entity);
+        let is_tile = entity.contains::<Tile>();
+
+        let position = *entity.get::<TilePosition>().unwrap();
+        if position != TilePosition::default() {
+            let mut index = world.resource_mut::<TileIndex>();
+            if is_tile {
+                index.remove_tile(context.entity, position);
+            } else {
+                index.remove_object(context.entity, position);
+            }
         }
     }
 }

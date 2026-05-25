@@ -9,17 +9,22 @@ mod tests;
 use std::any::type_name_of_val;
 
 use bevy_app::prelude::*;
-use bevy_ecs::name::Name;
+use bevy_ecs::{component::Component, name::Name};
 
 use crate::tile::{
     index::TileIndex,
-    material::{on_insert_material, on_remove_material},
+    material::{TileMaterial, on_insert_material, on_remove_material},
+    position::TilePosition,
     storage::{TileMap, TileMapBuffer},
 };
 
 pub const CHUNK_SIZE: usize = 32;
 
 pub struct TilePlugin;
+
+#[derive(Component, Clone, Copy, Debug, Default)]
+#[require(TilePosition, TileMaterial)]
+pub struct Tile;
 
 impl Plugin for TilePlugin {
     fn build(&self, app: &mut App) {

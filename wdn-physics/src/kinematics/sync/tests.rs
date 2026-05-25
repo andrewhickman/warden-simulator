@@ -36,7 +36,7 @@ fn sync_kinematics_transform_added() {
     assert_relative_eq!(layer_pos.rotation().as_radians(), FRAC_PI_4);
 
     let index = app.world().resource::<TileIndex>();
-    let entities = index.get(TilePosition::new(layer, 1, -1));
+    let entities = index.get_objects(TilePosition::new(layer, 1, -1));
     assert_eq!(entities, &[entity]);
 }
 
@@ -69,9 +69,9 @@ fn sync_kinematics_transform_changed() {
     assert_relative_eq!(layer_pos.rotation().as_radians(), -FRAC_PI_2);
 
     let index = app.world().resource::<TileIndex>();
-    let entities = index.get(TilePosition::new(layer, 2, -1));
+    let entities = index.get_objects(TilePosition::new(layer, 2, -1));
     assert_eq!(entities, &[entity]);
-    let prev_entities = index.get(TilePosition::new(layer, 1, -1));
+    let prev_entities = index.get_objects(TilePosition::new(layer, 1, -1));
     assert_eq!(prev_entities, &[]);
 }
 
@@ -103,9 +103,9 @@ fn sync_kinematics_tile_layer_changed() {
     assert_relative_eq!(layer_pos.position(), Vec2::new(2.3, 1.7));
 
     let index = app.world().resource::<TileIndex>();
-    let layer1_entities = index.get(TilePosition::new(layer1, 2, 1));
+    let layer1_entities = index.get_objects(TilePosition::new(layer1, 2, 1));
     assert_eq!(layer1_entities, &[]);
-    let layer2_entities = index.get(TilePosition::new(layer2, 2, 1));
+    let layer2_entities = index.get_objects(TilePosition::new(layer2, 2, 1));
     assert_eq!(layer2_entities, &[entity]);
 }
 
@@ -149,7 +149,7 @@ fn sync_kinematics_tile_unchanged() {
     assert_relative_eq!(layer_pos.position(), Vec2::new(1.3, -0.2));
 
     let index = app.world().resource_ref::<TileIndex>();
-    let entities = index.get(TilePosition::new(layer, 1, -1));
+    let entities = index.get_objects(TilePosition::new(layer, 1, -1));
     assert_eq!(entities, &[entity]);
     assert_eq!(index.last_changed(), index_change_tick);
 }
@@ -231,9 +231,9 @@ fn sync_kinematics_parent_transform_changed() {
     );
 
     let index = app.world().resource::<TileIndex>();
-    let parent_entities = index.get(TilePosition::new(layer, 4, 1));
+    let parent_entities = index.get_objects(TilePosition::new(layer, 4, 1));
     assert_eq!(parent_entities, &[parent]);
-    let child_entities = index.get(TilePosition::new(layer, 3, 2));
+    let child_entities = index.get_objects(TilePosition::new(layer, 3, 2));
     assert_eq!(child_entities, &[child]);
 }
 
@@ -251,7 +251,7 @@ fn sync_kinematics_tile_unset_removed() {
         .despawn();
 
     let index = app.world().resource::<TileIndex>();
-    let entities = index.get(TilePosition::new(layer, 1, -1));
+    let entities = index.get_objects(TilePosition::new(layer, 1, -1));
     assert_eq!(entities, &[]);
 }
 
@@ -623,10 +623,10 @@ fn sync_kinematics_grandparent_parent_changed() {
     assert_relative_eq!(child_layer_pos.position(), Vec2::new(6.5, 1.75));
 
     let index = app.world().resource::<TileIndex>();
-    let grandparent_entities = index.get(TilePosition::new(layer, 5, 1));
+    let grandparent_entities = index.get_objects(TilePosition::new(layer, 5, 1));
     assert_eq!(grandparent_entities, &[grandparent]);
 
-    let entities_at_6_1 = index.get(TilePosition::new(layer, 6, 1));
+    let entities_at_6_1 = index.get_objects(TilePosition::new(layer, 6, 1));
     assert!(entities_at_6_1.contains(&parent));
     assert!(entities_at_6_1.contains(&child));
 }

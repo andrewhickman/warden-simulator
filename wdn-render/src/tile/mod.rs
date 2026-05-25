@@ -25,6 +25,7 @@ use wdn_physics::{
 use wdn_world::door::Door;
 
 use crate::{
+    RenderSystems,
     assets::AssetHandles,
     layers::{GROUND_LAYER, WALL_BASE_LAYER, WALL_TOP_LAYER},
     tile::material::{
@@ -62,7 +63,7 @@ impl Plugin for TilePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TileChunkMesh>();
 
-        app.add_systems(Update, update_chunk);
+        app.add_systems(Update, update_chunk.in_set(RenderSystems::RenderTiles));
 
         app.register_required_components::<Layer, Visibility>();
         app.register_required_components::<TileChunk, TileChunkSprites>();

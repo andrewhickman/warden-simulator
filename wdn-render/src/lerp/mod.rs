@@ -101,7 +101,7 @@ impl Plugin for InterpolatePlugin {
 
         app.add_systems(
             Update,
-            interpolate_position.in_set(RenderSystems::Interpolate),
+            interpolate_position.in_set(RenderSystems::InterpolatePosition),
         );
     }
 }
