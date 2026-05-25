@@ -3,8 +3,7 @@ use std::time::Duration;
 use approx::assert_relative_eq;
 use bevy_app::prelude::*;
 use bevy_time::{TimePlugin, TimeUpdateStrategy, prelude::*};
-
-use wdn_physics::collision::ColliderDisabled;
+use wdn_physics::collision::TileCollider;
 
 use super::{Door, DoorPlugin, DoorState};
 
@@ -25,7 +24,13 @@ fn door_closed() {
     let door = app.world().entity(id).get_ref::<Door>().unwrap();
     assert!(matches!(door.state, DoorState::Closed));
     assert_eq!(door.position(), 0.0);
-    assert!(!app.world().entity(id).contains::<ColliderDisabled>());
+    assert!(
+        app.world()
+            .entity(id)
+            .get::<TileCollider>()
+            .unwrap()
+            .solid()
+    );
     assert_eq!(
         app.world()
             .entity(id)
@@ -48,21 +53,39 @@ fn door_open_autoclose() {
     let door = app.world().entity(id).get_ref::<Door>().unwrap();
     assert!(matches!(door.state, DoorState::Opening { .. }));
     assert_relative_eq!(door.position(), 0.4);
-    assert!(!app.world().entity(id).contains::<ColliderDisabled>());
+    assert!(
+        !app.world()
+            .entity(id)
+            .get::<TileCollider>()
+            .unwrap()
+            .solid()
+    );
 
     app.update();
 
     let door = app.world().entity(id).get_ref::<Door>().unwrap();
     assert!(matches!(door.state, DoorState::Opening { .. }));
     assert_relative_eq!(door.position(), 0.8);
-    assert!(app.world().entity(id).contains::<ColliderDisabled>());
+    assert!(
+        !app.world()
+            .entity(id)
+            .get::<TileCollider>()
+            .unwrap()
+            .solid()
+    );
 
     app.update();
 
     let door = app.world().entity(id).get_ref::<Door>().unwrap();
     assert!(matches!(door.state, DoorState::Open { .. }));
     assert_relative_eq!(door.position(), 1.0);
-    assert!(app.world().entity(id).contains::<ColliderDisabled>());
+    assert!(
+        !app.world()
+            .entity(id)
+            .get::<TileCollider>()
+            .unwrap()
+            .solid()
+    );
 
     for _ in 0..7 {
         app.update();
@@ -70,7 +93,13 @@ fn door_open_autoclose() {
         let door = app.world().entity(id).get_ref::<Door>().unwrap();
         assert!(matches!(door.state, DoorState::Open { .. }));
         assert_relative_eq!(door.position(), 1.0);
-        assert!(app.world().entity(id).contains::<ColliderDisabled>());
+        assert!(
+            !app.world()
+                .entity(id)
+                .get::<TileCollider>()
+                .unwrap()
+                .solid()
+        );
     }
 
     app.update();
@@ -78,28 +107,52 @@ fn door_open_autoclose() {
     let door = app.world().entity(id).get_ref::<Door>().unwrap();
     assert!(matches!(door.state, DoorState::Closing { .. }));
     assert_relative_eq!(door.position(), 1.0);
-    assert!(app.world().entity(id).contains::<ColliderDisabled>());
+    assert!(
+        !app.world()
+            .entity(id)
+            .get::<TileCollider>()
+            .unwrap()
+            .solid()
+    );
 
     app.update();
 
     let door = app.world().entity(id).get_ref::<Door>().unwrap();
     assert!(matches!(door.state, DoorState::Closing { .. }));
     assert_relative_eq!(door.position(), 0.6);
-    assert!(app.world().entity(id).contains::<ColliderDisabled>());
+    assert!(
+        !app.world()
+            .entity(id)
+            .get::<TileCollider>()
+            .unwrap()
+            .solid()
+    );
 
     app.update();
 
     let door = app.world().entity(id).get_ref::<Door>().unwrap();
     assert!(matches!(door.state, DoorState::Closing { .. }));
     assert_relative_eq!(door.position(), 0.2);
-    assert!(!app.world().entity(id).contains::<ColliderDisabled>());
+    assert!(
+        !app.world()
+            .entity(id)
+            .get::<TileCollider>()
+            .unwrap()
+            .solid()
+    );
 
     app.update();
 
     let door = app.world().entity(id).get_ref::<Door>().unwrap();
     assert!(matches!(door.state, DoorState::Closed { .. }));
     assert_relative_eq!(door.position(), 0.0);
-    assert!(!app.world().entity(id).contains::<ColliderDisabled>());
+    assert!(
+        app.world()
+            .entity(id)
+            .get::<TileCollider>()
+            .unwrap()
+            .solid()
+    );
 }
 
 fn make_app(timestep: Duration) -> App {

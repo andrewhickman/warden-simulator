@@ -7,10 +7,7 @@ use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use bevy_time::prelude::*;
 
-use wdn_physics::{
-    collision::{ColliderDisabled, TileCollider},
-    tile::material::TileMaterial,
-};
+use wdn_physics::{PhysicsSystems, collision::TileCollider, tile::material::TileMaterial};
 
 use crate::WorldSystems;
 
@@ -44,20 +41,21 @@ pub enum DoorState {
     },
 }
 
-pub fn update_doors(
-    mut commands: Commands,
-    mut doors: Query<(Entity, &mut Door)>,
-    time: Res<Time>,
-) {
-    doors.iter_mut().for_each(|(id, mut door)| {
+pub fn update_doors(mut doors: Query<(&mut Door, &mut TileCollider)>, time: Res<Time>) {
+    doors.iter_mut().for_each(|(mut door, collider)| {
         if !matches!(door.state, DoorState::Closed) {
-            door.tick(id, &time, &mut commands);
+            door.tick(&time, collider);
         }
     });
 }
 
 impl Plugin for DoorPlugin {
     fn build(&self, app: &mut App) {
+        app.configure_sets(
+            FixedUpdate,
+            WorldSystems::UpdateDoors.before(PhysicsSystems::Collisions),
+        );
+
         app.add_systems(FixedUpdate, update_doors.in_set(WorldSystems::UpdateDoors));
     }
 }
@@ -71,6 +69,14 @@ impl Door {
             DoorState::Closed => false,
             DoorState::Opening { position } | DoorState::Closing { position } => position >= 0.5,
             DoorState::Open { .. } => true,
+        }
+    }
+
+    pub fn is_closed(&self) -> bool {
+        match self.state {
+            DoorState::Closed => true,
+            DoorState::Opening { position } | DoorState::Closing { position } => position < 0.5,
+            DoorState::Open { .. } => false,
         }
     }
 
@@ -113,9 +119,7 @@ impl Door {
         }
     }
 
-    pub fn tick(&mut self, id: Entity, time: &Time, commands: &mut Commands) {
-        let was_open = self.is_open();
-
+    pub fn tick(&mut self, time: &Time, mut collider: Mut<TileCollider>) {
         match self.state {
             DoorState::Closed => {}
             DoorState::Opening { ref mut position } => {
@@ -143,14 +147,8 @@ impl Door {
             }
         }
 
-        match (was_open, self.is_open()) {
-            (false, true) => {
-                commands.entity(id).insert(ColliderDisabled);
-            }
-            (true, false) => {
-                commands.entity(id).remove::<ColliderDisabled>();
-            }
-            _ => {}
+        if collider.solid() != self.is_closed() {
+            collider.set_solid(self.is_closed());
         }
     }
 }

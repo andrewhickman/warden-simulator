@@ -32,9 +32,6 @@ pub struct TileCollider {
     solid: bool,
 }
 
-#[derive(Component, Clone, Copy, Debug, Default)]
-pub struct ColliderDisabled;
-
 #[derive(QueryData, Debug)]
 pub struct ColliderQuery {
     collider: &'static Collider,
@@ -79,26 +76,17 @@ pub enum CollisionTarget {
 pub fn resolve_collisions(
     index: Res<TileIndex>,
     storage: TileStorage,
-    mut colliders: Query<(
-        Entity,
-        ColliderQuery,
-        &TilePosition,
-        &mut Collisions,
-        Has<ColliderDisabled>,
-    )>,
-    candidate_colliders: Query<ColliderQuery, Without<ColliderDisabled>>,
-    candidate_tiles: Query<TileColliderQuery, Without<ColliderDisabled>>,
+    mut colliders: Query<(Entity, ColliderQuery, &TilePosition, &mut Collisions)>,
+    candidate_colliders: Query<ColliderQuery>,
+    candidate_tiles: Query<TileColliderQuery>,
     time: Res<Time>,
 ) {
     let delta_secs = time.delta_secs();
 
-    colliders.par_iter_mut().for_each(
-        |(collider_id, collider, &tile_position, mut collisions, disabled)| {
+    colliders
+        .par_iter_mut()
+        .for_each(|(collider_id, collider, &tile_position, mut collisions)| {
             collisions.clear();
-
-            if disabled {
-                return;
-            }
 
             let mut wall_adjacency = storage.get_wall_adjacency(tile_position);
 
@@ -132,8 +120,7 @@ pub fn resolve_collisions(
             if wall_adjacency != WallAdjacency::NONE {
                 collisions.check_tile(&collider, &index, tile_position, wall_adjacency, delta_secs);
             }
-        },
-    );
+        });
 }
 
 impl Plugin for CollisionPlugin {
@@ -153,6 +140,14 @@ impl Plugin for CollisionPlugin {
 impl Collider {
     pub fn new(radius: f32, solid: bool) -> Self {
         Self { radius, solid }
+    }
+
+    pub fn solid(&self) -> bool {
+        self.solid
+    }
+
+    pub fn set_solid(&mut self, solid: bool) {
+        self.solid = solid;
     }
 }
 
@@ -184,6 +179,14 @@ impl ColliderQueryItem<'_, '_> {
 impl TileCollider {
     pub fn new(solid: bool) -> Self {
         Self { solid }
+    }
+
+    pub fn solid(&self) -> bool {
+        self.solid
+    }
+
+    pub fn set_solid(&mut self, solid: bool) {
+        self.solid = solid;
     }
 }
 
