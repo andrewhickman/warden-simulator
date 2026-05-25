@@ -4,7 +4,7 @@ use bevy_math::prelude::*;
 
 use crate::{
     layer::Layer,
-    tile::{TilePlugin, TilePosition, index::TileIndex},
+    tile::{TilePlugin, index::TileIndex, position::TilePosition},
 };
 
 #[test]

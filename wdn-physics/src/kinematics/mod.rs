@@ -12,7 +12,7 @@ use crate::{
     PhysicsSystems,
     collision::{Collision, Collisions},
     kinematics::sync::{sync_kinematics, sync_on_add},
-    tile::TilePosition,
+    tile::position::TilePosition,
 };
 
 pub struct KinematicsPlugin;

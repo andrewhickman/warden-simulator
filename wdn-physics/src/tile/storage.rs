@@ -6,11 +6,13 @@ use bevy_ecs::{
     system::{SystemBuffer, SystemMeta, SystemParam},
     world::DeferredWorld,
 };
-use bevy_math::{CompassOctant, prelude::*};
 use bevy_platform::collections::HashMap;
-use bitflags::bitflags;
 
-use crate::tile::{CHUNK_SIZE, TileChunkOffset, TileChunkPosition, TilePosition};
+use crate::tile::{
+    CHUNK_SIZE, TileMaterial,
+    adjacency::{DoorAdjacency, WallAdjacency},
+    position::{TileChunkOffset, TileChunkPosition, TilePosition},
+};
 
 #[derive(SystemParam)]
 pub struct TileStorage<'w, 's> {
@@ -29,7 +31,7 @@ pub struct TileStorageMut<'w, 's> {
 #[component(on_add = TileChunk::on_add, on_remove = TileChunk::on_remove)]
 pub struct TileChunk {
     position: TileChunkPosition,
-    tiles: Box<[Tile; CHUNK_SIZE * CHUNK_SIZE]>,
+    tiles: Box<[TileData; CHUNK_SIZE * CHUNK_SIZE]>,
 }
 
 #[derive(Default, Resource)]
@@ -43,42 +45,10 @@ pub struct TileStorageBuffer {
 }
 
 #[derive(Default, Debug, Clone, Copy)]
-pub struct Tile {
+pub struct TileData {
     material: TileMaterial,
     wall_adjacency: WallAdjacency,
     door_adjacency: DoorAdjacency,
-}
-
-#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum TileMaterial {
-    #[default]
-    Empty,
-    Wall,
-    Door,
-}
-
-bitflags! {
-    #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
-    pub struct WallAdjacency : u8 {
-        const NONE = 0b0000_0000;
-        const NORTH_WEST = 0b0000_0001;
-        const NORTH = 0b0000_0010;
-        const NORTH_EAST = 0b0000_0100;
-        const EAST = 0b0000_1000;
-        const SOUTH_EAST = 0b0001_0000;
-        const SOUTH = 0b0010_0000;
-        const SOUTH_WEST = 0b0100_0000;
-        const WEST = 0b1000_0000;
-    }
-
-    #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
-    pub struct DoorAdjacency : u8 {
-        const NONE = 0b0000_0000;
-        const NORTH = 0b0000_0001;
-        const EAST = 0b0000_0010;
-        const SOUTH = 0b0000_0100;
-        const WEST = 0b0000_1000;
-    }
 }
 
 impl TileStorage<'_, '_> {
@@ -86,7 +56,7 @@ impl TileStorage<'_, '_> {
         self.map.contains(tile.chunk_position())
     }
 
-    pub fn get(&self, tile: TilePosition) -> Option<&Tile> {
+    pub fn get(&self, tile: TilePosition) -> Option<&TileData> {
         self.chunk(tile.chunk_position())
             .map(|chunk| chunk.get(tile.chunk_offset()))
     }
@@ -119,7 +89,7 @@ impl TileStorage<'_, '_> {
 }
 
 impl TileStorageMut<'_, '_> {
-    pub fn get(&self, tile: TilePosition) -> Option<&Tile> {
+    pub fn get(&self, tile: TilePosition) -> Option<&TileData> {
         self.chunk(tile.chunk_position())
             .map(|chunk| chunk.get(tile.chunk_offset()))
     }
@@ -260,7 +230,7 @@ impl TileChunk {
     pub fn empty(position: TileChunkPosition) -> Self {
         Self {
             position,
-            tiles: Box::new([Tile::empty(); CHUNK_SIZE * CHUNK_SIZE]),
+            tiles: Box::new([TileData::empty(); CHUNK_SIZE * CHUNK_SIZE]),
         }
     }
 
@@ -269,7 +239,7 @@ impl TileChunk {
     }
 
     pub fn layer(&self) -> Entity {
-        self.position.layer
+        self.position.layer()
     }
 
     pub fn material(&self, offset: TileChunkOffset) -> TileMaterial {
@@ -280,15 +250,15 @@ impl TileChunk {
         self.get(offset).wall_adjacency()
     }
 
-    pub fn get(&self, offset: TileChunkOffset) -> &Tile {
+    pub fn get(&self, offset: TileChunkOffset) -> &TileData {
         &self.tiles[offset.index()]
     }
 
-    fn get_mut(&mut self, offset: TileChunkOffset) -> &mut Tile {
+    fn get_mut(&mut self, offset: TileChunkOffset) -> &mut TileData {
         &mut self.tiles[offset.index()]
     }
 
-    pub fn tiles(&self) -> impl ExactSizeIterator<Item = (TileChunkOffset, Tile)> {
+    pub fn tiles(&self) -> impl ExactSizeIterator<Item = (TileChunkOffset, TileData)> {
         self.tiles
             .iter()
             .enumerate()
@@ -323,13 +293,13 @@ impl SystemBuffer for TileStorageBuffer {
             world.spawn_batch(
                 self.chunks
                     .drain()
-                    .map(|(position, chunk)| (ChildOf(position.layer), chunk)),
+                    .map(|(position, chunk)| (ChildOf(position.layer()), chunk)),
             );
         }
     }
 }
 
-impl Tile {
+impl TileData {
     pub fn empty() -> Self {
         Self {
             material: TileMaterial::Empty,
@@ -351,71 +321,27 @@ impl Tile {
     }
 }
 
-impl WallAdjacency {
-    const OFFSETS: [(WallAdjacency, IVec2); 8] = [
-        (WallAdjacency::NORTH_WEST, IVec2::new(1, -1)),
-        (WallAdjacency::NORTH, IVec2::new(0, -1)),
-        (WallAdjacency::NORTH_EAST, IVec2::new(-1, -1)),
-        (WallAdjacency::EAST, IVec2::new(-1, 0)),
-        (WallAdjacency::SOUTH_EAST, IVec2::new(-1, 1)),
-        (WallAdjacency::SOUTH, IVec2::new(0, 1)),
-        (WallAdjacency::SOUTH_WEST, IVec2::new(1, 1)),
-        (WallAdjacency::WEST, IVec2::new(1, 0)),
-    ];
-
-    pub fn from_octant(octant: CompassOctant) -> Self {
-        match octant {
-            CompassOctant::North => WallAdjacency::NORTH,
-            CompassOctant::NorthEast => WallAdjacency::NORTH_EAST,
-            CompassOctant::East => WallAdjacency::EAST,
-            CompassOctant::SouthEast => WallAdjacency::SOUTH_EAST,
-            CompassOctant::South => WallAdjacency::SOUTH,
-            CompassOctant::SouthWest => WallAdjacency::SOUTH_WEST,
-            CompassOctant::West => WallAdjacency::WEST,
-            CompassOctant::NorthWest => WallAdjacency::NORTH_WEST,
-        }
-    }
-
-    pub fn values() -> impl Iterator<Item = Self> {
-        (0..=255u8).map(Self::from_bits_retain)
-    }
-}
-
-impl DoorAdjacency {
-    const OFFSETS: [(DoorAdjacency, IVec2); 4] = [
-        (DoorAdjacency::NORTH, IVec2::new(0, -1)),
-        (DoorAdjacency::EAST, IVec2::new(-1, 0)),
-        (DoorAdjacency::SOUTH, IVec2::new(0, 1)),
-        (DoorAdjacency::WEST, IVec2::new(1, 0)),
-    ];
-
-    pub fn values() -> impl Iterator<Item = Self> {
-        (0..=15u8).map(Self::from_bits_retain)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use bevy_app::prelude::*;
     use bevy_ecs::{prelude::*, system::RunSystemOnce};
-    use bevy_math::{I16Vec2, prelude::*};
+    use bevy_math::prelude::*;
 
     use crate::{
         layer::Layer,
         tile::{
-            CHUNK_SIZE, TileChunkOffset, TileChunkPosition, TilePlugin, TilePosition,
+            CHUNK_SIZE, TilePlugin,
+            position::{TileChunkOffset, TileChunkPosition, TilePosition},
             storage::{
-                TileChunk, TileMap, TileMaterial, TileStorage, TileStorageMut, WallAdjacency,
+                DoorAdjacency, TileChunk, TileMap, TileMaterial, TileStorage, TileStorageMut,
+                WallAdjacency,
             },
         },
     };
 
     #[test]
     fn tile_chunk_empty() {
-        let position = TileChunkPosition {
-            layer: Entity::PLACEHOLDER,
-            position: I16Vec2::ZERO,
-        };
+        let position = TileChunkPosition::new(Entity::PLACEHOLDER, 0, 0);
         let chunk = TileChunk::empty(position);
 
         assert_eq!(chunk.position(), position);
@@ -428,10 +354,7 @@ mod tests {
 
     #[test]
     fn tile_chunk_material_access() {
-        let position = TileChunkPosition {
-            layer: Entity::PLACEHOLDER,
-            position: I16Vec2::ZERO,
-        };
+        let position = TileChunkPosition::new(Entity::PLACEHOLDER, 0, 0);
         let mut chunk = TileChunk::empty(position);
         let offset = TileChunkOffset::new(10, 1);
 
@@ -589,7 +512,7 @@ mod tests {
     }
 
     #[test]
-    fn tile_occupancy() {
+    fn wall_adjacency() {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
@@ -767,7 +690,393 @@ mod tests {
     }
 
     #[test]
-    fn tile_occupancy_chunk_edge_horizontal() {
+    fn door_adjacency() {
+        let mut app = App::new();
+        app.add_plugins(TilePlugin);
+
+        let layer = app.world_mut().spawn(Layer::default()).id();
+
+        let center = TilePosition::new(layer, 5, 5);
+
+        app.world_mut()
+            .run_system_once(move |mut storage: TileStorageMut| {
+                storage.set_material(center, TileMaterial::Door);
+
+                assert_eq!(
+                    storage.get(center).unwrap().door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 6, 5))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::WEST
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 5, 6))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::SOUTH
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 4, 5))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::EAST
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 5, 4))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NORTH
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 6, 6))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+            })
+            .unwrap();
+
+        app.world_mut()
+            .run_system_once(move |storage: TileStorage| {
+                assert_eq!(
+                    storage.get(center).unwrap().door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 6, 5))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::WEST
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 5, 6))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::SOUTH
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 4, 5))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::EAST
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 5, 4))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NORTH
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 6, 6))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+            })
+            .unwrap();
+
+        app.world_mut()
+            .run_system_once(move |mut storage: TileStorageMut| {
+                storage.set_material(center, TileMaterial::Empty);
+
+                assert_eq!(
+                    storage.get(center).unwrap().door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 6, 5))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 5, 6))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 4, 5))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 5, 4))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 6, 6))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+            })
+            .unwrap();
+
+        app.world_mut()
+            .run_system_once(move |storage: TileStorage| {
+                assert_eq!(
+                    storage.get(center).unwrap().door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 6, 5))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 5, 6))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 4, 5))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 5, 4))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 6, 6))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn door_adjacency_chunk_edge_horizontal() {
+        let mut app = App::new();
+        app.add_plugins(TilePlugin);
+
+        let layer = app.world_mut().spawn(Layer::default()).id();
+
+        let edge_tile = TilePosition::new(layer, 31, 15);
+        let east_neighbor = TilePosition::new(layer, 32, 15);
+        let west_neighbor = TilePosition::new(layer, 30, 15);
+
+        assert_eq!(edge_tile.chunk_position(), west_neighbor.chunk_position());
+        assert_ne!(edge_tile.chunk_position(), east_neighbor.chunk_position());
+
+        app.world_mut()
+            .run_system_once(move |mut storage: TileStorageMut| {
+                storage.set_material(edge_tile, TileMaterial::Door);
+
+                assert_eq!(
+                    storage.get(east_neighbor).unwrap().door_adjacency(),
+                    DoorAdjacency::WEST
+                );
+                assert_eq!(
+                    storage.get(west_neighbor).unwrap().door_adjacency(),
+                    DoorAdjacency::EAST
+                );
+
+                storage.set_material(edge_tile, TileMaterial::Empty);
+
+                assert_eq!(
+                    storage.get(east_neighbor).unwrap().door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage.get(west_neighbor).unwrap().door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn door_adjacency_chunk_edge_vertical() {
+        let mut app = App::new();
+        app.add_plugins(TilePlugin);
+
+        let layer = app.world_mut().spawn(Layer::default()).id();
+
+        let edge_tile = TilePosition::new(layer, 15, 31);
+        let north_neighbor = TilePosition::new(layer, 15, 32);
+        let south_neighbor = TilePosition::new(layer, 15, 30);
+
+        assert_eq!(edge_tile.chunk_position(), south_neighbor.chunk_position());
+        assert_ne!(edge_tile.chunk_position(), north_neighbor.chunk_position());
+
+        app.world_mut()
+            .run_system_once(move |mut storage: TileStorageMut| {
+                storage.set_material(edge_tile, TileMaterial::Door);
+
+                assert_eq!(
+                    storage.get(north_neighbor).unwrap().door_adjacency(),
+                    DoorAdjacency::SOUTH
+                );
+                assert_eq!(
+                    storage.get(south_neighbor).unwrap().door_adjacency(),
+                    DoorAdjacency::NORTH
+                );
+
+                storage.set_material(edge_tile, TileMaterial::Empty);
+
+                assert_eq!(
+                    storage.get(north_neighbor).unwrap().door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage.get(south_neighbor).unwrap().door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn door_adjacency_chunk_corner() {
+        let mut app = App::new();
+        app.add_plugins(TilePlugin);
+
+        let layer = app.world_mut().spawn(Layer::default()).id();
+
+        let corner_tile = TilePosition::new(layer, 0, 0);
+        let east_tile = TilePosition::new(layer, 1, 0);
+        let north_tile = TilePosition::new(layer, 0, 1);
+        let west_tile = TilePosition::new(layer, -1, 0);
+        let south_tile = TilePosition::new(layer, 0, -1);
+
+        assert_eq!(corner_tile.chunk_position(), east_tile.chunk_position());
+        assert_eq!(corner_tile.chunk_position(), north_tile.chunk_position());
+        assert_ne!(corner_tile.chunk_position(), west_tile.chunk_position());
+        assert_ne!(corner_tile.chunk_position(), south_tile.chunk_position());
+
+        app.world_mut()
+            .run_system_once(move |mut storage: TileStorageMut| {
+                storage.set_material(corner_tile, TileMaterial::Door);
+
+                assert_eq!(
+                    storage.get(corner_tile).unwrap().door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage.get(east_tile).unwrap().door_adjacency(),
+                    DoorAdjacency::WEST
+                );
+                assert_eq!(
+                    storage.get(north_tile).unwrap().door_adjacency(),
+                    DoorAdjacency::SOUTH
+                );
+                assert_eq!(
+                    storage.get(west_tile).unwrap().door_adjacency(),
+                    DoorAdjacency::EAST
+                );
+                assert_eq!(
+                    storage.get(south_tile).unwrap().door_adjacency(),
+                    DoorAdjacency::NORTH
+                );
+
+                storage.set_material(corner_tile, TileMaterial::Empty);
+
+                assert_eq!(
+                    storage.get(corner_tile).unwrap().door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage.get(east_tile).unwrap().door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage.get(north_tile).unwrap().door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage.get(west_tile).unwrap().door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+                assert_eq!(
+                    storage.get(south_tile).unwrap().door_adjacency(),
+                    DoorAdjacency::NONE
+                );
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn door_adjacency_multiple_doors() {
+        let mut app = App::new();
+        app.add_plugins(TilePlugin);
+
+        let layer = app.world_mut().spawn(Layer::default()).id();
+
+        app.world_mut()
+            .run_system_once(move |mut storage: TileStorageMut| {
+                storage.set_material(TilePosition::new(layer, 10, 10), TileMaterial::Door);
+                storage.set_material(TilePosition::new(layer, 11, 10), TileMaterial::Door);
+                storage.set_material(TilePosition::new(layer, 10, 11), TileMaterial::Door);
+
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 10, 10))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::NORTH | DoorAdjacency::EAST
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 11, 10))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::WEST
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 10, 11))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::SOUTH
+                );
+                assert_eq!(
+                    storage
+                        .get(TilePosition::new(layer, 11, 11))
+                        .unwrap()
+                        .door_adjacency(),
+                    DoorAdjacency::SOUTH | DoorAdjacency::WEST
+                );
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn wall_adjacency_chunk_edge_horizontal() {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
@@ -834,7 +1143,7 @@ mod tests {
     }
 
     #[test]
-    fn tile_occupancy_chunk_edge_vertical() {
+    fn wall_adjacency_chunk_edge_vertical() {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
@@ -902,7 +1211,7 @@ mod tests {
     }
 
     #[test]
-    fn tile_occupancy_chunk_corner() {
+    fn wall_adjacency_chunk_corner() {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
@@ -1004,7 +1313,7 @@ mod tests {
     }
 
     #[test]
-    fn tile_occupancy_multiple_solid_tiles() {
+    fn wall_adjacency_multiple_solid_tiles() {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 
@@ -1085,7 +1394,7 @@ mod tests {
     }
 
     #[test]
-    fn tile_occupancy_overwrite() {
+    fn wall_adjacency_overwrite() {
         let mut app = App::new();
         app.add_plugins(TilePlugin);
 

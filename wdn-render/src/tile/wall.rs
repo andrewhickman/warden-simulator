@@ -1,4 +1,7 @@
-use wdn_physics::tile::storage::{DoorAdjacency, TileMaterial, WallAdjacency};
+use wdn_physics::tile::{
+    TileMaterial,
+    adjacency::{DoorAdjacency, WallAdjacency},
+};
 
 use crate::tile::WALL_OFFSET;
 

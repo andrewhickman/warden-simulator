@@ -2,7 +2,7 @@ use bevy_ecs::prelude::*;
 use bevy_platform::collections::{HashMap, hash_map};
 use smallvec::SmallVec;
 
-use crate::tile::TilePosition;
+use crate::tile::position::TilePosition;
 
 #[derive(Resource, Default, Debug)]
 pub struct TileIndex {

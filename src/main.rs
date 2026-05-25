@@ -11,10 +11,7 @@ use wdn_physics::{
     PhysicsPlugin as WdnPhysicsPlugin,
     kinematics::{GlobalPosition, Position},
     layer::Layer,
-    tile::{
-        TilePosition,
-        storage::{TileMaterial, TileStorageMut},
-    },
+    tile::{TileMaterial, position::TilePosition, storage::TileStorageMut},
 };
 use wdn_render::RenderPlugin as WdnRenderPlugin;
 use wdn_save::SavePlugin as WdnSavePlugin;

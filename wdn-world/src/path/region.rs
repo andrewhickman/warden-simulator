@@ -3,8 +3,10 @@ use std::{collections::VecDeque, mem::take};
 use bevy_ecs::{entity::EntityHashSet, lifecycle::HookContext, prelude::*, world::DeferredWorld};
 use bevy_platform::collections::{HashMap, HashSet, hash_map};
 use wdn_physics::tile::{
-    CHUNK_SIZE, TileChunkOffset, TilePosition,
-    storage::{TileChunk, TileMap, TileMaterial, WallAdjacency},
+    CHUNK_SIZE, TileMaterial,
+    adjacency::WallAdjacency,
+    position::{TileChunkOffset, TilePosition},
+    storage::{TileChunk, TileMap},
 };
 
 #[derive(Component)]

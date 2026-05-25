@@ -7,7 +7,7 @@ use bevy_math::prelude::*;
 use crate::{
     kinematics::{GlobalPosition, GlobalVelocity, Position, Velocity},
     layer::Layer,
-    tile::TilePosition,
+    tile::position::TilePosition,
 };
 
 pub struct SyncPlugin;

@@ -11,7 +11,7 @@ use crate::{
         GlobalPosition, GlobalVelocity, KinematicsPlugin, Position, Velocity, sync::sync_kinematics,
     },
     layer::Layer,
-    tile::{TilePlugin, TilePosition, index::TileIndex},
+    tile::{TilePlugin, index::TileIndex, position::TilePosition},
 };
 
 #[test]

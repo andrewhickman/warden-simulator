@@ -6,13 +6,13 @@ use bevy_time::prelude::*;
 use bevy_transform::prelude::*;
 use wdn_physics::{
     kinematics::Position,
-    tile::{TilePosition, storage::TileChunk},
+    tile::{position::TilePosition, storage::TileChunk},
 };
 use wdn_world::door::{Door, DoorDirection};
 
 use crate::{
     RenderSystems,
-    assets::{AssetHandles, DOOR_HORIZONTAL_RECT, sprite_size},
+    assets::AssetHandles,
     layers::DOOR_LAYER,
     lerp::{FixedUpdateCount, InterpolateState},
 };
@@ -82,7 +82,7 @@ pub fn update_doors(
     let overstep = time.overstep_fraction();
 
     doors.par_iter_mut().for_each(
-        |(door, direction, tile, mut state, mut transform, mut sprite)| {
+        |(door, direction, tile, mut state, mut transform, _sprite)| {
             if let Some(position) =
                 state
                     .position

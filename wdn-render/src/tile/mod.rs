@@ -16,8 +16,9 @@ use wdn_physics::{
     kinematics::Position,
     layer::Layer,
     tile::{
-        CHUNK_SIZE, TileChunkOffset, TileChunkPosition,
-        storage::{Tile, TileChunk, TileMaterial},
+        CHUNK_SIZE, TileMaterial,
+        position::{TileChunkOffset, TileChunkPosition},
+        storage::{TileChunk, TileData},
     },
 };
 use wdn_world::door::Door;
@@ -123,7 +124,7 @@ impl TileChunkSpriteParam<'_, '_> {
         &mut self,
         material: AssetId<TileChunkMaterial>,
         chunk: &TileChunk,
-        pack: impl Fn(TileChunkOffset, Tile) -> PackedTileData,
+        pack: impl Fn(TileChunkOffset, TileData) -> PackedTileData,
     ) {
         let Some(material) = self.materials.get_mut(material) else {
             error!("material asset not found for chunk {chunk:?}");
@@ -148,13 +149,13 @@ impl TileChunkSpriteParam<'_, '_> {
     }
 }
 
-fn pack_ground_tile(offset: TileChunkOffset, _tile: Tile) -> PackedTileData {
+fn pack_ground_tile(offset: TileChunkOffset, _tile: TileData) -> PackedTileData {
     let index = DIRT_OFFSET + dirt_sprite_offset(offset);
 
     PackedTileData { index, depth: 0 }
 }
 
-fn pack_wall_tile(_: TileChunkOffset, tile: Tile) -> PackedTileData {
+fn pack_wall_tile(_: TileChunkOffset, tile: TileData) -> PackedTileData {
     let index = wall::sprite_offset(
         tile.material(),
         tile.wall_adjacency(),

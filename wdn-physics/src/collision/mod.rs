@@ -13,9 +13,7 @@ use crate::{
     PhysicsSystems,
     kinematics::{GlobalPosition, GlobalVelocity},
     tile::{
-        TilePosition,
-        index::TileIndex,
-        storage::{TileStorage, WallAdjacency},
+        adjacency::WallAdjacency, index::TileIndex, position::TilePosition, storage::TileStorage,
     },
 };
 
@@ -105,7 +103,7 @@ pub fn resolve_collisions(
                 return;
             }
 
-            let mut tile_occupancy = storage.get_wall_adjacency(tile_position);
+            let mut wall_adjacency = storage.get_wall_adjacency(tile_position);
             let mut tile_colliders = TileColliderLookup::new();
 
             index.get_neighborhood(tile_position).for_each(|candidate| {
@@ -131,7 +129,7 @@ pub fn resolve_collisions(
                         tile_position.position(),
                         candidate_tile.position.position(),
                     ) {
-                        tile_occupancy
+                        wall_adjacency
                             .set(WallAdjacency::from_octant(octant), candidate_tile.solid());
                         if tile_colliders.insert(octant, candidate) {
                             warn!(
@@ -143,12 +141,12 @@ pub fn resolve_collisions(
                 }
             });
 
-            if tile_occupancy != WallAdjacency::NONE {
+            if wall_adjacency != WallAdjacency::NONE {
                 collisions.check_tile(
                     &collider,
                     &tile_colliders,
                     tile_position,
-                    tile_occupancy,
+                    wall_adjacency,
                     delta_secs,
                 );
             }
