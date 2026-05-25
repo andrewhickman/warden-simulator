@@ -40,7 +40,7 @@ pub fn sync_kinematics(
     });
 }
 
-pub fn sync_on_add(
+pub fn sync_kinematics_on_add_global_position(
     trigger: On<Add, GlobalPosition>,
     mut commands: Commands,
     mut entities: Query<SyncQuery>,

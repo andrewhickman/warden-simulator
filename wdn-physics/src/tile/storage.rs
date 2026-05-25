@@ -9,8 +9,9 @@ use bevy_ecs::{
 use bevy_platform::collections::HashMap;
 
 use crate::tile::{
-    CHUNK_SIZE, TileMaterial,
+    CHUNK_SIZE,
     adjacency::{DoorAdjacency, WallAdjacency},
+    material::TileMaterial,
     position::{TileChunkOffset, TileChunkPosition, TilePosition},
 };
 
@@ -23,8 +24,9 @@ pub struct TileStorage<'w, 's> {
 #[derive(SystemParam)]
 pub struct TileStorageMut<'w, 's> {
     map: ResMut<'w, TileMap>,
+    buffer: ResMut<'w, TileMapBuffer>,
     chunks: Query<'w, 's, &'static mut TileChunk>,
-    buffer: Deferred<'s, TileStorageBuffer>,
+    deferred: Deferred<'s, TileStorageDeferred>,
 }
 
 #[derive(Component)]
@@ -39,9 +41,14 @@ pub struct TileMap {
     chunks: HashMap<TileChunkPosition, Entity>,
 }
 
-#[derive(Default)]
-pub struct TileStorageBuffer {
+#[derive(Default, Resource)]
+pub(crate) struct TileMapBuffer {
     chunks: HashMap<TileChunkPosition, TileChunk>,
+}
+
+#[derive(Default)]
+struct TileStorageDeferred {
+    modified: bool,
 }
 
 #[derive(Default, Debug, Clone, Copy)]
@@ -108,6 +115,13 @@ impl TileStorageMut<'_, '_> {
         }
     }
 
+    pub fn get_door_adjacency(&self, tile: TilePosition) -> DoorAdjacency {
+        match self.get(tile) {
+            Some(t) => t.door_adjacency,
+            None => DoorAdjacency::NONE,
+        }
+    }
+
     pub fn set_material(&'_ mut self, position: TilePosition, material: TileMaterial) {
         let tile = self
             .chunk_mut(position.chunk_position())
@@ -156,6 +170,7 @@ impl TileStorageMut<'_, '_> {
                 .expect("invalid chunk entity")
                 .into_inner()
         } else {
+            self.deferred.modified = true;
             self.buffer
                 .chunks
                 .entry(position)
@@ -218,11 +233,13 @@ impl TileMap {
     }
 
     fn insert(&mut self, position: TileChunkPosition, entity: Entity) {
-        self.chunks.insert(position, entity);
+        let prev = self.chunks.insert(position, entity);
+        debug_assert!(prev.is_none());
     }
 
     fn remove(&mut self, position: TileChunkPosition) {
-        self.chunks.remove(&position);
+        let prev = self.chunks.remove(&position);
+        debug_assert!(prev.is_some());
     }
 }
 
@@ -280,21 +297,28 @@ impl TileChunk {
 
 impl fmt::Debug for TileChunk {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("TileChunk")
-            .field("x", &self.position.x())
-            .field("y", &self.position.y())
+        f.debug_tuple("TileChunk")
+            .field(&self.layer())
+            .field(&self.position.x())
+            .field(&self.position.y())
             .finish_non_exhaustive()
     }
 }
 
-impl SystemBuffer for TileStorageBuffer {
+impl SystemBuffer for TileStorageDeferred {
     fn apply(&mut self, _: &SystemMeta, world: &mut World) {
-        if !self.chunks.is_empty() {
-            world.spawn_batch(
-                self.chunks
-                    .drain()
-                    .map(|(position, chunk)| (ChildOf(position.layer()), chunk)),
-            );
+        if self.modified {
+            world.resource_scope(|world: &mut World, mut map: Mut<TileMapBuffer>| {
+                if !map.chunks.is_empty() {
+                    world.spawn_batch(map.chunks.drain().map(|(position, chunk)| {
+                        (
+                            Name::new(format!("{chunk:?}")),
+                            ChildOf(position.layer()),
+                            chunk,
+                        )
+                    }));
+                };
+            })
         }
     }
 }
@@ -1573,5 +1597,30 @@ mod tests {
                 .unwrap()
                 .is_changed()
         );
+    }
+
+    #[test]
+    fn tile_storage_nested_buffer() {
+        let mut app = App::new();
+        app.add_plugins(TilePlugin);
+
+        let layer = app.world_mut().spawn(Layer::default()).id();
+        let tile1 = TilePosition::new(layer, 5, 5);
+        let tile2 = TilePosition::new(layer, 10, 10);
+
+        app.world_mut()
+            .run_system_once(move |mut commands: Commands, mut storage: TileStorageMut| {
+                storage.set_material(tile1, TileMaterial::Wall);
+
+                commands.spawn((TilePosition::new(layer, 10, 10), TileMaterial::Wall));
+            })
+            .unwrap();
+
+        app.world_mut()
+            .run_system_once(move |storage: TileStorage| {
+                assert_eq!(storage.get(tile1).unwrap().material(), TileMaterial::Wall);
+                assert_eq!(storage.get(tile2).unwrap().material(), TileMaterial::Wall);
+            })
+            .unwrap();
     }
 }

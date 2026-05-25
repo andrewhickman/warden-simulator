@@ -8,7 +8,8 @@ use wdn_physics::layer::Layer;
 use wdn_physics::tile::CHUNK_SIZE;
 use wdn_physics::tile::storage::TileChunk;
 use wdn_physics::tile::{
-    TileMaterial, TilePlugin,
+    TilePlugin,
+    material::TileMaterial,
     position::{TileChunkOffset, TilePosition},
     storage::{TileMap, TileStorage, TileStorageMut},
 };

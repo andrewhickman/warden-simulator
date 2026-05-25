@@ -1,6 +1,6 @@
 use wdn_physics::tile::{
-    TileMaterial,
     adjacency::{DoorAdjacency, WallAdjacency},
+    material::TileMaterial,
 };
 
 use crate::tile::WALL_OFFSET;

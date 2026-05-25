@@ -3,6 +3,8 @@ pub mod sync;
 #[cfg(test)]
 mod tests;
 
+use std::any::type_name_of_val;
+
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use bevy_math::prelude::*;
@@ -11,7 +13,7 @@ use bevy_time::prelude::*;
 use crate::{
     PhysicsSystems,
     collision::{Collision, Collisions},
-    kinematics::sync::{sync_kinematics, sync_on_add},
+    kinematics::sync::{sync_kinematics, sync_kinematics_on_add_global_position},
     tile::position::TilePosition,
 };
 
@@ -90,7 +92,12 @@ impl Plugin for KinematicsPlugin {
             PhysicsSystems::Kinematics.after(PhysicsSystems::Collisions),
         );
 
-        app.add_observer(sync_on_add);
+        app.world_mut()
+            .add_observer(sync_kinematics_on_add_global_position)
+            .insert(Name::new(format!(
+                "Observer({})",
+                type_name_of_val(&sync_kinematics_on_add_global_position)
+            )));
 
         app.add_systems(
             FixedUpdate,

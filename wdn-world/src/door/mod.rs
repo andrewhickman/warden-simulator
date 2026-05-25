@@ -7,14 +7,17 @@ use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use bevy_time::prelude::*;
 
-use wdn_physics::collision::{ColliderDisabled, TileCollider};
+use wdn_physics::{
+    collision::{ColliderDisabled, TileCollider},
+    tile::material::TileMaterial,
+};
 
 use crate::WorldSystems;
 
 pub struct DoorPlugin;
 
 #[derive(Component, Clone, Copy, Debug, Default)]
-#[require(TileCollider, DoorDirection)]
+#[require(TileCollider, DoorDirection, TileMaterial::Door)]
 pub struct Door {
     state: DoorState,
 }

@@ -16,7 +16,8 @@ use wdn_physics::{
     kinematics::Position,
     layer::Layer,
     tile::{
-        CHUNK_SIZE, TileMaterial,
+        CHUNK_SIZE,
+        material::TileMaterial,
         position::{TileChunkOffset, TileChunkPosition},
         storage::{TileChunk, TileData},
     },

@@ -3,8 +3,9 @@ use std::{collections::VecDeque, mem::take};
 use bevy_ecs::{entity::EntityHashSet, lifecycle::HookContext, prelude::*, world::DeferredWorld};
 use bevy_platform::collections::{HashMap, HashSet, hash_map};
 use wdn_physics::tile::{
-    CHUNK_SIZE, TileMaterial,
+    CHUNK_SIZE,
     adjacency::WallAdjacency,
+    material::TileMaterial,
     position::{TileChunkOffset, TilePosition},
     storage::{TileChunk, TileMap},
 };

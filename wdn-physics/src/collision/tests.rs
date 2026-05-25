@@ -16,7 +16,7 @@ use crate::{
     },
     kinematics::{GlobalPosition, KinematicsPlugin, Position, Velocity},
     layer::Layer,
-    tile::{TileMaterial, TilePlugin, position::TilePosition, storage::TileStorageMut},
+    tile::{TilePlugin, material::TileMaterial, position::TilePosition, storage::TileStorageMut},
 };
 
 #[test]

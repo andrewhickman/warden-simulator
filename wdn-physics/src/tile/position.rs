@@ -202,13 +202,11 @@ impl TileChunkPosition {
 
 impl fmt::Debug for TileChunkPosition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "TileChunkPosition({:?}, {}, {})",
-            self.layer(),
-            self.x(),
-            self.y()
-        )
+        f.debug_tuple("TileChunkPosition")
+            .field(&self.layer())
+            .field(&self.x())
+            .field(&self.y())
+            .finish()
     }
 }
 

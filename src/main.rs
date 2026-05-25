@@ -11,7 +11,7 @@ use wdn_physics::{
     PhysicsPlugin as WdnPhysicsPlugin,
     kinematics::{GlobalPosition, Position},
     layer::Layer,
-    tile::{TileMaterial, position::TilePosition, storage::TileStorageMut},
+    tile::{material::TileMaterial, position::TilePosition, storage::TileStorageMut},
 };
 use wdn_render::RenderPlugin as WdnRenderPlugin;
 use wdn_save::SavePlugin as WdnSavePlugin;
@@ -117,14 +117,12 @@ fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
 
     commands.spawn((Door::default(), TilePosition::new(layer, 2, 2)));
     storage.set_material(TilePosition::new(layer, 1, 2), TileMaterial::Wall);
-    storage.set_material(TilePosition::new(layer, 2, 2), TileMaterial::Door);
     storage.set_material(TilePosition::new(layer, 3, 2), TileMaterial::Wall);
 
     commands.spawn((
         (Door::default(), DoorDirection::Vertical),
         TilePosition::new(layer, 1, 1),
     ));
-    storage.set_material(TilePosition::new(layer, 1, 1), TileMaterial::Door);
     storage.set_material(TilePosition::new(layer, 1, 0), TileMaterial::Wall);
 }
 
