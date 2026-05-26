@@ -12,6 +12,7 @@ use bevy_app::prelude::*;
 use bevy_ecs::{component::Component, name::Name};
 
 use crate::tile::{
+    adjacency::{TileAdjacency, on_add_adjacency},
     index::TileIndex,
     material::{TileMaterial, on_insert_material, on_remove_material},
     position::TilePosition,
@@ -23,7 +24,7 @@ pub const CHUNK_SIZE: usize = 32;
 pub struct TilePlugin;
 
 #[derive(Component, Clone, Copy, Debug, Default)]
-#[require(TilePosition, TileMaterial)]
+#[require(TilePosition, TileMaterial, TileAdjacency)]
 pub struct Tile;
 
 impl Plugin for TilePlugin {
@@ -43,6 +44,12 @@ impl Plugin for TilePlugin {
             .insert(Name::new(format!(
                 "Observer({})",
                 type_name_of_val(&on_remove_material)
+            )));
+        app.world_mut()
+            .add_observer(on_add_adjacency)
+            .insert(Name::new(format!(
+                "Observer({})",
+                type_name_of_val(&on_add_adjacency)
             )));
     }
 }

@@ -10,7 +10,8 @@ use bevy_platform::collections::HashMap;
 
 use crate::tile::{
     CHUNK_SIZE,
-    adjacency::{DoorAdjacency, WallAdjacency},
+    adjacency::{DoorAdjacency, TileAdjacency, WallAdjacency},
+    index::TileIndex,
     material::TileMaterial,
     position::{TileChunkOffset, TileChunkPosition, TilePosition},
 };
@@ -19,13 +20,16 @@ use crate::tile::{
 pub struct TileStorage<'w, 's> {
     map: Res<'w, TileMap>,
     chunks: Query<'w, 's, &'static TileChunk>,
+    buffer: ResMut<'w, TileMapBuffer>,
 }
 
 #[derive(SystemParam)]
 pub struct TileStorageMut<'w, 's> {
     map: ResMut<'w, TileMap>,
+    index: Res<'w, TileIndex>,
     buffer: ResMut<'w, TileMapBuffer>,
     chunks: Query<'w, 's, &'static mut TileChunk>,
+    adjacency: Query<'w, 's, &'static mut TileAdjacency>,
     deferred: Deferred<'s, TileStorageDeferred>,
 }
 
@@ -90,7 +94,7 @@ impl TileStorage<'_, '_> {
         if let Some(chunk_id) = self.chunk_id(position) {
             Some(self.chunks.get(chunk_id).expect("invalid chunk entity"))
         } else {
-            None
+            self.buffer.chunks.get(&position)
         }
     }
 }
@@ -186,6 +190,10 @@ impl TileStorageMut<'_, '_> {
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
             neighbour_tile.wall_adjacency.insert(adj);
+
+            if let Some(mut entity_adjacency) = self.get_entity_adjacency(neighbor_pos) {
+                entity_adjacency.walls.insert(adj);
+            }
         }
     }
 
@@ -197,6 +205,10 @@ impl TileStorageMut<'_, '_> {
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
             neighbour_tile.wall_adjacency.remove(adj);
+
+            if let Some(mut entity_adjacency) = self.get_entity_adjacency(neighbor_pos) {
+                entity_adjacency.walls.remove(adj);
+            }
         }
     }
 
@@ -208,6 +220,10 @@ impl TileStorageMut<'_, '_> {
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
             neighbour_tile.door_adjacency.insert(adj);
+
+            if let Some(mut entity_adjacency) = self.get_entity_adjacency(neighbor_pos) {
+                entity_adjacency.doors.insert(adj);
+            }
         }
     }
 
@@ -219,6 +235,18 @@ impl TileStorageMut<'_, '_> {
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
             neighbour_tile.door_adjacency.remove(adj);
+
+            if let Some(mut entity_adjacency) = self.get_entity_adjacency(neighbor_pos) {
+                entity_adjacency.doors.remove(adj);
+            }
+        }
+    }
+
+    fn get_entity_adjacency(&mut self, position: TilePosition) -> Option<Mut<'_, TileAdjacency>> {
+        if let Some(tile_entity) = self.index.get_tile(position) {
+            self.adjacency.get_mut(tile_entity).ok()
+        } else {
+            None
         }
     }
 }

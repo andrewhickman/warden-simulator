@@ -1,13 +1,18 @@
 use bevy_app::prelude::*;
-use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
+use bevy_ecs::prelude::*;
+use bevy_math::prelude::*;
 use bevy_sprite::{Anchor, prelude::*};
 use bevy_time::prelude::*;
 use bevy_transform::prelude::*;
 use wdn_physics::{
     kinematics::Position,
-    tile::{position::TilePosition, storage::TileChunk},
+    tile::{
+        adjacency::{TileAdjacency, WallAdjacency},
+        position::TilePosition,
+        storage::TileChunk,
+    },
 };
-use wdn_world::door::{Door, DoorDirection};
+use wdn_world::door::Door;
 
 use crate::{
     RenderSystems,
@@ -20,9 +25,14 @@ pub struct DoorPlugin;
 
 #[derive(Copy, Clone, Component, Debug, Default)]
 #[require(Sprite)]
-#[component(on_add = DoorSprite::on_add)]
 pub struct DoorSprite {
     position: InterpolateState<f32>,
+}
+
+#[derive(Debug, Clone, Copy)]
+enum DoorDirection {
+    Horizontal,
+    Vertical,
 }
 
 impl Plugin for DoorPlugin {
@@ -35,39 +45,18 @@ impl Plugin for DoorPlugin {
     }
 }
 
-impl DoorSprite {
-    fn on_add(mut world: DeferredWorld, context: HookContext) {
-        let tile = *world.get::<TilePosition>(context.entity).unwrap();
-
-        let direction = *world.get::<DoorDirection>(context.entity).unwrap();
-        let (sprite, anchor, transform) = match direction {
-            DoorDirection::Horizontal => (
-                world.resource::<AssetHandles>().door_horizontal(),
-                Anchor::BOTTOM_LEFT,
-                Transform::from_xyz(tile.x() as f32, tile.y() as f32 + 0.12, DOOR_LAYER),
-            ),
-            DoorDirection::Vertical => (
-                world.resource::<AssetHandles>().door_vertical(),
-                Anchor::BOTTOM_CENTER,
-                Transform::from_xyz(tile.x() as f32 + 0.5, tile.y() as f32 - 0.4, DOOR_LAYER),
-            ),
-        };
-        *world.get_mut::<Sprite>(context.entity).unwrap() = sprite;
-        *world.get_mut::<Anchor>(context.entity).unwrap() = anchor;
-        *world.get_mut::<Transform>(context.entity).unwrap() = transform;
-    }
-}
-
 pub fn update_doors(
     updates: Res<FixedUpdateCount>,
+    handles: Res<AssetHandles>,
     mut doors: Query<
         (
             &Door,
-            &DoorDirection,
             &TilePosition,
+            Ref<TileAdjacency>,
             &mut DoorSprite,
             &mut Transform,
             &mut Sprite,
+            &mut Anchor,
         ),
         (Without<Position>, Without<TileChunk>),
     >,
@@ -76,7 +65,25 @@ pub fn update_doors(
     let overstep = time.overstep_fraction();
 
     doors.par_iter_mut().for_each(
-        |(door, direction, tile, mut state, mut transform, _sprite)| {
+        |(door, tile, adjacency, mut state, mut transform, mut sprite, mut anchor)| {
+            let direction = door_direction(&adjacency);
+            if adjacency.is_changed() {
+                match direction {
+                    DoorDirection::Horizontal => {
+                        *sprite = handles.door_horizontal();
+                        *anchor = Anchor::BOTTOM_LEFT;
+                        transform.translation =
+                            Vec3::new(tile.x() as f32, tile.y() as f32 + 0.12, DOOR_LAYER);
+                    }
+                    DoorDirection::Vertical => {
+                        *sprite = handles.door_vertical();
+                        *anchor = Anchor::BOTTOM_CENTER;
+                        transform.translation =
+                            Vec3::new(tile.x() as f32 + 0.5, tile.y() as f32 - 0.4, DOOR_LAYER);
+                    }
+                }
+            }
+
             if let Some(position) =
                 state
                     .position
@@ -93,4 +100,19 @@ pub fn update_doors(
             }
         },
     );
+}
+
+fn door_direction(adjacency: &TileAdjacency) -> DoorDirection {
+    let walls = adjacency.walls();
+    if walls.contains(WallAdjacency::WEST | WallAdjacency::EAST) {
+        DoorDirection::Horizontal
+    } else if walls.contains(WallAdjacency::NORTH | WallAdjacency::SOUTH) {
+        DoorDirection::Vertical
+    } else if walls.intersects(WallAdjacency::WEST | WallAdjacency::EAST) {
+        DoorDirection::Horizontal
+    } else if walls.intersects(WallAdjacency::NORTH | WallAdjacency::SOUTH) {
+        DoorDirection::Vertical
+    } else {
+        DoorDirection::Horizontal
+    }
 }

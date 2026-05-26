@@ -14,16 +14,9 @@ use crate::WorldSystems;
 pub struct DoorPlugin;
 
 #[derive(Component, Clone, Copy, Debug, Default)]
-#[require(TileCollider, DoorDirection, TileMaterial::Door)]
+#[require(TileCollider, TileMaterial::Door)]
 pub struct Door {
     state: DoorState,
-}
-
-#[derive(Component, Clone, Copy, Debug, Default)]
-pub enum DoorDirection {
-    #[default]
-    Horizontal,
-    Vertical,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
