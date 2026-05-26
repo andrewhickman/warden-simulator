@@ -26,8 +26,8 @@ fn fragment(in: VertexOutput) -> FragmentOutput {
     let index = data.r;
     let depth = select(f32(data.g), 0.0, local_uv.y < 0.5);
 
-    let color = textureSample(tileset, tileset_sampler, local_uv, index);
-    if color.a < 0.5 {
+    var color = textureSample(tileset, tileset_sampler, local_uv, index);
+    if color.a < 0.7 {
         discard;
     }
 

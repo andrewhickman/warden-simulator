@@ -135,6 +135,10 @@ impl<T> InterpolateState<T>
 where
     T: Copy + PartialEq + StableInterpolate,
 {
+    pub fn reset(&mut self) {
+        *self = InterpolateState::Unset;
+    }
+
     pub fn interpolate(&mut self, value: T, t: f32, updated: bool) -> Option<T> {
         match *self {
             InterpolateState::Unset => {

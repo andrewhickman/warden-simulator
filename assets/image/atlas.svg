@@ -26,9 +26,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#505050"
      showgrid="true"
-     inkscape:zoom="2.8284271"
-     inkscape:cx="474.29188"
-     inkscape:cy="664.15005"
+     inkscape:zoom="0.70710678"
+     inkscape:cx="478.71129"
+     inkscape:cy="521.1377"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
@@ -59,7 +59,7 @@
        inkscape:groupmode="layer"
        id="layer1"
        inkscape:label="Guides"
-       style="display:inline">
+       style="display:none">
       <rect
          style="fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:16;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
          id="rect45"
@@ -94,45 +94,14 @@
          height="64.000046"
          x="183.99998"
          y="8" />
-      <path
-         style="display:inline;fill:none;stroke:#0000ff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
-         d="m 424,656 h 80"
-         id="path45"
-         sodipodi:nodetypes="cc" />
     </g>
     <g
        id="g10"
        transform="matrix(6.25,0,0,6.25,296,-6035.1914)"
-       style="stroke-width:0.16;paint-order:fill markers stroke"
+       style="display:inline;stroke-width:0.16;paint-order:fill markers stroke"
        inkscape:label="DoorVertical">
       <rect
-         style="stroke-width:1.28;paint-order:fill markers stroke;fill:#636363;fill-opacity:1;stroke:#000000;stroke-dasharray:none;stroke-opacity:1"
-         id="rect44"
-         width="8.7779007"
-         height="125.93885"
-         x="22.490932"
-         y="969.34125"
-         inkscape:label="Border" />
-      <rect
-         style="stroke-width:1.28;paint-order:fill markers stroke;fill:#000000;fill-opacity:0.247059"
-         id="rect8-1"
-         width="7.4976654"
-         height="44.720161"
-         x="28.251167"
-         y="1068.6094"
-         transform="translate(-5.1199984,-18.689376)"
-         inkscape:label="Front" />
-      <rect
-         style="stroke-width:1.28;paint-order:fill markers stroke;fill:#000000;fill-opacity:0.74902"
-         id="rect9-2"
-         width="7.4979019"
-         height="79.938728"
-         x="28.250931"
-         y="988.67065"
-         inkscape:label="Top"
-         transform="translate(-5.1199984,-18.689376)" />
-      <rect
-         style="stroke-width:16;paint-order:fill markers stroke;fill:none;fill-opacity:1;stroke:none;stroke-dasharray:none;stroke-opacity:1"
+         style="display:inline;fill:none;fill-opacity:1;stroke:none;stroke-width:16;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
          id="rect46"
          width="64"
          height="800"
@@ -140,6 +109,38 @@
          y="16"
          inkscape:label="Bounds"
          transform="matrix(0.16,0,0,0.16,-47.36,965.63062)" />
+      <rect
+         style="display:inline;fill:#636363;fill-opacity:1;stroke:#000000;stroke-width:8;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+         id="rect3"
+         width="54.860291"
+         height="788.94891"
+         x="436.56992"
+         y="23.051088"
+         transform="matrix(0.16,0,0,0.16,-47.36,965.38654)"
+         inkscape:label="Color" />
+      <rect
+         style="display:inline;fill:#000000;fill-opacity:0.74902;stroke-width:16;paint-order:fill markers stroke"
+         id="rect9"
+         width="62.860344"
+         height="508.7851"
+         x="672.56989"
+         y="-116.43521"
+         inkscape:label="Top"
+         transform="matrix(0.16,0,0,0.16,-85.759995,987.06435)" />
+      <rect
+         style="display:inline;fill:#000000;fill-opacity:0.247059;stroke-width:16.0001;paint-order:fill markers stroke"
+         id="rect10-7"
+         width="62.860382"
+         height="288.16415"
+         x="672.56976"
+         y="392.34955"
+         inkscape:label="Front"
+         transform="matrix(0.16,0,0,0.16,-85.759995,987.06435)" />
+      <path
+         id="rect13"
+         style="display:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.16;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+         d="m 25.6,1071.9334 v 0.64 h 2.56 v -0.64 z m 0,1.28 v 0.64 h 2.56 v -0.64 z"
+         inkscape:label="Lock" />
     </g>
     <g
        id="g3"
@@ -244,12 +245,5 @@
        cy="40"
        r="22"
        inkscape:label="PawnProjectile" />
-    <rect
-       style="fill:#000000;stroke-width:16;paint-order:fill markers stroke"
-       id="rect2"
-       width="32"
-       height="160"
-       x="528"
-       y="656" />
   </g>
 </svg>

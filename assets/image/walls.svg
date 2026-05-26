@@ -28,15 +28,15 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="px"
      showgrid="true"
-     inkscape:zoom="7.9999997"
-     inkscape:cx="86.812504"
-     inkscape:cy="812.31253"
+     inkscape:zoom="31.999999"
+     inkscape:cx="86.203128"
+     inkscape:cy="825.45316"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer2"
      inkscape:export-bgcolor="#00000000">
     <inkscape:grid
        id="grid1"
@@ -15744,23 +15744,24 @@
        id="rect9"
        width="10.057655"
        height="81.21801"
-       x="90.971184"
-       y="731.39105" />
+       x="90.971176"
+       y="650.17303" />
     <rect
        style="fill:#008c90;fill-opacity:1;stroke-width:16.0001;paint-order:fill markers stroke"
        id="rect10"
        width="10.057661"
        height="46.000008"
-       x="90.971169"
-       y="812.60901" />
+       x="90.971161"
+       y="731.39099" />
     <path
        style="fill:none;stroke:#003b00;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 90.971167,832 c 10.057663,0 10.057663,0 10.057663,0"
+       d="m 90.971165,750.782 c 10.057665,0 10.057665,0 10.057665,0"
        id="path419"
        inkscape:label="ShutMarker" />
     <path
        style="fill:none;stroke:#000083;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 90.971167,812.60901 c 10.057663,0 10.057663,0 10.057663,0"
-       id="path420" />
+       d="m 90.971165,832 c 10.057665,0 10.057665,0 10.057665,0"
+       id="path420"
+       inkscape:label="OpenMarker" />
   </g>
 </svg>

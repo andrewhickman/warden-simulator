@@ -16,7 +16,7 @@ use wdn_world::door::Door;
 
 use crate::{
     RenderSystems,
-    assets::AssetHandles,
+    assets::{AssetHandles, DOOR_HORIZONTAL_RECT, DOOR_VERTICAL_RECT, sprite_size},
     layers::DOOR_LAYER,
     lerp::{FixedUpdateCount, InterpolateState},
 };
@@ -64,24 +64,16 @@ pub fn update_doors(
 ) {
     let overstep = time.overstep_fraction();
 
+    let vertical_door_size = sprite_size(DOOR_VERTICAL_RECT);
+    let horizontal_door_size = sprite_size(DOOR_HORIZONTAL_RECT);
+
     doors.par_iter_mut().for_each(
         |(door, tile, adjacency, mut state, mut transform, mut sprite, mut anchor)| {
-            let direction = door_direction(&adjacency);
+            let direction = DoorDirection::from_adjacency(&adjacency);
             if adjacency.is_changed() {
-                match direction {
-                    DoorDirection::Horizontal => {
-                        *sprite = handles.door_horizontal();
-                        *anchor = Anchor::BOTTOM_LEFT;
-                        transform.translation =
-                            Vec3::new(tile.x() as f32, tile.y() as f32 + 0.12, DOOR_LAYER);
-                    }
-                    DoorDirection::Vertical => {
-                        *sprite = handles.door_vertical();
-                        *anchor = Anchor::BOTTOM_CENTER;
-                        transform.translation =
-                            Vec3::new(tile.x() as f32 + 0.5, tile.y() as f32 - 0.4, DOOR_LAYER);
-                    }
-                }
+                *sprite = direction.sprite(&handles);
+                *anchor = direction.anchor();
+                state.position.reset();
             }
 
             if let Some(position) =
@@ -89,30 +81,54 @@ pub fn update_doors(
                     .position
                     .interpolate(door.position(), overstep, updates.updated())
             {
-                match direction {
-                    DoorDirection::Horizontal => {
-                        transform.translation.x = tile.x() as f32 - position;
-                    }
-                    DoorDirection::Vertical => {
-                        transform.translation.y = tile.y() as f32 + position - 0.4;
-                    }
-                }
+                transform.translation = direction.translation(*tile, position);
             }
         },
     );
 }
 
-fn door_direction(adjacency: &TileAdjacency) -> DoorDirection {
-    let walls = adjacency.walls();
-    if walls.contains(WallAdjacency::WEST | WallAdjacency::EAST) {
-        DoorDirection::Horizontal
-    } else if walls.contains(WallAdjacency::NORTH | WallAdjacency::SOUTH) {
-        DoorDirection::Vertical
-    } else if walls.intersects(WallAdjacency::WEST | WallAdjacency::EAST) {
-        DoorDirection::Horizontal
-    } else if walls.intersects(WallAdjacency::NORTH | WallAdjacency::SOUTH) {
-        DoorDirection::Vertical
-    } else {
-        DoorDirection::Horizontal
+impl DoorDirection {
+    fn from_adjacency(adjacency: &TileAdjacency) -> Self {
+        let walls = adjacency.walls();
+        if walls.contains(WallAdjacency::WEST | WallAdjacency::EAST) {
+            Self::Horizontal
+        } else if walls.contains(WallAdjacency::NORTH | WallAdjacency::SOUTH) {
+            Self::Vertical
+        } else if walls.intersects(WallAdjacency::WEST | WallAdjacency::EAST) {
+            Self::Horizontal
+        } else if walls.intersects(WallAdjacency::NORTH | WallAdjacency::SOUTH) {
+            Self::Vertical
+        } else {
+            Self::Horizontal
+        }
+    }
+
+    fn sprite(&self, handles: &AssetHandles) -> Sprite {
+        match self {
+            DoorDirection::Horizontal => handles.door_horizontal(),
+            DoorDirection::Vertical => handles.door_vertical(),
+        }
+    }
+
+    fn anchor(&self) -> Anchor {
+        match self {
+            DoorDirection::Horizontal => Anchor::BOTTOM_LEFT,
+            DoorDirection::Vertical => Anchor::CENTER,
+        }
+    }
+
+    fn translation(&self, tile: TilePosition, position: f32) -> Vec3 {
+        match self {
+            DoorDirection::Horizontal => Vec3::new(
+                tile.x() as f32 - position,
+                tile.y() as f32 + 0.12,
+                DOOR_LAYER,
+            ),
+            DoorDirection::Vertical => Vec3::new(
+                tile.x() as f32 + 0.5,
+                tile.y() as f32 + f32::lerp(0.579, 1.85, position),
+                DOOR_LAYER,
+            ),
+        }
     }
 }
