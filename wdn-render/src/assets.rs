@@ -6,6 +6,7 @@ use bevy_math::prelude::*;
 use bevy_sprite::prelude::*;
 
 pub const SPRITE_SCALE_FACTOR: f32 = 0.0025;
+pub const SPRITE_SCALE_FACTOR_RECIP: f32 = SPRITE_SCALE_FACTOR.recip();
 
 pub const PAWN_INDEX: usize = 0;
 pub const PAWN_RECT: URect = rect(16, 16, 160, 256);
@@ -102,6 +103,10 @@ impl AssetHandles {
     }
 }
 
+pub fn sprite_size(rect: URect) -> Vec2 {
+    rect.size().as_vec2() * SPRITE_SCALE_FACTOR
+}
+
 pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
     let mut layout = TextureAtlasLayout::new_empty(UVec2::new(1024, 1024));
     assert_eq!(layout.add_texture(PAWN_RECT), PAWN_INDEX);
@@ -129,10 +134,6 @@ fn configure_tileset(settings: &mut ImageLoaderSettings) {
 
 fn configure_atlas(settings: &mut ImageLoaderSettings) {
     settings.sampler = ImageSampler::linear();
-}
-
-pub fn sprite_size(rect: URect) -> Vec2 {
-    rect.size().as_vec2() * SPRITE_SCALE_FACTOR
 }
 
 const fn rect(min_x: u32, min_y: u32, size_x: u32, size_y: u32) -> URect {

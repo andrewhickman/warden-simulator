@@ -16,15 +16,18 @@ use wdn_world::door::Door;
 
 use crate::{
     RenderSystems,
-    assets::{AssetHandles, DOOR_HORIZONTAL_RECT, DOOR_VERTICAL_RECT, sprite_size},
-    layers::DOOR_LAYER,
+    assets::{
+        AssetHandles, DOOR_HORIZONTAL_RECT, DOOR_VERTICAL_RECT, SPRITE_SCALE_FACTOR_RECIP,
+        sprite_size,
+    },
+    layers::SPRITE_LAYER,
     lerp::{FixedUpdateCount, InterpolateState},
 };
 
 pub struct DoorPlugin;
 
 #[derive(Copy, Clone, Component, Debug, Default)]
-#[require(Sprite)]
+#[require(Sprite, Anchor::CENTER)]
 pub struct DoorSprite {
     position: InterpolateState<f32>,
 }
@@ -56,7 +59,6 @@ pub fn update_doors(
             &mut DoorSprite,
             &mut Transform,
             &mut Sprite,
-            &mut Anchor,
         ),
         (Without<Position>, Without<TileChunk>),
     >,
@@ -64,15 +66,11 @@ pub fn update_doors(
 ) {
     let overstep = time.overstep_fraction();
 
-    let vertical_door_size = sprite_size(DOOR_VERTICAL_RECT);
-    let horizontal_door_size = sprite_size(DOOR_HORIZONTAL_RECT);
-
     doors.par_iter_mut().for_each(
-        |(door, tile, adjacency, mut state, mut transform, mut sprite, mut anchor)| {
+        |(door, tile, adjacency, mut state, mut transform, mut sprite)| {
             let direction = DoorDirection::from_adjacency(&adjacency);
             if adjacency.is_changed() {
                 *sprite = direction.sprite(&handles);
-                *anchor = direction.anchor();
                 state.position.reset();
             }
 
@@ -81,7 +79,31 @@ pub fn update_doors(
                     .position
                     .interpolate(door.position(), overstep, updates.updated())
             {
-                transform.translation = direction.translation(*tile, position);
+                let translation = direction.translation(*tile, position);
+                let sprite_size = direction.sprite_size();
+
+                let sprite_rect = Rect::from_center_size(translation, sprite_size);
+                let clip_rect = direction.clip_rect(*tile, adjacency.walls());
+
+                let clipped_rect = sprite_rect.intersect(clip_rect);
+                if clipped_rect.is_empty() {
+                    sprite.rect = Some(Rect::EMPTY);
+                    sprite.custom_size = Some(Vec2::ZERO);
+                    return;
+                }
+
+                let size = clipped_rect.size();
+                let offset = Vec2::new(
+                    clipped_rect.min.x - sprite_rect.min.x,
+                    sprite_rect.max.y - clipped_rect.max.y,
+                );
+
+                transform.translation = clipped_rect.center().extend(SPRITE_LAYER);
+                sprite.rect = Some(Rect::from_corners(
+                    offset * SPRITE_SCALE_FACTOR_RECIP,
+                    (offset + size) * SPRITE_SCALE_FACTOR_RECIP,
+                ));
+                sprite.custom_size = Some(size);
             }
         },
     );
@@ -110,24 +132,50 @@ impl DoorDirection {
         }
     }
 
-    fn anchor(&self) -> Anchor {
+    fn sprite_size(&self) -> Vec2 {
         match self {
-            DoorDirection::Horizontal => Anchor::BOTTOM_LEFT,
-            DoorDirection::Vertical => Anchor::CENTER,
+            DoorDirection::Horizontal => sprite_size(DOOR_HORIZONTAL_RECT),
+            DoorDirection::Vertical => sprite_size(DOOR_VERTICAL_RECT),
         }
     }
 
-    fn translation(&self, tile: TilePosition, position: f32) -> Vec3 {
+    fn translation(&self, tile: TilePosition, position: f32) -> Vec2 {
         match self {
-            DoorDirection::Horizontal => Vec3::new(
-                tile.x() as f32 - position,
-                tile.y() as f32 + 0.12,
-                DOOR_LAYER,
-            ),
-            DoorDirection::Vertical => Vec3::new(
+            DoorDirection::Horizontal => {
+                Vec2::new(tile.x() as f32 + 0.5 - position, tile.y() as f32 + 0.56)
+            }
+            DoorDirection::Vertical => Vec2::new(
                 tile.x() as f32 + 0.5,
                 tile.y() as f32 + f32::lerp(0.579, 1.85, position),
-                DOOR_LAYER,
+            ),
+        }
+    }
+
+    fn clip_rect(&self, tile: TilePosition, walls: WallAdjacency) -> Rect {
+        match self {
+            DoorDirection::Horizontal => Rect::new(
+                if walls.contains(WallAdjacency::WEST) {
+                    tile.x() as f32
+                } else {
+                    tile.x() as f32 - 1.0
+                },
+                tile.y() as f32,
+                tile.x() as f32 + 1.0,
+                tile.y() as f32 + 1.0,
+            ),
+            DoorDirection::Vertical => Rect::new(
+                tile.x() as f32,
+                if walls.contains(WallAdjacency::SOUTH) {
+                    tile.y() as f32
+                } else {
+                    tile.y() as f32 - 1.0
+                },
+                tile.x() as f32 + 1.0,
+                if walls.contains(WallAdjacency::NORTH) {
+                    tile.y() as f32 + 1.572015625
+                } else {
+                    tile.y() as f32 + 2.0
+                },
             ),
         }
     }
