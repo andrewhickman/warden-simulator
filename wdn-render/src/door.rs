@@ -172,7 +172,7 @@ impl DoorDirection {
                 },
                 tile.x() as f32 + 1.0,
                 if walls.contains(WallAdjacency::NORTH) {
-                    tile.y() as f32 + 1.572015625
+                    tile.y() as f32 + 1.572
                 } else {
                     tile.y() as f32 + 2.0
                 },

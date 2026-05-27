@@ -108,12 +108,11 @@ pub fn resolve_collisions(
                     );
                 }
 
-                if let Some(candidate) = index.get_tile(neighbor) {
-                    if let Ok(candidate_tile) = candidate_tiles.get(candidate) {
-                        if candidate_tile.collider.solid {
-                            wall_adjacency |= adjacency;
-                        }
-                    }
+                if let Some(candidate) = index.get_tile(neighbor)
+                    && let Ok(candidate_tile) = candidate_tiles.get(candidate)
+                    && candidate_tile.collider.solid
+                {
+                    wall_adjacency |= adjacency;
                 }
             }
 
@@ -220,17 +219,11 @@ impl Collisions {
     }
 
     pub fn next_collision(&self) -> Option<Collision> {
-        match self.nearest {
-            Some((collision, _)) => Some(collision),
-            None => None,
-        }
+        self.nearest.map(|(collision, _)| collision)
     }
 
     pub fn next_time(&self) -> Option<f32> {
-        match self.nearest {
-            Some((_, t)) => Some(t),
-            None => None,
-        }
+        self.nearest.map(|(_, t)| t)
     }
 
     pub fn insert(&mut self, collision: Collision, t: f32) {
@@ -275,21 +268,20 @@ impl Collisions {
             collider.position() - candidate.position(),
             collider.velocity() - candidate.velocity(),
             collider.radius() + candidate.radius(),
-        ) {
-            if t < threshold {
-                let position = collider.position_at(t);
-                let target_position = candidate.position_at(t);
-                let collision = Collision {
-                    position,
-                    normal: Dir2::new(position - target_position).unwrap_or(Dir2::X),
-                    target: CollisionTarget::Collider {
-                        id: candidate_id,
-                        position: target_position,
-                    },
-                    solid: collider.solid() && candidate.solid(),
-                };
-                self.insert(collision, t)
-            }
+        ) && t < threshold
+        {
+            let position = collider.position_at(t);
+            let target_position = candidate.position_at(t);
+            let collision = Collision {
+                position,
+                normal: Dir2::new(position - target_position).unwrap_or(Dir2::X),
+                target: CollisionTarget::Collider {
+                    id: candidate_id,
+                    position: target_position,
+                },
+                solid: collider.solid() && candidate.solid(),
+            };
+            self.insert(collision, t)
         }
     }
 
@@ -417,20 +409,19 @@ impl Collisions {
             delta_position_component,
             collider_velocity_component,
             collider_radius,
-        ) {
-            if t < delta_secs {
-                let position = collider.position_at(t);
-                let collision = Collision {
-                    position,
-                    normal,
-                    target: CollisionTarget::Tile {
-                        id: index.get_tile(tile_position),
-                        position: tile_position,
-                    },
-                    solid: collider.collider.solid,
-                };
-                self.insert(collision, t)
-            }
+        ) && t < delta_secs
+        {
+            let position = collider.position_at(t);
+            let collision = Collision {
+                position,
+                normal,
+                target: CollisionTarget::Tile {
+                    id: index.get_tile(tile_position),
+                    position: tile_position,
+                },
+                solid: collider.collider.solid,
+            };
+            self.insert(collision, t)
         }
     }
 
@@ -446,21 +437,20 @@ impl Collisions {
             collider.position() - corner_position.as_vec2(),
             collider.velocity(),
             collider.radius(),
-        ) {
-            if t < delta_secs {
-                let position = collider.position_at(t);
-                let target_position = corner_position.as_vec2();
-                let collision = Collision {
-                    position,
-                    normal: Dir2::new(position - target_position).unwrap_or(Dir2::X),
-                    target: CollisionTarget::Tile {
-                        id: index.get_tile(tile_position),
-                        position: tile_position,
-                    },
-                    solid: collider.collider.solid,
-                };
-                self.insert(collision, t)
-            }
+        ) && t < delta_secs
+        {
+            let position = collider.position_at(t);
+            let target_position = corner_position.as_vec2();
+            let collision = Collision {
+                position,
+                normal: Dir2::new(position - target_position).unwrap_or(Dir2::X),
+                target: CollisionTarget::Tile {
+                    id: index.get_tile(tile_position),
+                    position: tile_position,
+                },
+                solid: collider.collider.solid,
+            };
+            self.insert(collision, t)
         }
     }
 }

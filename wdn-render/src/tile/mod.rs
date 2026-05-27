@@ -109,7 +109,7 @@ impl TileChunkSpriteParam<'_, '_> {
         let tile_data = self.images.add(make_tile_chunk_image());
         let material = self.materials.add(TileChunkMaterial {
             tileset: self.assets.tileset(),
-            tile_data: tile_data,
+            tile_data,
         });
 
         self.commands.spawn((

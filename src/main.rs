@@ -150,46 +150,45 @@ fn handle_pawn_input(
     }
 
     // Handle movement towards cursor on left click
-    if mouse.pressed(MouseButton::Left) {
-        if let Some(cursor_pos) = window.cursor_position() {
-            if let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_pos) {
-                let pawn_pos = pawn_transform.position();
-                let direction = world_pos - pawn_pos;
+    if mouse.pressed(MouseButton::Left)
+        && let Some(cursor_pos) = window.cursor_position()
+        && let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_pos)
+    {
+        let pawn_pos = pawn_transform.position();
+        let direction = world_pos - pawn_pos;
 
-                if let Ok(direction) = Dir2::try_from(direction) {
-                    // Calculate the target angle
-                    let target_angle = direction.rotation_from_y();
+        if let Ok(direction) = Dir2::try_from(direction) {
+            // Calculate the target angle
+            let target_angle = direction.rotation_from_y();
 
-                    // Get current rotation (assuming Z-axis rotation)
-                    let current_angle = pawn_transform.rotation();
+            // Get current rotation (assuming Z-axis rotation)
+            let current_angle = pawn_transform.rotation();
 
-                    let angle_diff = current_angle.angle_to(target_angle);
+            let angle_diff = current_angle.angle_to(target_angle);
 
-                    // Threshold for considering the pawn aligned
-                    const ANGLE_THRESHOLD: f32 = 0.1;
-                    const LARGE_ANGLE_THRESHOLD: f32 = 1.0;
+            // Threshold for considering the pawn aligned
+            const ANGLE_THRESHOLD: f32 = 0.1;
+            const LARGE_ANGLE_THRESHOLD: f32 = 1.0;
 
-                    if angle_diff.abs() > LARGE_ANGLE_THRESHOLD {
-                        // Turn in place for large angle differences
-                        *action = if angle_diff > 0.0 {
-                            PawnAction::TurnLeft
-                        } else {
-                            PawnAction::TurnRight
-                        };
-                    } else if angle_diff.abs() > ANGLE_THRESHOLD {
-                        // Steer while moving for small adjustments
-                        *action = if angle_diff > 0.0 {
-                            PawnAction::SteerLeft
-                        } else {
-                            PawnAction::SteerRight
-                        };
-                    } else {
-                        // Walk forward when aligned
-                        *action = PawnAction::Walk;
-                    }
-                    return;
-                }
+            if angle_diff.abs() > LARGE_ANGLE_THRESHOLD {
+                // Turn in place for large angle differences
+                *action = if angle_diff > 0.0 {
+                    PawnAction::TurnLeft
+                } else {
+                    PawnAction::TurnRight
+                };
+            } else if angle_diff.abs() > ANGLE_THRESHOLD {
+                // Steer while moving for small adjustments
+                *action = if angle_diff > 0.0 {
+                    PawnAction::SteerLeft
+                } else {
+                    PawnAction::SteerRight
+                };
+            } else {
+                // Walk forward when aligned
+                *action = PawnAction::Walk;
             }
+            return;
         }
     }
 
@@ -205,31 +204,31 @@ fn handle_tile_toggle(
     mut doors: Query<(&TilePosition, &mut Door)>,
     mut tile_storage: TileStorageMut,
 ) {
-    if mouse.just_pressed(MouseButton::Right) {
-        if let Some(cursor_pos) = window.cursor_position() {
-            let (camera, camera_transform) = camera_query.into_inner();
-            if let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_pos) {
-                // Convert world position to tile position
-                let tile_pos = TilePosition::floor(*layer, world_pos);
+    if mouse.just_pressed(MouseButton::Right)
+        && let Some(cursor_pos) = window.cursor_position()
+    {
+        let (camera, camera_transform) = camera_query.into_inner();
+        if let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_pos) {
+            // Convert world position to tile position
+            let tile_pos = TilePosition::floor(*layer, world_pos);
 
-                // Toggle an existing door entity on this tile.
-                for (door_tile, mut door) in doors.iter_mut() {
-                    if *door_tile == tile_pos {
-                        info!("Toggling door at {:?}", tile_pos);
-                        door.toggle();
-                        return;
-                    }
+            // Toggle an existing door entity on this tile.
+            for (door_tile, mut door) in doors.iter_mut() {
+                if *door_tile == tile_pos {
+                    info!("Toggling door at {:?}", tile_pos);
+                    door.toggle();
+                    return;
                 }
-
-                // Toggle tile material between Empty and Wall
-                let current_material = tile_storage.get_material(tile_pos);
-                let new_material = match current_material {
-                    TileMaterial::Empty => TileMaterial::Wall,
-                    TileMaterial::Wall | TileMaterial::Door => TileMaterial::Empty,
-                };
-
-                tile_storage.set_material(tile_pos, new_material);
             }
+
+            // Toggle tile material between Empty and Wall
+            let current_material = tile_storage.get_material(tile_pos);
+            let new_material = match current_material {
+                TileMaterial::Empty => TileMaterial::Wall,
+                TileMaterial::Wall | TileMaterial::Door => TileMaterial::Empty,
+            };
+
+            tile_storage.set_material(tile_pos, new_material);
         }
     }
 }

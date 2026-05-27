@@ -97,14 +97,14 @@ pub fn apply_pawn_actions(
                 velocity.set_angular(-Pawn::TURN_SPEED * 0.7);
             }
             PawnAction::AttackLeft => commands.command_scope(|mut commands| {
-                commands.spawn(PawnProjectile::new(
+                commands.spawn(PawnProjectile::bundle(
                     id,
                     Vec2::new(-PawnProjectile::OFFSET, 0.0),
                     Vec2::new(0.0, PawnProjectile::SPEED),
                 ));
             }),
             PawnAction::AttackRight => commands.command_scope(|mut commands| {
-                commands.spawn(PawnProjectile::new(
+                commands.spawn(PawnProjectile::bundle(
                     id,
                     Vec2::new(PawnProjectile::OFFSET, 0.0),
                     Vec2::new(0.0, PawnProjectile::SPEED),
@@ -144,7 +144,7 @@ impl PawnProjectile {
     pub const DURATION: Duration = Duration::from_millis(500);
     pub const SPEED: f32 = 0.86;
 
-    pub fn new(pawn: Entity, position: Vec2, velocity: Vec2) -> impl Bundle {
+    pub fn bundle(pawn: Entity, position: Vec2, velocity: Vec2) -> impl Bundle {
         (
             PawnProjectile,
             Projectile::new(pawn, PawnProjectile::DAMAGE, PawnProjectile::DURATION),

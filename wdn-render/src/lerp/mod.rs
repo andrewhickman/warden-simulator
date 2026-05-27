@@ -67,25 +67,23 @@ pub fn interpolate_position(
     transforms
         .par_iter_mut()
         .for_each(|(interpolate, position, mut transform, mut state)| {
-            if interpolate.translation {
-                if let Some(interpolated_translation) =
+            if interpolate.translation
+                && let Some(interpolated_translation) =
                     state
                         .translation
                         .interpolate(position.position(), overstep, count.updated())
-                {
-                    transform.translation.x = interpolated_translation.x;
-                    transform.translation.y = interpolated_translation.y;
-                }
+            {
+                transform.translation.x = interpolated_translation.x;
+                transform.translation.y = interpolated_translation.y;
             }
 
-            if interpolate.rotation {
-                if let Some(interpolated_rotation) =
+            if interpolate.rotation
+                && let Some(interpolated_rotation) =
                     state
                         .rotation
                         .interpolate(position.rotation(), overstep, count.updated())
-                {
-                    transform.rotation = Quat::from_rotation_z(interpolated_rotation.as_radians());
-                }
+            {
+                transform.rotation = Quat::from_rotation_z(interpolated_rotation.as_radians());
             }
         });
 }

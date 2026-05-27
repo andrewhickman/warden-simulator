@@ -82,11 +82,11 @@ pub fn update_tile_chunk_sections(
 
                 if prev_parent != parent {
                     for parent in [prev_parent, parent] {
-                        if let Some(parent) = parent {
-                            if let Some(region) = chunk_sections.sections.remove(&parent) {
-                                removed_sections.insert(TilePosition::from((position, parent)));
-                                invalid_regions.insert(region.region);
-                            }
+                        if let Some(parent) = parent
+                            && let Some(region) = chunk_sections.sections.remove(&parent)
+                        {
+                            removed_sections.insert(TilePosition::from((position, parent)));
+                            invalid_regions.insert(region.region);
                         }
                     }
                 }

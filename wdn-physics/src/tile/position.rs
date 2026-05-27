@@ -237,10 +237,9 @@ impl TileChunkOffset {
     }
 
     pub fn south(&self) -> Option<Self> {
-        match self.y().checked_sub(1) {
-            Some(y) => Some(TileChunkOffset::new(self.x(), y)),
-            None => None,
-        }
+        self.y()
+            .checked_sub(1)
+            .map(|y| TileChunkOffset::new(self.x(), y))
     }
 
     pub fn east(&self) -> Option<Self> {
@@ -252,10 +251,9 @@ impl TileChunkOffset {
     }
 
     pub fn west(&self) -> Option<Self> {
-        match self.x().checked_sub(1) {
-            Some(x) => Some(TileChunkOffset::new(x, self.y())),
-            None => None,
-        }
+        self.x()
+            .checked_sub(1)
+            .map(|x| TileChunkOffset::new(x, self.y()))
     }
 
     pub fn index(&self) -> usize {
