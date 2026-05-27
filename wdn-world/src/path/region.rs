@@ -3,8 +3,8 @@ use std::{collections::VecDeque, mem::take};
 use bevy_ecs::{entity::EntityHashSet, lifecycle::HookContext, prelude::*, world::DeferredWorld};
 use bevy_platform::collections::{HashMap, HashSet, hash_map};
 use wdn_physics::tile::{
-    CHUNK_SIZE,
-    adjacency::WallAdjacency,
+    CHUNK_SIZE, CHUNK_SIZE_SQUARED,
+    adjacency::{DoorAdjacency, WallAdjacency},
     material::TileMaterial,
     position::{TileChunkOffset, TilePosition},
     storage::{TileChunk, TileMap},
@@ -31,36 +31,27 @@ struct TileChunkSection {
 
 #[derive(Debug)]
 struct TileChunkSectionParents {
-    parents: [Option<TileChunkOffset>; CHUNK_SIZE * CHUNK_SIZE],
+    parents: [u16; CHUNK_SIZE_SQUARED],
 }
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct TileChunkSectionChanges {
     removed_sections: HashSet<TilePosition>,
     invalid_sections: HashMap<TilePosition, Entity>,
     invalid_regions: EntityHashSet,
-    queue: VecDeque<(Entity, TilePosition)>,
 }
 
-pub fn update_tile_chunk_sections(
-    mut commands: Commands,
-    regions: Query<&LayerRegion>,
-    mut chunks: ParamSet<(
-        Query<(Entity, &TileChunk, &mut TileChunkSections), Changed<TileChunk>>,
-        Query<(&TileChunk, &TileChunkSections)>,
-    )>,
-    mut changes: Local<TileChunkSectionChanges>,
-    map: Res<TileMap>,
+pub fn update_chunk_sections(
+    mut chunks: Query<(Entity, &TileChunk, &mut TileChunkSections), Changed<TileChunk>>,
+    mut changes: ResMut<TileChunkSectionChanges>,
 ) -> Result {
     let TileChunkSectionChanges {
         ref mut removed_sections,
         ref mut invalid_sections,
         ref mut invalid_regions,
-        ref mut queue,
     } = *changes;
 
     chunks
-        .p0()
         .iter_mut()
         .for_each(|(chunk_id, chunk, mut chunk_sections)| {
             let position = chunk.position();
@@ -69,7 +60,7 @@ pub fn update_tile_chunk_sections(
             for offset in TileChunkOffset::iter() {
                 let tile = chunk.get(offset);
 
-                if tile.material() != TileMaterial::Wall {
+                if tile.material() == TileMaterial::Empty {
                     parents.insert(offset);
                 } else {
                     parents.remove(offset);
@@ -107,6 +98,8 @@ pub fn update_tile_chunk_sections(
                                 .contains_key(&TilePosition::from((position, parent)))
                             {
                                 entry.into_mut().insert(offset);
+                            } else {
+                                debug_assert!(entry.get().tiles.contains(&offset));
                             }
                         }
                     }
@@ -116,10 +109,31 @@ pub fn update_tile_chunk_sections(
             chunk_sections.parents = parents;
         });
 
-    if removed_sections.is_empty() && invalid_sections.is_empty() {
-        debug_assert!(invalid_regions.is_empty());
-        return Ok(());
+    Ok(())
+}
+
+pub fn chunk_sections_changed(changes: Res<TileChunkSectionChanges>) -> bool {
+    if changes.removed_sections.is_empty() && changes.invalid_sections.is_empty() {
+        debug_assert!(changes.invalid_regions.is_empty());
+        false
+    } else {
+        true
     }
+}
+
+pub fn update_regions(
+    mut commands: Commands,
+    regions: Query<&LayerRegion>,
+    chunks: Query<(&TileChunk, &TileChunkSections)>,
+    mut changes: ResMut<TileChunkSectionChanges>,
+    map: Res<TileMap>,
+    mut queue: Local<VecDeque<(Entity, TilePosition)>>,
+) -> Result {
+    let TileChunkSectionChanges {
+        ref mut removed_sections,
+        ref mut invalid_sections,
+        ref mut invalid_regions,
+    } = *changes;
 
     for &region in invalid_regions.iter() {
         let region = regions.get(region)?;
@@ -133,7 +147,6 @@ pub fn update_tile_chunk_sections(
     removed_sections.clear();
     let visited_sections = removed_sections;
 
-    let chunks = chunks.p1();
     for (&section, &chunk_id) in invalid_sections.iter() {
         if !visited_sections.insert(section) {
             continue;
@@ -181,8 +194,8 @@ pub fn update_tile_chunk_sections(
         ));
     }
 
-    for &layer in invalid_regions.iter() {
-        commands.entity(layer).try_despawn();
+    for &region in invalid_regions.iter() {
+        commands.entity(region).try_despawn();
     }
 
     invalid_regions.clear();
@@ -265,18 +278,32 @@ impl TileChunkSection {
         let chunk_position = chunk.position();
         self.edges().iter().try_for_each(|&offset| {
             let edge = CHUNK_SIZE as u16 - 1;
-            let adjacency = chunk.get(offset).wall_adjacency();
+            let tile = chunk.get(offset);
+            let walls = tile.wall_adjacency();
+            let doors = tile.door_adjacency();
             let position = TilePosition::from((chunk_position, offset));
 
-            if offset.x() == 0 && !adjacency.contains(WallAdjacency::WEST) {
+            if offset.x() == 0
+                && !walls.contains(WallAdjacency::WEST)
+                && !doors.contains(DoorAdjacency::WEST)
+            {
                 f(position.west())?;
-            } else if offset.x() == edge && !adjacency.contains(WallAdjacency::EAST) {
+            } else if offset.x() == edge
+                && !walls.contains(WallAdjacency::EAST)
+                && !doors.contains(DoorAdjacency::EAST)
+            {
                 f(position.east())?;
             }
 
-            if offset.y() == 0 && !adjacency.contains(WallAdjacency::SOUTH) {
+            if offset.y() == 0
+                && !walls.contains(WallAdjacency::SOUTH)
+                && !doors.contains(DoorAdjacency::SOUTH)
+            {
                 f(position.south())?;
-            } else if offset.y() == edge && !adjacency.contains(WallAdjacency::NORTH) {
+            } else if offset.y() == edge
+                && !walls.contains(WallAdjacency::NORTH)
+                && !doors.contains(DoorAdjacency::NORTH)
+            {
                 f(position.north())?;
             }
 
@@ -298,28 +325,37 @@ impl Default for TileChunkSection {
 impl Default for TileChunkSectionParents {
     fn default() -> Self {
         Self {
-            parents: [None; CHUNK_SIZE * CHUNK_SIZE],
+            parents: [0; CHUNK_SIZE_SQUARED],
         }
     }
 }
 
 impl TileChunkSectionParents {
     fn get(&self, offset: TileChunkOffset) -> Option<TileChunkOffset> {
-        let parent = self.parents[offset.index()]?;
+        let parent = self.parents[offset.index()];
+        if parent == u16::MAX {
+            return None;
+        }
+
+        let parent = TileChunkOffset::from_index_u16(parent);
         debug_assert_eq!(
             self.parents[parent.index()],
-            Some(parent),
+            parent.index_u16(),
             "parents should be normalized"
         );
         Some(parent)
     }
 
     fn find(&mut self, offset: TileChunkOffset) -> Option<TileChunkOffset> {
-        let mut parent = self.parents[offset.index()]?;
+        let parent = self.parents[offset.index()];
+        if parent == u16::MAX {
+            return None;
+        }
 
-        if parent != offset && self.parents[parent.index()] != Some(parent) {
+        let mut parent = TileChunkOffset::from_index_u16(parent);
+        if parent != offset && self.parents[parent.index()] != parent.index_u16() {
             parent = self.find(parent).expect("parent should exist");
-            self.parents[offset.index()] = Some(parent);
+            self.parents[offset.index()] = parent.index_u16();
         }
 
         Some(parent)
@@ -337,23 +373,23 @@ impl TileChunkSectionParents {
         match (self.find_west(offset), self.find_south(offset)) {
             (Some(west_parent), Some(north_parent)) => {
                 if west_parent != north_parent {
-                    self.parents[west_parent.index()] = Some(north_parent);
+                    self.parents[west_parent.index()] = north_parent.index_u16();
                 }
-                self.parents[offset.index()] = Some(north_parent);
+                self.parents[offset.index()] = north_parent.index_u16();
             }
             (Some(west_parent), None) => {
-                self.parents[offset.index()] = Some(west_parent);
+                self.parents[offset.index()] = west_parent.index_u16();
             }
             (None, Some(north_parent)) => {
-                self.parents[offset.index()] = Some(north_parent);
+                self.parents[offset.index()] = north_parent.index_u16();
             }
             (None, None) => {
-                self.parents[offset.index()] = Some(offset);
+                self.parents[offset.index()] = offset.index_u16();
             }
         }
     }
 
     fn remove(&mut self, offset: TileChunkOffset) {
-        self.parents[offset.index()] = None;
+        self.parents[offset.index()] = u16::MAX;
     }
 }

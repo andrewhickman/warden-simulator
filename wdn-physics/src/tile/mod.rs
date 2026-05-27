@@ -20,6 +20,7 @@ use crate::tile::{
 };
 
 pub const CHUNK_SIZE: usize = 32;
+pub const CHUNK_SIZE_SQUARED: usize = CHUNK_SIZE * CHUNK_SIZE;
 
 pub struct TilePlugin;
 

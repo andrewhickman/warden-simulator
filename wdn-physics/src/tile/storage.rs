@@ -9,7 +9,7 @@ use bevy_ecs::{
 use bevy_platform::collections::HashMap;
 
 use crate::tile::{
-    CHUNK_SIZE,
+    CHUNK_SIZE_SQUARED,
     adjacency::{DoorAdjacency, TileAdjacency, WallAdjacency},
     index::TileIndex,
     material::TileMaterial,
@@ -37,7 +37,7 @@ pub struct TileStorageMut<'w, 's> {
 #[component(on_add = TileChunk::on_add, on_remove = TileChunk::on_remove)]
 pub struct TileChunk {
     position: TileChunkPosition,
-    tiles: Box<[TileData; CHUNK_SIZE * CHUNK_SIZE]>,
+    tiles: Box<[TileData; CHUNK_SIZE_SQUARED]>,
 }
 
 #[derive(Default, Resource)]
@@ -275,7 +275,7 @@ impl TileChunk {
     pub fn empty(position: TileChunkPosition) -> Self {
         Self {
             position,
-            tiles: Box::new([TileData::empty(); CHUNK_SIZE * CHUNK_SIZE]),
+            tiles: Box::new([TileData::empty(); CHUNK_SIZE_SQUARED]),
         }
     }
 
@@ -382,7 +382,7 @@ mod tests {
     use crate::{
         layer::Layer,
         tile::{
-            CHUNK_SIZE, TilePlugin,
+            CHUNK_SIZE_SQUARED, TilePlugin,
             position::{TileChunkOffset, TileChunkPosition, TilePosition},
             storage::{
                 DoorAdjacency, TileChunk, TileMap, TileMaterial, TileStorage, TileStorageMut,
@@ -397,7 +397,7 @@ mod tests {
         let chunk = TileChunk::empty(position);
 
         assert_eq!(chunk.position(), position);
-        assert_eq!(chunk.tiles().len(), CHUNK_SIZE * CHUNK_SIZE);
+        assert_eq!(chunk.tiles().len(), CHUNK_SIZE_SQUARED);
 
         for (_, tile) in chunk.tiles() {
             assert_eq!(tile.material, TileMaterial::Empty);

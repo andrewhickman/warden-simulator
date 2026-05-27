@@ -9,7 +9,7 @@ use bevy_render::render_resource::*;
 use bevy_shader::{ShaderDefVal, ShaderRef};
 use bevy_sprite_render::{AlphaMode2d, Material2d, Material2dKey, Material2dPlugin};
 use bytemuck::{Pod, Zeroable};
-use wdn_physics::tile::CHUNK_SIZE;
+use wdn_physics::tile::{CHUNK_SIZE, CHUNK_SIZE_SQUARED};
 
 pub struct TileChunkMaterialPlugin;
 
@@ -73,7 +73,7 @@ pub struct PackedTileData {
 pub fn make_tile_chunk_image() -> Image {
     Image {
         data: Some(Vec::with_capacity(
-            CHUNK_SIZE * CHUNK_SIZE * mem::size_of::<PackedTileData>(),
+            CHUNK_SIZE_SQUARED * mem::size_of::<PackedTileData>(),
         )),
         data_order: TextureDataOrder::default(),
         texture_descriptor: TextureDescriptor {

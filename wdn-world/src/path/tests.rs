@@ -35,7 +35,7 @@ fn clear_and_set_tile_updates_region() {
     assert_eq!(tile_region(&mut app, center.east()), Some(regions[0]));
     assert_eq!(tile_region(&mut app, center.west()), Some(regions[0]));
 
-    set_tile(&mut app, center);
+    set_wall_tile(&mut app, center);
     update_regions(&mut app);
 
     let new_regions = get_regions(&mut app);
@@ -53,10 +53,10 @@ fn cross_pattern_isolates_center() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
-    set_tile(&mut app, center.north());
-    set_tile(&mut app, center.south());
-    set_tile(&mut app, center.east());
-    set_tile(&mut app, center.west());
+    set_wall_tile(&mut app, center.north());
+    set_wall_tile(&mut app, center.south());
+    set_wall_tile(&mut app, center.east());
+    set_wall_tile(&mut app, center.west());
 
     update_regions(&mut app);
 
@@ -119,10 +119,10 @@ fn subdivide_square_into_quadrants() {
     assert!(regions.contains(&inside));
     assert!(regions.contains(&outside));
 
-    set_tile(&mut app, center.north());
-    set_tile(&mut app, center.east());
-    set_tile(&mut app, center.west());
-    set_tile(&mut app, center.south());
+    set_wall_tile(&mut app, center.north());
+    set_wall_tile(&mut app, center.east());
+    set_wall_tile(&mut app, center.west());
+    set_wall_tile(&mut app, center.south());
 
     update_regions(&mut app);
 
@@ -160,7 +160,7 @@ fn diamond_split_vertically() {
         for dy in -4..=4 {
             let pos = center.with_offset(IVec2::new(dx, dy));
             if dx.abs() + dy.abs() == 4 {
-                set_tile(&mut app, pos);
+                set_wall_tile(&mut app, pos);
             }
         }
     }
@@ -176,7 +176,7 @@ fn diamond_split_vertically() {
     assert!(regions.contains(&inside));
 
     for dy in -4..4 {
-        set_tile(&mut app, center.with_offset(IVec2::new(0, dy)));
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(0, dy)));
     }
 
     update_regions(&mut app);
@@ -203,7 +203,7 @@ fn horizontal_split_and_merge() {
 
     set_square(&mut app, center, 2);
     for dx in -2..=2 {
-        set_tile(&mut app, center.with_offset(IVec2::new(dx, 0)));
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(dx, 0)));
     }
 
     update_regions(&mut app);
@@ -246,7 +246,7 @@ fn vertical_split_and_merge() {
 
     set_square(&mut app, center, 5);
     for dy in -5..=5 {
-        set_tile(&mut app, center.with_offset(IVec2::new(0, dy)));
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(0, dy)));
     }
 
     update_regions(&mut app);
@@ -299,7 +299,7 @@ fn grid_many_regions_then_merge() {
     for x in -15..=15 {
         for y in -15..=15 {
             if x % 3 == 0 || y % 3 == 0 {
-                set_tile(&mut app, TilePosition::new(layer, x, y));
+                set_wall_tile(&mut app, TilePosition::new(layer, x, y));
             }
         }
     }
@@ -342,7 +342,7 @@ fn grid_modifications_merge_and_split() {
     for x in -3..=3 {
         for y in -3..=3 {
             if x % 3 == 0 || y % 3 == 0 {
-                set_tile(&mut app, TilePosition::new(layer, x, y));
+                set_wall_tile(&mut app, TilePosition::new(layer, x, y));
             }
         }
     }
@@ -362,7 +362,7 @@ fn grid_modifications_merge_and_split() {
     assert_eq!(expected_regions.len(), 5);
     assert!(expected_regions.iter().all(|r| regions.contains(r)));
 
-    set_tile(&mut app, TilePosition::new(layer, 2, 2));
+    set_wall_tile(&mut app, TilePosition::new(layer, 2, 2));
     clear_tile(&mut app, TilePosition::new(layer, 0, -1));
 
     update_regions(&mut app);
@@ -415,7 +415,7 @@ fn diagonal_wall_splits_region() {
     assert_eq!(regions.len(), 2);
 
     for i in -2..=2 {
-        set_tile(&mut app, center.with_offset(IVec2::new(i, i)));
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, i)));
     }
 
     update_regions(&mut app);
@@ -448,10 +448,10 @@ fn sparse_diagonal_walls_stay_connected() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
-    set_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
-    set_tile(&mut app, center.with_offset(IVec2::new(1, 1)));
-    set_tile(&mut app, center.with_offset(IVec2::new(3, 3)));
-    set_tile(&mut app, center.with_offset(IVec2::new(4, 4)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, 1)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, 3)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(4, 4)));
 
     update_regions(&mut app);
 
@@ -471,12 +471,12 @@ fn square_with_overlapping_corners() {
     let corner = TilePosition::new(layer, 16, 16);
 
     for x in -3..=3 {
-        set_tile(&mut app, corner.with_offset(IVec2::new(x, -2)));
-        set_tile(&mut app, corner.with_offset(IVec2::new(x, 2)));
+        set_wall_tile(&mut app, corner.with_offset(IVec2::new(x, -2)));
+        set_wall_tile(&mut app, corner.with_offset(IVec2::new(x, 2)));
     }
     for y in -3..=3 {
-        set_tile(&mut app, corner.with_offset(IVec2::new(-2, y)));
-        set_tile(&mut app, corner.with_offset(IVec2::new(2, y)));
+        set_wall_tile(&mut app, corner.with_offset(IVec2::new(-2, y)));
+        set_wall_tile(&mut app, corner.with_offset(IVec2::new(2, y)));
     }
 
     update_regions(&mut app);
@@ -520,7 +520,7 @@ fn toggle_center_tile() {
 
     set_square(&mut app, center, 3);
 
-    set_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
 
     update_regions(&mut app);
 
@@ -557,7 +557,7 @@ fn nested_squares_single_region() {
     for dx in -5i32..=5 {
         for dy in -5i32..=5 {
             if dx.abs() > 2 && dy.abs() > 2 {
-                set_tile(&mut app, center.with_offset(IVec2::new(dx, dy)));
+                set_wall_tile(&mut app, center.with_offset(IVec2::new(dx, dy)));
             }
         }
     }
@@ -598,12 +598,12 @@ fn long_corridor_single_region() {
     let start = TilePosition::new(layer, 0, 0);
 
     for x in -10i32..=10 {
-        set_tile(&mut app, start.with_offset(IVec2::new(x, -1)));
-        set_tile(&mut app, start.with_offset(IVec2::new(x, 1)));
+        set_wall_tile(&mut app, start.with_offset(IVec2::new(x, -1)));
+        set_wall_tile(&mut app, start.with_offset(IVec2::new(x, 1)));
     }
     for y in -1i32..=1 {
-        set_tile(&mut app, start.with_offset(IVec2::new(-10, y)));
-        set_tile(&mut app, start.with_offset(IVec2::new(10, y)));
+        set_wall_tile(&mut app, start.with_offset(IVec2::new(-10, y)));
+        set_wall_tile(&mut app, start.with_offset(IVec2::new(10, y)));
     }
 
     update_regions(&mut app);
@@ -676,18 +676,18 @@ fn checkerboard_many_regions() {
 
     let center = origin.with_offset(IVec2::new(3, 3));
     for i in -4i32..=5 {
-        set_tile(&mut app, center.with_offset(IVec2::new(i, -4)));
-        set_tile(&mut app, center.with_offset(IVec2::new(i, 5)));
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, -4)));
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, 5)));
     }
     for i in -4i32..=5 {
-        set_tile(&mut app, center.with_offset(IVec2::new(-4, i)));
-        set_tile(&mut app, center.with_offset(IVec2::new(5, i)));
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(-4, i)));
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(5, i)));
     }
 
     for x in 0..8 {
         for y in 0..8 {
             if (x + y) % 2 == 0 {
-                set_tile(&mut app, origin.with_offset(IVec2::new(x, y)));
+                set_wall_tile(&mut app, origin.with_offset(IVec2::new(x, y)));
             }
         }
     }
@@ -711,20 +711,20 @@ fn maze_stays_connected() {
     let origin = TilePosition::new(layer, 0, 0);
 
     for i in 0..10 {
-        set_tile(&mut app, origin.with_offset(IVec2::new(i, 0)));
-        set_tile(&mut app, origin.with_offset(IVec2::new(i, 9)));
-        set_tile(&mut app, origin.with_offset(IVec2::new(0, i)));
-        set_tile(&mut app, origin.with_offset(IVec2::new(9, i)));
+        set_wall_tile(&mut app, origin.with_offset(IVec2::new(i, 0)));
+        set_wall_tile(&mut app, origin.with_offset(IVec2::new(i, 9)));
+        set_wall_tile(&mut app, origin.with_offset(IVec2::new(0, i)));
+        set_wall_tile(&mut app, origin.with_offset(IVec2::new(9, i)));
     }
 
     for i in 1i32..8 {
         if i != 4 {
-            set_tile(&mut app, origin.with_offset(IVec2::new(5, i)));
+            set_wall_tile(&mut app, origin.with_offset(IVec2::new(5, i)));
         }
     }
     for i in 1i32..6 {
         if i != 2 {
-            set_tile(&mut app, origin.with_offset(IVec2::new(i, 5)));
+            set_wall_tile(&mut app, origin.with_offset(IVec2::new(i, 5)));
         }
     }
 
@@ -755,10 +755,10 @@ fn partial_boundary_stays_connected() {
     clear_tile(&mut app, center.with_offset(IVec2::new(4, 0)));
 
     for i in -2i32..=3 {
-        set_tile(&mut app, center.with_offset(IVec2::new(i, -2)));
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, -2)));
     }
     for i in -2i32..=2 {
-        set_tile(&mut app, center.with_offset(IVec2::new(-2, i)));
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(-2, i)));
     }
 
     update_regions(&mut app);
@@ -783,7 +783,7 @@ fn connect_sections_vertical() {
 
     let wall_x = 16;
     for y in 0..(CHUNK_SIZE as i32) {
-        set_tile(&mut app, TilePosition::new(layer, wall_x, y));
+        set_wall_tile(&mut app, TilePosition::new(layer, wall_x, y));
     }
 
     update_regions(&mut app);
@@ -811,8 +811,8 @@ fn connect_sections_vertical() {
 fn connect_sections_corner() {
     let (mut app, layer) = make_app();
 
-    set_tile(&mut app, TilePosition::new(layer, 1, 0));
-    set_tile(&mut app, TilePosition::new(layer, 0, 1));
+    set_wall_tile(&mut app, TilePosition::new(layer, 1, 0));
+    set_wall_tile(&mut app, TilePosition::new(layer, 0, 1));
 
     update_regions(&mut app);
 
@@ -840,7 +840,7 @@ fn connect_sections_interior() {
     set_square(&mut app, center, 5);
 
     for y in -3..5 {
-        set_tile(&mut app, center.with_offset(IVec2::new(1, y)));
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(1, y)));
     }
 
     update_regions(&mut app);
@@ -859,11 +859,11 @@ fn connect_sections_exterior() {
     let (mut app, layer) = make_app();
 
     for x in 0..5 {
-        set_tile(&mut app, TilePosition::new(layer, x, 5));
+        set_wall_tile(&mut app, TilePosition::new(layer, x, 5));
     }
     for y in -2..5 {
-        set_tile(&mut app, TilePosition::new(layer, 0, y));
-        set_tile(&mut app, TilePosition::new(layer, 5, y));
+        set_wall_tile(&mut app, TilePosition::new(layer, 0, y));
+        set_wall_tile(&mut app, TilePosition::new(layer, 5, y));
     }
 
     update_regions(&mut app);
@@ -890,7 +890,7 @@ fn horizontal_wall_splits_region() {
     assert_eq!(initial_regions.len(), 2);
 
     for i in -3i32..=3 {
-        set_tile(&mut app, center.with_offset(IVec2::new(i, 0)));
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, 0)));
     }
 
     update_regions(&mut app);
@@ -911,6 +911,51 @@ fn horizontal_wall_splits_region() {
     assert_ne!(outside, south);
 }
 
+#[test]
+fn door_splits_region() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 16, 16);
+
+    set_square(&mut app, center, 1);
+    set_door_tile(&mut app, center.north());
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    let inside = tile_region(&mut app, center).unwrap();
+    let outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
+
+    assert!(regions.contains(&inside));
+    assert!(regions.contains(&outside));
+
+    assert_ne!(inside, outside);
+}
+
+#[test]
+fn doors_on_chunk_edge() {
+    let (mut app, layer) = make_app();
+
+    let edge = CHUNK_SIZE as i32 - 1;
+    for i in 0..=edge {
+        set_wall_tile(&mut app, TilePosition::new(layer, i, 0));
+        set_wall_tile(&mut app, TilePosition::new(layer, edge, i));
+        set_wall_tile(&mut app, TilePosition::new(layer, edge - i, edge));
+        set_wall_tile(&mut app, TilePosition::new(layer, 0, edge - i));
+    }
+
+    set_door_tile(&mut app, TilePosition::new(layer, 4, 0));
+    set_door_tile(&mut app, TilePosition::new(layer, edge, 6));
+    set_door_tile(&mut app, TilePosition::new(layer, 15, edge));
+    set_door_tile(&mut app, TilePosition::new(layer, 0, 23));
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+}
+
 fn make_app() -> (App, Entity) {
     let mut app = App::new();
     app.add_plugins((TaskPoolPlugin::default(), TilePlugin, PathPlugin));
@@ -918,10 +963,18 @@ fn make_app() -> (App, Entity) {
     (app, layer)
 }
 
-fn set_tile(app: &mut App, position: TilePosition) {
+fn set_wall_tile(app: &mut App, position: TilePosition) {
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
             storage.set_material(position, TileMaterial::Wall);
+        })
+        .unwrap();
+}
+
+fn set_door_tile(app: &mut App, position: TilePosition) {
+    app.world_mut()
+        .run_system_once(move |mut storage: TileStorageMut| {
+            storage.set_material(position, TileMaterial::Door);
         })
         .unwrap();
 }
@@ -936,10 +989,10 @@ fn clear_tile(app: &mut App, position: TilePosition) {
 
 fn set_square(app: &mut App, center: TilePosition, radius: i32) {
     for i in -radius..=radius {
-        set_tile(app, center.with_offset(IVec2::new(i, -radius)));
-        set_tile(app, center.with_offset(IVec2::new(i, radius)));
-        set_tile(app, center.with_offset(IVec2::new(-radius, i)));
-        set_tile(app, center.with_offset(IVec2::new(radius, i)));
+        set_wall_tile(app, center.with_offset(IVec2::new(i, -radius)));
+        set_wall_tile(app, center.with_offset(IVec2::new(i, radius)));
+        set_wall_tile(app, center.with_offset(IVec2::new(-radius, i)));
+        set_wall_tile(app, center.with_offset(IVec2::new(radius, i)));
     }
 }
 

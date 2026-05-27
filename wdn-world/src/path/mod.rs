@@ -8,7 +8,10 @@ use wdn_physics::tile::storage::TileChunk;
 
 use crate::{
     WorldSystems,
-    path::region::{TileChunkSections, update_tile_chunk_sections as update_regions},
+    path::region::{
+        TileChunkSectionChanges, TileChunkSections, chunk_sections_changed, update_chunk_sections,
+        update_regions,
+    },
 };
 
 pub struct PathPlugin;
@@ -17,9 +20,16 @@ impl Plugin for PathPlugin {
     fn build(&self, app: &mut App) {
         app.register_required_components::<TileChunk, TileChunkSections>();
 
+        app.init_resource::<TileChunkSectionChanges>();
+
         app.add_systems(
             FixedUpdate,
-            update_regions.in_set(WorldSystems::UpdatePaths),
+            (
+                update_chunk_sections,
+                update_regions.run_if(chunk_sections_changed),
+            )
+                .in_set(WorldSystems::UpdatePaths)
+                .chain(),
         );
     }
 }

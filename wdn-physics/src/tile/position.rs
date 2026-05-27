@@ -2,10 +2,9 @@ use std::fmt;
 
 use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
 use bevy_math::{I16Vec2, prelude::*};
-use nonmax::NonMaxU16;
 use tracing::error;
 
-use crate::tile::{CHUNK_SIZE, Tile, index::TileIndex};
+use crate::tile::{CHUNK_SIZE, CHUNK_SIZE_SQUARED, Tile, index::TileIndex};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Component)]
 #[component(immutable, on_insert = TilePosition::on_insert, on_replace = TilePosition::on_replace)]
@@ -21,7 +20,7 @@ pub struct TileChunkPosition {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct TileChunkOffset(NonMaxU16);
+pub struct TileChunkOffset(u16);
 
 impl TilePosition {
     pub fn new(layer: Entity, x: i32, y: i32) -> Self {
@@ -217,15 +216,15 @@ impl TileChunkOffset {
     }
 
     pub fn iter() -> impl ExactSizeIterator<Item = TileChunkOffset> {
-        (0..(CHUNK_SIZE * CHUNK_SIZE)).map(TileChunkOffset::from_index)
+        (0..CHUNK_SIZE_SQUARED).map(TileChunkOffset::from_index)
     }
 
     pub fn x(&self) -> u16 {
-        (self.0.get() as usize % CHUNK_SIZE) as u16
+        (self.0 as usize % CHUNK_SIZE) as u16
     }
 
     pub fn y(&self) -> u16 {
-        (self.0.get() as usize / CHUNK_SIZE) as u16
+        (self.0 as usize / CHUNK_SIZE) as u16
     }
 
     pub fn north(&self) -> Option<Self> {
@@ -257,7 +256,7 @@ impl TileChunkOffset {
     }
 
     pub fn index(&self) -> usize {
-        self.0.get() as usize
+        self.0 as usize
     }
 
     pub fn from_index(index: usize) -> Self {
@@ -265,11 +264,12 @@ impl TileChunkOffset {
     }
 
     pub fn index_u16(&self) -> u16 {
-        self.0.get()
+        self.0
     }
 
     pub fn from_index_u16(index: u16) -> Self {
-        TileChunkOffset(NonMaxU16::new(index).unwrap())
+        debug_assert!(index < (CHUNK_SIZE_SQUARED) as u16);
+        TileChunkOffset(index)
     }
 
     pub fn on_chunk_edge(&self) -> bool {

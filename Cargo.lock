@@ -5241,7 +5241,6 @@ dependencies = [
  "bevy_time",
  "bevy_utils",
  "bitflags 2.11.1",
- "nonmax",
  "smallvec",
  "tracing",
 ]
