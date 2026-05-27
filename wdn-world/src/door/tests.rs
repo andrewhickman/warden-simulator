@@ -54,7 +54,7 @@ fn door_open_autoclose() {
     assert!(matches!(door.state, DoorState::Opening { .. }));
     assert_relative_eq!(door.position(), 0.4);
     assert!(
-        !app.world()
+        app.world()
             .entity(id)
             .get::<TileCollider>()
             .unwrap()
@@ -134,7 +134,7 @@ fn door_open_autoclose() {
     assert!(matches!(door.state, DoorState::Closing { .. }));
     assert_relative_eq!(door.position(), 0.2);
     assert!(
-        !app.world()
+        app.world()
             .entity(id)
             .get::<TileCollider>()
             .unwrap()
