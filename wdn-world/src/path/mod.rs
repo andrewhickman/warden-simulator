@@ -10,7 +10,7 @@ use crate::{
     WorldSystems,
     path::region::{
         TileChunkSectionChanges, TileChunkSections, chunk_sections_changed, update_chunk_sections,
-        update_regions,
+        update_region_doors, update_regions,
     },
 };
 
@@ -26,7 +26,9 @@ impl Plugin for PathPlugin {
             FixedUpdate,
             (
                 update_chunk_sections,
-                update_regions.run_if(chunk_sections_changed),
+                (update_regions, update_region_doors)
+                    .chain()
+                    .run_if(chunk_sections_changed),
             )
                 .in_set(WorldSystems::UpdatePaths)
                 .chain(),

@@ -14,6 +14,8 @@ use wdn_physics::tile::{
     storage::{TileMap, TileStorage, TileStorageMut},
 };
 
+use crate::door::Door;
+
 use super::{
     PathPlugin,
     region::{LayerRegion, TileChunkSections},
@@ -917,7 +919,7 @@ fn door_splits_region() {
     let center = TilePosition::new(layer, 16, 16);
 
     set_square(&mut app, center, 1);
-    set_door_tile(&mut app, center.north());
+    let door = set_door_tile(&mut app, center.north());
 
     update_regions(&mut app);
 
@@ -929,8 +931,102 @@ fn door_splits_region() {
 
     assert!(regions.contains(&inside));
     assert!(regions.contains(&outside));
-
     assert_ne!(inside, outside);
+
+    let inside_doors = get_region_doors(&mut app, inside);
+    let outside_doors = get_region_doors(&mut app, outside);
+
+    assert_eq!(inside_doors.len(), 1);
+    assert!(inside_doors.contains(&door));
+    assert_eq!(outside_doors.len(), 1);
+    assert!(outside_doors.contains(&door));
+}
+
+#[test]
+fn update_section_door() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 16, 16);
+
+    set_square(&mut app, center, 1);
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    let inside = tile_region(&mut app, center).unwrap();
+    let outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
+
+    let door = set_door_tile(&mut app, center.south());
+
+    update_regions(&mut app);
+
+    let new_regions = get_regions(&mut app);
+    assert_eq!(new_regions.len(), 2);
+
+    assert!(!new_regions.contains(&inside));
+    assert!(!new_regions.contains(&outside));
+    assert_ne!(inside, outside);
+
+    let new_inside = tile_region(&mut app, center).unwrap();
+    let new_outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
+
+    assert!(new_regions.contains(&new_inside));
+    assert!(new_regions.contains(&new_outside));
+    assert_ne!(inside, outside);
+
+    let inside_doors = get_region_doors(&mut app, new_inside);
+    let outside_doors = get_region_doors(&mut app, new_outside);
+
+    assert_eq!(inside_doors.len(), 1);
+    assert!(inside_doors.contains(&door));
+    assert_eq!(outside_doors.len(), 1);
+    assert!(outside_doors.contains(&door));
+}
+
+#[test]
+fn update_section_door_neighbor_chunk() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 5, 0);
+
+    set_square(&mut app, center, 1);
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    let inside = tile_region(&mut app, center).unwrap();
+    let outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
+
+    assert!(regions.contains(&inside));
+    assert!(regions.contains(&outside));
+    assert_ne!(inside, outside);
+
+    let door = set_door_tile(&mut app, center.south());
+
+    update_regions(&mut app);
+
+    let new_regions = get_regions(&mut app);
+    assert_eq!(new_regions.len(), 2);
+
+    assert!(!new_regions.contains(&inside));
+    assert!(!new_regions.contains(&outside));
+
+    let new_inside = tile_region(&mut app, center).unwrap();
+    let new_outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
+
+    assert!(new_regions.contains(&new_inside));
+    assert!(new_regions.contains(&new_outside));
+    assert_ne!(new_inside, new_outside);
+
+    let inside_doors = get_region_doors(&mut app, new_inside);
+    let outside_doors = get_region_doors(&mut app, new_outside);
+
+    assert_eq!(inside_doors.len(), 1);
+    assert!(inside_doors.contains(&door));
+    assert_eq!(outside_doors.len(), 1);
+    assert!(outside_doors.contains(&door));
 }
 
 #[test]
@@ -945,15 +1041,36 @@ fn doors_on_chunk_edge() {
         set_wall_tile(&mut app, TilePosition::new(layer, 0, edge - i));
     }
 
-    set_door_tile(&mut app, TilePosition::new(layer, 4, 0));
-    set_door_tile(&mut app, TilePosition::new(layer, edge, 6));
-    set_door_tile(&mut app, TilePosition::new(layer, 15, edge));
-    set_door_tile(&mut app, TilePosition::new(layer, 0, 23));
+    let south_door = set_door_tile(&mut app, TilePosition::new(layer, 4, 0));
+    let east_door = set_door_tile(&mut app, TilePosition::new(layer, edge, 6));
+    let north_door = set_door_tile(&mut app, TilePosition::new(layer, 15, edge));
+    let west_door = set_door_tile(&mut app, TilePosition::new(layer, 0, 23));
 
     update_regions(&mut app);
 
+    let inside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
+    let outside = tile_region(&mut app, TilePosition::new(layer, -5, -5)).unwrap();
+
     let regions = get_regions(&mut app);
     assert_eq!(regions.len(), 2);
+    assert!(regions.contains(&inside));
+    assert!(regions.contains(&outside));
+    assert_ne!(inside, outside);
+
+    let inside_doors = get_region_doors(&mut app, inside);
+    let outside_doors = get_region_doors(&mut app, outside);
+
+    assert_eq!(inside_doors.len(), 4);
+    assert!(inside_doors.contains(&south_door));
+    assert!(inside_doors.contains(&east_door));
+    assert!(inside_doors.contains(&north_door));
+    assert!(inside_doors.contains(&west_door));
+
+    assert_eq!(outside_doors.len(), 4);
+    assert!(outside_doors.contains(&south_door));
+    assert!(outside_doors.contains(&east_door));
+    assert!(outside_doors.contains(&north_door));
+    assert!(outside_doors.contains(&west_door));
 }
 
 fn make_app() -> (App, Entity) {
@@ -971,12 +1088,8 @@ fn set_wall_tile(app: &mut App, position: TilePosition) {
         .unwrap();
 }
 
-fn set_door_tile(app: &mut App, position: TilePosition) {
-    app.world_mut()
-        .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(position, TileMaterial::Door);
-        })
-        .unwrap();
+fn set_door_tile(app: &mut App, position: TilePosition) -> Entity {
+    app.world_mut().spawn((Door::default(), position)).id()
 }
 
 fn clear_tile(app: &mut App, position: TilePosition) {
@@ -1007,6 +1120,11 @@ fn get_regions(app: &mut App) -> Vec<Entity> {
         .world_mut()
         .query_filtered::<Entity, With<LayerRegion>>();
     query.iter(app.world()).collect()
+}
+
+fn get_region_doors(app: &mut App, region: Entity) -> Vec<Entity> {
+    let region = app.world().get::<LayerRegion>(region).unwrap();
+    region.doors().collect()
 }
 
 fn tile_region(app: &mut App, position: TilePosition) -> Option<Entity> {
@@ -1042,41 +1160,81 @@ fn validate_regions(
     for (chunk_id, chunk, chunk_sections) in &chunks {
         for offset in TileChunkOffset::iter() {
             let position = TilePosition::from((chunk.position(), offset));
-            if chunk.material(offset) != TileMaterial::Empty {
-                assert!(chunk_sections.region(offset).is_none());
-            } else {
-                let region = chunk_sections.region(offset).unwrap();
+            match chunk.material(offset) {
+                TileMaterial::Wall => {
+                    assert!(chunk_sections.region(offset).is_none());
+                }
+                TileMaterial::Door => {
+                    assert!(chunk_sections.region(offset).is_none());
 
-                for neighbor in [
-                    position.east(),
-                    position.west(),
-                    position.north(),
-                    position.south(),
-                ] {
-                    if let Some(neighbor_chunk_id) = storage.chunk_id(neighbor.chunk_position()) {
-                        let (_, neighbor_chunk, neighbor_sections) =
-                            chunks.get(neighbor_chunk_id).unwrap();
-                        if neighbor_chunk.material(neighbor.chunk_offset()) == TileMaterial::Empty {
-                            let neighbor_region =
-                                neighbor_sections.region(neighbor.chunk_offset()).unwrap();
-                            assert_eq!(neighbor_region, region);
+                    for neighbor in [
+                        position.east(),
+                        position.west(),
+                        position.north(),
+                        position.south(),
+                    ] {
+                        if let Some(neighbor_chunk_id) = storage.chunk_id(neighbor.chunk_position())
+                        {
+                            let (_, neighbour_chunk, neighbor_sections) =
+                                chunks.get(neighbor_chunk_id).unwrap();
+                            if neighbour_chunk.material(neighbor.chunk_offset())
+                                == TileMaterial::Empty
+                            {
+                                assert!(
+                                    neighbor_sections
+                                        .doors(neighbor.chunk_offset())
+                                        .unwrap()
+                                        .contains(&position)
+                                );
+                            }
+                        }
+                    }
+                }
+                TileMaterial::Empty => {
+                    let region = chunk_sections.region(offset).unwrap();
+
+                    for neighbor in [
+                        position.east(),
+                        position.west(),
+                        position.north(),
+                        position.south(),
+                    ] {
+                        if let Some(neighbor_chunk_id) = storage.chunk_id(neighbor.chunk_position())
+                        {
+                            let (_, neighbor_chunk, neighbor_sections) =
+                                chunks.get(neighbor_chunk_id).unwrap();
+                            if neighbor_chunk.material(neighbor.chunk_offset())
+                                == TileMaterial::Empty
+                            {
+                                let neighbor_region =
+                                    neighbor_sections.region(neighbor.chunk_offset()).unwrap();
+                                assert_eq!(neighbor_region, region);
+                            }
                         }
                     }
                 }
             }
         }
 
-        for section in chunk_sections.sections() {
-            let region_id = chunk_sections.region(section).unwrap();
-            for &offset in chunk_sections.tiles(section).unwrap() {
+        for section_id in chunk_sections.sections() {
+            let region_id = chunk_sections.region(section_id).unwrap();
+            for &offset in chunk_sections.tiles(section_id).unwrap() {
                 assert!(unique_tile_positions.insert((chunk_id, offset)));
                 assert_eq!(chunk_sections.region(offset).unwrap(), region_id);
+            }
+
+            for &door in chunk_sections.doors(section_id).unwrap() {
+                if door.chunk_position() == chunk.position() {
+                    assert!(!unique_tile_positions.contains(&(chunk_id, door.chunk_offset())));
+                }
+
+                assert_eq!(storage.get_material(door), TileMaterial::Door);
             }
 
             let (_, region) = regions.get(region_id).unwrap();
             assert!(region.sections().any(|(c, s)| c == chunk_id
                 && s.chunk_position() == chunk.position()
-                && s.chunk_offset() == section),);
+                && s.chunk_offset() == section_id));
         }
     }
 }
