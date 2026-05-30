@@ -4,7 +4,7 @@ use bitflags::bitflags;
 
 use crate::tile::{position::TilePosition, storage::TileStorage};
 
-#[derive(Debug, Default, Clone, Copy, Component)]
+#[derive(Debug, Default, Clone, Copy, Component, PartialEq, Eq)]
 pub struct TileAdjacency {
     pub(crate) walls: WallAdjacency,
     pub(crate) doors: DoorAdjacency,
@@ -35,6 +35,15 @@ bitflags! {
 }
 
 impl TileAdjacency {
+    pub const NONE: Self = Self {
+        walls: WallAdjacency::NONE,
+        doors: DoorAdjacency::NONE,
+    };
+
+    pub fn new(walls: WallAdjacency, doors: DoorAdjacency) -> Self {
+        Self { walls, doors }
+    }
+
     pub fn walls(&self) -> WallAdjacency {
         self.walls
     }

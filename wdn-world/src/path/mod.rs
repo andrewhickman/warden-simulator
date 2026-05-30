@@ -1,3 +1,4 @@
+pub mod map;
 pub mod region;
 #[cfg(test)]
 mod tests;
@@ -8,9 +9,12 @@ use wdn_physics::tile::storage::TileChunk;
 
 use crate::{
     WorldSystems,
-    path::region::{
-        TileChunkSectionChanges, TileChunkSections, chunk_sections_changed, update_chunk_sections,
-        update_region_doors, update_regions,
+    path::{
+        map::update_region_maps,
+        region::{
+            TileChunkSectionChanges, TileChunkSections, chunk_sections_changed,
+            update_chunk_sections, update_regions,
+        },
     },
 };
 
@@ -26,7 +30,7 @@ impl Plugin for PathPlugin {
             FixedUpdate,
             (
                 update_chunk_sections,
-                (update_regions, update_region_doors)
+                (update_regions, update_region_maps)
                     .chain()
                     .run_if(chunk_sections_changed),
             )

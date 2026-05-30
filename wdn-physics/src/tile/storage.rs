@@ -20,7 +20,7 @@ use crate::tile::{
 pub struct TileStorage<'w, 's> {
     map: Res<'w, TileMap>,
     chunks: Query<'w, 's, &'static TileChunk>,
-    buffer: ResMut<'w, TileMapBuffer>,
+    buffer: Res<'w, TileMapBuffer>,
 }
 
 #[derive(SystemParam)]
@@ -100,6 +100,10 @@ impl TileStorage<'_, '_> {
 }
 
 impl TileStorageMut<'_, '_> {
+    pub fn index(&self) -> &TileIndex {
+        &self.index
+    }
+
     pub fn get(&self, tile: TilePosition) -> Option<&TileData> {
         self.chunk(tile.chunk_position())
             .map(|chunk| chunk.get(tile.chunk_offset()))
@@ -362,6 +366,10 @@ impl TileData {
 
     pub fn material(&self) -> TileMaterial {
         self.material
+    }
+
+    pub fn adjacency(&self) -> TileAdjacency {
+        TileAdjacency::new(self.wall_adjacency, self.door_adjacency)
     }
 
     pub fn wall_adjacency(&self) -> WallAdjacency {

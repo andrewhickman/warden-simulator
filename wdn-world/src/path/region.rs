@@ -2,22 +2,22 @@ use core::fmt;
 use std::{collections::VecDeque, mem::take};
 
 use bevy_ecs::{entity::EntityHashSet, lifecycle::HookContext, prelude::*, world::DeferredWorld};
-use bevy_log::warn;
 use bevy_platform::collections::{HashMap, HashSet, hash_map};
 use wdn_physics::tile::{
     CHUNK_SIZE, CHUNK_SIZE_SQUARED,
     adjacency::{DoorAdjacency, WallAdjacency},
-    index::TileIndex,
     material::TileMaterial,
     position::{TileChunkOffset, TileChunkPosition, TilePosition},
     storage::{TileChunk, TileMap},
 };
 
+use crate::path::map::LayerRegionMap;
+
 #[derive(Component)]
+#[require(LayerRegionMap)]
 #[component(on_add = LayerRegion::on_add)]
 pub struct LayerRegion {
     sections: Vec<(Entity, TilePosition)>,
-    doors: EntityHashSet,
 }
 
 #[derive(Component, Default, Debug)]
@@ -29,8 +29,7 @@ pub struct TileChunkSections {
 #[derive(Debug)]
 struct TileChunkSection {
     tiles: Vec<TileChunkOffset>,
-    // TODO dedupe these?
-    doors: Vec<TilePosition>,
+    doors: HashMap<TilePosition, DoorAdjacency>,
     edges: usize,
     region: Entity,
 }
@@ -206,7 +205,6 @@ pub fn update_regions(
         commands.spawn((
             LayerRegion {
                 sections: region_sections,
-                doors: EntityHashSet::default(),
             },
             ChildOf(section.layer()),
         ));
@@ -222,39 +220,9 @@ pub fn update_regions(
     Ok(())
 }
 
-pub fn update_region_doors(
-    index: Res<TileIndex>,
-    mut regions: Query<&mut LayerRegion, Added<LayerRegion>>,
-    sections: Query<&TileChunkSections>,
-) {
-    regions.par_iter_mut().for_each(|mut region| {
-        let region = &mut *region;
-
-        for (chunk_id, section_id) in region.sections.iter().copied() {
-            let doors = sections
-                .get(chunk_id)
-                .expect("chunk not found")
-                .doors(section_id.chunk_offset())
-                .expect("section not found");
-
-            for &door in doors {
-                if let Some(door_id) = index.get_tile(door) {
-                    region.doors.insert(door_id);
-                } else {
-                    warn!("door entity not found for {door:?}");
-                }
-            }
-        }
-    });
-}
-
 impl LayerRegion {
     pub fn sections(&self) -> impl Iterator<Item = (Entity, TilePosition)> {
         self.sections.iter().copied()
-    }
-
-    pub fn doors(&self) -> impl Iterator<Item = Entity> + '_ {
-        self.doors.iter().copied()
     }
 
     fn on_add(mut world: DeferredWorld, context: HookContext) {
@@ -291,9 +259,17 @@ impl TileChunkSections {
         Some(&self.sections[&section].tiles)
     }
 
-    pub fn doors(&self, offset: TileChunkOffset) -> Option<&[TilePosition]> {
+    pub fn doors(
+        &self,
+        offset: TileChunkOffset,
+    ) -> Option<impl Iterator<Item = (TilePosition, DoorAdjacency)> + '_> {
         let section = self.set.get_section(offset)?;
-        Some(&self.sections[&section].doors)
+        Some(
+            self.sections[&section]
+                .doors
+                .iter()
+                .map(|(&pos, &adj)| (pos, adj)),
+        )
     }
 
     pub fn sections(&self) -> impl Iterator<Item = TileChunkOffset> + '_ {
@@ -326,19 +302,31 @@ impl TileChunkSection {
         if doors != DoorAdjacency::NONE {
             let center = TilePosition::from((position, offset));
             if doors.contains(DoorAdjacency::WEST) {
-                self.doors.push(center.west());
+                self.doors
+                    .entry(center.west())
+                    .or_default()
+                    .insert(DoorAdjacency::WEST);
             }
 
             if doors.contains(DoorAdjacency::SOUTH) {
-                self.doors.push(center.south());
+                self.doors
+                    .entry(center.south())
+                    .or_default()
+                    .insert(DoorAdjacency::SOUTH);
             }
 
             if doors.contains(DoorAdjacency::EAST) {
-                self.doors.push(center.east());
+                self.doors
+                    .entry(center.east())
+                    .or_default()
+                    .insert(DoorAdjacency::EAST);
             }
 
             if doors.contains(DoorAdjacency::NORTH) {
-                self.doors.push(center.north());
+                self.doors
+                    .entry(center.north())
+                    .or_default()
+                    .insert(DoorAdjacency::NORTH);
             }
         }
     }
@@ -393,7 +381,7 @@ impl Default for TileChunkSection {
     fn default() -> Self {
         Self {
             tiles: Vec::new(),
-            doors: Vec::new(),
+            doors: HashMap::new(),
             edges: 0,
             region: Entity::PLACEHOLDER,
         }

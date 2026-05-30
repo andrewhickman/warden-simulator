@@ -6,6 +6,7 @@ use bevy_math::IVec2;
 use bevy_platform::collections::HashSet;
 use wdn_physics::layer::Layer;
 use wdn_physics::tile::CHUNK_SIZE;
+use wdn_physics::tile::adjacency::DoorAdjacency;
 use wdn_physics::tile::storage::TileChunk;
 use wdn_physics::tile::{
     TilePlugin,
@@ -15,6 +16,7 @@ use wdn_physics::tile::{
 };
 
 use crate::door::Door;
+use crate::path::map::LayerRegionMap;
 
 use super::{
     PathPlugin,
@@ -1123,7 +1125,7 @@ fn get_regions(app: &mut App) -> Vec<Entity> {
 }
 
 fn get_region_doors(app: &mut App, region: Entity) -> Vec<Entity> {
-    let region = app.world().get::<LayerRegion>(region).unwrap();
+    let region = app.world().get::<LayerRegionMap>(region).unwrap();
     region.doors().collect()
 }
 
@@ -1167,11 +1169,11 @@ fn validate_regions(
                 TileMaterial::Door => {
                     assert!(chunk_sections.region(offset).is_none());
 
-                    for neighbor in [
-                        position.east(),
-                        position.west(),
-                        position.north(),
-                        position.south(),
+                    for (neighbor, adjacency) in [
+                        (position.east(), DoorAdjacency::WEST),
+                        (position.west(), DoorAdjacency::EAST),
+                        (position.north(), DoorAdjacency::SOUTH),
+                        (position.south(), DoorAdjacency::NORTH),
                     ] {
                         if let Some(neighbor_chunk_id) = storage.chunk_id(neighbor.chunk_position())
                         {
@@ -1184,7 +1186,9 @@ fn validate_regions(
                                     neighbor_sections
                                         .doors(neighbor.chunk_offset())
                                         .unwrap()
-                                        .contains(&position)
+                                        .any(|(door_position, door_adjacency)| door_position
+                                            == position
+                                            && door_adjacency.contains(adjacency))
                                 );
                             }
                         }
@@ -1223,7 +1227,7 @@ fn validate_regions(
                 assert_eq!(chunk_sections.region(offset).unwrap(), region_id);
             }
 
-            for &door in chunk_sections.doors(section_id).unwrap() {
+            for (door, _) in chunk_sections.doors(section_id).unwrap() {
                 if door.chunk_position() == chunk.position() {
                     assert!(!unique_tile_positions.contains(&(chunk_id, door.chunk_offset())));
                 }
