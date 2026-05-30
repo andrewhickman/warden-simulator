@@ -59,13 +59,13 @@ pub fn update_region_maps(
             ComputeTaskPool::get().scope(|scope| {
                 map.doors.iter_mut().for_each(|(&door_position, flow)| {
                     scope.spawn(async move {
-                        generate_flow_map(door_position, flow, storage);
+                        flow.generate(door_position, storage);
                     });
                 });
             });
         } else {
             map.doors.iter_mut().for_each(|(&door_position, flow)| {
-                generate_flow_map(door_position, flow, storage);
+                flow.generate(door_position, storage);
             });
         }
     });
@@ -77,9 +77,6 @@ impl LayerRegionMap {
     }
 }
 
-fn generate_flow_map(
-    _door_position: TilePosition,
-    _flow: &mut DoorFlowMap,
-    _storage: &TileStorage,
-) {
+impl DoorFlowMap {
+    fn generate(&mut self, _door_position: TilePosition, _storage: &TileStorage) {}
 }

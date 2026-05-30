@@ -14,7 +14,7 @@ use bevy_ecs::{component::Component, name::Name};
 use crate::tile::{
     adjacency::{TileAdjacency, on_add_adjacency},
     index::TileIndex,
-    material::{TileMaterial, on_insert_material, on_remove_material},
+    material::{TileMaterial, on_insert_material},
     position::TilePosition,
     storage::{TileMap, TileMapBuffer},
 };
@@ -39,12 +39,6 @@ impl Plugin for TilePlugin {
             .insert(Name::new(format!(
                 "Observer({})",
                 type_name_of_val(&on_insert_material)
-            )));
-        app.world_mut()
-            .add_observer(on_remove_material)
-            .insert(Name::new(format!(
-                "Observer({})",
-                type_name_of_val(&on_remove_material)
             )));
         app.world_mut()
             .add_observer(on_add_adjacency)

@@ -1,4 +1,4 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use bevy::{
     camera_controller::pan_camera::{PanCamera, PanCameraPlugin},
@@ -20,6 +20,7 @@ use wdn_tasks::TasksPlugin as WdnTasksPlugin;
 use wdn_ui::UiPlugin as WdnUiPlugin;
 use wdn_world::{
     WorldPlugin as WdnWorldPlugin, WorldSystems,
+    door::Door,
     path::region::LayerRegion,
     pawn::{Pawn, PawnAction},
 };
@@ -87,8 +88,8 @@ fn startup(mut commands: Commands, mut time: ResMut<Time<Virtual>>, mut storage:
             let tile = TilePosition::new(layer, x, y);
             if (x % 5 == 0 || y % 5 == 0) && x != 0 && y != 0 && x != 511 && y != 511 {
                 if random.random_bool(0.05) {
-                    storage.set_material(tile, TileMaterial::Door);
-                } else if random.random_bool(0.025) {
+                    commands.spawn((Door::default(), tile));
+                } else if random.random_bool(0.1) {
                     storage.set_material(tile, TileMaterial::Empty);
                 } else {
                     storage.set_material(tile, TileMaterial::Wall);
@@ -112,6 +113,7 @@ fn startup(mut commands: Commands, mut time: ResMut<Time<Virtual>>, mut storage:
 }
 
 fn update_storage(
+    mut commands: Commands,
     layer: Single<Entity, With<Layer>>,
     regions: Query<&LayerRegion>,
     mut storage: TileStorageMut,
@@ -124,9 +126,13 @@ fn update_storage(
     let tile = TilePosition::new(*layer, x, y);
 
     if x % 5 == 0 || y % 5 == 0 {
+        if let Some(entity) = storage.index().get_tile(tile) {
+            commands.entity(entity).despawn();
+        }
+
         if random.random_bool(0.05) {
-            storage.set_material(tile, TileMaterial::Door);
-        } else if random.random_bool(0.025) {
+            commands.spawn((Door::default(), tile));
+        } else if random.random_bool(0.05) {
             storage.set_material(tile, TileMaterial::Empty);
         } else {
             storage.set_material(tile, TileMaterial::Wall);

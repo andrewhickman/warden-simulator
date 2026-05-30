@@ -1,5 +1,5 @@
 use bevy_app::prelude::*;
-use bevy_ecs::prelude::*;
+use bevy_ecs::{batching::BatchingStrategy, prelude::*};
 use bevy_math::prelude::*;
 use bevy_sprite::{Anchor, prelude::*};
 use bevy_time::prelude::*;
@@ -66,47 +66,50 @@ pub fn update_doors(
 ) {
     let overstep = time.overstep_fraction();
 
-    doors.par_iter_mut().for_each(
-        |(door, tile, adjacency, mut state, mut transform, mut sprite)| {
-            let direction = DoorDirection::from_adjacency(&adjacency);
-            if adjacency.is_changed() {
-                *sprite = direction.sprite(&handles);
-                state.position.reset();
-            }
-
-            if let Some(position) =
-                state
-                    .position
-                    .interpolate(door.position(), overstep, updates.updated())
-            {
-                let translation = direction.translation(*tile, position);
-                let sprite_size = direction.sprite_size();
-
-                let sprite_rect = Rect::from_center_size(translation, sprite_size);
-                let clip_rect = direction.clip_rect(*tile, adjacency.walls());
-
-                let clipped_rect = sprite_rect.intersect(clip_rect);
-                if clipped_rect.is_empty() {
-                    sprite.rect = Some(Rect::EMPTY);
-                    sprite.custom_size = Some(Vec2::ZERO);
-                    return;
+    doors
+        .par_iter_mut()
+        .batching_strategy(BatchingStrategy::new().min_batch_size(16))
+        .for_each(
+            |(door, tile, adjacency, mut state, mut transform, mut sprite)| {
+                let direction = DoorDirection::from_adjacency(&adjacency);
+                if adjacency.is_changed() {
+                    *sprite = direction.sprite(&handles);
+                    state.position.reset();
                 }
 
-                let size = clipped_rect.size();
-                let offset = Vec2::new(
-                    clipped_rect.min.x - sprite_rect.min.x,
-                    sprite_rect.max.y - clipped_rect.max.y,
-                );
+                if let Some(position) =
+                    state
+                        .position
+                        .interpolate(door.position(), overstep, updates.updated())
+                {
+                    let translation = direction.translation(*tile, position);
+                    let sprite_size = direction.sprite_size();
 
-                transform.translation = clipped_rect.center().extend(SPRITE_LAYER);
-                sprite.rect = Some(Rect::from_corners(
-                    offset * SPRITE_SCALE_FACTOR_RECIP,
-                    (offset + size) * SPRITE_SCALE_FACTOR_RECIP,
-                ));
-                sprite.custom_size = Some(size);
-            }
-        },
-    );
+                    let sprite_rect = Rect::from_center_size(translation, sprite_size);
+                    let clip_rect = direction.clip_rect(*tile, adjacency.walls());
+
+                    let clipped_rect = sprite_rect.intersect(clip_rect);
+                    if clipped_rect.is_empty() {
+                        sprite.rect = Some(Rect::EMPTY);
+                        sprite.custom_size = Some(Vec2::ZERO);
+                        return;
+                    }
+
+                    let size = clipped_rect.size();
+                    let offset = Vec2::new(
+                        clipped_rect.min.x - sprite_rect.min.x,
+                        sprite_rect.max.y - clipped_rect.max.y,
+                    );
+
+                    transform.translation = clipped_rect.center().extend(SPRITE_LAYER);
+                    sprite.rect = Some(Rect::from_corners(
+                        offset * SPRITE_SCALE_FACTOR_RECIP,
+                        (offset + size) * SPRITE_SCALE_FACTOR_RECIP,
+                    ));
+                    sprite.custom_size = Some(size);
+                }
+            },
+        );
 }
 
 impl DoorDirection {
@@ -165,11 +168,7 @@ impl DoorDirection {
             ),
             DoorDirection::Vertical => Rect::new(
                 tile.x() as f32,
-                if walls.contains(WallAdjacency::SOUTH) {
-                    tile.y() as f32
-                } else {
-                    tile.y() as f32 - 1.0
-                },
+                tile.y() as f32,
                 tile.x() as f32 + 1.0,
                 if walls.contains(WallAdjacency::NORTH) {
                     tile.y() as f32 + 1.572

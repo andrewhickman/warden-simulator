@@ -21,13 +21,3 @@ pub fn on_insert_material(
     storage.set_material(*position, *material);
     Ok(())
 }
-
-pub fn on_remove_material(
-    trigger: On<Remove, TileMaterial>,
-    tiles: Query<&TilePosition>,
-    mut storage: TileStorageMut,
-) -> Result {
-    let position = tiles.get(trigger.entity)?;
-    storage.set_material(*position, TileMaterial::Empty);
-    Ok(())
-}
