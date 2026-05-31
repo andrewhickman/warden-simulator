@@ -58,8 +58,7 @@ struct TileStorageDeferred {
 #[derive(Default, Debug, Clone, Copy)]
 pub struct TileData {
     material: TileMaterial,
-    wall_adjacency: Adjacency,
-    door_adjacency: Adjacency,
+    adjacency: TileAdjacency,
 }
 
 impl TileStorage<'_, '_> {
@@ -88,7 +87,7 @@ impl TileStorage<'_, '_> {
 
     pub fn get_wall_adjacency(&self, tile: TilePosition) -> Adjacency {
         match self.get(tile) {
-            Some(t) => t.wall_adjacency,
+            Some(t) => t.wall_adjacency(),
             None => Adjacency::NONE,
         }
     }
@@ -125,14 +124,14 @@ impl TileStorageMut<'_, '_> {
 
     pub fn get_wall_adjacency(&self, tile: TilePosition) -> Adjacency {
         match self.get(tile) {
-            Some(t) => t.wall_adjacency,
+            Some(t) => t.wall_adjacency(),
             None => Adjacency::NONE,
         }
     }
 
     pub fn get_door_adjacency(&self, tile: TilePosition) -> Adjacency {
         match self.get(tile) {
-            Some(t) => t.door_adjacency,
+            Some(t) => t.door_adjacency(),
             None => Adjacency::NONE,
         }
     }
@@ -200,7 +199,7 @@ impl TileStorageMut<'_, '_> {
             let neighbour_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
-            neighbour_tile.wall_adjacency.insert(adj);
+            neighbour_tile.adjacency.walls.insert(adj);
 
             if let Some(mut entity_adjacency) = self.get_entity_adjacency(neighbor_pos) {
                 entity_adjacency.walls.insert(adj);
@@ -215,7 +214,7 @@ impl TileStorageMut<'_, '_> {
             let neighbour_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
-            neighbour_tile.wall_adjacency.remove(adj);
+            neighbour_tile.adjacency.walls.remove(adj);
 
             if let Some(mut entity_adjacency) = self.get_entity_adjacency(neighbor_pos) {
                 entity_adjacency.walls.remove(adj);
@@ -230,7 +229,7 @@ impl TileStorageMut<'_, '_> {
             let neighbour_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
-            neighbour_tile.door_adjacency.insert(adj);
+            neighbour_tile.adjacency.doors.insert(adj);
 
             if let Some(mut entity_adjacency) = self.get_entity_adjacency(neighbor_pos) {
                 entity_adjacency.doors.insert(adj);
@@ -245,7 +244,7 @@ impl TileStorageMut<'_, '_> {
             let neighbour_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
-            neighbour_tile.door_adjacency.remove(adj);
+            neighbour_tile.adjacency.doors.remove(adj);
 
             if let Some(mut entity_adjacency) = self.get_entity_adjacency(neighbor_pos) {
                 entity_adjacency.doors.remove(adj);
@@ -366,9 +365,16 @@ impl TileData {
     pub fn empty() -> Self {
         Self {
             material: TileMaterial::Empty,
-            wall_adjacency: Adjacency::NONE,
-            door_adjacency: Adjacency::NONE,
+            adjacency: TileAdjacency::NONE,
         }
+    }
+
+    pub fn move_speed(&self) -> f32 {
+        self.move_cost().recip()
+    }
+
+    pub fn move_cost(&self) -> f32 {
+        1.0
     }
 
     pub fn material(&self) -> TileMaterial {
@@ -376,15 +382,19 @@ impl TileData {
     }
 
     pub fn adjacency(&self) -> TileAdjacency {
-        TileAdjacency::new(self.wall_adjacency, self.door_adjacency)
+        self.adjacency
+    }
+
+    pub fn solid_adjacency(&self) -> Adjacency {
+        self.adjacency.solid()
     }
 
     pub fn wall_adjacency(&self) -> Adjacency {
-        self.wall_adjacency
+        self.adjacency.walls
     }
 
     pub fn door_adjacency(&self) -> Adjacency {
-        self.door_adjacency
+        self.adjacency.doors
     }
 }
 

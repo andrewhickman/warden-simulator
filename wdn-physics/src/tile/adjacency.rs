@@ -35,6 +35,10 @@ impl TileAdjacency {
         Self { walls, doors }
     }
 
+    pub fn solid(&self) -> Adjacency {
+        self.walls | self.doors
+    }
+
     pub fn walls(&self) -> Adjacency {
         self.walls
     }
@@ -55,6 +59,10 @@ impl Adjacency {
         (Adjacency::SOUTH_WEST, IVec2::new(1, 1)),
         (Adjacency::WEST, IVec2::new(1, 0)),
     ];
+
+    pub fn opposite(&self) -> Self {
+        Adjacency::from_bits_retain(self.bits().rotate_right(4))
+    }
 
     pub fn values() -> impl Iterator<Item = Self> {
         (0..=255u8).map(Self::from_bits_retain)

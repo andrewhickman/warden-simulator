@@ -342,31 +342,18 @@ impl TileChunkSection {
         self.edges().iter().try_for_each(|&offset| {
             let edge = CHUNK_SIZE as u16 - 1;
             let tile = chunk.get(offset);
-            let walls = tile.wall_adjacency();
-            let doors = tile.door_adjacency();
+            let adjacency = tile.solid_adjacency();
             let position = TilePosition::from((chunk_position, offset));
 
-            if offset.x() == 0
-                && !walls.contains(Adjacency::WEST)
-                && !doors.contains(Adjacency::WEST)
-            {
+            if offset.x() == 0 && !adjacency.contains(Adjacency::WEST) {
                 f(position.west())?;
-            } else if offset.x() == edge
-                && !walls.contains(Adjacency::EAST)
-                && !doors.contains(Adjacency::EAST)
-            {
+            } else if offset.x() == edge && !adjacency.contains(Adjacency::EAST) {
                 f(position.east())?;
             }
 
-            if offset.y() == 0
-                && !walls.contains(Adjacency::SOUTH)
-                && !doors.contains(Adjacency::SOUTH)
-            {
+            if offset.y() == 0 && !adjacency.contains(Adjacency::SOUTH) {
                 f(position.south())?;
-            } else if offset.y() == edge
-                && !walls.contains(Adjacency::NORTH)
-                && !doors.contains(Adjacency::NORTH)
-            {
+            } else if offset.y() == edge && !adjacency.contains(Adjacency::NORTH) {
                 f(position.north())?;
             }
 
