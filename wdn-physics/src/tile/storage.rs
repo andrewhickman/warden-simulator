@@ -10,7 +10,7 @@ use bevy_platform::collections::HashMap;
 
 use crate::tile::{
     CHUNK_SIZE_SQUARED,
-    adjacency::{DoorAdjacency, TileAdjacency, WallAdjacency},
+    adjacency::{Adjacency, TileAdjacency},
     index::TileIndex,
     material::TileMaterial,
     position::{TileChunkOffset, TileChunkPosition, TilePosition},
@@ -58,8 +58,8 @@ struct TileStorageDeferred {
 #[derive(Default, Debug, Clone, Copy)]
 pub struct TileData {
     material: TileMaterial,
-    wall_adjacency: WallAdjacency,
-    door_adjacency: DoorAdjacency,
+    wall_adjacency: Adjacency,
+    door_adjacency: Adjacency,
 }
 
 impl TileStorage<'_, '_> {
@@ -79,10 +79,17 @@ impl TileStorage<'_, '_> {
         }
     }
 
-    pub fn get_wall_adjacency(&self, tile: TilePosition) -> WallAdjacency {
+    pub fn get_adjacency(&self, tile: TilePosition) -> TileAdjacency {
+        match self.get(tile) {
+            Some(t) => t.adjacency(),
+            None => TileAdjacency::NONE,
+        }
+    }
+
+    pub fn get_wall_adjacency(&self, tile: TilePosition) -> Adjacency {
         match self.get(tile) {
             Some(t) => t.wall_adjacency,
-            None => WallAdjacency::NONE,
+            None => Adjacency::NONE,
         }
     }
 
@@ -116,17 +123,17 @@ impl TileStorageMut<'_, '_> {
         }
     }
 
-    pub fn get_wall_adjacency(&self, tile: TilePosition) -> WallAdjacency {
+    pub fn get_wall_adjacency(&self, tile: TilePosition) -> Adjacency {
         match self.get(tile) {
             Some(t) => t.wall_adjacency,
-            None => WallAdjacency::NONE,
+            None => Adjacency::NONE,
         }
     }
 
-    pub fn get_door_adjacency(&self, tile: TilePosition) -> DoorAdjacency {
+    pub fn get_door_adjacency(&self, tile: TilePosition) -> Adjacency {
         match self.get(tile) {
             Some(t) => t.door_adjacency,
-            None => DoorAdjacency::NONE,
+            None => Adjacency::NONE,
         }
     }
 
@@ -187,7 +194,7 @@ impl TileStorageMut<'_, '_> {
     }
 
     fn add_adjacent_wall(&mut self, position: TilePosition) {
-        for (adj, offset) in WallAdjacency::OFFSETS {
+        for (adj, offset) in Adjacency::OFFSETS {
             let neighbor_pos = position.with_offset(offset);
 
             let neighbour_tile = self
@@ -202,7 +209,7 @@ impl TileStorageMut<'_, '_> {
     }
 
     fn remove_adjacent_wall(&mut self, position: TilePosition) {
-        for (adj, offset) in WallAdjacency::OFFSETS {
+        for (adj, offset) in Adjacency::OFFSETS {
             let neighbor_pos = position.with_offset(offset);
 
             let neighbour_tile = self
@@ -217,7 +224,7 @@ impl TileStorageMut<'_, '_> {
     }
 
     fn add_adjacent_door(&mut self, position: TilePosition) {
-        for (adj, offset) in DoorAdjacency::OFFSETS {
+        for (adj, offset) in Adjacency::OFFSETS {
             let neighbor_pos = position.with_offset(offset);
 
             let neighbour_tile = self
@@ -232,7 +239,7 @@ impl TileStorageMut<'_, '_> {
     }
 
     fn remove_adjacent_door(&mut self, position: TilePosition) {
-        for (adj, offset) in DoorAdjacency::OFFSETS {
+        for (adj, offset) in Adjacency::OFFSETS {
             let neighbor_pos = position.with_offset(offset);
 
             let neighbour_tile = self
@@ -295,7 +302,7 @@ impl TileChunk {
         self.get(offset).material()
     }
 
-    pub fn adjacency(&self, offset: TileChunkOffset) -> WallAdjacency {
+    pub fn adjacency(&self, offset: TileChunkOffset) -> Adjacency {
         self.get(offset).wall_adjacency()
     }
 
@@ -359,8 +366,8 @@ impl TileData {
     pub fn empty() -> Self {
         Self {
             material: TileMaterial::Empty,
-            wall_adjacency: WallAdjacency::NONE,
-            door_adjacency: DoorAdjacency::NONE,
+            wall_adjacency: Adjacency::NONE,
+            door_adjacency: Adjacency::NONE,
         }
     }
 
@@ -372,11 +379,11 @@ impl TileData {
         TileAdjacency::new(self.wall_adjacency, self.door_adjacency)
     }
 
-    pub fn wall_adjacency(&self) -> WallAdjacency {
+    pub fn wall_adjacency(&self) -> Adjacency {
         self.wall_adjacency
     }
 
-    pub fn door_adjacency(&self) -> DoorAdjacency {
+    pub fn door_adjacency(&self) -> Adjacency {
         self.door_adjacency
     }
 }
@@ -392,10 +399,7 @@ mod tests {
         tile::{
             CHUNK_SIZE_SQUARED, TilePlugin,
             position::{TileChunkOffset, TileChunkPosition, TilePosition},
-            storage::{
-                DoorAdjacency, TileChunk, TileMap, TileMaterial, TileStorage, TileStorageMut,
-                WallAdjacency,
-            },
+            storage::{Adjacency, TileChunk, TileMap, TileMaterial, TileStorage, TileStorageMut},
         },
     };
 
@@ -586,39 +590,39 @@ mod tests {
 
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 5, 5)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 6, 5)),
-                    WallAdjacency::WEST
+                    Adjacency::WEST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 6, 6)),
-                    WallAdjacency::SOUTH_WEST
+                    Adjacency::SOUTH_WEST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 5, 6)),
-                    WallAdjacency::SOUTH
+                    Adjacency::SOUTH
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 4, 6)),
-                    WallAdjacency::SOUTH_EAST
+                    Adjacency::SOUTH_EAST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 4, 5)),
-                    WallAdjacency::EAST
+                    Adjacency::EAST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 4, 4)),
-                    WallAdjacency::NORTH_EAST
+                    Adjacency::NORTH_EAST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 5, 4)),
-                    WallAdjacency::NORTH
+                    Adjacency::NORTH
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 6, 4)),
-                    WallAdjacency::NORTH_WEST
+                    Adjacency::NORTH_WEST
                 );
             })
             .unwrap();
@@ -627,39 +631,39 @@ mod tests {
             .run_system_once(move |storage: TileStorage| {
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 5, 5)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 6, 5)),
-                    WallAdjacency::WEST
+                    Adjacency::WEST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 6, 6)),
-                    WallAdjacency::SOUTH_WEST
+                    Adjacency::SOUTH_WEST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 5, 6)),
-                    WallAdjacency::SOUTH
+                    Adjacency::SOUTH
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 4, 6)),
-                    WallAdjacency::SOUTH_EAST
+                    Adjacency::SOUTH_EAST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 4, 5)),
-                    WallAdjacency::EAST
+                    Adjacency::EAST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 4, 4)),
-                    WallAdjacency::NORTH_EAST
+                    Adjacency::NORTH_EAST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 5, 4)),
-                    WallAdjacency::NORTH
+                    Adjacency::NORTH
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 6, 4)),
-                    WallAdjacency::NORTH_WEST
+                    Adjacency::NORTH_WEST
                 );
             })
             .unwrap();
@@ -670,39 +674,39 @@ mod tests {
 
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 5, 5)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 6, 5)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 6, 6)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 5, 6)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 4, 6)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 4, 5)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 4, 4)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 5, 4)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 6, 4)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
             })
             .unwrap();
@@ -711,39 +715,39 @@ mod tests {
             .run_system_once(move |storage: TileStorage| {
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 5, 5)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 6, 5)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 6, 6)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 5, 6)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 4, 6)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 4, 5)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 4, 4)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 5, 4)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 6, 4)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
             })
             .unwrap();
@@ -764,42 +768,42 @@ mod tests {
 
                 assert_eq!(
                     storage.get(center).unwrap().door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 6, 5))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::WEST
+                    Adjacency::WEST
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 5, 6))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::SOUTH
+                    Adjacency::SOUTH
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 4, 5))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::EAST
+                    Adjacency::EAST
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 5, 4))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NORTH
+                    Adjacency::NORTH
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 6, 6))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::SOUTH_WEST
                 );
             })
             .unwrap();
@@ -808,42 +812,42 @@ mod tests {
             .run_system_once(move |storage: TileStorage| {
                 assert_eq!(
                     storage.get(center).unwrap().door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 6, 5))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::WEST
+                    Adjacency::WEST
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 5, 6))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::SOUTH
+                    Adjacency::SOUTH
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 4, 5))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::EAST
+                    Adjacency::EAST
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 5, 4))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NORTH
+                    Adjacency::NORTH
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 6, 6))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::SOUTH_WEST
                 );
             })
             .unwrap();
@@ -854,42 +858,42 @@ mod tests {
 
                 assert_eq!(
                     storage.get(center).unwrap().door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 6, 5))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 5, 6))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 4, 5))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 5, 4))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 6, 6))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
             })
             .unwrap();
@@ -898,42 +902,42 @@ mod tests {
             .run_system_once(move |storage: TileStorage| {
                 assert_eq!(
                     storage.get(center).unwrap().door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 6, 5))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 5, 6))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 4, 5))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 5, 4))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 6, 6))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
             })
             .unwrap();
@@ -959,22 +963,22 @@ mod tests {
 
                 assert_eq!(
                     storage.get(east_neighbor).unwrap().door_adjacency(),
-                    DoorAdjacency::WEST
+                    Adjacency::WEST
                 );
                 assert_eq!(
                     storage.get(west_neighbor).unwrap().door_adjacency(),
-                    DoorAdjacency::EAST
+                    Adjacency::EAST
                 );
 
                 storage.set_material(edge_tile, TileMaterial::Empty);
 
                 assert_eq!(
                     storage.get(east_neighbor).unwrap().door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get(west_neighbor).unwrap().door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
             })
             .unwrap();
@@ -1000,22 +1004,22 @@ mod tests {
 
                 assert_eq!(
                     storage.get(north_neighbor).unwrap().door_adjacency(),
-                    DoorAdjacency::SOUTH
+                    Adjacency::SOUTH
                 );
                 assert_eq!(
                     storage.get(south_neighbor).unwrap().door_adjacency(),
-                    DoorAdjacency::NORTH
+                    Adjacency::NORTH
                 );
 
                 storage.set_material(edge_tile, TileMaterial::Empty);
 
                 assert_eq!(
                     storage.get(north_neighbor).unwrap().door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get(south_neighbor).unwrap().door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
             })
             .unwrap();
@@ -1045,46 +1049,46 @@ mod tests {
 
                 assert_eq!(
                     storage.get(corner_tile).unwrap().door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get(east_tile).unwrap().door_adjacency(),
-                    DoorAdjacency::WEST
+                    Adjacency::WEST
                 );
                 assert_eq!(
                     storage.get(north_tile).unwrap().door_adjacency(),
-                    DoorAdjacency::SOUTH
+                    Adjacency::SOUTH
                 );
                 assert_eq!(
                     storage.get(west_tile).unwrap().door_adjacency(),
-                    DoorAdjacency::EAST
+                    Adjacency::EAST
                 );
                 assert_eq!(
                     storage.get(south_tile).unwrap().door_adjacency(),
-                    DoorAdjacency::NORTH
+                    Adjacency::NORTH
                 );
 
                 storage.set_material(corner_tile, TileMaterial::Empty);
 
                 assert_eq!(
                     storage.get(corner_tile).unwrap().door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get(east_tile).unwrap().door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get(north_tile).unwrap().door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get(west_tile).unwrap().door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get(south_tile).unwrap().door_adjacency(),
-                    DoorAdjacency::NONE
+                    Adjacency::NONE
                 );
             })
             .unwrap();
@@ -1108,28 +1112,28 @@ mod tests {
                         .get(TilePosition::new(layer, 10, 10))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::NORTH | DoorAdjacency::EAST
+                    Adjacency::NORTH | Adjacency::EAST
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 11, 10))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::WEST
+                    Adjacency::NORTH_WEST | Adjacency::WEST
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 10, 11))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::SOUTH
+                    Adjacency::SOUTH_EAST | Adjacency::SOUTH
                 );
                 assert_eq!(
                     storage
                         .get(TilePosition::new(layer, 11, 11))
                         .unwrap()
                         .door_adjacency(),
-                    DoorAdjacency::SOUTH | DoorAdjacency::WEST
+                    Adjacency::SOUTH | Adjacency::SOUTH_WEST | Adjacency::WEST
                 );
             })
             .unwrap();
@@ -1164,39 +1168,27 @@ mod tests {
             .run_system_once(move |mut storage: TileStorageMut| {
                 storage.set_material(edge_tile, TileMaterial::Wall);
 
-                assert_eq!(
-                    storage.get_wall_adjacency(east_neighbor),
-                    WallAdjacency::WEST
-                );
-                assert_eq!(
-                    storage.get_wall_adjacency(west_neighbor),
-                    WallAdjacency::EAST
-                );
+                assert_eq!(storage.get_wall_adjacency(east_neighbor), Adjacency::WEST);
+                assert_eq!(storage.get_wall_adjacency(west_neighbor), Adjacency::EAST);
                 assert_eq!(
                     storage.get_wall_adjacency(northeast_neighbor),
-                    WallAdjacency::SOUTH_WEST
+                    Adjacency::SOUTH_WEST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(southeast_neighbor),
-                    WallAdjacency::NORTH_WEST
+                    Adjacency::NORTH_WEST
                 );
 
                 storage.set_material(edge_tile, TileMaterial::Empty);
-                assert_eq!(
-                    storage.get_wall_adjacency(east_neighbor),
-                    WallAdjacency::NONE
-                );
-                assert_eq!(
-                    storage.get_wall_adjacency(west_neighbor),
-                    WallAdjacency::NONE
-                );
+                assert_eq!(storage.get_wall_adjacency(east_neighbor), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(west_neighbor), Adjacency::NONE);
                 assert_eq!(
                     storage.get_wall_adjacency(northeast_neighbor),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(southeast_neighbor),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
             })
             .unwrap();
@@ -1231,40 +1223,28 @@ mod tests {
             .run_system_once(move |mut storage: TileStorageMut| {
                 storage.set_material(edge_tile, TileMaterial::Wall);
 
-                assert_eq!(
-                    storage.get_wall_adjacency(north_neighbor),
-                    WallAdjacency::SOUTH
-                );
-                assert_eq!(
-                    storage.get_wall_adjacency(south_neighbor),
-                    WallAdjacency::NORTH
-                );
+                assert_eq!(storage.get_wall_adjacency(north_neighbor), Adjacency::SOUTH);
+                assert_eq!(storage.get_wall_adjacency(south_neighbor), Adjacency::NORTH);
                 assert_eq!(
                     storage.get_wall_adjacency(northwest_neighbor),
-                    WallAdjacency::SOUTH_EAST
+                    Adjacency::SOUTH_EAST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(northeast_neighbor),
-                    WallAdjacency::SOUTH_WEST
+                    Adjacency::SOUTH_WEST
                 );
 
                 storage.set_material(edge_tile, TileMaterial::Empty);
 
-                assert_eq!(
-                    storage.get_wall_adjacency(north_neighbor),
-                    WallAdjacency::NONE
-                );
-                assert_eq!(
-                    storage.get_wall_adjacency(south_neighbor),
-                    WallAdjacency::NONE
-                );
+                assert_eq!(storage.get_wall_adjacency(north_neighbor), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(south_neighbor), Adjacency::NONE);
                 assert_eq!(
                     storage.get_wall_adjacency(northwest_neighbor),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(northeast_neighbor),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
             })
             .unwrap();
@@ -1313,61 +1293,46 @@ mod tests {
             .run_system_once(move |mut storage: TileStorageMut| {
                 storage.set_material(corner_tile, TileMaterial::Wall);
 
-                assert_eq!(storage.get_wall_adjacency(corner_tile), WallAdjacency::NONE);
-                assert_eq!(storage.get_wall_adjacency(east_tile), WallAdjacency::WEST);
+                assert_eq!(storage.get_wall_adjacency(corner_tile), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(east_tile), Adjacency::WEST);
                 assert_eq!(
                     storage.get_wall_adjacency(northeast_tile),
-                    WallAdjacency::SOUTH_WEST
+                    Adjacency::SOUTH_WEST
                 );
-                assert_eq!(storage.get_wall_adjacency(north_tile), WallAdjacency::SOUTH);
+                assert_eq!(storage.get_wall_adjacency(north_tile), Adjacency::SOUTH);
                 assert_eq!(
                     storage.get_wall_adjacency(northwest_tile),
-                    WallAdjacency::SOUTH_EAST
+                    Adjacency::SOUTH_EAST
                 );
-                assert_eq!(storage.get_wall_adjacency(west_tile), WallAdjacency::EAST);
+                assert_eq!(storage.get_wall_adjacency(west_tile), Adjacency::EAST);
                 assert_eq!(
                     storage.get_wall_adjacency(southwest_tile),
-                    WallAdjacency::NORTH_EAST
+                    Adjacency::NORTH_EAST
                 );
-                assert_eq!(storage.get_wall_adjacency(south_tile), WallAdjacency::NORTH);
+                assert_eq!(storage.get_wall_adjacency(south_tile), Adjacency::NORTH);
                 assert_eq!(
                     storage.get_wall_adjacency(southeast_tile),
-                    WallAdjacency::NORTH_WEST
+                    Adjacency::NORTH_WEST
                 );
-                assert_eq!(storage.get_wall_adjacency(south_tile), WallAdjacency::NORTH);
+                assert_eq!(storage.get_wall_adjacency(south_tile), Adjacency::NORTH);
                 assert_eq!(
                     storage.get_wall_adjacency(southeast_tile),
-                    WallAdjacency::NORTH_WEST
+                    Adjacency::NORTH_WEST
                 );
 
                 storage.set_material(corner_tile, TileMaterial::Empty);
 
-                assert_eq!(storage.get_wall_adjacency(corner_tile), WallAdjacency::NONE);
-                assert_eq!(storage.get_wall_adjacency(east_tile), WallAdjacency::NONE);
-                assert_eq!(
-                    storage.get_wall_adjacency(northeast_tile),
-                    WallAdjacency::NONE
-                );
-                assert_eq!(storage.get_wall_adjacency(north_tile), WallAdjacency::NONE);
-                assert_eq!(
-                    storage.get_wall_adjacency(northwest_tile),
-                    WallAdjacency::NONE
-                );
-                assert_eq!(storage.get_wall_adjacency(west_tile), WallAdjacency::NONE);
-                assert_eq!(
-                    storage.get_wall_adjacency(southwest_tile),
-                    WallAdjacency::NONE
-                );
-                assert_eq!(storage.get_wall_adjacency(south_tile), WallAdjacency::NONE);
-                assert_eq!(
-                    storage.get_wall_adjacency(southeast_tile),
-                    WallAdjacency::NONE
-                );
-                assert_eq!(storage.get_wall_adjacency(south_tile), WallAdjacency::NONE);
-                assert_eq!(
-                    storage.get_wall_adjacency(southeast_tile),
-                    WallAdjacency::NONE
-                );
+                assert_eq!(storage.get_wall_adjacency(corner_tile), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(east_tile), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(northeast_tile), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(north_tile), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(northwest_tile), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(west_tile), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(southwest_tile), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(south_tile), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(southeast_tile), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(south_tile), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(southeast_tile), Adjacency::NONE);
             })
             .unwrap();
     }
@@ -1387,67 +1352,67 @@ mod tests {
 
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 9, 9)),
-                    WallAdjacency::NORTH_EAST
+                    Adjacency::NORTH_EAST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 10, 9)),
-                    WallAdjacency::NORTH | WallAdjacency::NORTH_EAST
+                    Adjacency::NORTH | Adjacency::NORTH_EAST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 11, 9)),
-                    WallAdjacency::NORTH_WEST | WallAdjacency::NORTH
+                    Adjacency::NORTH_WEST | Adjacency::NORTH
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 12, 9)),
-                    WallAdjacency::NORTH_WEST
+                    Adjacency::NORTH_WEST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 9, 10)),
-                    WallAdjacency::NORTH_EAST | WallAdjacency::EAST
+                    Adjacency::NORTH_EAST | Adjacency::EAST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 10, 10)),
-                    WallAdjacency::NORTH | WallAdjacency::EAST
+                    Adjacency::NORTH | Adjacency::EAST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 11, 10)),
-                    WallAdjacency::NORTH_WEST | WallAdjacency::WEST
+                    Adjacency::NORTH_WEST | Adjacency::WEST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 12, 10)),
-                    WallAdjacency::WEST
+                    Adjacency::WEST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 9, 11)),
-                    WallAdjacency::EAST | WallAdjacency::SOUTH_EAST
+                    Adjacency::EAST | Adjacency::SOUTH_EAST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 10, 11)),
-                    WallAdjacency::SOUTH | WallAdjacency::SOUTH_EAST
+                    Adjacency::SOUTH | Adjacency::SOUTH_EAST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 11, 11)),
-                    WallAdjacency::WEST | WallAdjacency::SOUTH_WEST | WallAdjacency::SOUTH
+                    Adjacency::WEST | Adjacency::SOUTH_WEST | Adjacency::SOUTH
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 12, 11)),
-                    WallAdjacency::SOUTH_WEST
+                    Adjacency::SOUTH_WEST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 9, 12)),
-                    WallAdjacency::SOUTH_EAST
+                    Adjacency::SOUTH_EAST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 10, 12)),
-                    WallAdjacency::SOUTH
+                    Adjacency::SOUTH
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 11, 12)),
-                    WallAdjacency::SOUTH_WEST
+                    Adjacency::SOUTH_WEST
                 );
                 assert_eq!(
                     storage.get_wall_adjacency(TilePosition::new(layer, 12, 12)),
-                    WallAdjacency::NONE
+                    Adjacency::NONE
                 );
             })
             .unwrap();
@@ -1468,20 +1433,14 @@ mod tests {
                 storage.set_material(center, TileMaterial::Wall);
                 storage.set_material(east_neighbor, TileMaterial::Empty);
 
-                assert_eq!(storage.get_wall_adjacency(center), WallAdjacency::NONE);
-                assert_eq!(
-                    storage.get_wall_adjacency(east_neighbor),
-                    WallAdjacency::WEST
-                );
+                assert_eq!(storage.get_wall_adjacency(center), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(east_neighbor), Adjacency::WEST);
 
                 storage.set_material(center, TileMaterial::Wall);
                 storage.set_material(east_neighbor, TileMaterial::Empty);
 
-                assert_eq!(storage.get_wall_adjacency(center), WallAdjacency::NONE);
-                assert_eq!(
-                    storage.get_wall_adjacency(east_neighbor),
-                    WallAdjacency::WEST
-                );
+                assert_eq!(storage.get_wall_adjacency(center), Adjacency::NONE);
+                assert_eq!(storage.get_wall_adjacency(east_neighbor), Adjacency::WEST);
             })
             .unwrap();
     }

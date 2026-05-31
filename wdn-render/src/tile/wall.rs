@@ -1,11 +1,8 @@
-use wdn_physics::tile::{
-    adjacency::{DoorAdjacency, WallAdjacency},
-    material::TileMaterial,
-};
+use wdn_physics::tile::{adjacency::Adjacency, material::TileMaterial};
 
 use crate::tile::WALL_OFFSET;
 
-pub fn sprite_offset(material: TileMaterial, walls: WallAdjacency, doors: DoorAdjacency) -> u16 {
+pub fn sprite_offset(material: TileMaterial, walls: Adjacency, doors: Adjacency) -> u16 {
     let offset = match material {
         TileMaterial::Empty => empty_sprite_offset(walls),
         TileMaterial::Wall => wall_sprite_offset(walls, doors),
@@ -15,7 +12,7 @@ pub fn sprite_offset(material: TileMaterial, walls: WallAdjacency, doors: DoorAd
     offset + WALL_OFFSET
 }
 
-fn empty_sprite_offset(walls: WallAdjacency) -> u16 {
+fn empty_sprite_offset(walls: Adjacency) -> u16 {
     const LOOKUP: [u8; 256] = [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
@@ -31,7 +28,7 @@ fn empty_sprite_offset(walls: WallAdjacency) -> u16 {
     LOOKUP[walls.bits() as usize] as u16
 }
 
-fn wall_sprite_offset(walls: WallAdjacency, doors: DoorAdjacency) -> u16 {
+fn wall_sprite_offset(walls: Adjacency, doors: Adjacency) -> u16 {
     const LOOKUP: [u8; 256] = [
         5, 25, 35, 39, 41, 51, 56, 58, 6, 6, 36, 36, 42, 42, 57, 57, 5, 25, 35, 39, 41, 51, 56, 58,
         6, 6, 36, 36, 42, 42, 57, 57, 7, 26, 7, 26, 43, 52, 43, 52, 8, 8, 8, 8, 44, 44, 44, 44, 9,
@@ -46,15 +43,22 @@ fn wall_sprite_offset(walls: WallAdjacency, doors: DoorAdjacency) -> u16 {
         22, 22, 22, 22, 22, 22, 23, 34, 23, 34, 23, 34, 23, 34, 24, 24, 24, 24, 24, 24, 24, 24,
     ];
 
-    let wall_bits = walls
-        .difference(WallAdjacency::NORTH_WEST | WallAdjacency::NORTH | WallAdjacency::NORTH_EAST)
-        .bits();
-    let door_bits = doors.bits() >> 1;
+    let mut mask =
+        walls.difference(Adjacency::NORTH_WEST | Adjacency::NORTH | Adjacency::NORTH_EAST);
+    if doors.contains(Adjacency::EAST) {
+        mask.insert(Adjacency::NORTH_WEST);
+    }
+    if doors.contains(Adjacency::SOUTH) {
+        mask.insert(Adjacency::NORTH);
+    }
+    if doors.contains(Adjacency::WEST) {
+        mask.insert(Adjacency::NORTH_EAST);
+    }
 
-    LOOKUP[(wall_bits | door_bits) as usize] as u16
+    LOOKUP[mask.bits() as usize] as u16
 }
 
-fn door_sprite_offset(walls: WallAdjacency) -> u16 {
+fn door_sprite_offset(walls: Adjacency) -> u16 {
     const LOOKUP: [u8; 256] = [
         0, 0, 59, 59, 0, 0, 59, 59, 0, 0, 59, 59, 0, 0, 59, 59, 0, 0, 59, 59, 0, 0, 59, 59, 0, 0,
         59, 59, 0, 0, 59, 59, 60, 60, 61, 61, 60, 60, 61, 61, 60, 60, 61, 61, 60, 60, 61, 61, 62,
@@ -76,15 +80,14 @@ fn door_sprite_offset(walls: WallAdjacency) -> u16 {
 fn test_empty_sprite_offset() {
     use std::collections::HashMap;
 
-    let mut patterns: HashMap<WallAdjacency, u16> = HashMap::new();
+    let mut patterns: HashMap<Adjacency, u16> = HashMap::new();
 
-    for walls in WallAdjacency::values() {
-        let mut normal = walls.intersection(
-            WallAdjacency::SOUTH | WallAdjacency::SOUTH_WEST | WallAdjacency::SOUTH_EAST,
-        );
+    for walls in Adjacency::values() {
+        let mut normal =
+            walls.intersection(Adjacency::SOUTH | Adjacency::SOUTH_WEST | Adjacency::SOUTH_EAST);
 
-        if !normal.contains(WallAdjacency::SOUTH) {
-            normal = WallAdjacency::NONE;
+        if !normal.contains(Adjacency::SOUTH) {
+            normal = Adjacency::NONE;
         }
 
         let offset = patterns.len() as u16;
@@ -100,27 +103,32 @@ fn test_empty_sprite_offset() {
 fn test_wall_sprite_offset() {
     use std::collections::HashMap;
 
-    let mut patterns: HashMap<(WallAdjacency, DoorAdjacency), u16> = HashMap::new();
+    let mut patterns: HashMap<(Adjacency, Adjacency), u16> = HashMap::new();
 
-    for doors in DoorAdjacency::values() {
-        for walls in WallAdjacency::values() {
-            let mut normal_walls = walls.difference(
-                WallAdjacency::NORTH_WEST | WallAdjacency::NORTH | WallAdjacency::NORTH_EAST,
+    for doors in Adjacency::values() {
+        for walls in Adjacency::values() {
+            let mut normal_walls =
+                walls.difference(Adjacency::NORTH_WEST | Adjacency::NORTH | Adjacency::NORTH_EAST);
+            let mut normal_doors = doors.difference(
+                Adjacency::NORTH_WEST
+                    | Adjacency::NORTH
+                    | Adjacency::NORTH_EAST
+                    | Adjacency::SOUTH_EAST
+                    | Adjacency::SOUTH_WEST,
             );
-            let mut normal_doors = doors.difference(DoorAdjacency::NORTH);
 
-            if walls.contains(WallAdjacency::SOUTH) {
-                normal_doors.remove(DoorAdjacency::SOUTH);
+            if walls.contains(Adjacency::SOUTH) {
+                normal_doors.remove(Adjacency::SOUTH);
             } else {
-                normal_walls.remove(WallAdjacency::SOUTH_WEST | WallAdjacency::SOUTH_EAST);
+                normal_walls.remove(Adjacency::SOUTH_WEST | Adjacency::SOUTH_EAST);
             }
 
-            if walls.contains(WallAdjacency::WEST) {
-                normal_doors.remove(DoorAdjacency::WEST);
+            if walls.contains(Adjacency::WEST) {
+                normal_doors.remove(Adjacency::WEST);
             }
 
-            if walls.contains(WallAdjacency::EAST) {
-                normal_doors.remove(DoorAdjacency::EAST);
+            if walls.contains(Adjacency::EAST) {
+                normal_doors.remove(Adjacency::EAST);
             }
 
             let offset = 5 + patterns.len() as u16;
@@ -139,25 +147,22 @@ fn test_wall_sprite_offset() {
 fn test_door_sprite_offset() {
     use std::collections::HashMap;
 
-    let mut patterns: HashMap<WallAdjacency, u16> = HashMap::new();
+    let mut patterns: HashMap<Adjacency, u16> = HashMap::new();
 
-    for walls in WallAdjacency::values() {
+    for walls in Adjacency::values() {
         let mut normal_walls = walls.difference(
-            WallAdjacency::NORTH_WEST
-                | WallAdjacency::NORTH_EAST
-                | WallAdjacency::WEST
-                | WallAdjacency::EAST,
+            Adjacency::NORTH_WEST | Adjacency::NORTH_EAST | Adjacency::WEST | Adjacency::EAST,
         );
 
-        if !normal_walls.contains(WallAdjacency::SOUTH) {
-            normal_walls.remove(WallAdjacency::SOUTH_WEST | WallAdjacency::SOUTH_EAST);
+        if !normal_walls.contains(Adjacency::SOUTH) {
+            normal_walls.remove(Adjacency::SOUTH_WEST | Adjacency::SOUTH_EAST);
         }
 
-        if !walls.contains(WallAdjacency::SOUTH) {
-            normal_walls.remove(WallAdjacency::SOUTH_WEST | WallAdjacency::SOUTH_EAST);
+        if !walls.contains(Adjacency::SOUTH) {
+            normal_walls.remove(Adjacency::SOUTH_WEST | Adjacency::SOUTH_EAST);
         }
 
-        normal_walls.remove(WallAdjacency::WEST | WallAdjacency::EAST);
+        normal_walls.remove(Adjacency::WEST | Adjacency::EAST);
 
         if normal_walls.is_empty() {
             assert_eq!(

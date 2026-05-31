@@ -12,8 +12,7 @@ use crate::{
     PhysicsSystems,
     kinematics::{GlobalPosition, GlobalVelocity},
     tile::{
-        Tile, adjacency::WallAdjacency, index::TileIndex, position::TilePosition,
-        storage::TileStorage,
+        Tile, adjacency::Adjacency, index::TileIndex, position::TilePosition, storage::TileStorage,
     },
 };
 
@@ -116,7 +115,7 @@ pub fn resolve_collisions(
                 }
             }
 
-            if wall_adjacency != WallAdjacency::NONE {
+            if wall_adjacency != Adjacency::NONE {
                 collisions.check_tile(&collider, &index, tile_position, wall_adjacency, delta_secs);
             }
         });
@@ -290,10 +289,10 @@ impl Collisions {
         collider: &ColliderQueryItem,
         index: &TileIndex,
         tile_position: TilePosition,
-        adjacency: WallAdjacency,
+        adjacency: Adjacency,
         delta_secs: f32,
     ) {
-        if adjacency.contains(WallAdjacency::EAST) {
+        if adjacency.contains(Adjacency::EAST) {
             self.check_tile_edge(
                 collider,
                 index,
@@ -306,7 +305,7 @@ impl Collisions {
             );
         }
 
-        if adjacency.contains(WallAdjacency::NORTH) {
+        if adjacency.contains(Adjacency::NORTH) {
             self.check_tile_edge(
                 collider,
                 index,
@@ -319,7 +318,7 @@ impl Collisions {
             );
         }
 
-        if adjacency.contains(WallAdjacency::WEST) {
+        if adjacency.contains(Adjacency::WEST) {
             self.check_tile_edge(
                 collider,
                 index,
@@ -332,7 +331,7 @@ impl Collisions {
             );
         }
 
-        if adjacency.contains(WallAdjacency::SOUTH) {
+        if adjacency.contains(Adjacency::SOUTH) {
             self.check_tile_edge(
                 collider,
                 index,
@@ -345,8 +344,8 @@ impl Collisions {
             );
         }
 
-        if adjacency.contains(WallAdjacency::NORTH_EAST)
-            && !adjacency.intersects(WallAdjacency::NORTH | WallAdjacency::EAST)
+        if adjacency.contains(Adjacency::NORTH_EAST)
+            && !adjacency.intersects(Adjacency::NORTH | Adjacency::EAST)
         {
             self.check_tile_corner(
                 collider,
@@ -357,8 +356,8 @@ impl Collisions {
             );
         }
 
-        if adjacency.contains(WallAdjacency::NORTH_WEST)
-            && !adjacency.intersects(WallAdjacency::NORTH | WallAdjacency::WEST)
+        if adjacency.contains(Adjacency::NORTH_WEST)
+            && !adjacency.intersects(Adjacency::NORTH | Adjacency::WEST)
         {
             self.check_tile_corner(
                 collider,
@@ -369,8 +368,8 @@ impl Collisions {
             );
         }
 
-        if adjacency.contains(WallAdjacency::SOUTH_WEST)
-            && !adjacency.intersects(WallAdjacency::SOUTH | WallAdjacency::WEST)
+        if adjacency.contains(Adjacency::SOUTH_WEST)
+            && !adjacency.intersects(Adjacency::SOUTH | Adjacency::WEST)
         {
             self.check_tile_corner(
                 collider,
@@ -381,8 +380,8 @@ impl Collisions {
             );
         }
 
-        if adjacency.contains(WallAdjacency::SOUTH_EAST)
-            && !adjacency.intersects(WallAdjacency::SOUTH | WallAdjacency::EAST)
+        if adjacency.contains(Adjacency::SOUTH_EAST)
+            && !adjacency.intersects(Adjacency::SOUTH | Adjacency::EAST)
         {
             self.check_tile_corner(
                 collider,
@@ -525,16 +524,16 @@ fn wall_collision(distance: f32, speed: f32, radius: f32) -> Option<f32> {
     Some((distance - radius) / speed)
 }
 
-fn tile_neighborhood(position: TilePosition) -> [(TilePosition, WallAdjacency); 9] {
+fn tile_neighborhood(position: TilePosition) -> [(TilePosition, Adjacency); 9] {
     [
-        (position.north().west(), WallAdjacency::NORTH_WEST),
-        (position.north(), WallAdjacency::NORTH),
-        (position.north().east(), WallAdjacency::NORTH_EAST),
-        (position.east(), WallAdjacency::EAST),
-        (position.south().east(), WallAdjacency::SOUTH_EAST),
-        (position.south(), WallAdjacency::SOUTH),
-        (position.south().west(), WallAdjacency::SOUTH_WEST),
-        (position.west(), WallAdjacency::WEST),
-        (position, WallAdjacency::NONE),
+        (position.north().west(), Adjacency::NORTH_WEST),
+        (position.north(), Adjacency::NORTH),
+        (position.north().east(), Adjacency::NORTH_EAST),
+        (position.east(), Adjacency::EAST),
+        (position.south().east(), Adjacency::SOUTH_EAST),
+        (position.south(), Adjacency::SOUTH),
+        (position.south().west(), Adjacency::SOUTH_WEST),
+        (position.west(), Adjacency::WEST),
+        (position, Adjacency::NONE),
     ]
 }

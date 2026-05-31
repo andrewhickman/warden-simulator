@@ -5,7 +5,7 @@ use bevy_ecs::{entity::EntityHashSet, lifecycle::HookContext, prelude::*, world:
 use bevy_platform::collections::{HashMap, HashSet, hash_map};
 use wdn_physics::tile::{
     CHUNK_SIZE, CHUNK_SIZE_SQUARED,
-    adjacency::{DoorAdjacency, WallAdjacency},
+    adjacency::Adjacency,
     material::TileMaterial,
     position::{TileChunkOffset, TileChunkPosition, TilePosition},
     storage::{TileChunk, TileMap},
@@ -27,9 +27,9 @@ pub struct TileChunkSections {
 }
 
 #[derive(Debug)]
-struct TileChunkSection {
+pub struct TileChunkSection {
     tiles: Vec<TileChunkOffset>,
-    doors: HashMap<TilePosition, DoorAdjacency>,
+    doors: HashMap<TilePosition, Adjacency>,
     edges: usize,
     region: Entity,
 }
@@ -262,21 +262,16 @@ impl TileChunkSections {
     pub fn doors(
         &self,
         offset: TileChunkOffset,
-    ) -> Option<impl Iterator<Item = (TilePosition, DoorAdjacency)> + '_> {
+    ) -> Option<impl Iterator<Item = (TilePosition, Adjacency)> + '_> {
         let section = self.set.get_section(offset)?;
-        Some(
-            self.sections[&section]
-                .doors
-                .iter()
-                .map(|(&pos, &adj)| (pos, adj)),
-        )
+        Some(self.sections[&section].doors())
     }
 
     pub fn sections(&self) -> impl Iterator<Item = TileChunkOffset> + '_ {
         self.sections.keys().copied()
     }
 
-    fn section(&self, offset: TileChunkOffset) -> &TileChunkSection {
+    pub fn section(&self, offset: TileChunkOffset) -> &TileChunkSection {
         &self.sections[&offset]
     }
 
@@ -286,12 +281,15 @@ impl TileChunkSections {
 }
 
 impl TileChunkSection {
-    fn insert(
-        &mut self,
-        position: TileChunkPosition,
-        offset: TileChunkOffset,
-        doors: DoorAdjacency,
-    ) {
+    pub fn size(&self) -> usize {
+        self.tiles.len()
+    }
+
+    pub fn doors(&self) -> impl Iterator<Item = (TilePosition, Adjacency)> + '_ {
+        self.doors.iter().map(|(&pos, &adj)| (pos, adj))
+    }
+
+    fn insert(&mut self, position: TileChunkPosition, offset: TileChunkOffset, doors: Adjacency) {
         let index = self.tiles.len();
         self.tiles.push(offset);
         if offset.on_chunk_edge() {
@@ -299,34 +297,34 @@ impl TileChunkSection {
             self.edges += 1;
         }
 
-        if doors != DoorAdjacency::NONE {
+        if doors != Adjacency::NONE {
             let center = TilePosition::from((position, offset));
-            if doors.contains(DoorAdjacency::WEST) {
+            if doors.contains(Adjacency::WEST) {
                 self.doors
                     .entry(center.west())
                     .or_default()
-                    .insert(DoorAdjacency::WEST);
+                    .insert(Adjacency::WEST);
             }
 
-            if doors.contains(DoorAdjacency::SOUTH) {
+            if doors.contains(Adjacency::SOUTH) {
                 self.doors
                     .entry(center.south())
                     .or_default()
-                    .insert(DoorAdjacency::SOUTH);
+                    .insert(Adjacency::SOUTH);
             }
 
-            if doors.contains(DoorAdjacency::EAST) {
+            if doors.contains(Adjacency::EAST) {
                 self.doors
                     .entry(center.east())
                     .or_default()
-                    .insert(DoorAdjacency::EAST);
+                    .insert(Adjacency::EAST);
             }
 
-            if doors.contains(DoorAdjacency::NORTH) {
+            if doors.contains(Adjacency::NORTH) {
                 self.doors
                     .entry(center.north())
                     .or_default()
-                    .insert(DoorAdjacency::NORTH);
+                    .insert(Adjacency::NORTH);
             }
         }
     }
@@ -349,25 +347,25 @@ impl TileChunkSection {
             let position = TilePosition::from((chunk_position, offset));
 
             if offset.x() == 0
-                && !walls.contains(WallAdjacency::WEST)
-                && !doors.contains(DoorAdjacency::WEST)
+                && !walls.contains(Adjacency::WEST)
+                && !doors.contains(Adjacency::WEST)
             {
                 f(position.west())?;
             } else if offset.x() == edge
-                && !walls.contains(WallAdjacency::EAST)
-                && !doors.contains(DoorAdjacency::EAST)
+                && !walls.contains(Adjacency::EAST)
+                && !doors.contains(Adjacency::EAST)
             {
                 f(position.east())?;
             }
 
             if offset.y() == 0
-                && !walls.contains(WallAdjacency::SOUTH)
-                && !doors.contains(DoorAdjacency::SOUTH)
+                && !walls.contains(Adjacency::SOUTH)
+                && !doors.contains(Adjacency::SOUTH)
             {
                 f(position.south())?;
             } else if offset.y() == edge
-                && !walls.contains(WallAdjacency::NORTH)
-                && !doors.contains(DoorAdjacency::NORTH)
+                && !walls.contains(Adjacency::NORTH)
+                && !doors.contains(Adjacency::NORTH)
             {
                 f(position.north())?;
             }
@@ -430,7 +428,7 @@ impl TileChunkDisjointSet {
         self.find(offset.west()?)
     }
 
-    fn insert(&mut self, offset: TileChunkOffset, doors: DoorAdjacency) {
+    fn insert(&mut self, offset: TileChunkOffset, doors: Adjacency) {
         let section = match (self.find_west(offset), self.find_south(offset)) {
             (Some(west_section), Some(north_section)) => {
                 if west_section != north_section {
@@ -455,8 +453,22 @@ impl TileChunkDisjointSetEntry {
     const EMPTY: TileChunkDisjointSetEntry = TileChunkDisjointSetEntry(0);
     const SOLID: TileChunkDisjointSetEntry = TileChunkDisjointSetEntry(u16::MAX);
 
-    fn new(section: TileChunkOffset, doors: DoorAdjacency) -> Self {
-        TileChunkDisjointSetEntry(section.index_u16() | (doors.bits() as u16) << 10)
+    fn new(section: TileChunkOffset, doors: Adjacency) -> Self {
+        let mut bits = section.index_u16();
+        if doors.contains(Adjacency::NORTH) {
+            bits |= 1 << 10;
+        }
+        if doors.contains(Adjacency::EAST) {
+            bits |= 1 << 11;
+        }
+        if doors.contains(Adjacency::SOUTH) {
+            bits |= 1 << 12;
+        }
+        if doors.contains(Adjacency::WEST) {
+            bits |= 1 << 13;
+        }
+
+        TileChunkDisjointSetEntry(bits)
     }
 
     fn is_solid(self) -> bool {
@@ -479,8 +491,23 @@ impl TileChunkDisjointSetEntry {
         self.0 = (self.0 & !0x3FF) | section.index_u16();
     }
 
-    fn door_adjacency(self) -> DoorAdjacency {
-        DoorAdjacency::from_bits_retain((self.0 >> 10) as u8)
+    fn door_adjacency(self) -> Adjacency {
+        let mut adjacency = Adjacency::NONE;
+
+        if self.0 & (1 << 10) != 0 {
+            adjacency.insert(Adjacency::NORTH);
+        }
+        if self.0 & (1 << 11) != 0 {
+            adjacency.insert(Adjacency::EAST);
+        }
+        if self.0 & (1 << 12) != 0 {
+            adjacency.insert(Adjacency::SOUTH);
+        }
+        if self.0 & (1 << 13) != 0 {
+            adjacency.insert(Adjacency::WEST);
+        }
+
+        adjacency
     }
 
     fn invalid_sections(self, other: Self) -> impl Iterator<Item = TileChunkOffset> {
@@ -507,10 +534,15 @@ impl fmt::Debug for TileChunkDisjointSetEntry {
 #[test]
 fn pack_disjoint_set_entry() {
     for offset in TileChunkOffset::iter() {
-        for doors in DoorAdjacency::values() {
+        for doors in Adjacency::values() {
             let entry = TileChunkDisjointSetEntry::new(offset, doors);
             assert_eq!(entry.section(), offset);
-            assert_eq!(entry.door_adjacency(), doors);
+            assert_eq!(
+                entry.door_adjacency(),
+                doors.intersection(
+                    Adjacency::NORTH | Adjacency::EAST | Adjacency::SOUTH | Adjacency::WEST
+                )
+            );
         }
     }
 }

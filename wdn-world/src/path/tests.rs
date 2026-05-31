@@ -6,7 +6,7 @@ use bevy_math::IVec2;
 use bevy_platform::collections::HashSet;
 use wdn_physics::layer::Layer;
 use wdn_physics::tile::CHUNK_SIZE;
-use wdn_physics::tile::adjacency::DoorAdjacency;
+use wdn_physics::tile::adjacency::Adjacency;
 use wdn_physics::tile::storage::TileChunk;
 use wdn_physics::tile::{
     TilePlugin,
@@ -1170,10 +1170,10 @@ fn validate_regions(
                     assert!(chunk_sections.region(offset).is_none());
 
                     for (neighbor, adjacency) in [
-                        (position.east(), DoorAdjacency::WEST),
-                        (position.west(), DoorAdjacency::EAST),
-                        (position.north(), DoorAdjacency::SOUTH),
-                        (position.south(), DoorAdjacency::NORTH),
+                        (position.east(), Adjacency::WEST),
+                        (position.west(), Adjacency::EAST),
+                        (position.north(), Adjacency::SOUTH),
+                        (position.south(), Adjacency::NORTH),
                     ] {
                         if let Some(neighbor_chunk_id) = storage.chunk_id(neighbor.chunk_position())
                         {

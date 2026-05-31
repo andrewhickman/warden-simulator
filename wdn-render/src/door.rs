@@ -7,7 +7,7 @@ use bevy_transform::prelude::*;
 use wdn_physics::{
     kinematics::Position,
     tile::{
-        adjacency::{TileAdjacency, WallAdjacency},
+        adjacency::{Adjacency, TileAdjacency},
         position::TilePosition,
         storage::TileChunk,
     },
@@ -115,13 +115,13 @@ pub fn update_doors(
 impl DoorDirection {
     fn from_adjacency(adjacency: &TileAdjacency) -> Self {
         let walls = adjacency.walls();
-        if walls.contains(WallAdjacency::WEST | WallAdjacency::EAST) {
+        if walls.contains(Adjacency::WEST | Adjacency::EAST) {
             Self::Horizontal
-        } else if walls.contains(WallAdjacency::NORTH | WallAdjacency::SOUTH) {
+        } else if walls.contains(Adjacency::NORTH | Adjacency::SOUTH) {
             Self::Vertical
-        } else if walls.intersects(WallAdjacency::WEST | WallAdjacency::EAST) {
+        } else if walls.intersects(Adjacency::WEST | Adjacency::EAST) {
             Self::Horizontal
-        } else if walls.intersects(WallAdjacency::NORTH | WallAdjacency::SOUTH) {
+        } else if walls.intersects(Adjacency::NORTH | Adjacency::SOUTH) {
             Self::Vertical
         } else {
             Self::Horizontal
@@ -154,10 +154,10 @@ impl DoorDirection {
         }
     }
 
-    fn clip_rect(&self, tile: TilePosition, walls: WallAdjacency) -> Rect {
+    fn clip_rect(&self, tile: TilePosition, walls: Adjacency) -> Rect {
         match self {
             DoorDirection::Horizontal => Rect::new(
-                if walls.contains(WallAdjacency::WEST) {
+                if walls.contains(Adjacency::WEST) {
                     tile.x() as f32
                 } else {
                     tile.x() as f32 - 1.0
@@ -170,7 +170,7 @@ impl DoorDirection {
                 tile.x() as f32,
                 tile.y() as f32,
                 tile.x() as f32 + 1.0,
-                if walls.contains(WallAdjacency::NORTH) {
+                if walls.contains(Adjacency::NORTH) {
                     tile.y() as f32 + 1.572
                 } else {
                     tile.y() as f32 + 2.0
