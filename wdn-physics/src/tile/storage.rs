@@ -62,6 +62,10 @@ pub struct TileData {
 }
 
 impl TileStorage<'_, '_> {
+    pub fn chunks(&self) -> &Query<'_, '_, &'static TileChunk> {
+        &self.chunks
+    }
+
     pub fn contains(&self, tile: TilePosition) -> bool {
         self.map.contains(tile.chunk_position())
     }

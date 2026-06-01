@@ -17,6 +17,7 @@ use crate::path::map::LayerRegionMap;
 #[require(LayerRegionMap)]
 #[component(on_add = LayerRegion::on_add)]
 pub struct LayerRegion {
+    size: usize,
     sections: Vec<(Entity, TilePosition)>,
 }
 
@@ -171,6 +172,7 @@ pub fn update_regions(
         debug_assert!(queue.is_empty());
         queue.push_back((chunk_id, section));
 
+        let mut region_size = 0;
         let mut region_sections = Vec::new();
 
         while let Some((current_chunk_id, current_section)) = queue.pop_front() {
@@ -182,6 +184,7 @@ pub fn update_regions(
                 invalid_regions.insert(current_section_data.region);
             }
 
+            region_size += current_section_data.size();
             region_sections.push((current_chunk_id, current_section));
 
             current_section_data.for_each_neighbor(current_chunk, |neighbor| {
@@ -204,6 +207,7 @@ pub fn update_regions(
 
         commands.spawn((
             LayerRegion {
+                size: region_size,
                 sections: region_sections,
             },
             ChildOf(section.layer()),
@@ -221,6 +225,10 @@ pub fn update_regions(
 }
 
 impl LayerRegion {
+    pub fn size(&self) -> usize {
+        self.size
+    }
+
     pub fn sections(&self) -> impl Iterator<Item = (Entity, TilePosition)> {
         self.sections.iter().copied()
     }

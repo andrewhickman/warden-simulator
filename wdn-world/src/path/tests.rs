@@ -33,6 +33,7 @@ fn clear_and_set_tile_updates_region() {
 
     let regions = get_regions(&mut app);
     assert_eq!(regions.len(), 1);
+    assert_eq!(region_size(&mut app, regions[0]), 1024);
     assert_eq!(tile_region(&mut app, center), Some(regions[0]));
     assert_eq!(tile_region(&mut app, center.north()), Some(regions[0]));
     assert_eq!(tile_region(&mut app, center.south()), Some(regions[0]));
@@ -45,6 +46,7 @@ fn clear_and_set_tile_updates_region() {
     let new_regions = get_regions(&mut app);
     assert_eq!(new_regions.len(), 1);
     assert_ne!(new_regions[0], regions[0]);
+    assert_eq!(region_size(&mut app, new_regions[0]), 1023);
     assert_eq!(tile_region(&mut app, center), None);
     assert_eq!(tile_region(&mut app, center.north()), Some(new_regions[0]));
     assert_eq!(tile_region(&mut app, center.south()), Some(new_regions[0]));
@@ -74,6 +76,9 @@ fn cross_pattern_isolates_center() {
     assert!(regions.contains(&outside));
     assert_ne!(center_region, outside);
 
+    assert_eq!(region_size(&mut app, center_region), 1);
+    assert_eq!(region_size(&mut app, outside), 1019);
+
     assert_eq!(tile_region(&mut app, center.north()), None);
     assert_eq!(tile_region(&mut app, center.south()), None);
     assert_eq!(tile_region(&mut app, center.east()), None);
@@ -99,6 +104,9 @@ fn square_boundary_creates_regions() {
     assert!(regions.contains(&outside));
     assert_ne!(inside, outside);
 
+    assert_eq!(region_size(&mut app, inside), 9);
+    assert_eq!(region_size(&mut app, outside), 4071);
+
     assert_eq!(tile_region(&mut app, center.north()), Some(inside));
     assert_eq!(tile_region(&mut app, center.south()), Some(inside));
     assert_eq!(tile_region(&mut app, center.east()), Some(inside));
@@ -122,6 +130,9 @@ fn subdivide_square_into_quadrants() {
 
     assert!(regions.contains(&inside));
     assert!(regions.contains(&outside));
+
+    assert_eq!(region_size(&mut app, inside), 9);
+    assert_eq!(region_size(&mut app, outside), 999);
 
     set_wall_tile(&mut app, center.north());
     set_wall_tile(&mut app, center.east());
@@ -153,6 +164,13 @@ fn subdivide_square_into_quadrants() {
     let new_regions = EntityHashSet::from_iter([outside, c, nw, ne, sw, se]);
     assert_eq!(new_regions.len(), 6);
     assert!(new_regions.iter().all(|r| regions.contains(r)));
+
+    assert_eq!(region_size(&mut app, outside), 999);
+    assert_eq!(region_size(&mut app, c), 1);
+    assert_eq!(region_size(&mut app, nw), 1);
+    assert_eq!(region_size(&mut app, ne), 1);
+    assert_eq!(region_size(&mut app, sw), 1);
+    assert_eq!(region_size(&mut app, se), 1);
 }
 
 #[test]
@@ -179,6 +197,9 @@ fn diamond_split_vertically() {
     assert!(regions.contains(&outside));
     assert!(regions.contains(&inside));
 
+    assert_eq!(region_size(&mut app, outside), 4055);
+    assert_eq!(region_size(&mut app, inside), 25);
+
     for dy in -4..4 {
         set_wall_tile(&mut app, center.with_offset(IVec2::new(0, dy)));
     }
@@ -198,6 +219,10 @@ fn diamond_split_vertically() {
     let new_regions = EntityHashSet::from_iter([outside, left, right]);
     assert_eq!(new_regions.len(), 3);
     assert!(new_regions.iter().all(|r| regions.contains(r)));
+
+    assert_eq!(region_size(&mut app, outside), 4055);
+    assert_eq!(region_size(&mut app, left), 9);
+    assert_eq!(region_size(&mut app, right), 9);
 }
 
 #[test]
@@ -223,6 +248,10 @@ fn horizontal_split_and_merge() {
     assert!(regions.contains(&north));
     assert!(regions.contains(&south));
 
+    assert_eq!(region_size(&mut app, outside), 999);
+    assert_eq!(region_size(&mut app, north), 3);
+    assert_eq!(region_size(&mut app, south), 3);
+
     clear_tile(&mut app, center);
 
     update_regions(&mut app);
@@ -236,6 +265,9 @@ fn horizontal_split_and_merge() {
     assert!(new_regions.contains(&combined));
     assert!(!new_regions.contains(&north));
     assert!(!new_regions.contains(&south));
+
+    assert_eq!(region_size(&mut app, outside), 999);
+    assert_eq!(region_size(&mut app, combined), 7);
 
     assert_eq!(tile_region(&mut app, center.north()), Some(combined));
     assert_eq!(tile_region(&mut app, center.south()), Some(combined));
@@ -266,6 +298,10 @@ fn vertical_split_and_merge() {
     assert!(regions.contains(&west));
     assert!(regions.contains(&east));
 
+    assert_eq!(region_size(&mut app, outside), 3975);
+    assert_eq!(region_size(&mut app, west), 36);
+    assert_eq!(region_size(&mut app, east), 36);
+
     let ne = TilePosition::new(layer, 7, 4);
     let se = TilePosition::new(layer, 7, -4);
     let nw = TilePosition::new(layer, -1, 4);
@@ -289,6 +325,9 @@ fn vertical_split_and_merge() {
     assert_ne!(combined, outside);
     assert!(!new_regions.contains(&west));
     assert!(!new_regions.contains(&east));
+
+    assert_eq!(region_size(&mut app, outside), 3975);
+    assert_eq!(region_size(&mut app, combined), 73);
 
     assert_eq!(tile_region(&mut app, ne), Some(combined));
     assert_eq!(tile_region(&mut app, se), Some(combined));
@@ -935,8 +974,8 @@ fn door_splits_region() {
     assert!(regions.contains(&outside));
     assert_ne!(inside, outside);
 
-    let inside_doors = get_region_doors(&mut app, inside);
-    let outside_doors = get_region_doors(&mut app, outside);
+    let inside_doors = region_doors(&mut app, inside);
+    let outside_doors = region_doors(&mut app, outside);
 
     assert_eq!(inside_doors.len(), 1);
     assert!(inside_doors.contains(&door));
@@ -977,8 +1016,8 @@ fn update_section_door() {
     assert!(new_regions.contains(&new_outside));
     assert_ne!(inside, outside);
 
-    let inside_doors = get_region_doors(&mut app, new_inside);
-    let outside_doors = get_region_doors(&mut app, new_outside);
+    let inside_doors = region_doors(&mut app, new_inside);
+    let outside_doors = region_doors(&mut app, new_outside);
 
     assert_eq!(inside_doors.len(), 1);
     assert!(inside_doors.contains(&door));
@@ -1022,8 +1061,8 @@ fn update_section_door_neighbor_chunk() {
     assert!(new_regions.contains(&new_outside));
     assert_ne!(new_inside, new_outside);
 
-    let inside_doors = get_region_doors(&mut app, new_inside);
-    let outside_doors = get_region_doors(&mut app, new_outside);
+    let inside_doors = region_doors(&mut app, new_inside);
+    let outside_doors = region_doors(&mut app, new_outside);
 
     assert_eq!(inside_doors.len(), 1);
     assert!(inside_doors.contains(&door));
@@ -1059,8 +1098,8 @@ fn doors_on_chunk_edge() {
     assert!(regions.contains(&outside));
     assert_ne!(inside, outside);
 
-    let inside_doors = get_region_doors(&mut app, inside);
-    let outside_doors = get_region_doors(&mut app, outside);
+    let inside_doors = region_doors(&mut app, inside);
+    let outside_doors = region_doors(&mut app, outside);
 
     assert_eq!(inside_doors.len(), 4);
     assert!(inside_doors.contains(&south_door));
@@ -1124,9 +1163,16 @@ fn get_regions(app: &mut App) -> Vec<Entity> {
     query.iter(app.world()).collect()
 }
 
-fn get_region_doors(app: &mut App, region: Entity) -> Vec<Entity> {
-    let region = app.world().get::<LayerRegionMap>(region).unwrap();
-    region.doors().collect()
+fn region_doors(app: &mut App, region: Entity) -> Vec<Entity> {
+    app.world()
+        .get::<LayerRegionMap>(region)
+        .unwrap()
+        .doors()
+        .collect()
+}
+
+fn region_size(app: &mut App, region: Entity) -> usize {
+    app.world().get::<LayerRegion>(region).unwrap().size()
 }
 
 fn tile_region(app: &mut App, position: TilePosition) -> Option<Entity> {
@@ -1146,6 +1192,23 @@ fn validate_regions(
     regions: Query<(Entity, &LayerRegion)>,
     chunks: Query<(Entity, &TileChunk, &TileChunkSections)>,
 ) {
+    assert_eq!(
+        storage
+            .chunks()
+            .iter()
+            .map(|chunk| {
+                chunk
+                    .tiles()
+                    .filter(|tile| tile.1.material() == TileMaterial::Empty)
+                    .count()
+            })
+            .sum::<usize>(),
+        regions
+            .iter()
+            .map(|(_, region)| region.size())
+            .sum::<usize>()
+    );
+
     let mut unique_chunk_sections = HashSet::new();
     for (region_id, region) in regions {
         for (chunk_id, section) in region.sections() {
