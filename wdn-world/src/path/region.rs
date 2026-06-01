@@ -303,28 +303,28 @@ impl TileChunkSection {
                 self.doors
                     .entry(center.west())
                     .or_default()
-                    .insert(Adjacency::WEST);
+                    .insert(Adjacency::EAST);
             }
 
             if doors.contains(Adjacency::SOUTH) {
                 self.doors
                     .entry(center.south())
                     .or_default()
-                    .insert(Adjacency::SOUTH);
+                    .insert(Adjacency::NORTH);
             }
 
             if doors.contains(Adjacency::EAST) {
                 self.doors
                     .entry(center.east())
                     .or_default()
-                    .insert(Adjacency::EAST);
+                    .insert(Adjacency::WEST);
             }
 
             if doors.contains(Adjacency::NORTH) {
                 self.doors
                     .entry(center.north())
                     .or_default()
-                    .insert(Adjacency::NORTH);
+                    .insert(Adjacency::SOUTH);
             }
         }
     }

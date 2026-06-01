@@ -1170,10 +1170,10 @@ fn validate_regions(
                     assert!(chunk_sections.region(offset).is_none());
 
                     for (neighbor, adjacency) in [
-                        (position.east(), Adjacency::WEST),
-                        (position.west(), Adjacency::EAST),
-                        (position.north(), Adjacency::SOUTH),
-                        (position.south(), Adjacency::NORTH),
+                        (position.east(), Adjacency::EAST),
+                        (position.west(), Adjacency::WEST),
+                        (position.north(), Adjacency::NORTH),
+                        (position.south(), Adjacency::SOUTH),
                     ] {
                         if let Some(neighbor_chunk_id) = storage.chunk_id(neighbor.chunk_position())
                         {
