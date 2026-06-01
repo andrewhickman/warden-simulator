@@ -16,11 +16,11 @@ use wdn_physics::tile::{
 };
 
 use crate::door::Door;
-use crate::path::map::LayerRegionMap;
+use crate::path::map::RegionDoors;
 
 use super::{
     PathPlugin,
-    region::{LayerRegion, TileChunkSections},
+    region::{Region, TileChunkSections},
 };
 
 #[test]
@@ -1157,22 +1157,20 @@ fn update_regions(app: &mut App) {
 }
 
 fn get_regions(app: &mut App) -> Vec<Entity> {
-    let mut query = app
-        .world_mut()
-        .query_filtered::<Entity, With<LayerRegion>>();
+    let mut query = app.world_mut().query_filtered::<Entity, With<Region>>();
     query.iter(app.world()).collect()
 }
 
 fn region_doors(app: &mut App, region: Entity) -> Vec<Entity> {
     app.world()
-        .get::<LayerRegionMap>(region)
+        .get::<RegionDoors>(region)
         .unwrap()
         .doors()
         .collect()
 }
 
 fn region_size(app: &mut App, region: Entity) -> usize {
-    app.world().get::<LayerRegion>(region).unwrap().size()
+    app.world().get::<Region>(region).unwrap().size()
 }
 
 fn tile_region(app: &mut App, position: TilePosition) -> Option<Entity> {
@@ -1189,7 +1187,7 @@ fn tile_region(app: &mut App, position: TilePosition) -> Option<Entity> {
 
 fn validate_regions(
     storage: TileStorage,
-    regions: Query<(Entity, &LayerRegion)>,
+    regions: Query<(Entity, &Region)>,
     chunks: Query<(Entity, &TileChunk, &TileChunkSections)>,
 ) {
     assert_eq!(

@@ -21,7 +21,7 @@ use wdn_ui::UiPlugin as WdnUiPlugin;
 use wdn_world::{
     WorldPlugin as WdnWorldPlugin, WorldSystems,
     door::Door,
-    path::region::LayerRegion,
+    path::region::Region,
     pawn::{Pawn, PawnAction},
 };
 
@@ -115,7 +115,7 @@ fn startup(mut commands: Commands, mut time: ResMut<Time<Virtual>>, mut storage:
 fn update_storage(
     mut commands: Commands,
     layer: Single<Entity, With<Layer>>,
-    regions: Query<&LayerRegion>,
+    regions: Query<&Region>,
     mut storage: TileStorageMut,
 ) {
     info!("{} regions", regions.iter().count());

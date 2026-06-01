@@ -9,12 +9,12 @@ use bevy_time::prelude::*;
 
 use wdn_physics::{PhysicsSystems, collision::TileCollider, tile::material::TileMaterial};
 
-use crate::WorldSystems;
+use crate::{WorldSystems, path::map::DoorRegions};
 
 pub struct DoorPlugin;
 
 #[derive(Component, Clone, Copy, Debug, Default)]
-#[require(TileCollider, TileMaterial::Door)]
+#[require(TileCollider, TileMaterial::Door, DoorRegions)]
 pub struct Door {
     state: DoorState,
 }

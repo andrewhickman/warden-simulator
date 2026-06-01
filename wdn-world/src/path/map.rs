@@ -1,95 +1,159 @@
-use std::{cmp::Ordering, collections::BinaryHeap, mem::replace};
+use std::{cmp::Ordering, collections::BinaryHeap};
 
-use bevy_ecs::prelude::*;
+use bevy_ecs::{entity::EntityHashMap, prelude::*};
 use bevy_log::warn;
 use bevy_math::{FloatOrd, FloatPow, prelude::*};
 use bevy_platform::collections::{HashMap, HashSet, hash_map};
-use bevy_tasks::ComputeTaskPool;
 use wdn_physics::tile::{
     adjacency::Adjacency, index::TileIndex, position::TilePosition, storage::TileStorage,
 };
 
-use crate::path::region::{LayerRegion, TileChunkSections};
+use crate::path::region::{Region, TileChunkSections};
 
 #[derive(Component, Default)]
-pub struct LayerRegionMap {
-    doors: HashMap<TilePosition, DoorFlowMap>,
+pub struct RegionDoors {
+    doors: EntityHashMap<Entity>,
 }
 
-pub struct DoorFlowMap {
-    pub id: Entity,
-    pub door_adjacency: Adjacency,
-    pub flow: HashMap<TilePosition, Dir2>,
+#[derive(Component, Default)]
+pub struct DoorRegions {
+    north: Option<(Entity, Entity)>,
+    south: Option<(Entity, Entity)>,
+    east: Option<(Entity, Entity)>,
+    west: Option<(Entity, Entity)>,
 }
 
-pub fn update_region_maps(
+#[derive(Component, Debug)]
+pub struct FlowField {
+    door_position: TilePosition,
+    door_adjacency: Adjacency,
+    flow: HashMap<TilePosition, Dir2>,
+}
+
+pub fn update_region_doors(
+    mut commands: Commands,
     index: Res<TileIndex>,
-    storage: TileStorage,
-    mut regions: Query<(&LayerRegion, &mut LayerRegionMap), Added<LayerRegion>>,
+    mut regions: Query<(Entity, &Region, &mut RegionDoors), Added<Region>>,
     sections: Query<&TileChunkSections>,
+    mut doors: Query<&mut DoorRegions>,
+    mut flow_map: Local<EntityHashMap<FlowField>>,
 ) {
-    let storage = &storage;
-    regions.par_iter_mut().for_each(|(region, mut map)| {
-        let mut size = 0;
-        for (chunk_id, section_id) in region.sections() {
-            let section = sections
-                .get(chunk_id)
-                .expect("chunk not found")
-                .section(section_id.chunk_offset());
+    regions
+        .iter_mut()
+        .for_each(|(region_id, region, mut region_doors)| {
+            for (chunk_id, section_id) in region.sections() {
+                let section = sections
+                    .get(chunk_id)
+                    .expect("chunk not found")
+                    .section(section_id.chunk_offset());
 
-            for (door_position, door_adjacency) in section.doors() {
-                match map.doors.entry(door_position) {
-                    hash_map::Entry::Occupied(mut entry) => {
-                        entry.get_mut().door_adjacency.insert(door_adjacency);
-                    }
-                    hash_map::Entry::Vacant(entry) => {
-                        let Some(id) = index.get_tile(door_position) else {
-                            warn!("door at {:?} not found", door_position);
-                            continue;
-                        };
+                for (door_position, door_adjacency) in section.doors() {
+                    let Some(id) = index.get_tile(door_position) else {
+                        warn!("door at {:?} not found", door_position);
+                        continue;
+                    };
 
-                        entry.insert(DoorFlowMap {
-                            id,
-                            door_adjacency,
-                            flow: HashMap::default(),
-                        });
+                    match flow_map.entry(id) {
+                        hash_map::Entry::Occupied(mut entry) => {
+                            entry.get_mut().door_adjacency.insert(door_adjacency);
+                        }
+                        hash_map::Entry::Vacant(entry) => {
+                            entry.insert(FlowField {
+                                door_position,
+                                door_adjacency,
+                                flow: HashMap::default(),
+                            });
+                        }
                     }
                 }
             }
 
-            size += section.size();
-        }
+            region_doors.doors.reserve(flow_map.len());
+            for (door_id, flow) in flow_map.drain() {
+                let adjacency = flow.door_adjacency;
+                let flow_id = commands.spawn((ChildOf(region_id), flow)).id();
 
-        if map.doors.len() > 1 && false {
-            ComputeTaskPool::get().scope(|scope| {
-                map.doors.iter_mut().for_each(|(&door_position, flow)| {
-                    scope.spawn(async move {
-                        flow.generate_flow_field(storage, door_position, size);
-                    });
-                });
-            });
-        } else {
-            map.doors.iter_mut().for_each(|(&door_position, flow)| {
-                flow.generate_flow_field(storage, door_position, size);
-            });
-        }
+                doors
+                    .get_mut(door_id)
+                    .expect("door not found")
+                    .insert(region_id, flow_id, adjacency);
+                region_doors.doors.insert(door_id, flow_id);
+            }
+        });
+}
+
+pub fn update_flow_fields(
+    storage: TileStorage,
+    regions: Query<&Region>,
+    mut flow_fields: Query<(&ChildOf, &mut FlowField), Added<FlowField>>,
+) {
+    flow_fields.par_iter_mut().for_each(|(parent, mut flow)| {
+        let region = regions.get(parent.parent()).expect("region not found");
+        flow.generate_flow_field(&storage, region.size());
     });
 }
 
-impl LayerRegionMap {
+pub fn on_remove_region_doors(
+    trigger: On<Remove, RegionDoors>,
+    regions: Query<&RegionDoors>,
+    mut doors: Query<&mut DoorRegions>,
+) -> Result {
+    let region = regions.get(trigger.entity)?;
+    for door_id in region.doors() {
+        if let Ok(mut door) = doors.get_mut(door_id) {
+            remove_door_region(&mut door.north, trigger.entity);
+            remove_door_region(&mut door.south, trigger.entity);
+            remove_door_region(&mut door.east, trigger.entity);
+            remove_door_region(&mut door.west, trigger.entity);
+        }
+    }
+
+    Ok(())
+}
+
+impl RegionDoors {
     pub fn doors(&self) -> impl Iterator<Item = Entity> {
-        self.doors.values().map(|flow| flow.id)
+        self.doors.keys().copied()
     }
 }
 
-impl DoorFlowMap {
-    fn generate_flow_field(&mut self, storage: &TileStorage, door: TilePosition, size_hint: usize) {
-        let distance = generate_distance_field(storage, door, self.door_adjacency, size_hint + 1);
+impl DoorRegions {
+    pub fn insert(&mut self, region: Entity, flow: Entity, adjacency: Adjacency) {
+        if adjacency.contains(Adjacency::NORTH) {
+            debug_assert!(self.north.is_none());
+            self.north = Some((region, flow));
+        }
+
+        if adjacency.contains(Adjacency::SOUTH) {
+            debug_assert!(self.south.is_none());
+            self.south = Some((region, flow));
+        }
+
+        if adjacency.contains(Adjacency::EAST) {
+            debug_assert!(self.east.is_none());
+            self.east = Some((region, flow));
+        }
+
+        if adjacency.contains(Adjacency::WEST) {
+            debug_assert!(self.west.is_none());
+            self.west = Some((region, flow));
+        }
+    }
+}
+
+impl FlowField {
+    fn generate_flow_field(&mut self, storage: &TileStorage, size_hint: usize) {
+        let distance = generate_distance_field(
+            storage,
+            self.door_position,
+            self.door_adjacency,
+            size_hint + 1,
+        );
         debug_assert_eq!(distance.len(), size_hint + 1);
 
         self.flow.reserve(size_hint);
         for (&tile, &(cost, adjacency)) in &distance {
-            if tile == door {
+            if tile == self.door_position {
                 continue;
             }
 
@@ -104,30 +168,13 @@ impl DoorFlowMap {
 #[derive(Clone, Copy, Eq, PartialEq)]
 struct Node {
     cost: FloatOrd,
-    order: usize,
     position: TilePosition,
     adjacency: Adjacency,
 }
 
-impl Node {
-    fn new(position: TilePosition, adjacency: Adjacency, cost: f32, order: &mut usize) -> Self {
-        let cost = FloatOrd(cost);
-        let order = replace(order, *order + 1);
-        Self {
-            position,
-            adjacency,
-            cost,
-            order,
-        }
-    }
-}
-
 impl Ord for Node {
     fn cmp(&self, other: &Self) -> Ordering {
-        other
-            .cost
-            .cmp(&self.cost)
-            .then_with(|| other.order.cmp(&self.order))
+        other.cost.cmp(&self.cost)
     }
 }
 
@@ -143,7 +190,6 @@ fn generate_distance_field(
     door_adjacency: Adjacency,
     size_hint: usize,
 ) -> HashMap<TilePosition, (f32, Adjacency)> {
-    let mut order = 0;
     let mut open = BinaryHeap::new();
     let mut distance = HashMap::with_capacity(size_hint);
     let mut accepted = HashSet::with_capacity(size_hint);
@@ -159,7 +205,11 @@ fn generate_distance_field(
         let neighbor_adjacency = neighbor_data.solid_adjacency().difference(adjacency);
 
         distance.insert(neighbor, (1.0, neighbor_adjacency));
-        open.push(Node::new(neighbor, neighbor_adjacency, 1.0, &mut order));
+        open.push(Node {
+            position: neighbor,
+            adjacency: neighbor_adjacency,
+            cost: FloatOrd(1.0),
+        });
     });
 
     while let Some(tile) = open.pop() {
@@ -189,12 +239,11 @@ fn generate_distance_field(
                 hash_map::Entry::Occupied(entry) if new_distance >= entry.get().0 => return,
                 entry => {
                     entry.insert((new_distance, neighbor_adjacency));
-                    open.push(Node::new(
-                        neighbor,
-                        neighbor_adjacency,
-                        new_distance,
-                        &mut order,
-                    ));
+                    open.push(Node {
+                        position: neighbor,
+                        adjacency: neighbor_adjacency,
+                        cost: FloatOrd(new_distance),
+                    });
                 }
             }
         });
@@ -280,6 +329,12 @@ fn min_distance(a: Option<f32>, b: Option<f32>) -> Option<f32> {
         (Some(a), Some(b)) => Some(a.min(b)),
         (Some(a), None) | (None, Some(a)) => Some(a),
         (None, None) => None,
+    }
+}
+
+fn remove_door_region(flow: &mut Option<(Entity, Entity)>, region: Entity) {
+    if matches!(flow, Some((r, _)) if *r == region) {
+        *flow = None;
     }
 }
 

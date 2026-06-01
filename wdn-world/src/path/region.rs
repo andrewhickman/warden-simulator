@@ -1,7 +1,7 @@
 use core::fmt;
-use std::{collections::VecDeque, mem::take};
+use std::collections::VecDeque;
 
-use bevy_ecs::{entity::EntityHashSet, lifecycle::HookContext, prelude::*, world::DeferredWorld};
+use bevy_ecs::{entity::EntityHashSet, prelude::*};
 use bevy_platform::collections::{HashMap, HashSet, hash_map};
 use wdn_physics::tile::{
     CHUNK_SIZE, CHUNK_SIZE_SQUARED,
@@ -11,12 +11,11 @@ use wdn_physics::tile::{
     storage::{TileChunk, TileMap},
 };
 
-use crate::path::map::LayerRegionMap;
+use crate::path::map::RegionDoors;
 
 #[derive(Component)]
-#[require(LayerRegionMap)]
-#[component(on_add = LayerRegion::on_add)]
-pub struct LayerRegion {
+#[require(RegionDoors)]
+pub struct Region {
     size: usize,
     sections: Vec<(Entity, TilePosition)>,
 }
@@ -140,7 +139,7 @@ pub fn chunk_sections_changed(changes: Res<TileChunkSectionChanges>) -> bool {
 
 pub fn update_regions(
     mut commands: Commands,
-    regions: Query<&LayerRegion>,
+    regions: Query<&Region>,
     chunks: Query<(&TileChunk, &TileChunkSections)>,
     mut changes: ResMut<TileChunkSectionChanges>,
     map: Res<TileMap>,
@@ -206,7 +205,7 @@ pub fn update_regions(
         }
 
         commands.spawn((
-            LayerRegion {
+            Region {
                 size: region_size,
                 sections: region_sections,
             },
@@ -224,35 +223,29 @@ pub fn update_regions(
     Ok(())
 }
 
-impl LayerRegion {
+pub fn on_add_region(
+    trigger: On<Add, Region>,
+    regions: Query<&Region>,
+    mut chunks: Query<&mut TileChunkSections>,
+) -> Result {
+    let region = regions.get(trigger.entity)?;
+    for &(chunk_id, section) in &region.sections {
+        chunks
+            .get_mut(chunk_id)?
+            .section_mut(section.chunk_offset())
+            .region = trigger.entity;
+    }
+
+    Ok(())
+}
+
+impl Region {
     pub fn size(&self) -> usize {
         self.size
     }
 
     pub fn sections(&self) -> impl Iterator<Item = (Entity, TilePosition)> {
         self.sections.iter().copied()
-    }
-
-    fn on_add(mut world: DeferredWorld, context: HookContext) {
-        let sections = take(
-            &mut world
-                .get_mut::<LayerRegion>(context.entity)
-                .unwrap()
-                .sections,
-        );
-
-        for &(chunk_id, section) in &sections {
-            world
-                .get_mut::<TileChunkSections>(chunk_id)
-                .unwrap()
-                .section_mut(section.chunk_offset())
-                .region = context.entity;
-        }
-
-        world
-            .get_mut::<LayerRegion>(context.entity)
-            .unwrap()
-            .sections = sections;
     }
 }
 
