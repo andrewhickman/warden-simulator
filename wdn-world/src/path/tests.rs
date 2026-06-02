@@ -16,7 +16,7 @@ use wdn_physics::tile::{
 };
 
 use crate::door::Door;
-use crate::path::map::RegionDoors;
+use crate::path::flow::RegionDoors;
 
 use super::{
     PathPlugin,

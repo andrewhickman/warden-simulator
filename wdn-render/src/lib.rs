@@ -23,6 +23,7 @@ pub enum RenderSystems {
     RenderDoors,
     RenderDamage,
     RenderTiles,
+    RenderDev,
 }
 
 impl Plugin for RenderPlugin {

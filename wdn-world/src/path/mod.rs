@@ -1,4 +1,4 @@
-pub mod map;
+pub mod flow;
 pub mod region;
 #[cfg(test)]
 mod tests;
@@ -12,7 +12,7 @@ use wdn_physics::tile::storage::TileChunk;
 use crate::{
     WorldSystems,
     path::{
-        map::{on_remove_region_doors, update_flow_fields, update_region_doors},
+        flow::{on_remove_region_doors, update_flow_fields, update_region_doors},
         region::{
             TileChunkSectionChanges, TileChunkSections, chunk_sections_changed, on_add_region,
             update_chunk_sections, update_regions,

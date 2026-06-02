@@ -1,9 +1,9 @@
-use std::{cmp::Ordering, collections::BinaryHeap};
+use std::{cmp::Ordering, collections::BinaryHeap, mem::replace};
 
 use bevy_ecs::{entity::EntityHashMap, prelude::*};
-use bevy_log::warn;
+use bevy_log::{error, warn};
 use bevy_math::{FloatOrd, FloatPow, prelude::*};
-use bevy_platform::collections::{HashMap, HashSet, hash_map};
+use bevy_platform::collections::{HashMap, hash_map};
 use wdn_physics::tile::{
     adjacency::Adjacency, index::TileIndex, position::TilePosition, storage::TileStorage,
 };
@@ -118,6 +118,13 @@ impl RegionDoors {
 }
 
 impl DoorRegions {
+    pub fn flow_fields(&self) -> impl Iterator<Item = Entity> {
+        [self.north, self.south, self.east, self.west]
+            .into_iter()
+            .flatten()
+            .map(|(_, flow)| flow)
+    }
+
     pub fn insert(&mut self, region: Entity, flow: Entity, adjacency: Adjacency) {
         if adjacency.contains(Adjacency::NORTH) {
             debug_assert!(self.north.is_none());
@@ -142,6 +149,10 @@ impl DoorRegions {
 }
 
 impl FlowField {
+    pub fn iter(&self) -> impl Iterator<Item = (TilePosition, Dir2)> {
+        self.flow.iter().map(|(&pos, &dir)| (pos, dir))
+    }
+
     fn generate_flow_field(&mut self, storage: &TileStorage, size_hint: usize) {
         let distance = generate_distance_field(
             storage,
@@ -152,7 +163,10 @@ impl FlowField {
         debug_assert_eq!(distance.len(), size_hint + 1);
 
         self.flow.reserve(size_hint);
-        for (&tile, &(cost, adjacency)) in &distance {
+        for (&tile, &(cost, adjacency, accepted)) in &distance {
+            debug_assert!(cost.is_finite());
+            debug_assert!(accepted);
+
             if tile == self.door_position {
                 continue;
             }
@@ -184,18 +198,18 @@ impl PartialOrd for Node {
     }
 }
 
+type DistanceField = HashMap<TilePosition, (f32, Adjacency, bool)>;
+
 fn generate_distance_field(
     storage: &TileStorage,
     door: TilePosition,
     door_adjacency: Adjacency,
     size_hint: usize,
-) -> HashMap<TilePosition, (f32, Adjacency)> {
+) -> DistanceField {
     let mut open = BinaryHeap::new();
     let mut distance = HashMap::with_capacity(size_hint);
-    let mut accepted = HashSet::with_capacity(size_hint);
 
-    distance.insert(door, (0.0, Adjacency::NONE));
-    accepted.insert(door);
+    distance.insert(door, (0.0, Adjacency::NONE, true));
 
     visit_door_neighbors(door, door_adjacency, |neighbor, adjacency| {
         let Some(neighbor_data) = storage.get(neighbor) else {
@@ -204,7 +218,7 @@ fn generate_distance_field(
 
         let neighbor_adjacency = neighbor_data.solid_adjacency().difference(adjacency);
 
-        distance.insert(neighbor, (1.0, neighbor_adjacency));
+        distance.insert(neighbor, (1.0, neighbor_adjacency, false));
         open.push(Node {
             position: neighbor,
             adjacency: neighbor_adjacency,
@@ -213,12 +227,15 @@ fn generate_distance_field(
     });
 
     while let Some(tile) = open.pop() {
-        if !accepted.insert(tile.position) {
+        if replace(&mut distance.get_mut(&tile.position).unwrap().2, true) {
             continue;
         }
 
         visit_neighbours(tile.position, tile.adjacency, |neighbor| {
-            if accepted.contains(&neighbor) {
+            if distance
+                .get(&neighbor)
+                .is_some_and(|&(_, _, accepted)| accepted)
+            {
                 return;
             }
 
@@ -238,7 +255,7 @@ fn generate_distance_field(
             match distance.entry(neighbor) {
                 hash_map::Entry::Occupied(entry) if new_distance >= entry.get().0 => return,
                 entry => {
-                    entry.insert((new_distance, neighbor_adjacency));
+                    entry.insert((new_distance, neighbor_adjacency, false));
                     open.push(Node {
                         position: neighbor,
                         adjacency: neighbor_adjacency,
@@ -253,82 +270,133 @@ fn generate_distance_field(
 }
 
 fn flow_vector(
-    distance: &HashMap<TilePosition, (f32, Adjacency)>,
+    distance: &DistanceField,
     tile: TilePosition,
     cost: f32,
     adjacency: Adjacency,
 ) -> Dir2 {
+    let mut north = if !adjacency.contains(Adjacency::NORTH) {
+        flow_delta(distance, tile.north(), cost)
+    } else {
+        None
+    };
+    let mut south = if !adjacency.contains(Adjacency::SOUTH) {
+        flow_delta(distance, tile.south(), cost)
+    } else {
+        None
+    };
+    let mut east = if !adjacency.contains(Adjacency::EAST) {
+        flow_delta(distance, tile.east(), cost)
+    } else {
+        None
+    };
+    let mut west = if !adjacency.contains(Adjacency::WEST) {
+        flow_delta(distance, tile.west(), cost)
+    } else {
+        None
+    };
+
+    flow_tiebreak(&mut north, &mut south);
+    flow_tiebreak(&mut east, &mut west);
+
+    if adjacency.contains(Adjacency::NORTH_WEST) {
+        flow_tiebreak(&mut north, &mut west);
+    }
+
+    if adjacency.contains(Adjacency::NORTH_EAST) {
+        flow_tiebreak(&mut north, &mut east);
+    }
+
+    if adjacency.contains(Adjacency::SOUTH_EAST) {
+        flow_tiebreak(&mut south, &mut east);
+    }
+
+    if adjacency.contains(Adjacency::SOUTH_WEST) {
+        flow_tiebreak(&mut south, &mut west);
+    }
+
     let mut dir = Vec2::ZERO;
 
-    visit_neighbours_with_diagonals(tile, adjacency, |neighbor, direction| {
-        let Some((neighbor_cost, _)) = distance.get(&neighbor) else {
-            return;
-        };
+    if let Some(north) = north {
+        dir += Vec2::Y * north;
+    }
 
-        let delta = cost - neighbor_cost;
-        if delta <= 0.0 {
-            return;
-        }
+    if let Some(south) = south {
+        dir -= Vec2::Y * south;
+    }
 
-        dir += direction.as_vec2() * delta;
-    });
+    if let Some(east) = east {
+        dir += Vec2::X * east;
+    }
+
+    if let Some(west) = west {
+        dir -= Vec2::X * west;
+    }
 
     Dir2::new(dir).expect("flow vector should not be zero")
 }
 
+fn flow_delta(distance: &DistanceField, neighbor: TilePosition, cost: f32) -> Option<f32> {
+    let &(neighbor_cost, _, _) = distance.get(&neighbor)?;
+    let delta = cost - neighbor_cost;
+    if delta > 0.0 { Some(delta) } else { None }
+}
+
+fn flow_tiebreak(a_flow: &mut Option<f32>, b_flow: &mut Option<f32>) {
+    if let (Some(a), Some(b)) = (*a_flow, *b_flow) {
+        if a < b {
+            *b_flow = None;
+        } else {
+            *a_flow = None;
+        }
+    }
+}
+
 fn eikonal_distance(
-    distance: &HashMap<TilePosition, (f32, Adjacency)>,
+    distance: &DistanceField,
     tile: TilePosition,
     adjacency: Adjacency,
     cost: f32,
 ) -> f32 {
     let west = if !adjacency.contains(Adjacency::WEST) {
-        get_distance(distance, tile.west())
+        get_accepted_distance(distance, tile.west())
     } else {
-        None
+        f32::INFINITY
     };
 
     let east = if !adjacency.contains(Adjacency::EAST) {
-        get_distance(distance, tile.east())
+        get_accepted_distance(distance, tile.east())
     } else {
-        None
+        f32::INFINITY
     };
 
     let north = if !adjacency.contains(Adjacency::NORTH) {
-        get_distance(distance, tile.north())
+        get_accepted_distance(distance, tile.north())
     } else {
-        None
+        f32::INFINITY
     };
 
     let south = if !adjacency.contains(Adjacency::SOUTH) {
-        get_distance(distance, tile.south())
+        get_accepted_distance(distance, tile.south())
     } else {
-        None
+        f32::INFINITY
     };
 
-    let a = min_distance(west, east);
-    let b = min_distance(north, south);
+    let a = west.min(east);
+    let b = north.min(south);
 
-    match (a, b) {
-        (Some(a), None) | (None, Some(a)) => a + cost,
-        (Some(a), Some(b)) if (a - b).abs() >= cost => a.min(b) + cost,
-        (Some(a), Some(b)) => (a + b + (2.0 * cost.squared() - (a - b).squared()).sqrt()) * 0.5,
-        (None, None) => panic!("tile {:?} is not reachable", tile),
+    if (a - b).abs() >= cost {
+        a.min(b) + cost
+    } else {
+        let discr = 2.0 * cost.squared() - (a - b).squared();
+        (a + b + discr.sqrt()) * 0.5
     }
 }
 
-fn get_distance(
-    distance: &HashMap<TilePosition, (f32, Adjacency)>,
-    tile: TilePosition,
-) -> Option<f32> {
-    distance.get(&tile).map(|&(d, _)| d)
-}
-
-fn min_distance(a: Option<f32>, b: Option<f32>) -> Option<f32> {
-    match (a, b) {
-        (Some(a), Some(b)) => Some(a.min(b)),
-        (Some(a), None) | (None, Some(a)) => Some(a),
-        (None, None) => None,
+fn get_accepted_distance(distance: &DistanceField, tile: TilePosition) -> f32 {
+    match distance.get(&tile) {
+        Some(&(cost, _, true)) => cost,
+        _ => f32::INFINITY,
     }
 }
 
@@ -375,43 +443,5 @@ fn visit_neighbours(tile: TilePosition, adjacency: Adjacency, mut f: impl FnMut(
 
     if !adjacency.contains(Adjacency::WEST) {
         f(tile.west());
-    }
-}
-
-fn visit_neighbours_with_diagonals(
-    tile: TilePosition,
-    adjacency: Adjacency,
-    mut f: impl FnMut(TilePosition, Dir2),
-) {
-    if !adjacency.contains(Adjacency::NORTH) {
-        f(tile.north(), Dir2::NORTH);
-    }
-
-    if !adjacency.contains(Adjacency::SOUTH) {
-        f(tile.south(), Dir2::SOUTH);
-    }
-
-    if !adjacency.contains(Adjacency::EAST) {
-        f(tile.east(), Dir2::EAST);
-    }
-
-    if !adjacency.contains(Adjacency::WEST) {
-        f(tile.west(), Dir2::WEST);
-    }
-
-    if !adjacency.intersects(Adjacency::NORTH | Adjacency::NORTH_EAST | Adjacency::EAST) {
-        f(tile.north().east(), Dir2::NORTH_EAST);
-    }
-
-    if !adjacency.intersects(Adjacency::NORTH | Adjacency::NORTH_WEST | Adjacency::WEST) {
-        f(tile.north().west(), Dir2::NORTH_WEST);
-    }
-
-    if !adjacency.intersects(Adjacency::SOUTH | Adjacency::SOUTH_EAST | Adjacency::EAST) {
-        f(tile.south().east(), Dir2::SOUTH_EAST);
-    }
-
-    if !adjacency.intersects(Adjacency::SOUTH | Adjacency::SOUTH_WEST | Adjacency::WEST) {
-        f(tile.south().west(), Dir2::SOUTH_WEST);
     }
 }

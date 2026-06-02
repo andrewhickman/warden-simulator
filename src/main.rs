@@ -11,9 +11,11 @@ use wdn_physics::{
     PhysicsPlugin as WdnPhysicsPlugin,
     kinematics::{GlobalPosition, Position},
     layer::Layer,
-    tile::{material::TileMaterial, position::TilePosition, storage::TileStorageMut},
+    tile::{
+        index::TileIndex, material::TileMaterial, position::TilePosition, storage::TileStorageMut,
+    },
 };
-use wdn_render::{RenderPlugin as WdnRenderPlugin, RenderSystems};
+use wdn_render::{RenderPlugin as WdnRenderPlugin, RenderSystems, dev::DevRenderSettings};
 use wdn_save::SavePlugin as WdnSavePlugin;
 use wdn_tasks::TasksPlugin as WdnTasksPlugin;
 use wdn_ui::UiPlugin as WdnUiPlugin;
@@ -38,7 +40,8 @@ pub fn main() {
                 handle_pawn_input,
                 handle_tile_toggle
                     .before(RenderSystems::RenderDoors)
-                    .before(RenderSystems::RenderTiles),
+                    .before(RenderSystems::RenderTiles)
+                    .before(RenderSystems::RenderDev),
             ),
         )
         .configure_schedules(ScheduleBuildSettings {
@@ -197,14 +200,16 @@ fn handle_pawn_input(
 }
 
 fn handle_tile_toggle(
+    mut commands: Commands,
     mouse: Res<ButtonInput<MouseButton>>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
     window: Single<&Window>,
     layer: Single<Entity, With<Layer>>,
-    mut doors: Query<(&TilePosition, &mut Door)>,
+    index: Res<TileIndex>,
     mut tile_storage: TileStorageMut,
+    mut dev_render: ResMut<DevRenderSettings>,
 ) {
-    if mouse.just_pressed(MouseButton::Right)
+    if (mouse.just_pressed(MouseButton::Right) || mouse.just_pressed(MouseButton::Left))
         && let Some(cursor_pos) = window.cursor_position()
     {
         let (camera, camera_transform) = camera_query.into_inner();
@@ -212,23 +217,33 @@ fn handle_tile_toggle(
             // Convert world position to tile position
             let tile_pos = TilePosition::floor(*layer, world_pos);
 
-            // Toggle an existing door entity on this tile.
-            for (door_tile, mut door) in doors.iter_mut() {
-                if *door_tile == tile_pos {
-                    info!("Toggling door at {:?}", tile_pos);
-                    door.toggle();
-                    return;
-                }
-            }
-
             // Toggle tile material between Empty and Wall
             let current_material = tile_storage.get_material(tile_pos);
-            let new_material = match current_material {
-                TileMaterial::Empty => TileMaterial::Wall,
-                TileMaterial::Wall | TileMaterial::Door => TileMaterial::Empty,
-            };
+            match current_material {
+                TileMaterial::Empty => {
+                    if mouse.just_pressed(MouseButton::Left) {
+                        tile_storage.set_material(tile_pos, TileMaterial::Wall);
+                    }
+                }
+                TileMaterial::Wall => {
+                    if mouse.just_pressed(MouseButton::Left) {
+                        commands.spawn((Door::default(), tile_pos));
+                    }
+                }
+                TileMaterial::Door => {
+                    let door_id = index.get_tile(tile_pos);
 
-            tile_storage.set_material(tile_pos, new_material);
+                    if mouse.just_pressed(MouseButton::Left) {
+                        if let Some(door_id) = door_id {
+                            commands.entity(door_id).despawn();
+                        }
+                        tile_storage.set_material(tile_pos, TileMaterial::Empty);
+                    } else if mouse.just_pressed(MouseButton::Right) {
+                        dev_render.draw_door_flow_fields = door_id;
+                    }
+                    return;
+                }
+            };
         }
     }
 }
