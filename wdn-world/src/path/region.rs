@@ -3,6 +3,7 @@ use std::collections::VecDeque;
 
 use bevy_ecs::{entity::EntityHashSet, prelude::*};
 use bevy_platform::collections::{HashMap, HashSet, hash_map};
+use smallvec::SmallVec;
 use wdn_physics::tile::{
     CHUNK_SIZE, CHUNK_SIZE_SQUARED,
     adjacency::Adjacency,
@@ -17,7 +18,7 @@ use crate::path::flow::RegionDoors;
 #[require(RegionDoors)]
 pub struct Region {
     size: usize,
-    sections: Vec<(Entity, TilePosition)>,
+    sections: SmallVec<[(Entity, TilePosition); 2]>,
 }
 
 #[derive(Component, Default, Debug)]
@@ -172,7 +173,7 @@ pub fn update_regions(
         queue.push_back((chunk_id, section));
 
         let mut region_size = 0;
-        let mut region_sections = Vec::new();
+        let mut region_sections = SmallVec::new();
 
         while let Some((current_chunk_id, current_section)) = queue.pop_front() {
             let (current_chunk, current_chunk_sections) = chunks.get(current_chunk_id)?;
@@ -288,6 +289,10 @@ impl TileChunkSection {
 
     pub fn doors(&self) -> impl Iterator<Item = (TilePosition, Adjacency)> + '_ {
         self.doors.iter().map(|(&pos, &adj)| (pos, adj))
+    }
+
+    pub fn door_count(&self) -> usize {
+        self.doors.len()
     }
 
     fn insert(&mut self, position: TileChunkPosition, offset: TileChunkOffset, doors: Adjacency) {

@@ -5316,6 +5316,7 @@ dependencies = [
  "bevy_time",
  "bevy_transform",
  "bytemuck",
+ "smallvec",
  "wdn-physics",
 ]
 
