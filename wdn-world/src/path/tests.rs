@@ -1166,7 +1166,7 @@ fn region_doors(app: &mut App, region: Entity) -> Vec<Entity> {
         .get::<RegionDoors>(region)
         .unwrap()
         .doors()
-        .map(|(door_id, _)| door_id)
+        .map(|(_, door)| door.door())
         .collect()
 }
 

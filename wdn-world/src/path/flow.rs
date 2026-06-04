@@ -1,22 +1,24 @@
 use std::{cmp::Ordering, collections::BinaryHeap, mem::replace};
 
-use bevy_ecs::{entity::EntityHashMap, prelude::*};
+use bevy_ecs::prelude::*;
 use bevy_log::error;
 use bevy_math::{FloatOrd, FloatPow, prelude::*};
 use bevy_platform::collections::{HashMap, hash_map};
 use wdn_physics::tile::{
-    adjacency::Adjacency, index::TileIndex, position::TilePosition, storage::TileStorage,
+    adjacency::Adjacency, index::TileIndex, material::TileMaterial, position::TilePosition,
+    storage::TileStorage,
 };
 
 use crate::path::region::{Region, TileChunkSections};
 
 #[derive(Component, Default)]
 pub struct RegionDoors {
-    doors: EntityHashMap<RegionDoor>,
+    doors: HashMap<TilePosition, RegionDoor>,
 }
 
 #[derive(Copy, Clone, Debug)]
 pub struct RegionDoor {
+    door: Entity,
     position: TilePosition,
     adjacency: Adjacency,
     flow_field: Entity,
@@ -61,16 +63,16 @@ pub fn update_region_doors(
 
                 region_doors.doors.reserve(section.door_count());
                 for (door_position, door_adjacency) in section.doors() {
-                    let Some(id) = index.get_tile(door_position) else {
-                        error!("door at {:?} not found", door_position);
-                        continue;
-                    };
-
-                    match region_doors.doors.entry(id) {
+                    match region_doors.doors.entry(door_position) {
                         hash_map::Entry::Occupied(mut entry) => {
                             entry.get_mut().adjacency.insert(door_adjacency);
                         }
                         hash_map::Entry::Vacant(entry) => {
+                            let Some(door) = index.get_tile(door_position) else {
+                                error!("door at {:?} not found", door_position);
+                                continue;
+                            };
+
                             let flow_field = commands
                                 .spawn((
                                     ChildOf(region_id),
@@ -82,6 +84,7 @@ pub fn update_region_doors(
                                 ))
                                 .id();
                             entry.insert(RegionDoor {
+                                door,
                                 position: door_position,
                                 adjacency: door_adjacency,
                                 flow_field,
@@ -91,8 +94,8 @@ pub fn update_region_doors(
                 }
             }
 
-            for (door_id, door) in region_doors.doors() {
-                doors.get_mut(door_id).expect("door not found").insert(
+            for door in region_doors.doors.values() {
+                doors.get_mut(door.door).expect("door not found").insert(
                     region_id,
                     door.flow_field,
                     door.adjacency,
@@ -103,12 +106,12 @@ pub fn update_region_doors(
 
 pub fn update_flow_fields(
     storage: TileStorage,
-    regions: Query<&Region>,
+    regions: Query<(&Region, &RegionDoors)>,
     mut flow_fields: Query<(&ChildOf, &mut FlowField), Added<FlowField>>,
 ) {
     flow_fields.par_iter_mut().for_each(|(parent, mut flow)| {
-        let region = regions.get(parent.parent()).expect("region not found");
-        flow.generate_flow_field(&storage, region.size());
+        let (region, doors) = regions.get(parent.parent()).expect("region not found");
+        flow.generate_flow_field(&storage, region, doors);
     });
 }
 
@@ -119,7 +122,7 @@ pub fn on_remove_region_doors(
 ) -> Result {
     let region = regions.get(trigger.entity)?;
     for (_, door) in region.doors() {
-        if let Ok(mut door) = doors.get_mut(door.flow_field) {
+        if let Ok(mut door) = doors.get_mut(door.door()) {
             remove_door_region(&mut door.north, trigger.entity);
             remove_door_region(&mut door.south, trigger.entity);
             remove_door_region(&mut door.east, trigger.entity);
@@ -131,8 +134,12 @@ pub fn on_remove_region_doors(
 }
 
 impl RegionDoors {
-    pub fn doors(&self) -> impl Iterator<Item = (Entity, &RegionDoor)> {
-        self.doors.iter().map(|(&id, door)| (id, door))
+    pub fn doors(&self) -> impl Iterator<Item = (TilePosition, &RegionDoor)> {
+        self.doors.iter().map(|(&pos, door)| (pos, door))
+    }
+
+    pub fn door_count(&self) -> usize {
+        self.doors.len()
     }
 }
 
@@ -143,6 +150,10 @@ impl RegionDoor {
 
     pub fn flow_field(&self) -> Entity {
         self.flow_field
+    }
+
+    pub fn door(&self) -> Entity {
+        self.door
     }
 }
 
@@ -192,17 +203,18 @@ impl FlowField {
         self.flow.iter().map(|(&pos, &dir)| (pos, dir))
     }
 
-    fn generate_flow_field(&mut self, storage: &TileStorage, size_hint: usize) {
-        let distance = generate_distance_field(
+    fn generate_flow_field(&mut self, storage: &TileStorage, region: &Region, doors: &RegionDoors) {
+        let costs = generate_cost_field(
             storage,
+            doors,
             self.door_position,
             self.door_adjacency,
-            size_hint + 1,
+            region.size() + doors.door_count(),
         );
-        debug_assert_eq!(distance.len(), size_hint + 1);
+        debug_assert_eq!(costs.len(), region.size() + doors.door_count());
 
-        self.flow.reserve(size_hint);
-        for (&tile, &(cost, adjacency, accepted)) in &distance {
+        self.flow.reserve(region.size() + doors.door_count() - 1);
+        for (&tile, &(cost, adjacency, accepted)) in &costs {
             debug_assert!(cost.is_finite());
             debug_assert!(accepted);
 
@@ -211,10 +223,10 @@ impl FlowField {
             }
 
             self.flow
-                .insert(tile, flow_vector(&distance, tile, cost, adjacency));
+                .insert(tile, flow_vector(&costs, tile, cost, adjacency));
         }
 
-        debug_assert_eq!(self.flow.len(), size_hint);
+        debug_assert_eq!(self.flow.len(), region.size() + doors.door_count() - 1);
     }
 }
 
@@ -237,41 +249,49 @@ impl PartialOrd for Node {
     }
 }
 
-type DistanceField = HashMap<TilePosition, (f32, Adjacency, bool)>;
+impl Node {
+    fn visit_neighbors(&self, mut f: impl FnMut(TilePosition)) {
+        if !self.adjacency.contains(Adjacency::NORTH) {
+            f(self.position.north());
+        }
+        if !self.adjacency.contains(Adjacency::SOUTH) {
+            f(self.position.south());
+        }
+        if !self.adjacency.contains(Adjacency::EAST) {
+            f(self.position.east());
+        }
+        if !self.adjacency.contains(Adjacency::WEST) {
+            f(self.position.west());
+        }
+    }
+}
 
-fn generate_distance_field(
+type CostField = HashMap<TilePosition, (f32, Adjacency, bool)>;
+
+fn generate_cost_field(
     storage: &TileStorage,
+    doors: &RegionDoors,
     door: TilePosition,
     door_adjacency: Adjacency,
     size_hint: usize,
-) -> DistanceField {
+) -> CostField {
     let mut open = BinaryHeap::new();
-    let mut distance = HashMap::with_capacity(size_hint);
+    let mut costs = HashMap::with_capacity(size_hint);
 
-    distance.insert(door, (0.0, Adjacency::NONE, true));
-
-    visit_door_neighbors(door, door_adjacency, |neighbor, adjacency| {
-        let Some(neighbor_data) = storage.get(neighbor) else {
-            return;
-        };
-
-        let neighbor_adjacency = neighbor_data.solid_adjacency().difference(adjacency);
-
-        distance.insert(neighbor, (1.0, neighbor_adjacency, false));
-        open.push(Node {
-            position: neighbor,
-            adjacency: neighbor_adjacency,
-            cost: FloatOrd(1.0),
-        });
+    costs.insert(door, (0.0, Adjacency::NONE, false));
+    open.push(Node {
+        position: door,
+        adjacency: door_adjacency.complement(),
+        cost: FloatOrd(0.0),
     });
 
-    while let Some(tile) = open.pop() {
-        if replace(&mut distance.get_mut(&tile.position).unwrap().2, true) {
+    while let Some(node) = open.pop() {
+        if replace(&mut costs.get_mut(&node.position).unwrap().2, true) {
             continue;
         }
 
-        visit_neighbours(tile.position, tile.adjacency, |neighbor| {
-            if distance
+        node.visit_neighbors(|neighbor| {
+            if costs
                 .get(&neighbor)
                 .is_some_and(|&(_, _, accepted)| accepted)
             {
@@ -282,55 +302,54 @@ fn generate_distance_field(
                 return;
             };
 
-            let neighbor_adjacency = neighbor_data.solid_adjacency();
+            let neighbor_adjacency = if neighbor_data.material() == TileMaterial::Empty {
+                neighbor_data.wall_adjacency()
+            } else {
+                doors.doors[&neighbor].adjacency.complement()
+            };
 
-            let new_distance = eikonal_distance(
-                &distance,
+            let new_cost = eikonal_cost(
+                &costs,
                 neighbor,
                 neighbor_adjacency,
                 neighbor_data.move_cost(),
             );
 
-            match distance.entry(neighbor) {
-                hash_map::Entry::Occupied(entry) if new_distance >= entry.get().0 => return,
+            match costs.entry(neighbor) {
+                hash_map::Entry::Occupied(entry) if new_cost >= entry.get().0 => return,
                 entry => {
-                    entry.insert((new_distance, neighbor_adjacency, false));
+                    entry.insert((new_cost, neighbor_adjacency, false));
                     open.push(Node {
                         position: neighbor,
                         adjacency: neighbor_adjacency,
-                        cost: FloatOrd(new_distance),
+                        cost: FloatOrd(new_cost),
                     });
                 }
             }
         });
     }
 
-    distance
+    costs
 }
 
-fn flow_vector(
-    distance: &DistanceField,
-    tile: TilePosition,
-    cost: f32,
-    adjacency: Adjacency,
-) -> Dir2 {
+fn flow_vector(costs: &CostField, tile: TilePosition, cost: f32, adjacency: Adjacency) -> Dir2 {
     let mut north = if !adjacency.contains(Adjacency::NORTH) {
-        flow_delta(distance, tile.north(), cost)
+        flow_delta(costs, tile.north(), cost)
     } else {
         None
     };
     let mut south = if !adjacency.contains(Adjacency::SOUTH) {
-        flow_delta(distance, tile.south(), cost)
+        flow_delta(costs, tile.south(), cost)
     } else {
         None
     };
     let mut east = if !adjacency.contains(Adjacency::EAST) {
-        flow_delta(distance, tile.east(), cost)
+        flow_delta(costs, tile.east(), cost)
     } else {
         None
     };
     let mut west = if !adjacency.contains(Adjacency::WEST) {
-        flow_delta(distance, tile.west(), cost)
+        flow_delta(costs, tile.west(), cost)
     } else {
         None
     };
@@ -375,8 +394,8 @@ fn flow_vector(
     Dir2::new(dir).expect("flow vector should not be zero")
 }
 
-fn flow_delta(distance: &DistanceField, neighbor: TilePosition, cost: f32) -> Option<f32> {
-    let &(neighbor_cost, _, _) = distance.get(&neighbor)?;
+fn flow_delta(costs: &CostField, neighbor: TilePosition, cost: f32) -> Option<f32> {
+    let &(neighbor_cost, _, _) = costs.get(&neighbor)?;
     let delta = cost - neighbor_cost;
     if delta > 0.0 { Some(delta) } else { None }
 }
@@ -391,32 +410,27 @@ fn flow_tiebreak(a_flow: &mut Option<f32>, b_flow: &mut Option<f32>) {
     }
 }
 
-fn eikonal_distance(
-    distance: &DistanceField,
-    tile: TilePosition,
-    adjacency: Adjacency,
-    cost: f32,
-) -> f32 {
+fn eikonal_cost(costs: &CostField, tile: TilePosition, adjacency: Adjacency, cost: f32) -> f32 {
     let west = if !adjacency.contains(Adjacency::WEST) {
-        get_accepted_distance(distance, tile.west())
+        get_accepted_cost(costs, tile.west())
     } else {
         f32::INFINITY
     };
 
     let east = if !adjacency.contains(Adjacency::EAST) {
-        get_accepted_distance(distance, tile.east())
+        get_accepted_cost(costs, tile.east())
     } else {
         f32::INFINITY
     };
 
     let north = if !adjacency.contains(Adjacency::NORTH) {
-        get_accepted_distance(distance, tile.north())
+        get_accepted_cost(costs, tile.north())
     } else {
         f32::INFINITY
     };
 
     let south = if !adjacency.contains(Adjacency::SOUTH) {
-        get_accepted_distance(distance, tile.south())
+        get_accepted_cost(costs, tile.south())
     } else {
         f32::INFINITY
     };
@@ -432,8 +446,8 @@ fn eikonal_distance(
     }
 }
 
-fn get_accepted_distance(distance: &DistanceField, tile: TilePosition) -> f32 {
-    match distance.get(&tile) {
+fn get_accepted_cost(costs: &CostField, tile: TilePosition) -> f32 {
+    match costs.get(&tile) {
         Some(&(cost, _, true)) => cost,
         _ => f32::INFINITY,
     }
@@ -442,45 +456,5 @@ fn get_accepted_distance(distance: &DistanceField, tile: TilePosition) -> f32 {
 fn remove_door_region(flow: &mut Option<DoorRegion>, region: Entity) {
     if matches!(flow, Some(door_region) if door_region.region == region) {
         *flow = None;
-    }
-}
-
-fn visit_door_neighbors(
-    tile: TilePosition,
-    adjacency: Adjacency,
-    mut f: impl FnMut(TilePosition, Adjacency),
-) {
-    if adjacency.contains(Adjacency::NORTH) {
-        f(tile.north(), Adjacency::SOUTH);
-    }
-
-    if adjacency.contains(Adjacency::SOUTH) {
-        f(tile.south(), Adjacency::NORTH);
-    }
-
-    if adjacency.contains(Adjacency::EAST) {
-        f(tile.east(), Adjacency::WEST);
-    }
-
-    if adjacency.contains(Adjacency::WEST) {
-        f(tile.west(), Adjacency::EAST);
-    }
-}
-
-fn visit_neighbours(tile: TilePosition, adjacency: Adjacency, mut f: impl FnMut(TilePosition)) {
-    if !adjacency.contains(Adjacency::NORTH) {
-        f(tile.north());
-    }
-
-    if !adjacency.contains(Adjacency::SOUTH) {
-        f(tile.south());
-    }
-
-    if !adjacency.contains(Adjacency::EAST) {
-        f(tile.east());
-    }
-
-    if !adjacency.contains(Adjacency::WEST) {
-        f(tile.west());
     }
 }
