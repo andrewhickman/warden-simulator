@@ -44,6 +44,36 @@ pub struct FlowField {
     flow: HashMap<TilePosition, Dir2>,
 }
 
+const DOOR_COST: f32 = 1048576.0;
+
+type CostField = HashMap<TilePosition, CostEntry>;
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct CostNode {
+    cost: FloatOrd,
+    position: TilePosition,
+    adjacency: Adjacency,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct CostEntry {
+    cost: f32,
+    adjacency: Adjacency,
+    accepted: bool,
+}
+
+impl Ord for CostNode {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other.cost.cmp(&self.cost)
+    }
+}
+
+impl PartialOrd for CostNode {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 pub fn update_region_doors(
     mut commands: Commands,
     index: Res<TileIndex>,
@@ -204,41 +234,27 @@ impl FlowField {
     }
 
     fn generate_flow_field(&mut self, storage: &TileStorage, region: &Region, doors: &RegionDoors) {
-        debug_assert_eq!(
-            doors.doors[&self.door_position].adjacency,
-            self.door_adjacency
-        );
-
         let costs = generate_cost_field(
             storage,
+            doors,
             self.door_position,
             self.door_adjacency,
-            region.size() + 1,
+            region.size() + doors.door_count(),
         );
-        debug_assert_eq!(costs.len(), region.size() + 1);
+        debug_assert_eq!(costs.len(), region.size() + doors.door_count());
 
         self.flow.reserve(region.size() + doors.door_count() - 1);
-        for (&position, &(cost, adjacency, accepted)) in &costs {
-            debug_assert!(cost.is_finite());
-            debug_assert!(accepted);
+        for (&position, &entry) in &costs {
+            debug_assert!(entry.cost.is_finite());
+            debug_assert!(entry.accepted);
 
             if position == self.door_position {
                 continue;
             }
 
-            self.flow
-                .insert(position, flow_vector(&costs, position, cost, adjacency));
-        }
-
-        for (door_position, door) in doors.doors() {
-            if door_position == self.door_position {
-                continue;
-            }
-
-            debug_assert!(!costs.contains_key(&door_position));
             self.flow.insert(
-                door_position,
-                door_flow_vector(&costs, door_position, door.adjacency),
+                position,
+                flow_vector(&costs, position, entry.cost, entry.adjacency),
             );
         }
 
@@ -246,29 +262,51 @@ impl FlowField {
     }
 }
 
-#[derive(Clone, Copy, Eq, PartialEq)]
-struct Node {
-    cost: FloatOrd,
-    position: TilePosition,
-    adjacency: Adjacency,
-}
+impl CostNode {
+    fn new(position: TilePosition, adjacency: Adjacency, cost: f32) -> Self {
+        Self {
+            position,
+            adjacency,
+            cost: FloatOrd(cost),
+        }
+    }
 
-impl Ord for Node {
-    fn cmp(&self, other: &Self) -> Ordering {
-        other.cost.cmp(&self.cost)
+    fn visit_neighbors(&self, mut f: impl FnMut(TilePosition)) {
+        if !self.adjacency.contains(Adjacency::NORTH) {
+            f(self.position.north());
+        }
+
+        if !self.adjacency.contains(Adjacency::SOUTH) {
+            f(self.position.south());
+        }
+
+        if !self.adjacency.contains(Adjacency::EAST) {
+            f(self.position.east());
+        }
+
+        if !self.adjacency.contains(Adjacency::WEST) {
+            f(self.position.west());
+        }
     }
 }
 
-impl PartialOrd for Node {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
+impl CostEntry {
+    fn new(cost: f32, adjacency: Adjacency, accepted: bool) -> Self {
+        Self {
+            cost,
+            adjacency,
+            accepted,
+        }
+    }
+
+    fn accept(&mut self) -> bool {
+        !replace(&mut self.accepted, true)
     }
 }
-
-type CostField = HashMap<TilePosition, (f32, Adjacency, bool)>;
 
 fn generate_cost_field(
     storage: &TileStorage,
+    doors: &RegionDoors,
     door: TilePosition,
     door_adjacency: Adjacency,
     size_hint: usize,
@@ -276,33 +314,16 @@ fn generate_cost_field(
     let mut open = BinaryHeap::new();
     let mut costs = HashMap::with_capacity(size_hint);
 
-    costs.insert(door, (0.0, Adjacency::NONE, true));
-
-    visit_door_neighbors(door, door_adjacency, |neighbor, adjacency| {
-        let Some(neighbor_data) = storage.get(neighbor) else {
-            return;
-        };
-
-        let neighbor_adjacency = neighbor_data.solid_adjacency().difference(adjacency);
-
-        costs.insert(neighbor, (1.0, neighbor_adjacency, false));
-        open.push(Node {
-            position: neighbor,
-            adjacency: neighbor_adjacency,
-            cost: FloatOrd(1.0),
-        });
-    });
+    costs.insert(door, CostEntry::new(0.0, Adjacency::NONE, false));
+    open.push(CostNode::new(door, door_adjacency.complement(), 0.0));
 
     while let Some(node) = open.pop() {
-        if replace(&mut costs.get_mut(&node.position).unwrap().2, true) {
+        if !costs.get_mut(&node.position).unwrap().accept() {
             continue;
         }
 
-        visit_neighbours(node.position, node.adjacency, |neighbor| {
-            if costs
-                .get(&neighbor)
-                .is_some_and(|&(_, _, accepted)| accepted)
-            {
+        node.visit_neighbors(|neighbor| {
+            if costs.get(&neighbor).is_some_and(|e| e.accepted) {
                 return;
             }
 
@@ -310,20 +331,19 @@ fn generate_cost_field(
                 return;
             };
 
-            let neighbor_adjacency = neighbor_data.solid_adjacency();
-            let move_cost = neighbor_data.move_cost();
+            let (adjacency, move_cost) = if neighbor_data.material().is_empty() {
+                (neighbor_data.wall_adjacency(), neighbor_data.move_cost())
+            } else {
+                (doors.doors[&neighbor].adjacency.complement(), DOOR_COST)
+            };
 
-            let new_cost = eikonal_cost(&costs, neighbor, neighbor_adjacency, move_cost);
+            let new_cost = eikonal_cost(&costs, neighbor, adjacency, move_cost);
 
             match costs.entry(neighbor) {
-                hash_map::Entry::Occupied(entry) if new_cost >= entry.get().0 => return,
+                hash_map::Entry::Occupied(entry) if new_cost >= entry.get().cost => return,
                 entry => {
-                    entry.insert((new_cost, neighbor_adjacency, false));
-                    open.push(Node {
-                        position: neighbor,
-                        adjacency: neighbor_adjacency,
-                        cost: FloatOrd(new_cost),
-                    });
+                    entry.insert(CostEntry::new(new_cost, adjacency, false));
+                    open.push(CostNode::new(neighbor, adjacency, new_cost));
                 }
             }
         });
@@ -394,38 +414,9 @@ fn flow_vector(costs: &CostField, position: TilePosition, cost: f32, adjacency: 
     Dir2::new(dir).expect("flow vector should not be zero")
 }
 
-fn door_flow_vector(costs: &CostField, position: TilePosition, adjacency: Adjacency) -> Dir2 {
-    let mut best = None;
-
-    if adjacency.contains(Adjacency::NORTH) {
-        door_flow_delta(&mut best, costs[&position.north()].0, Dir2::Y);
-    }
-
-    if adjacency.contains(Adjacency::SOUTH) {
-        door_flow_delta(&mut best, costs[&position.south()].0, -Dir2::Y);
-    }
-
-    if adjacency.contains(Adjacency::EAST) {
-        door_flow_delta(&mut best, costs[&position.east()].0, Dir2::X);
-    }
-
-    if adjacency.contains(Adjacency::WEST) {
-        door_flow_delta(&mut best, costs[&position.west()].0, -Dir2::X);
-    }
-
-    best.expect("no neighbor for door").1
-}
-
 fn flow_delta(costs: &CostField, neighbor: TilePosition, cost: f32) -> Option<f32> {
-    let &(neighbor_cost, _, _) = costs.get(&neighbor)?;
-    let delta = cost - neighbor_cost;
+    let delta = cost - costs.get(&neighbor)?.cost;
     if delta > 0.0 { Some(delta) } else { None }
-}
-
-fn door_flow_delta(flow: &mut Option<(f32, Dir2)>, cost: f32, dir: Dir2) {
-    if flow.is_none_or(|(best_cost, _)| cost < best_cost) {
-        *flow = Some((cost, dir));
-    }
 }
 
 fn flow_tiebreak(a_flow: &mut Option<f32>, b_flow: &mut Option<f32>) {
@@ -476,7 +467,7 @@ fn eikonal_cost(costs: &CostField, position: TilePosition, adjacency: Adjacency,
 
 fn get_accepted_cost(costs: &CostField, position: TilePosition) -> f32 {
     match costs.get(&position) {
-        Some(&(cost, _, true)) => cost,
+        Some(entry) if entry.accepted => entry.cost,
         _ => f32::INFINITY,
     }
 }
@@ -484,45 +475,5 @@ fn get_accepted_cost(costs: &CostField, position: TilePosition) -> f32 {
 fn remove_door_region(flow: &mut Option<DoorRegion>, region: Entity) {
     if matches!(flow, Some(door_region) if door_region.region == region) {
         *flow = None;
-    }
-}
-
-fn visit_door_neighbors(
-    position: TilePosition,
-    adjacency: Adjacency,
-    mut f: impl FnMut(TilePosition, Adjacency),
-) {
-    if adjacency.contains(Adjacency::NORTH) {
-        f(position.north(), Adjacency::SOUTH);
-    }
-
-    if adjacency.contains(Adjacency::SOUTH) {
-        f(position.south(), Adjacency::NORTH);
-    }
-
-    if adjacency.contains(Adjacency::EAST) {
-        f(position.east(), Adjacency::WEST);
-    }
-
-    if adjacency.contains(Adjacency::WEST) {
-        f(position.west(), Adjacency::EAST);
-    }
-}
-
-fn visit_neighbours(position: TilePosition, adjacency: Adjacency, mut f: impl FnMut(TilePosition)) {
-    if !adjacency.contains(Adjacency::NORTH) {
-        f(position.north());
-    }
-
-    if !adjacency.contains(Adjacency::SOUTH) {
-        f(position.south());
-    }
-
-    if !adjacency.contains(Adjacency::EAST) {
-        f(position.east());
-    }
-
-    if !adjacency.contains(Adjacency::WEST) {
-        f(position.west());
     }
 }

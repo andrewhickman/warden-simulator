@@ -21,3 +21,9 @@ pub fn on_insert_material(
     storage.set_material(*position, *material);
     Ok(())
 }
+
+impl TileMaterial {
+    pub fn is_empty(&self) -> bool {
+        matches!(self, TileMaterial::Empty)
+    }
+}
