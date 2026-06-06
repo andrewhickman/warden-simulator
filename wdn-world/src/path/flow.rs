@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::BinaryHeap, mem::replace};
+use std::{cmp::Ordering, collections::BinaryHeap, mem::replace, ops::Index};
 
 use bevy_ecs::prelude::*;
 use bevy_log::error;
@@ -10,12 +10,12 @@ use wdn_physics::tile::{
 
 use crate::path::region::{Region, TileChunkSections};
 
-#[derive(Component, Default, Debug)]
+#[derive(Clone, Component, Default, Debug)]
 pub struct RegionDoors {
     doors: HashMap<TilePosition, RegionDoor>,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct RegionDoor {
     door: Entity,
     position: TilePosition,
@@ -151,7 +151,7 @@ pub fn on_remove_region_doors(
     mut doors: Query<&mut DoorRegions>,
 ) -> Result {
     let region = regions.get(trigger.entity)?;
-    for (_, door) in region.doors() {
+    for (_, door) in region.iter() {
         if let Ok(mut door) = doors.get_mut(door.door()) {
             remove_door_region(&mut door.north, trigger.entity);
             remove_door_region(&mut door.south, trigger.entity);
@@ -164,7 +164,11 @@ pub fn on_remove_region_doors(
 }
 
 impl RegionDoors {
-    pub fn doors(&self) -> impl Iterator<Item = (TilePosition, &RegionDoor)> {
+    pub fn get(&self, position: TilePosition) -> Option<&RegionDoor> {
+        self.doors.get(&position)
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = (TilePosition, &RegionDoor)> {
         self.doors.iter().map(|(&pos, door)| (pos, door))
     }
 
@@ -188,11 +192,14 @@ impl RegionDoor {
 }
 
 impl DoorRegions {
-    pub fn flow_fields(&self) -> impl Iterator<Item = Entity> {
+    pub fn iter(&self) -> impl Iterator<Item = DoorRegion> {
         [self.north, self.south, self.east, self.west]
             .into_iter()
             .flatten()
-            .map(|door_region| door_region.flow_field)
+    }
+
+    pub fn flow_fields(&self) -> impl Iterator<Item = Entity> {
+        self.iter().map(|door_region| door_region.flow_field())
     }
 
     pub fn insert(&mut self, region: Entity, flow: Entity, adjacency: Adjacency) {
@@ -223,6 +230,10 @@ impl DoorRegion {
         Self { region, flow_field }
     }
 
+    pub fn region(&self) -> Entity {
+        self.region
+    }
+
     pub fn flow_field(&self) -> Entity {
         self.flow_field
     }
@@ -231,6 +242,10 @@ impl DoorRegion {
 impl FlowField {
     pub fn iter(&self) -> impl Iterator<Item = (TilePosition, Dir2)> {
         self.flow.iter().map(|(&pos, &dir)| (pos, dir))
+    }
+
+    pub fn get(&self, position: TilePosition) -> Option<Dir2> {
+        self.flow.get(&position).copied()
     }
 
     fn generate_flow_field(&mut self, storage: &TileStorage, region: &Region, doors: &RegionDoors) {
@@ -259,6 +274,20 @@ impl FlowField {
         }
 
         debug_assert_eq!(self.flow.len(), region.size() + doors.door_count() - 1);
+    }
+}
+
+impl Index<TilePosition> for FlowField {
+    type Output = Dir2;
+
+    fn index(&self, position: TilePosition) -> &Self::Output {
+        match self.flow.get(&position) {
+            Some(dir) => dir,
+            None => panic!(
+                "{:?} not found in flow field {:?}",
+                position, self.door_position
+            ),
+        }
     }
 }
 

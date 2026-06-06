@@ -21,3 +21,4 @@ wdn-physics = { version = "0.1.0", path = "../wdn-physics" }
 
 [dev-dependencies]
 approx = "0.5.1"
+bevy_math = { version = "0.18.0", features = ["approx"] }
