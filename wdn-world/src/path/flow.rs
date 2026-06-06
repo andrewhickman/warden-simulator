@@ -352,6 +352,49 @@ fn generate_cost_field(
     costs
 }
 
+fn eikonal_cost(costs: &CostField, position: TilePosition, adjacency: Adjacency, cost: f32) -> f32 {
+    let west = if !adjacency.contains(Adjacency::WEST) {
+        get_accepted_cost(costs, position.west())
+    } else {
+        f32::INFINITY
+    };
+
+    let east = if !adjacency.contains(Adjacency::EAST) {
+        get_accepted_cost(costs, position.east())
+    } else {
+        f32::INFINITY
+    };
+
+    let north = if !adjacency.contains(Adjacency::NORTH) {
+        get_accepted_cost(costs, position.north())
+    } else {
+        f32::INFINITY
+    };
+
+    let south = if !adjacency.contains(Adjacency::SOUTH) {
+        get_accepted_cost(costs, position.south())
+    } else {
+        f32::INFINITY
+    };
+
+    let a = west.min(east);
+    let b = north.min(south);
+
+    if (a - b).abs() >= cost {
+        a.min(b) + cost
+    } else {
+        let discr = 2.0 * cost.squared() - (a - b).squared();
+        (a + b + discr.sqrt()) * 0.5
+    }
+}
+
+fn get_accepted_cost(costs: &CostField, position: TilePosition) -> f32 {
+    match costs.get(&position) {
+        Some(entry) if entry.accepted => entry.cost,
+        _ => f32::INFINITY,
+    }
+}
+
 fn flow_vector(costs: &CostField, position: TilePosition, cost: f32, adjacency: Adjacency) -> Dir2 {
     let mut north = if !adjacency.contains(Adjacency::NORTH) {
         flow_delta(costs, position.north(), cost)
@@ -426,49 +469,6 @@ fn flow_tiebreak(a_flow: &mut Option<f32>, b_flow: &mut Option<f32>) {
         } else {
             *a_flow = None;
         }
-    }
-}
-
-fn eikonal_cost(costs: &CostField, position: TilePosition, adjacency: Adjacency, cost: f32) -> f32 {
-    let west = if !adjacency.contains(Adjacency::WEST) {
-        get_accepted_cost(costs, position.west())
-    } else {
-        f32::INFINITY
-    };
-
-    let east = if !adjacency.contains(Adjacency::EAST) {
-        get_accepted_cost(costs, position.east())
-    } else {
-        f32::INFINITY
-    };
-
-    let north = if !adjacency.contains(Adjacency::NORTH) {
-        get_accepted_cost(costs, position.north())
-    } else {
-        f32::INFINITY
-    };
-
-    let south = if !adjacency.contains(Adjacency::SOUTH) {
-        get_accepted_cost(costs, position.south())
-    } else {
-        f32::INFINITY
-    };
-
-    let a = west.min(east);
-    let b = north.min(south);
-
-    if (a - b).abs() >= cost {
-        a.min(b) + cost
-    } else {
-        let discr = 2.0 * cost.squared() - (a - b).squared();
-        (a + b + discr.sqrt()) * 0.5
-    }
-}
-
-fn get_accepted_cost(costs: &CostField, position: TilePosition) -> f32 {
-    match costs.get(&position) {
-        Some(entry) if entry.accepted => entry.cost,
-        _ => f32::INFINITY,
     }
 }
 

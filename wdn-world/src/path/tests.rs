@@ -24,7 +24,7 @@ use super::{
 };
 
 #[test]
-fn clear_and_set_tile_updates_region() {
+fn region_update() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
@@ -55,7 +55,166 @@ fn clear_and_set_tile_updates_region() {
 }
 
 #[test]
-fn cross_pattern_isolates_center() {
+fn region_update2() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 16, 16);
+
+    set_square(&mut app, center, 3);
+    set_wall_tile(&mut app, center);
+
+    update_regions(&mut app);
+
+    let initial_regions = get_regions(&mut app);
+    assert_eq!(initial_regions.len(), 2);
+
+    let inside = tile_region(&mut app, center.north()).unwrap();
+    let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
+
+    assert!(initial_regions.contains(&inside));
+    assert!(initial_regions.contains(&outside));
+    assert_ne!(inside, outside);
+
+    assert_eq!(region_size(&mut app, inside), 24);
+    assert_eq!(region_size(&mut app, outside), 975);
+
+    clear_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
+    update_regions(&mut app);
+
+    let new_regions = get_regions(&mut app);
+    assert_eq!(new_regions.len(), 2);
+
+    assert!(new_regions.contains(&outside));
+    assert!(!new_regions.contains(&inside));
+
+    let new_inside = tile_region(&mut app, center.with_offset(IVec2::new(0, 0))).unwrap();
+    assert_eq!(
+        tile_region(&mut app, center.with_offset(IVec2::new(1, 1))),
+        Some(new_inside)
+    );
+    assert_eq!(
+        tile_region(&mut app, TilePosition::new(layer, 30, 30)),
+        Some(outside)
+    );
+    assert_ne!(new_inside, outside);
+}
+
+#[test]
+fn region_door_update1() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 16, 16);
+
+    set_square(&mut app, center, 1);
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    let inside = tile_region(&mut app, center).unwrap();
+    let outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
+
+    let door = set_door_tile(&mut app, center.south());
+
+    update_regions(&mut app);
+
+    let new_regions = get_regions(&mut app);
+    assert_eq!(new_regions.len(), 2);
+
+    assert!(!new_regions.contains(&inside));
+    assert!(!new_regions.contains(&outside));
+    assert_ne!(inside, outside);
+
+    let new_inside = tile_region(&mut app, center).unwrap();
+    let new_outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
+
+    assert!(new_regions.contains(&new_inside));
+    assert!(new_regions.contains(&new_outside));
+    assert_ne!(inside, outside);
+
+    let inside_doors = region_doors(&mut app, new_inside);
+    let outside_doors = region_doors(&mut app, new_outside);
+
+    assert_eq!(inside_doors.len(), 1);
+    assert!(inside_doors.contains(&door));
+    assert_eq!(outside_doors.len(), 1);
+    assert!(outside_doors.contains(&door));
+}
+
+#[test]
+fn region_door_update2() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 5, 0);
+
+    set_square(&mut app, center, 1);
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    let inside = tile_region(&mut app, center).unwrap();
+    let outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
+
+    assert!(regions.contains(&inside));
+    assert!(regions.contains(&outside));
+    assert_ne!(inside, outside);
+
+    let door = set_door_tile(&mut app, center.south());
+
+    update_regions(&mut app);
+
+    let new_regions = get_regions(&mut app);
+    assert_eq!(new_regions.len(), 2);
+
+    assert!(!new_regions.contains(&inside));
+    assert!(!new_regions.contains(&outside));
+
+    let new_inside = tile_region(&mut app, center).unwrap();
+    let new_outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
+
+    assert!(new_regions.contains(&new_inside));
+    assert!(new_regions.contains(&new_outside));
+    assert_ne!(new_inside, new_outside);
+
+    let inside_doors = region_doors(&mut app, new_inside);
+    let outside_doors = region_doors(&mut app, new_outside);
+
+    assert_eq!(inside_doors.len(), 1);
+    assert!(inside_doors.contains(&door));
+    assert_eq!(outside_doors.len(), 1);
+    assert!(outside_doors.contains(&door));
+}
+
+#[test]
+fn region_room1() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 32, 32);
+
+    set_square(&mut app, center, 2);
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    let inside = tile_region(&mut app, center).unwrap();
+    let outside = tile_region(&mut app, TilePosition::new(layer, 50, 50)).unwrap();
+
+    assert!(regions.contains(&inside));
+    assert!(regions.contains(&outside));
+    assert_ne!(inside, outside);
+
+    assert_eq!(region_size(&mut app, inside), 9);
+    assert_eq!(region_size(&mut app, outside), 4071);
+
+    assert_eq!(tile_region(&mut app, center.north()), Some(inside));
+    assert_eq!(tile_region(&mut app, center.south()), Some(inside));
+    assert_eq!(tile_region(&mut app, center.east()), Some(inside));
+    assert_eq!(tile_region(&mut app, center.west()), Some(inside));
+}
+
+#[test]
+fn region_room2() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
@@ -86,35 +245,337 @@ fn cross_pattern_isolates_center() {
 }
 
 #[test]
-fn square_boundary_creates_regions() {
+fn region_room3() {
     let (mut app, layer) = make_app();
-    let center = TilePosition::new(layer, 32, 32);
+    let start = TilePosition::new(layer, 0, 0);
 
-    set_square(&mut app, center, 2);
+    for x in -10i32..=10 {
+        set_wall_tile(&mut app, start.with_offset(IVec2::new(x, -1)));
+        set_wall_tile(&mut app, start.with_offset(IVec2::new(x, 1)));
+    }
+    for y in -1i32..=1 {
+        set_wall_tile(&mut app, start.with_offset(IVec2::new(-10, y)));
+        set_wall_tile(&mut app, start.with_offset(IVec2::new(10, y)));
+    }
 
     update_regions(&mut app);
 
     let regions = get_regions(&mut app);
     assert_eq!(regions.len(), 2);
 
-    let inside = tile_region(&mut app, center).unwrap();
-    let outside = tile_region(&mut app, TilePosition::new(layer, 50, 50)).unwrap();
+    let inside = tile_region(&mut app, start).unwrap();
+    let outside = tile_region(&mut app, start.with_offset(IVec2::new(0, 5))).unwrap();
 
     assert!(regions.contains(&inside));
     assert!(regions.contains(&outside));
     assert_ne!(inside, outside);
 
-    assert_eq!(region_size(&mut app, inside), 9);
-    assert_eq!(region_size(&mut app, outside), 4071);
-
-    assert_eq!(tile_region(&mut app, center.north()), Some(inside));
-    assert_eq!(tile_region(&mut app, center.south()), Some(inside));
-    assert_eq!(tile_region(&mut app, center.east()), Some(inside));
-    assert_eq!(tile_region(&mut app, center.west()), Some(inside));
+    for x in -9i32..=9 {
+        assert_eq!(
+            tile_region(&mut app, start.with_offset(IVec2::new(x, 0))),
+            Some(inside)
+        );
+    }
 }
 
 #[test]
-fn subdivide_square_into_quadrants() {
+fn region_room4() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 16, 16);
+
+    set_square(&mut app, center, 5);
+    set_square(&mut app, center, 2);
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 3);
+
+    let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
+    let middle = tile_region(&mut app, center.with_offset(IVec2::new(3, 0))).unwrap();
+    let inside = tile_region(&mut app, center).unwrap();
+
+    assert!(regions.contains(&outside));
+    assert!(regions.contains(&inside));
+    assert!(regions.contains(&middle));
+
+    assert_ne!(outside, inside);
+    assert_ne!(outside, middle);
+    assert_ne!(inside, middle);
+
+    assert_eq!(
+        tile_region(&mut app, center.with_offset(IVec2::new(3, 0))),
+        Some(middle)
+    );
+    assert_eq!(
+        tile_region(&mut app, center.with_offset(IVec2::new(-3, 0))),
+        Some(middle)
+    );
+    assert_eq!(
+        tile_region(&mut app, center.with_offset(IVec2::new(0, 3))),
+        Some(middle)
+    );
+    assert_eq!(
+        tile_region(&mut app, center.with_offset(IVec2::new(0, -3))),
+        Some(middle)
+    );
+}
+
+#[test]
+fn region_room5() {
+    let (mut app, layer) = make_app();
+    let origin = TilePosition::new(layer, 0, 0);
+
+    for i in 0..10 {
+        set_wall_tile(&mut app, origin.with_offset(IVec2::new(i, 0)));
+        set_wall_tile(&mut app, origin.with_offset(IVec2::new(i, 9)));
+        set_wall_tile(&mut app, origin.with_offset(IVec2::new(0, i)));
+        set_wall_tile(&mut app, origin.with_offset(IVec2::new(9, i)));
+    }
+
+    for i in 1i32..8 {
+        if i != 4 {
+            set_wall_tile(&mut app, origin.with_offset(IVec2::new(5, i)));
+        }
+    }
+    for i in 1i32..6 {
+        if i != 2 {
+            set_wall_tile(&mut app, origin.with_offset(IVec2::new(i, 5)));
+        }
+    }
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    let maze_inside = tile_region(&mut app, origin.with_offset(IVec2::new(1, 1))).unwrap();
+    let outside = tile_region(&mut app, TilePosition::new(layer, 20, 20)).unwrap();
+
+    assert!(regions.contains(&maze_inside));
+    assert!(regions.contains(&outside));
+    assert_ne!(maze_inside, outside);
+
+    let top_left = tile_region(&mut app, origin.with_offset(IVec2::new(1, 1))).unwrap();
+    let bottom_right = tile_region(&mut app, origin.with_offset(IVec2::new(7, 7))).unwrap();
+
+    assert_eq!(top_left, bottom_right);
+}
+
+#[test]
+fn region_room6() {
+    let (mut app, layer) = make_app();
+
+    let center = TilePosition::new(layer, 32, 32);
+
+    set_square(&mut app, center, 5);
+
+    for y in -3..5 {
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(1, y)));
+    }
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    let left = tile_region(&mut app, center.with_offset(IVec2::new(-1, 0))).unwrap();
+    let right = tile_region(&mut app, center.with_offset(IVec2::new(3, 0))).unwrap();
+
+    assert_eq!(left, right);
+}
+
+#[test]
+fn region_room7() {
+    let (mut app, layer) = make_app();
+
+    for x in 0..5 {
+        set_wall_tile(&mut app, TilePosition::new(layer, x, 5));
+    }
+    for y in -2..5 {
+        set_wall_tile(&mut app, TilePosition::new(layer, 0, y));
+        set_wall_tile(&mut app, TilePosition::new(layer, 5, y));
+    }
+
+    update_regions(&mut app);
+
+    let initial_regions = get_regions(&mut app);
+    assert_eq!(initial_regions.len(), 1);
+
+    let inside = tile_region(&mut app, TilePosition::new(layer, 2, 3)).unwrap();
+    let outside = tile_region(&mut app, TilePosition::new(layer, 7, 3)).unwrap();
+
+    assert_eq!(inside, outside);
+}
+
+#[test]
+fn region_room_many() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 0, 0);
+
+    set_square(&mut app, center, 5);
+
+    for x in -4..=4 {
+        for y in -4..=4 {
+            if (x + y) % 2 == 0 {
+                set_wall_tile(&mut app, center.with_offset(IVec2::new(x, y)));
+            }
+        }
+    }
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 41);
+}
+
+#[test]
+fn region_door() {
+    let (mut app, layer) = make_app();
+
+    let edge = CHUNK_SIZE as i32 - 1;
+    for i in 0..=edge {
+        set_wall_tile(&mut app, TilePosition::new(layer, i, 0));
+        set_wall_tile(&mut app, TilePosition::new(layer, edge, i));
+        set_wall_tile(&mut app, TilePosition::new(layer, edge - i, edge));
+        set_wall_tile(&mut app, TilePosition::new(layer, 0, edge - i));
+    }
+
+    let south_door = set_door_tile(&mut app, TilePosition::new(layer, 4, 0));
+    let east_door = set_door_tile(&mut app, TilePosition::new(layer, edge, 6));
+    let north_door = set_door_tile(&mut app, TilePosition::new(layer, 15, edge));
+    let west_door = set_door_tile(&mut app, TilePosition::new(layer, 0, 23));
+
+    update_regions(&mut app);
+
+    let inside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
+    let outside = tile_region(&mut app, TilePosition::new(layer, -5, -5)).unwrap();
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+    assert!(regions.contains(&inside));
+    assert!(regions.contains(&outside));
+    assert_ne!(inside, outside);
+
+    let inside_doors = region_doors(&mut app, inside);
+    let outside_doors = region_doors(&mut app, outside);
+
+    assert_eq!(inside_doors.len(), 4);
+    assert!(inside_doors.contains(&south_door));
+    assert!(inside_doors.contains(&east_door));
+    assert!(inside_doors.contains(&north_door));
+    assert!(inside_doors.contains(&west_door));
+
+    assert_eq!(outside_doors.len(), 4);
+    assert!(outside_doors.contains(&south_door));
+    assert!(outside_doors.contains(&east_door));
+    assert!(outside_doors.contains(&north_door));
+    assert!(outside_doors.contains(&west_door));
+}
+
+#[test]
+fn region_wall1() {
+    let (mut app, layer) = make_app();
+
+    for x in 4..8 {
+        set_wall_tile(&mut app, TilePosition::new(layer, x, 3));
+    }
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 1);
+
+    let region = tile_region(&mut app, TilePosition::new(layer, 0, 0)).unwrap();
+    assert!(regions.contains(&region));
+    assert_eq!(region_size(&mut app, region), 1020);
+}
+
+#[test]
+fn region_wall2() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 16, 16);
+
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, 1)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, 3)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(4, 4)));
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 1);
+
+    let ne_region = tile_region(&mut app, center.with_offset(IVec2::new(5, 0))).unwrap();
+    let sw_region = tile_region(&mut app, center.with_offset(IVec2::new(0, 5))).unwrap();
+
+    assert!(regions.contains(&ne_region));
+    assert_eq!(ne_region, sw_region);
+}
+
+#[test]
+fn region_wall3() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 16, 16);
+
+    set_square(&mut app, center, 4);
+    clear_tile(&mut app, center.with_offset(IVec2::new(4, 0)));
+
+    for i in -2i32..=3 {
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, -2)));
+    }
+    for i in -2i32..=2 {
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(-2, i)));
+    }
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 1);
+
+    let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
+
+    assert!(regions.contains(&outside));
+
+    assert_eq!(
+        tile_region(&mut app, center.with_offset(IVec2::new(3, 0))),
+        Some(outside)
+    );
+    assert_eq!(tile_region(&mut app, center), Some(outside));
+}
+
+#[test]
+fn region_wall4() {
+    let (mut app, layer) = make_app();
+
+    set_wall_tile(&mut app, TilePosition::new(layer, 1, 0));
+    set_wall_tile(&mut app, TilePosition::new(layer, 0, 1));
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 1);
+
+    let region = regions[0];
+
+    assert_eq!(
+        tile_region(&mut app, TilePosition::new(layer, 0, 0)),
+        Some(region),
+    );
+    assert_eq!(
+        tile_region(&mut app, TilePosition::new(layer, 1, 1)),
+        Some(region),
+    );
+}
+
+#[test]
+fn region_insert() {}
+
+#[test]
+fn region_remove() {}
+
+#[test]
+fn region_split1() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
@@ -174,7 +635,7 @@ fn subdivide_square_into_quadrants() {
 }
 
 #[test]
-fn diamond_split_vertically() {
+fn region_split2() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 0, 0);
 
@@ -226,7 +687,111 @@ fn diamond_split_vertically() {
 }
 
 #[test]
-fn horizontal_split_and_merge() {
+fn region_split3() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 16, 16);
+
+    set_square(&mut app, center, 3);
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    for i in -2..=2 {
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, i)));
+    }
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 3);
+
+    let ne_region = tile_region(&mut app, center.with_offset(IVec2::new(1, -1))).unwrap();
+    let sw_region = tile_region(&mut app, center.with_offset(IVec2::new(-1, 1))).unwrap();
+    let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
+
+    assert!(regions.contains(&ne_region));
+    assert!(regions.contains(&sw_region));
+    assert!(regions.contains(&outside));
+
+    assert_ne!(ne_region, sw_region);
+    assert_ne!(ne_region, outside);
+    assert_ne!(sw_region, outside);
+
+    for i in -2..=2 {
+        assert_eq!(
+            tile_region(&mut app, center.with_offset(IVec2::new(i, i))),
+            None
+        );
+    }
+}
+
+#[test]
+fn region_split4() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 16, 16);
+
+    set_square(&mut app, center, 4);
+
+    update_regions(&mut app);
+
+    let initial_regions = get_regions(&mut app);
+    assert_eq!(initial_regions.len(), 2);
+
+    for i in -3i32..=3 {
+        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, 0)));
+    }
+
+    update_regions(&mut app);
+
+    let split_regions = get_regions(&mut app);
+    assert_eq!(split_regions.len(), 3);
+
+    let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
+    let north = tile_region(&mut app, center.with_offset(IVec2::new(0, 2))).unwrap();
+    let south = tile_region(&mut app, center.with_offset(IVec2::new(0, -2))).unwrap();
+
+    assert!(split_regions.contains(&outside));
+    assert!(split_regions.contains(&north));
+    assert!(split_regions.contains(&south));
+
+    assert_ne!(north, south);
+    assert_ne!(outside, north);
+    assert_ne!(outside, south);
+}
+
+#[test]
+fn region_door_split() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 16, 16);
+
+    set_square(&mut app, center, 1);
+    let door = set_door_tile(&mut app, center.north());
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    let inside = tile_region(&mut app, center).unwrap();
+    let outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
+
+    assert!(regions.contains(&inside));
+    assert!(regions.contains(&outside));
+    assert_ne!(inside, outside);
+
+    let inside_doors = region_doors(&mut app, inside);
+    let outside_doors = region_doors(&mut app, outside);
+
+    assert_eq!(inside_doors.len(), 1);
+    assert!(inside_doors.contains(&door));
+    assert_eq!(outside_doors.len(), 1);
+    assert!(outside_doors.contains(&door));
+}
+
+#[test]
+fn region_merge1() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
@@ -276,7 +841,7 @@ fn horizontal_split_and_merge() {
 }
 
 #[test]
-fn vertical_split_and_merge() {
+fn region_merge2() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 3, 0);
 
@@ -336,7 +901,7 @@ fn vertical_split_and_merge() {
 }
 
 #[test]
-fn grid_many_regions_then_merge() {
+fn region_merge_many() {
     let (mut app, layer) = make_app();
 
     for x in -15..=15 {
@@ -379,7 +944,7 @@ fn grid_many_regions_then_merge() {
 }
 
 #[test]
-fn grid_modifications_merge_and_split() {
+fn region_split_merge() {
     let (mut app, layer) = make_app();
 
     for x in -3..=3 {
@@ -443,675 +1008,6 @@ fn grid_modifications_merge_and_split() {
     let combined = tile_region(&mut app, TilePosition::new(layer, -1, -1)).unwrap();
     assert!(new_regions.contains(&combined));
     assert_ne!(combined, outside);
-}
-
-#[test]
-fn diagonal_wall_splits_region() {
-    let (mut app, layer) = make_app();
-    let center = TilePosition::new(layer, 16, 16);
-
-    set_square(&mut app, center, 3);
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 2);
-
-    for i in -2..=2 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, i)));
-    }
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 3);
-
-    let ne_region = tile_region(&mut app, center.with_offset(IVec2::new(1, -1))).unwrap();
-    let sw_region = tile_region(&mut app, center.with_offset(IVec2::new(-1, 1))).unwrap();
-    let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
-
-    assert!(regions.contains(&ne_region));
-    assert!(regions.contains(&sw_region));
-    assert!(regions.contains(&outside));
-
-    assert_ne!(ne_region, sw_region);
-    assert_ne!(ne_region, outside);
-    assert_ne!(sw_region, outside);
-
-    for i in -2..=2 {
-        assert_eq!(
-            tile_region(&mut app, center.with_offset(IVec2::new(i, i))),
-            None
-        );
-    }
-}
-
-#[test]
-fn sparse_diagonal_walls_stay_connected() {
-    let (mut app, layer) = make_app();
-    let center = TilePosition::new(layer, 16, 16);
-
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, 1)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, 3)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(4, 4)));
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 1);
-
-    let ne_region = tile_region(&mut app, center.with_offset(IVec2::new(5, 0))).unwrap();
-    let sw_region = tile_region(&mut app, center.with_offset(IVec2::new(0, 5))).unwrap();
-
-    assert!(regions.contains(&ne_region));
-    assert_eq!(ne_region, sw_region);
-}
-
-#[test]
-fn square_with_overlapping_corners() {
-    let (mut app, layer) = make_app();
-    let corner = TilePosition::new(layer, 16, 16);
-
-    for x in -3..=3 {
-        set_wall_tile(&mut app, corner.with_offset(IVec2::new(x, -2)));
-        set_wall_tile(&mut app, corner.with_offset(IVec2::new(x, 2)));
-    }
-    for y in -3..=3 {
-        set_wall_tile(&mut app, corner.with_offset(IVec2::new(-2, y)));
-        set_wall_tile(&mut app, corner.with_offset(IVec2::new(2, y)));
-    }
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 2);
-
-    let inside = tile_region(&mut app, corner).unwrap();
-    let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
-
-    assert!(regions.contains(&inside));
-    assert!(regions.contains(&outside));
-    assert_ne!(inside, outside);
-
-    assert_eq!(
-        tile_region(&mut app, corner.with_offset(IVec2::new(0, 0))),
-        Some(inside)
-    );
-    assert_eq!(
-        tile_region(&mut app, corner.with_offset(IVec2::new(1, 1))),
-        Some(inside)
-    );
-    assert_eq!(
-        tile_region(&mut app, corner.with_offset(IVec2::new(-1, -1))),
-        Some(inside)
-    );
-    assert_eq!(
-        tile_region(&mut app, corner.with_offset(IVec2::new(1, -1))),
-        Some(inside)
-    );
-    assert_eq!(
-        tile_region(&mut app, corner.with_offset(IVec2::new(-1, 1))),
-        Some(inside)
-    );
-}
-
-#[test]
-fn toggle_center_tile() {
-    let (mut app, layer) = make_app();
-    let center = TilePosition::new(layer, 16, 16);
-
-    set_square(&mut app, center, 3);
-
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
-
-    update_regions(&mut app);
-
-    let initial_regions = get_regions(&mut app);
-    assert_eq!(initial_regions.len(), 2);
-
-    let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
-
-    clear_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
-    update_regions(&mut app);
-
-    let new_regions = get_regions(&mut app);
-    assert_eq!(new_regions.len(), 2);
-
-    let inside_after = tile_region(&mut app, center.with_offset(IVec2::new(0, 0))).unwrap();
-    assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(1, 1))),
-        Some(inside_after)
-    );
-    assert_eq!(
-        tile_region(&mut app, TilePosition::new(layer, 30, 30)),
-        Some(outside)
-    );
-    assert_ne!(inside_after, outside);
-}
-
-#[test]
-fn nested_squares_single_region() {
-    let (mut app, layer) = make_app();
-    let center = TilePosition::new(layer, 16, 16);
-
-    set_square(&mut app, center, 6);
-
-    for dx in -5i32..=5 {
-        for dy in -5i32..=5 {
-            if dx.abs() > 2 && dy.abs() > 2 {
-                set_wall_tile(&mut app, center.with_offset(IVec2::new(dx, dy)));
-            }
-        }
-    }
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 2);
-
-    let inside = tile_region(&mut app, center).unwrap();
-    let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
-
-    assert!(regions.contains(&inside));
-    assert!(regions.contains(&outside));
-    assert_ne!(inside, outside);
-
-    assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(0, -4))),
-        Some(inside)
-    );
-    assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(0, 4))),
-        Some(inside)
-    );
-    assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(4, 0))),
-        Some(inside)
-    );
-    assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(-4, 0))),
-        Some(inside)
-    );
-}
-
-#[test]
-fn long_corridor_single_region() {
-    let (mut app, layer) = make_app();
-    let start = TilePosition::new(layer, 0, 0);
-
-    for x in -10i32..=10 {
-        set_wall_tile(&mut app, start.with_offset(IVec2::new(x, -1)));
-        set_wall_tile(&mut app, start.with_offset(IVec2::new(x, 1)));
-    }
-    for y in -1i32..=1 {
-        set_wall_tile(&mut app, start.with_offset(IVec2::new(-10, y)));
-        set_wall_tile(&mut app, start.with_offset(IVec2::new(10, y)));
-    }
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 2);
-
-    let corridor = tile_region(&mut app, start).unwrap();
-    let outside = tile_region(&mut app, start.with_offset(IVec2::new(0, 5))).unwrap();
-
-    assert!(regions.contains(&corridor));
-    assert!(regions.contains(&outside));
-    assert_ne!(corridor, outside);
-
-    for x in -9i32..=9 {
-        assert_eq!(
-            tile_region(&mut app, start.with_offset(IVec2::new(x, 0))),
-            Some(corridor)
-        );
-    }
-}
-
-#[test]
-fn nested_regions() {
-    let (mut app, layer) = make_app();
-    let center = TilePosition::new(layer, 16, 16);
-
-    set_square(&mut app, center, 5);
-    set_square(&mut app, center, 2);
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 3);
-
-    let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
-    let inside_hole = tile_region(&mut app, center).unwrap();
-    let donut = tile_region(&mut app, center.with_offset(IVec2::new(3, 0))).unwrap();
-
-    assert!(regions.contains(&outside));
-    assert!(regions.contains(&inside_hole));
-    assert!(regions.contains(&donut));
-
-    assert_ne!(outside, inside_hole);
-    assert_ne!(outside, donut);
-    assert_ne!(inside_hole, donut);
-
-    assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(3, 0))),
-        Some(donut)
-    );
-    assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(-3, 0))),
-        Some(donut)
-    );
-    assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(0, 3))),
-        Some(donut)
-    );
-    assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(0, -3))),
-        Some(donut)
-    );
-}
-
-#[test]
-fn checkerboard_many_regions() {
-    let (mut app, layer) = make_app();
-    let origin = TilePosition::new(layer, 0, 0);
-
-    let center = origin.with_offset(IVec2::new(3, 3));
-    for i in -4i32..=5 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, -4)));
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, 5)));
-    }
-    for i in -4i32..=5 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(-4, i)));
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(5, i)));
-    }
-
-    for x in 0..8 {
-        for y in 0..8 {
-            if (x + y) % 2 == 0 {
-                set_wall_tile(&mut app, origin.with_offset(IVec2::new(x, y)));
-            }
-        }
-    }
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert!(regions.len() > 10);
-
-    let region_1_2 = tile_region(&mut app, origin.with_offset(IVec2::new(1, 2))).unwrap();
-    let region_3_4 = tile_region(&mut app, origin.with_offset(IVec2::new(3, 4))).unwrap();
-
-    assert!(regions.contains(&region_1_2));
-    assert!(regions.contains(&region_3_4));
-    assert_ne!(region_1_2, region_3_4);
-}
-
-#[test]
-fn maze_stays_connected() {
-    let (mut app, layer) = make_app();
-    let origin = TilePosition::new(layer, 0, 0);
-
-    for i in 0..10 {
-        set_wall_tile(&mut app, origin.with_offset(IVec2::new(i, 0)));
-        set_wall_tile(&mut app, origin.with_offset(IVec2::new(i, 9)));
-        set_wall_tile(&mut app, origin.with_offset(IVec2::new(0, i)));
-        set_wall_tile(&mut app, origin.with_offset(IVec2::new(9, i)));
-    }
-
-    for i in 1i32..8 {
-        if i != 4 {
-            set_wall_tile(&mut app, origin.with_offset(IVec2::new(5, i)));
-        }
-    }
-    for i in 1i32..6 {
-        if i != 2 {
-            set_wall_tile(&mut app, origin.with_offset(IVec2::new(i, 5)));
-        }
-    }
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 2);
-
-    let maze_inside = tile_region(&mut app, origin.with_offset(IVec2::new(1, 1))).unwrap();
-    let outside = tile_region(&mut app, TilePosition::new(layer, 20, 20)).unwrap();
-
-    assert!(regions.contains(&maze_inside));
-    assert!(regions.contains(&outside));
-    assert_ne!(maze_inside, outside);
-
-    let top_left = tile_region(&mut app, origin.with_offset(IVec2::new(1, 1))).unwrap();
-    let bottom_right = tile_region(&mut app, origin.with_offset(IVec2::new(7, 7))).unwrap();
-
-    assert_eq!(top_left, bottom_right);
-}
-
-#[test]
-fn partial_boundary_stays_connected() {
-    let (mut app, layer) = make_app();
-    let center = TilePosition::new(layer, 16, 16);
-
-    set_square(&mut app, center, 4);
-    clear_tile(&mut app, center.with_offset(IVec2::new(4, 0)));
-
-    for i in -2i32..=3 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, -2)));
-    }
-    for i in -2i32..=2 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(-2, i)));
-    }
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 1);
-
-    let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
-
-    assert!(regions.contains(&outside));
-
-    assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(3, 0))),
-        Some(outside)
-    );
-    assert_eq!(tile_region(&mut app, center), Some(outside));
-}
-
-#[test]
-fn connect_sections_vertical() {
-    let (mut app, layer) = make_app();
-
-    let wall_x = 16;
-    for y in 0..(CHUNK_SIZE as i32) {
-        set_wall_tile(&mut app, TilePosition::new(layer, wall_x, y));
-    }
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 1);
-
-    let region = regions[0];
-
-    assert_eq!(
-        tile_region(&mut app, TilePosition::new(layer, wall_x - 1, 16)),
-        Some(region),
-    );
-    assert_eq!(
-        tile_region(&mut app, TilePosition::new(layer, wall_x + 1, 16)),
-        Some(region),
-    );
-    assert_eq!(
-        tile_region(&mut app, TilePosition::new(layer, wall_x, 40)),
-        Some(region),
-    );
-}
-
-#[test]
-fn connect_sections_corner() {
-    let (mut app, layer) = make_app();
-
-    set_wall_tile(&mut app, TilePosition::new(layer, 1, 0));
-    set_wall_tile(&mut app, TilePosition::new(layer, 0, 1));
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 1);
-
-    let region = regions[0];
-
-    assert_eq!(
-        tile_region(&mut app, TilePosition::new(layer, 0, 0)),
-        Some(region),
-    );
-    assert_eq!(
-        tile_region(&mut app, TilePosition::new(layer, 1, 1)),
-        Some(region),
-    );
-}
-
-#[test]
-fn connect_sections_interior() {
-    let (mut app, layer) = make_app();
-
-    let center = TilePosition::new(layer, 32, 32);
-
-    set_square(&mut app, center, 5);
-
-    for y in -3..5 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(1, y)));
-    }
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 2);
-
-    let left = tile_region(&mut app, center.with_offset(IVec2::new(-1, 0))).unwrap();
-    let right = tile_region(&mut app, center.with_offset(IVec2::new(3, 0))).unwrap();
-
-    assert_eq!(left, right);
-}
-
-#[test]
-fn connect_sections_exterior() {
-    let (mut app, layer) = make_app();
-
-    for x in 0..5 {
-        set_wall_tile(&mut app, TilePosition::new(layer, x, 5));
-    }
-    for y in -2..5 {
-        set_wall_tile(&mut app, TilePosition::new(layer, 0, y));
-        set_wall_tile(&mut app, TilePosition::new(layer, 5, y));
-    }
-
-    update_regions(&mut app);
-
-    let initial_regions = get_regions(&mut app);
-    assert_eq!(initial_regions.len(), 1);
-
-    let inside = tile_region(&mut app, TilePosition::new(layer, 2, 3)).unwrap();
-    let outside = tile_region(&mut app, TilePosition::new(layer, 7, 3)).unwrap();
-
-    assert_eq!(inside, outside);
-}
-
-#[test]
-fn horizontal_wall_splits_region() {
-    let (mut app, layer) = make_app();
-    let center = TilePosition::new(layer, 16, 16);
-
-    set_square(&mut app, center, 4);
-
-    update_regions(&mut app);
-
-    let initial_regions = get_regions(&mut app);
-    assert_eq!(initial_regions.len(), 2);
-
-    for i in -3i32..=3 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, 0)));
-    }
-
-    update_regions(&mut app);
-
-    let split_regions = get_regions(&mut app);
-    assert_eq!(split_regions.len(), 3);
-
-    let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
-    let north = tile_region(&mut app, center.with_offset(IVec2::new(0, 2))).unwrap();
-    let south = tile_region(&mut app, center.with_offset(IVec2::new(0, -2))).unwrap();
-
-    assert!(split_regions.contains(&outside));
-    assert!(split_regions.contains(&north));
-    assert!(split_regions.contains(&south));
-
-    assert_ne!(north, south);
-    assert_ne!(outside, north);
-    assert_ne!(outside, south);
-}
-
-#[test]
-fn door_splits_region() {
-    let (mut app, layer) = make_app();
-    let center = TilePosition::new(layer, 16, 16);
-
-    set_square(&mut app, center, 1);
-    let door = set_door_tile(&mut app, center.north());
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 2);
-
-    let inside = tile_region(&mut app, center).unwrap();
-    let outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
-
-    assert!(regions.contains(&inside));
-    assert!(regions.contains(&outside));
-    assert_ne!(inside, outside);
-
-    let inside_doors = region_doors(&mut app, inside);
-    let outside_doors = region_doors(&mut app, outside);
-
-    assert_eq!(inside_doors.len(), 1);
-    assert!(inside_doors.contains(&door));
-    assert_eq!(outside_doors.len(), 1);
-    assert!(outside_doors.contains(&door));
-}
-
-#[test]
-fn update_section_door() {
-    let (mut app, layer) = make_app();
-    let center = TilePosition::new(layer, 16, 16);
-
-    set_square(&mut app, center, 1);
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 2);
-
-    let inside = tile_region(&mut app, center).unwrap();
-    let outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
-
-    let door = set_door_tile(&mut app, center.south());
-
-    update_regions(&mut app);
-
-    let new_regions = get_regions(&mut app);
-    assert_eq!(new_regions.len(), 2);
-
-    assert!(!new_regions.contains(&inside));
-    assert!(!new_regions.contains(&outside));
-    assert_ne!(inside, outside);
-
-    let new_inside = tile_region(&mut app, center).unwrap();
-    let new_outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
-
-    assert!(new_regions.contains(&new_inside));
-    assert!(new_regions.contains(&new_outside));
-    assert_ne!(inside, outside);
-
-    let inside_doors = region_doors(&mut app, new_inside);
-    let outside_doors = region_doors(&mut app, new_outside);
-
-    assert_eq!(inside_doors.len(), 1);
-    assert!(inside_doors.contains(&door));
-    assert_eq!(outside_doors.len(), 1);
-    assert!(outside_doors.contains(&door));
-}
-
-#[test]
-fn update_section_door_neighbor_chunk() {
-    let (mut app, layer) = make_app();
-    let center = TilePosition::new(layer, 5, 0);
-
-    set_square(&mut app, center, 1);
-
-    update_regions(&mut app);
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 2);
-
-    let inside = tile_region(&mut app, center).unwrap();
-    let outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
-
-    assert!(regions.contains(&inside));
-    assert!(regions.contains(&outside));
-    assert_ne!(inside, outside);
-
-    let door = set_door_tile(&mut app, center.south());
-
-    update_regions(&mut app);
-
-    let new_regions = get_regions(&mut app);
-    assert_eq!(new_regions.len(), 2);
-
-    assert!(!new_regions.contains(&inside));
-    assert!(!new_regions.contains(&outside));
-
-    let new_inside = tile_region(&mut app, center).unwrap();
-    let new_outside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
-
-    assert!(new_regions.contains(&new_inside));
-    assert!(new_regions.contains(&new_outside));
-    assert_ne!(new_inside, new_outside);
-
-    let inside_doors = region_doors(&mut app, new_inside);
-    let outside_doors = region_doors(&mut app, new_outside);
-
-    assert_eq!(inside_doors.len(), 1);
-    assert!(inside_doors.contains(&door));
-    assert_eq!(outside_doors.len(), 1);
-    assert!(outside_doors.contains(&door));
-}
-
-#[test]
-fn doors_on_chunk_edge() {
-    let (mut app, layer) = make_app();
-
-    let edge = CHUNK_SIZE as i32 - 1;
-    for i in 0..=edge {
-        set_wall_tile(&mut app, TilePosition::new(layer, i, 0));
-        set_wall_tile(&mut app, TilePosition::new(layer, edge, i));
-        set_wall_tile(&mut app, TilePosition::new(layer, edge - i, edge));
-        set_wall_tile(&mut app, TilePosition::new(layer, 0, edge - i));
-    }
-
-    let south_door = set_door_tile(&mut app, TilePosition::new(layer, 4, 0));
-    let east_door = set_door_tile(&mut app, TilePosition::new(layer, edge, 6));
-    let north_door = set_door_tile(&mut app, TilePosition::new(layer, 15, edge));
-    let west_door = set_door_tile(&mut app, TilePosition::new(layer, 0, 23));
-
-    update_regions(&mut app);
-
-    let inside = tile_region(&mut app, TilePosition::new(layer, 5, 5)).unwrap();
-    let outside = tile_region(&mut app, TilePosition::new(layer, -5, -5)).unwrap();
-
-    let regions = get_regions(&mut app);
-    assert_eq!(regions.len(), 2);
-    assert!(regions.contains(&inside));
-    assert!(regions.contains(&outside));
-    assert_ne!(inside, outside);
-
-    let inside_doors = region_doors(&mut app, inside);
-    let outside_doors = region_doors(&mut app, outside);
-
-    assert_eq!(inside_doors.len(), 4);
-    assert!(inside_doors.contains(&south_door));
-    assert!(inside_doors.contains(&east_door));
-    assert!(inside_doors.contains(&north_door));
-    assert!(inside_doors.contains(&west_door));
-
-    assert_eq!(outside_doors.len(), 4);
-    assert!(outside_doors.contains(&south_door));
-    assert!(outside_doors.contains(&east_door));
-    assert!(outside_doors.contains(&north_door));
-    assert!(outside_doors.contains(&west_door));
 }
 
 fn make_app() -> (App, Entity) {
