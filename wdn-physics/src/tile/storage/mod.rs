@@ -351,6 +351,21 @@ impl fmt::Debug for TileChunk {
 }
 
 impl SystemBuffer for TileStorageDeferred {
+    fn queue(&mut self, _system_meta: &SystemMeta, mut world: DeferredWorld) {
+        if self.modified {
+            let chunks = mem::take(&mut world.resource_mut::<TileMapBuffer>().chunks);
+            world
+                .commands()
+                .spawn_batch(chunks.into_iter().map(|(position, chunk)| {
+                    (
+                        Name::new(format!("{chunk:?}")),
+                        ChildOf(position.layer()),
+                        chunk,
+                    )
+                }));
+        }
+    }
+
     fn apply(&mut self, _: &SystemMeta, world: &mut World) {
         if self.modified {
             world.resource_scope(|world: &mut World, mut map: Mut<TileMapBuffer>| {
