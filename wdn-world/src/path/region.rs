@@ -8,7 +8,7 @@ use wdn_physics::tile::{
     CHUNK_SIZE, CHUNK_SIZE_SQUARED,
     adjacency::Adjacency,
     material::TileMaterial,
-    position::{TileChunkOffset, TileChunkPosition, TilePosition},
+    position::{TileChunkOffset, TileChunkPosition, TileLayerPosition, TilePosition},
     storage::{TileChunk, TileMap},
 };
 
@@ -18,7 +18,8 @@ use crate::path::flow::RegionDoors;
 #[require(RegionDoors)]
 pub struct Region {
     size: usize,
-    sections: SmallVec<[(Entity, TilePosition); 2]>,
+    layer: Entity,
+    sections: SmallVec<[(Entity, TileLayerPosition); 2]>,
 }
 
 #[derive(Component, Default, Debug)]
@@ -30,7 +31,7 @@ pub struct TileChunkSections {
 #[derive(Debug)]
 pub struct TileChunkSection {
     tiles: Vec<TileChunkOffset>,
-    doors: HashMap<TilePosition, Adjacency>,
+    doors: HashMap<TileLayerPosition, Adjacency>,
     edges: usize,
     region: Entity,
 }
@@ -185,7 +186,7 @@ pub fn update_regions(
             }
 
             region_size += current_section_data.size();
-            region_sections.push((current_chunk_id, current_section));
+            region_sections.push((current_chunk_id, current_section.layer_position()));
 
             current_section_data.for_each_neighbor(current_chunk, |neighbor| {
                 if let Some(neighbor_chunk_id) = map.get(neighbor.chunk_position()) {
@@ -207,6 +208,7 @@ pub fn update_regions(
 
         commands.spawn((
             Region {
+                layer: section.layer(),
                 size: region_size,
                 sections: region_sections,
             },
@@ -245,8 +247,14 @@ impl Region {
         self.size
     }
 
+    pub fn layer(&self) -> Entity {
+        self.layer
+    }
+
     pub fn sections(&self) -> impl Iterator<Item = (Entity, TilePosition)> {
-        self.sections.iter().copied()
+        self.sections
+            .iter()
+            .map(|&(chunk_id, position)| (chunk_id, TilePosition::from((self.layer, position))))
     }
 }
 
@@ -264,7 +272,7 @@ impl TileChunkSections {
     pub fn doors(
         &self,
         offset: TileChunkOffset,
-    ) -> Option<impl Iterator<Item = (TilePosition, Adjacency)> + '_> {
+    ) -> Option<impl Iterator<Item = (TileLayerPosition, Adjacency)> + '_> {
         let section = self.set.get_section(offset)?;
         Some(self.sections[&section].doors())
     }
@@ -287,7 +295,7 @@ impl TileChunkSection {
         self.tiles.len()
     }
 
-    pub fn doors(&self) -> impl Iterator<Item = (TilePosition, Adjacency)> + '_ {
+    pub fn doors(&self) -> impl Iterator<Item = (TileLayerPosition, Adjacency)> + '_ {
         self.doors.iter().map(|(&pos, &adj)| (pos, adj))
     }
 
@@ -304,7 +312,7 @@ impl TileChunkSection {
         }
 
         if doors != Adjacency::NONE {
-            let center = TilePosition::from((position, offset));
+            let center = TileLayerPosition::from((position, offset));
             if doors.contains(Adjacency::WEST) {
                 self.doors
                     .entry(center.west())

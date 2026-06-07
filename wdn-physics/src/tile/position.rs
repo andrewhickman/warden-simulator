@@ -14,6 +14,11 @@ pub struct TilePosition {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TileLayerPosition {
+    position: IVec2,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct TileChunkPosition {
     layer: Entity,
     position: I16Vec2,
@@ -72,6 +77,12 @@ impl TilePosition {
 
     pub fn west(&self) -> Self {
         self.with_offset(IVec2::new(-1, 0))
+    }
+
+    pub fn layer_position(&self) -> TileLayerPosition {
+        TileLayerPosition {
+            position: self.position,
+        }
     }
 
     pub fn chunk_position(&self) -> TileChunkPosition {
@@ -136,6 +147,15 @@ impl From<(TileChunkPosition, TileChunkOffset)> for TilePosition {
     }
 }
 
+impl From<(Entity, TileLayerPosition)> for TilePosition {
+    fn from((layer, position): (Entity, TileLayerPosition)) -> Self {
+        TilePosition {
+            layer,
+            position: position.position(),
+        }
+    }
+}
+
 impl Default for TilePosition {
     fn default() -> Self {
         Self {
@@ -149,6 +169,75 @@ impl fmt::Debug for TilePosition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("TilePosition")
             .field(&self.layer())
+            .field(&self.x())
+            .field(&self.y())
+            .finish()
+    }
+}
+
+impl TileLayerPosition {
+    pub fn new(x: i32, y: i32) -> Self {
+        TileLayerPosition {
+            position: IVec2::new(x, y),
+        }
+    }
+
+    pub fn from_vec(position: IVec2) -> Self {
+        TileLayerPosition { position }
+    }
+
+    pub fn x(&self) -> i32 {
+        self.position.x
+    }
+
+    pub fn y(&self) -> i32 {
+        self.position.y
+    }
+
+    pub fn position(&self) -> IVec2 {
+        self.position
+    }
+
+    pub fn with_offset(&self, offset: IVec2) -> Self {
+        TileLayerPosition::from_vec(self.position() + offset)
+    }
+
+    pub fn north(&self) -> Self {
+        self.with_offset(IVec2::new(0, 1))
+    }
+
+    pub fn south(&self) -> Self {
+        self.with_offset(IVec2::new(0, -1))
+    }
+
+    pub fn east(&self) -> Self {
+        self.with_offset(IVec2::new(1, 0))
+    }
+
+    pub fn west(&self) -> Self {
+        self.with_offset(IVec2::new(-1, 0))
+    }
+
+    pub fn chunk_offset(&self) -> TileChunkOffset {
+        TileChunkOffset::new(
+            self.x().rem_euclid(CHUNK_SIZE as i32) as u16,
+            self.y().rem_euclid(CHUNK_SIZE as i32) as u16,
+        )
+    }
+}
+
+impl From<(TileChunkPosition, TileChunkOffset)> for TileLayerPosition {
+    fn from((chunk_position, chunk_offset): (TileChunkPosition, TileChunkOffset)) -> Self {
+        TileLayerPosition::new(
+            chunk_position.x() as i32 * CHUNK_SIZE as i32 + chunk_offset.x() as i32,
+            chunk_position.y() as i32 * CHUNK_SIZE as i32 + chunk_offset.y() as i32,
+        )
+    }
+}
+
+impl fmt::Debug for TileLayerPosition {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("TileLayerPosition")
             .field(&self.x())
             .field(&self.y())
             .finish()

@@ -1301,7 +1301,7 @@ fn flow_door() {
     assert_eq!(regions.len(), 1);
 
     let flow_field = region_door_flow_field(&mut app, regions[0], door);
-    assert_eq!(flow_field.get(center), None);
+    assert_eq!(flow_field.get(center.layer_position()), None);
 
     assert_relative_eq!(flow_field[center.north()], Dir2::SOUTH);
     assert_relative_eq!(flow_field[center.south()], Dir2::NORTH);
@@ -1471,7 +1471,7 @@ fn validate_regions(
                                         .doors(neighbor.chunk_offset())
                                         .unwrap()
                                         .any(|(door_position, door_adjacency)| door_position
-                                            == position
+                                            == position.layer_position()
                                             && door_adjacency.contains(adjacency))
                                 );
                             }
@@ -1512,11 +1512,12 @@ fn validate_regions(
             }
 
             for (door, _) in chunk_sections.doors(section_id).unwrap() {
-                if door.chunk_position() == chunk.position() {
+                let door_position = TilePosition::from((chunk.layer(), door));
+                if door_position.chunk_position() == chunk.position() {
                     assert!(!unique_tile_positions.contains(&(chunk_id, door.chunk_offset())));
                 }
 
-                assert_eq!(storage.get_material(door), TileMaterial::Door);
+                assert_eq!(storage.get_material(door_position), TileMaterial::Door);
             }
 
             let (_, region, _) = regions.get(region_id).unwrap();
@@ -1529,7 +1530,7 @@ fn validate_regions(
     for (door_id, door_regions, door_position) in &doors {
         for door_region in door_regions.iter() {
             let (_, _, region_doors) = regions.get(door_region.region()).unwrap();
-            let region_door = region_doors.get(*door_position).unwrap();
+            let region_door = region_doors.get(door_position.layer_position()).unwrap();
             assert_eq!(region_door.door(), door_id);
             assert_eq!(region_door.flow_field(), door_region.flow_field());
         }
