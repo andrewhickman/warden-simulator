@@ -8,7 +8,7 @@ use wdn_physics::tile::{
     CHUNK_SIZE, CHUNK_SIZE_SQUARED,
     adjacency::Adjacency,
     material::TileMaterial,
-    position::{TileChunkOffset, TileChunkPosition, TileLayerPosition, TilePosition},
+    position::{TileChunkOffset, TileChunkPosition, TileLayerOffset, TilePosition},
     storage::{TileChunk, TileMap},
 };
 
@@ -19,7 +19,7 @@ use crate::path::flow::RegionDoors;
 pub struct Region {
     size: usize,
     layer: Entity,
-    sections: SmallVec<[(Entity, TileLayerPosition); 2]>,
+    sections: SmallVec<[(Entity, TileLayerOffset); 2]>,
 }
 
 #[derive(Component, Default, Debug)]
@@ -31,7 +31,7 @@ pub struct TileChunkSections {
 #[derive(Debug)]
 pub struct TileChunkSection {
     tiles: Vec<TileChunkOffset>,
-    doors: HashMap<TileLayerPosition, Adjacency>,
+    doors: HashMap<TileLayerOffset, Adjacency>,
     edges: usize,
     region: Entity,
 }
@@ -186,7 +186,7 @@ pub fn update_regions(
             }
 
             region_size += current_section_data.size();
-            region_sections.push((current_chunk_id, current_section.layer_position()));
+            region_sections.push((current_chunk_id, current_section.layer_offset()));
 
             current_section_data.for_each_neighbor(current_chunk, |neighbor| {
                 if let Some(neighbor_chunk_id) = map.get(neighbor.chunk_position()) {
@@ -272,7 +272,7 @@ impl TileChunkSections {
     pub fn doors(
         &self,
         offset: TileChunkOffset,
-    ) -> Option<impl Iterator<Item = (TileLayerPosition, Adjacency)> + '_> {
+    ) -> Option<impl Iterator<Item = (TileLayerOffset, Adjacency)> + '_> {
         let section = self.set.get_section(offset)?;
         Some(self.sections[&section].doors())
     }
@@ -295,7 +295,7 @@ impl TileChunkSection {
         self.tiles.len()
     }
 
-    pub fn doors(&self) -> impl Iterator<Item = (TileLayerPosition, Adjacency)> + '_ {
+    pub fn doors(&self) -> impl Iterator<Item = (TileLayerOffset, Adjacency)> + '_ {
         self.doors.iter().map(|(&pos, &adj)| (pos, adj))
     }
 
@@ -312,7 +312,7 @@ impl TileChunkSection {
         }
 
         if doors != Adjacency::NONE {
-            let center = TileLayerPosition::from((position, offset));
+            let center = TileLayerOffset::from((position, offset));
             if doors.contains(Adjacency::WEST) {
                 self.doors
                     .entry(center.west())

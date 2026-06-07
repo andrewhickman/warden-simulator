@@ -14,7 +14,7 @@ pub struct TilePosition {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct TileLayerPosition {
+pub struct TileLayerOffset {
     position: IVec2,
 }
 
@@ -79,8 +79,8 @@ impl TilePosition {
         self.with_offset(IVec2::new(-1, 0))
     }
 
-    pub fn layer_position(&self) -> TileLayerPosition {
-        TileLayerPosition {
+    pub fn layer_offset(&self) -> TileLayerOffset {
+        TileLayerOffset {
             position: self.position,
         }
     }
@@ -147,8 +147,8 @@ impl From<(TileChunkPosition, TileChunkOffset)> for TilePosition {
     }
 }
 
-impl From<(Entity, TileLayerPosition)> for TilePosition {
-    fn from((layer, position): (Entity, TileLayerPosition)) -> Self {
+impl From<(Entity, TileLayerOffset)> for TilePosition {
+    fn from((layer, position): (Entity, TileLayerOffset)) -> Self {
         TilePosition {
             layer,
             position: position.position(),
@@ -175,15 +175,15 @@ impl fmt::Debug for TilePosition {
     }
 }
 
-impl TileLayerPosition {
+impl TileLayerOffset {
     pub fn new(x: i32, y: i32) -> Self {
-        TileLayerPosition {
+        TileLayerOffset {
             position: IVec2::new(x, y),
         }
     }
 
     pub fn from_vec(position: IVec2) -> Self {
-        TileLayerPosition { position }
+        TileLayerOffset { position }
     }
 
     pub fn x(&self) -> i32 {
@@ -199,7 +199,7 @@ impl TileLayerPosition {
     }
 
     pub fn with_offset(&self, offset: IVec2) -> Self {
-        TileLayerPosition::from_vec(self.position() + offset)
+        TileLayerOffset::from_vec(self.position() + offset)
     }
 
     pub fn north(&self) -> Self {
@@ -226,18 +226,18 @@ impl TileLayerPosition {
     }
 }
 
-impl From<(TileChunkPosition, TileChunkOffset)> for TileLayerPosition {
+impl From<(TileChunkPosition, TileChunkOffset)> for TileLayerOffset {
     fn from((chunk_position, chunk_offset): (TileChunkPosition, TileChunkOffset)) -> Self {
-        TileLayerPosition::new(
+        TileLayerOffset::new(
             chunk_position.x() as i32 * CHUNK_SIZE as i32 + chunk_offset.x() as i32,
             chunk_position.y() as i32 * CHUNK_SIZE as i32 + chunk_offset.y() as i32,
         )
     }
 }
 
-impl fmt::Debug for TileLayerPosition {
+impl fmt::Debug for TileLayerOffset {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_tuple("TileLayerPosition")
+        f.debug_tuple("TileLayerOffset")
             .field(&self.x())
             .field(&self.y())
             .finish()

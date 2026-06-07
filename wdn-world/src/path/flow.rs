@@ -7,7 +7,7 @@ use bevy_platform::collections::{HashMap, hash_map};
 use wdn_physics::tile::{
     adjacency::Adjacency,
     index::TileIndex,
-    position::{TileLayerPosition, TilePosition},
+    position::{TileLayerOffset, TilePosition},
     storage::TileStorage,
 };
 
@@ -15,7 +15,7 @@ use crate::path::region::{Region, TileChunkSections};
 
 #[derive(Clone, Component, Default, Debug)]
 pub struct RegionDoors {
-    doors: HashMap<TileLayerPosition, RegionDoor>,
+    doors: HashMap<TileLayerOffset, RegionDoor>,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -43,17 +43,17 @@ pub struct DoorRegion {
 pub struct FlowField {
     door_position: TilePosition,
     door_adjacency: Adjacency,
-    flow: HashMap<TileLayerPosition, Dir2>,
+    flow: HashMap<TileLayerOffset, Dir2>,
 }
 
 const DOOR_COST: f32 = 1048576.0;
 
-type CostField = HashMap<TileLayerPosition, CostEntry>;
+type CostField = HashMap<TileLayerOffset, CostEntry>;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct CostNode {
     cost: FloatOrd,
-    position: TileLayerPosition,
+    position: TileLayerOffset,
     adjacency: Adjacency,
 }
 
@@ -167,11 +167,11 @@ pub fn on_remove_region_doors(
 }
 
 impl RegionDoors {
-    pub fn get(&self, position: TileLayerPosition) -> Option<&RegionDoor> {
+    pub fn get(&self, position: TileLayerOffset) -> Option<&RegionDoor> {
         self.doors.get(&position)
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = (TileLayerPosition, &RegionDoor)> {
+    pub fn iter(&self) -> impl Iterator<Item = (TileLayerOffset, &RegionDoor)> {
         self.doors.iter().map(|(&pos, door)| (pos, door))
     }
 
@@ -243,12 +243,16 @@ impl FlowField {
         self.door_position.layer()
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = (TileLayerPosition, Dir2)> {
+    pub fn iter(&self) -> impl Iterator<Item = (TileLayerOffset, Dir2)> {
         self.flow.iter().map(|(&pos, &dir)| (pos, dir))
     }
 
-    pub fn get(&self, position: TileLayerPosition) -> Option<Dir2> {
+    pub fn get(&self, position: TileLayerOffset) -> Option<Dir2> {
         self.flow.get(&position).copied()
+    }
+
+    pub fn len(&self) -> usize {
+        self.flow.len()
     }
 
     fn generate_flow_field(&mut self, storage: &TileStorage, region: &Region, doors: &RegionDoors) {
@@ -266,7 +270,7 @@ impl FlowField {
             debug_assert!(entry.cost.is_finite());
             debug_assert!(entry.accepted);
 
-            if position == self.door_position.layer_position() {
+            if position == self.door_position.layer_offset() {
                 continue;
             }
 
@@ -284,14 +288,14 @@ impl Index<TilePosition> for FlowField {
     type Output = Dir2;
 
     fn index(&self, position: TilePosition) -> &Self::Output {
-        &self[position.layer_position()]
+        &self[position.layer_offset()]
     }
 }
 
-impl Index<TileLayerPosition> for FlowField {
+impl Index<TileLayerOffset> for FlowField {
     type Output = Dir2;
 
-    fn index(&self, position: TileLayerPosition) -> &Self::Output {
+    fn index(&self, position: TileLayerOffset) -> &Self::Output {
         match self.flow.get(&position) {
             Some(dir) => dir,
             None => panic!(
@@ -303,7 +307,7 @@ impl Index<TileLayerPosition> for FlowField {
 }
 
 impl CostNode {
-    fn new(position: TileLayerPosition, adjacency: Adjacency, cost: f32) -> Self {
+    fn new(position: TileLayerOffset, adjacency: Adjacency, cost: f32) -> Self {
         Self {
             position,
             adjacency,
@@ -311,7 +315,7 @@ impl CostNode {
         }
     }
 
-    fn visit_neighbors(&self, mut f: impl FnMut(TileLayerPosition)) {
+    fn visit_neighbors(&self, mut f: impl FnMut(TileLayerOffset)) {
         if !self.adjacency.contains(Adjacency::NORTH) {
             f(self.position.north());
         }
@@ -355,11 +359,11 @@ fn generate_cost_field(
     let mut costs = HashMap::with_capacity(size_hint);
 
     costs.insert(
-        door.layer_position(),
+        door.layer_offset(),
         CostEntry::new(0.0, Adjacency::NONE, false),
     );
     open.push(CostNode::new(
-        door.layer_position(),
+        door.layer_offset(),
         door_adjacency.complement(),
         0.0,
     ));
@@ -402,7 +406,7 @@ fn generate_cost_field(
 
 fn eikonal_cost(
     costs: &CostField,
-    position: TileLayerPosition,
+    position: TileLayerOffset,
     adjacency: Adjacency,
     cost: f32,
 ) -> f32 {
@@ -441,7 +445,7 @@ fn eikonal_cost(
     }
 }
 
-fn get_accepted_cost(costs: &CostField, position: TileLayerPosition) -> f32 {
+fn get_accepted_cost(costs: &CostField, position: TileLayerOffset) -> f32 {
     match costs.get(&position) {
         Some(entry) if entry.accepted => entry.cost,
         _ => f32::INFINITY,
@@ -450,7 +454,7 @@ fn get_accepted_cost(costs: &CostField, position: TileLayerPosition) -> f32 {
 
 fn flow_vector(
     costs: &CostField,
-    position: TileLayerPosition,
+    position: TileLayerOffset,
     cost: f32,
     adjacency: Adjacency,
 ) -> Dir2 {
@@ -512,20 +516,20 @@ fn flow_vector(
         dir -= Vec2::X * west;
     }
 
-    Dir2::new(dir).expect("flow vector should not be zero")
+    Dir2::new(dir).expect("zero flow vector")
 }
 
-fn flow_delta(costs: &CostField, neighbor: TileLayerPosition, cost: f32) -> Option<f32> {
+fn flow_delta(costs: &CostField, neighbor: TileLayerOffset, cost: f32) -> Option<f32> {
     let delta = cost - costs.get(&neighbor)?.cost;
     if delta > 0.0 { Some(delta) } else { None }
 }
 
 fn flow_tiebreak(a_flow: &mut Option<f32>, b_flow: &mut Option<f32>) {
     if let (Some(a), Some(b)) = (*a_flow, *b_flow) {
-        if a < b {
-            *b_flow = None;
-        } else {
+        if b > a {
             *a_flow = None;
+        } else {
+            *b_flow = None;
         }
     }
 }

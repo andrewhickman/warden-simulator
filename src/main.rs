@@ -241,7 +241,6 @@ fn handle_tile_toggle(
                     } else if mouse.just_pressed(MouseButton::Right) {
                         dev_render.draw_door_flow_fields = door_id;
                     }
-                    return;
                 }
             };
         }
