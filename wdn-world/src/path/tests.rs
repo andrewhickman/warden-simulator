@@ -1,4 +1,4 @@
-use approx::assert_relative_eq;
+use approx::{AbsDiffEq, RelativeEq, assert_relative_eq};
 use bevy_app::prelude::*;
 use bevy_ecs::entity::EntityHashSet;
 use bevy_ecs::{prelude::*, system::RunSystemOnce};
@@ -17,7 +17,7 @@ use wdn_physics::tile::{
 };
 
 use crate::door::Door;
-use crate::path::flow::{DoorRegions, FlowField, RegionDoors};
+use crate::path::flow::{DoorRegions, FlowField, FlowFieldEntry, RegionDoors};
 
 use super::{
     PathPlugin,
@@ -1308,96 +1308,128 @@ fn flow_empty() {
     let flow_field = region_door_flow_field(&mut app, regions[0], door);
     assert_eq!(flow_field.len(), 4095);
 
-    assert_eq!(flow_field.get(center.layer_offset()), None);
+    assert!(flow_field.get(center.layer_offset()).is_none());
 
-    assert_relative_eq!(flow_field[center.north()], Dir2::SOUTH);
-    assert_relative_eq!(flow_field[center.south()], Dir2::NORTH);
-    assert_relative_eq!(flow_field[center.east()], Dir2::WEST);
-    assert_relative_eq!(flow_field[center.west()], Dir2::EAST);
+    assert_relative_eq!(
+        flow_field[center.north()],
+        flow_entry(0.0, -1.0, 1.0),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        flow_field[center.south()],
+        flow_entry(0.0, 1.0, 1.0),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        flow_field[center.east()],
+        flow_entry(-1.0, 0.0, 1.0),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        flow_field[center.west()],
+        flow_entry(1.0, 0.0, 1.0),
+        epsilon = 0.01
+    );
 
-    assert_relative_eq!(flow_field[center.north().east()], Dir2::SOUTH_WEST);
-    assert_relative_eq!(flow_field[center.north().west()], Dir2::SOUTH_EAST);
-    assert_relative_eq!(flow_field[center.south().east()], Dir2::NORTH_WEST);
-    assert_relative_eq!(flow_field[center.south().west()], Dir2::NORTH_EAST);
+    assert_relative_eq!(
+        flow_field[center.north().east()],
+        flow_entry(-1.0, -1.0, 1.7071068),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        flow_field[center.north().west()],
+        flow_entry(1.0, -1.0, 1.7071068),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        flow_field[center.south().east()],
+        flow_entry(-1.0, 1.0, 1.7071068),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        flow_field[center.south().west()],
+        flow_entry(1.0, 1.0, 1.7071068),
+        epsilon = 0.01
+    );
 
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(0, 2))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, 2))],
-        Dir2::from_xy(-1.0, -1.5).unwrap(),
+        flow_entry(-1.0, -1.5, 2.5453289),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(2, 2))],
-        Dir2::SOUTH_WEST,
+        flow_entry(-1.0, -1.0, 3.2524357),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(2, 1))],
-        Dir2::from_xy(-1.5, -1.0).unwrap(),
+        flow_entry(-1.5, -1.0, 2.5453289),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(2, 0))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(2, -1))],
-        Dir2::from_xy(-1.5, 1.0).unwrap(),
+        flow_entry(-1.5, 1.0, 2.5453289),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(2, -2))],
-        Dir2::NORTH_WEST,
+        flow_entry(-1.0, 1.0, 3.2524357),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, -2))],
-        Dir2::from_xy(-1.0, 1.5).unwrap(),
+        flow_entry(-1.0, 1.5, 2.5453289),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(0, -2))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, -2))],
-        Dir2::from_xy(1.0, 1.5).unwrap(),
+        flow_entry(1.0, 1.5, 2.5453289),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-2, -2))],
-        Dir2::NORTH_EAST,
+        flow_entry(1.0, 1.0, 3.2524357),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-2, -1))],
-        Dir2::from_xy(1.5, 1.0).unwrap(),
+        flow_entry(1.5, 1.0, 2.5453289),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-2, 0))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-2, 1))],
-        Dir2::from_xy(1.5, -1.0).unwrap(),
+        flow_entry(1.5, -1.0, 2.5453289),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-2, 2))],
-        Dir2::SOUTH_EAST,
+        flow_entry(1.0, -1.0, 3.2524357),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, 2))],
-        Dir2::from_xy(1.0, -1.5).unwrap(),
+        flow_entry(1.0, -1.5, 2.5453289),
         epsilon = 0.01
     );
 }
@@ -1421,88 +1453,88 @@ fn flow_wall1() {
     let flow_field = region_door_flow_field(&mut app, regions[0], door);
     assert_eq!(flow_field.len(), 4091);
 
-    assert_eq!(flow_field.get(center.layer_offset()), None);
-    assert_eq!(flow_field.get(center.layer_offset().east()), None);
-    assert_eq!(flow_field.get(center.layer_offset().west()), None);
+    assert!(flow_field.get(center.layer_offset()).is_none());
+    assert!(flow_field.get(center.layer_offset().east()).is_none());
+    assert!(flow_field.get(center.layer_offset().west()).is_none());
 
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(0, 1))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 1.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, 1))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(2, 1))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(3, 1))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(3, 0))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 5.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(3, -1))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(2, -1))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, -1))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(0, -1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 1.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, -1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-2, -1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-3, -1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-3, 0))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 5.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-3, 1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-2, 1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, 1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 2.0),
         epsilon = 0.01
     );
 }
@@ -1526,88 +1558,88 @@ fn flow_wall2() {
     let flow_field = region_door_flow_field(&mut app, regions[0], door);
     assert_eq!(flow_field.len(), 4091);
 
-    assert_eq!(flow_field.get(center.layer_offset()), None);
-    assert_eq!(flow_field.get(center.layer_offset().north()), None);
-    assert_eq!(flow_field.get(center.layer_offset().south()), None);
+    assert!(flow_field.get(center.layer_offset()).is_none());
+    assert!(flow_field.get(center.layer_offset().north()).is_none());
+    assert!(flow_field.get(center.layer_offset().south()).is_none());
 
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, 0))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 1.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, 1))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, 2))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, 3))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(0, 3))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 5.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, 3))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, 2))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, 1))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, 0))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 1.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, -1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, -2))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, -3))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(0, -3))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 5.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, -3))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, -2))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, -1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 2.0),
         epsilon = 0.01
     );
 }
@@ -1637,202 +1669,202 @@ fn flow_wall3() {
 
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-3, -3))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 7.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-2, -3))],
-        Dir2::from_xy(-1.0, 1.5).unwrap(),
+        flow_entry(-1.0, 1.5, 7.545329),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, -3))],
-        Dir2::NORTH_WEST,
+        flow_entry(-1.0, 1.0, 8.252436),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(0, -3))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 9.252436),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, -3))],
-        Dir2::NORTH_EAST,
+        flow_entry(1.0, 1.0, 8.252436),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(2, -3))],
-        Dir2::from_xy(1.0, 1.5).unwrap(),
+        flow_entry(1.0, 1.5, 7.545329),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(3, -3))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 7.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-3, -2))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 6.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-2, -2))],
-        Dir2::NORTH_WEST,
+        flow_entry(-1.0, 1.0, 6.7071066),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, -2))],
-        Dir2::from_xy(-1.5, 1.0).unwrap(),
+        flow_entry(-1.5, 1.0, 7.545329),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, -2))],
-        Dir2::from_xy(1.5, 1.0).unwrap(),
+        flow_entry(1.5, 1.0, 7.545329),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(2, -2))],
-        Dir2::NORTH_EAST,
+        flow_entry(1.0, 1.0, 6.7071066),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(3, -2))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 6.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-3, -1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 5.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-2, -1))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 6.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, -1))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 7.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, -1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 7.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(2, -1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 6.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(3, -1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 5.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-3, 0))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(3, 0))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-3, 1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-2, 1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, 1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 1.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, 1))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 1.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(2, 1))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(3, 1))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-3, 2))],
-        Dir2::from_xy(1.5, -1.0).unwrap(),
+        flow_entry(1.5, -1.0, 3.5453289),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-2, 2))],
-        Dir2::SOUTH_EAST,
+        flow_entry(1.0, -1.0, 2.7071068),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, 2))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, 2))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(2, 2))],
-        Dir2::SOUTH_WEST,
+        flow_entry(-1.0, -1.0, 2.7071068),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(3, 2))],
-        Dir2::from_xy(-1.5, -1.0).unwrap(),
+        flow_entry(-1.5, -1.0, 3.5453289),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-3, 3))],
-        Dir2::SOUTH_EAST,
+        flow_entry(1.0, -1.0, 4.2524357),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-2, 3))],
-        Dir2::from_xy(1.0, -1.5).unwrap(),
+        flow_entry(1.0, -1.5, 3.5453289),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(-1, 3))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(0, 3))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(1, 3))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(2, 3))],
-        Dir2::from_xy(-1.0, -1.5).unwrap(),
+        flow_entry(-1.0, -1.5, 3.5453289),
         epsilon = 0.01
     );
     assert_relative_eq!(
         flow_field[center.with_offset(IVec2::new(3, 3))],
-        Dir2::SOUTH_WEST,
+        flow_entry(-1.0, -1.0, 4.2524357),
         epsilon = 0.01
     );
 }
@@ -1865,181 +1897,197 @@ fn flow_room1() {
     assert_eq!(north_outside.len(), 4088);
     assert_eq!(south_outside.len(), 4088);
 
-    assert_relative_eq!(north_inside[center.layer_offset()], Dir2::NORTH);
-    assert_relative_eq!(north_inside[center.layer_offset().south()], Dir2::NORTH);
+    assert_relative_eq!(
+        north_inside[center.layer_offset()],
+        flow_entry(0.0, 1.0, 1.0),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        north_inside[center.layer_offset().south()],
+        flow_entry(0.0, 1.0, 2.0),
+        epsilon = 0.01
+    );
 
-    assert_relative_eq!(south_inside[center.layer_offset()], Dir2::SOUTH);
-    assert_relative_eq!(south_inside[center.layer_offset().north()], Dir2::SOUTH);
+    assert_relative_eq!(
+        south_inside[center.layer_offset()],
+        flow_entry(0.0, -1.0, 1.0),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        south_inside[center.layer_offset().north()],
+        flow_entry(0.0, -1.0, 2.0),
+        epsilon = 0.01
+    );
 
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(-2, -2))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 7.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(-1, -2))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 8.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(0, -2))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 9.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(1, -2))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 8.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(2, -2))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 7.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(-2, -1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 6.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(0, -1))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 10.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(2, -1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 6.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(-2, 0))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 5.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(2, 0))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 5.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(-2, 1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(2, 1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(-2, 2))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(-1, 2))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(0, 2))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 1.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(1, 2))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         north_outside[center.with_offset(IVec2::new(2, 2))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 3.0),
         epsilon = 0.01
     );
 
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(-2, -2))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(-1, -2))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(0, -2))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 1.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(1, -2))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(2, -2))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(-2, -1))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(2, -1))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(-2, 0))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 5.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(2, 0))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 5.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(-2, 1))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 6.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(0, 1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 10.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(2, 1))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 6.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(-2, 2))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 7.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(-1, 2))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 8.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(0, 2))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 9.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(1, 2))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 8.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         south_outside[center.with_offset(IVec2::new(2, 2))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 7.0),
         epsilon = 0.01
     );
 }
@@ -2071,83 +2119,83 @@ fn flow_room2() {
 
     assert_relative_eq!(
         outside_flow[center.with_offset(IVec2::new(-1, -1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 5.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         outside_flow[center.with_offset(IVec2::new(0, -1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         outside_flow[center.with_offset(IVec2::new(1, -1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         outside_flow[center.with_offset(IVec2::new(-1, 0))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 6.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         outside_flow[center.with_offset(IVec2::new(1, 1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 1.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         outside_flow[center.with_offset(IVec2::new(-1, 1))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 7.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         outside_flow[center.with_offset(IVec2::new(0, 1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         outside_flow[center.with_offset(IVec2::new(1, 1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 1.0),
         epsilon = 0.01
     );
 
     assert_relative_eq!(
         inside_flow[center.with_offset(IVec2::new(-1, -1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         inside_flow[center.with_offset(IVec2::new(0, -1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 4.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         inside_flow[center.with_offset(IVec2::new(1, -1))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 3.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         inside_flow[center.with_offset(IVec2::new(-1, 0))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         inside_flow[center.with_offset(IVec2::new(1, 0))],
-        Dir2::NORTH,
+        flow_entry(0.0, 1.0, 2.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         inside_flow[center.with_offset(IVec2::new(-1, 1))],
-        Dir2::EAST,
+        flow_entry(1.0, 0.0, 1.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         inside_flow[center.with_offset(IVec2::new(1, 1))],
-        Dir2::WEST,
+        flow_entry(-1.0, 0.0, 1.0),
         epsilon = 0.01
     );
     assert_relative_eq!(
         inside_flow[center.with_offset(IVec2::new(1, 2))],
-        Dir2::SOUTH,
+        flow_entry(0.0, -1.0, 2.0),
         epsilon = 0.01
     );
 }
@@ -2174,7 +2222,11 @@ fn flow_update() {
     let flow_field = app.world().get::<FlowField>(flow_field_id).unwrap();
     assert_eq!(flow_field.len(), 9);
 
-    assert_relative_eq!(flow_field[center.south()], Dir2::NORTH, epsilon = 0.01);
+    assert_relative_eq!(
+        flow_field[center.south()],
+        flow_entry(0.0, 1.0, 3.0),
+        epsilon = 0.01
+    );
 
     set_wall_tile(&mut app, center);
     update_regions(&mut app);
@@ -2196,7 +2248,11 @@ fn flow_update() {
     let new_flow_field = app.world().get::<FlowField>(new_flow_field_id).unwrap();
     assert_eq!(new_flow_field.len(), 8);
 
-    assert_relative_eq!(new_flow_field[center.south()], Dir2::EAST, epsilon = 0.01);
+    assert_relative_eq!(
+        new_flow_field[center.south()],
+        flow_entry(1.0, 0.0, 5.0),
+        epsilon = 0.01
+    );
 }
 
 fn make_app() -> (App, Entity) {
@@ -2293,6 +2349,10 @@ fn region_door_flow_field_id(app: &App, region: Entity, door: Entity) -> Entity 
 fn region_door_flow_field(app: &App, region: Entity, door: Entity) -> &FlowField {
     let id = region_door_flow_field_id(app, region, door);
     app.world().get::<FlowField>(id).unwrap()
+}
+
+fn flow_entry(dir_x: f32, dir_y: f32, cost: f32) -> FlowFieldEntry {
+    FlowFieldEntry::new(Dir2::from_xy(dir_x, dir_y).unwrap(), cost)
 }
 
 fn validate_regions(
@@ -2422,5 +2482,36 @@ fn validate_regions(
             assert_eq!(region_door.door(), door_id);
             assert_eq!(region_door.flow_field(), door_region.flow_field());
         }
+    }
+}
+
+impl AbsDiffEq for FlowFieldEntry {
+    type Epsilon = <f32 as AbsDiffEq>::Epsilon;
+
+    fn default_epsilon() -> Self::Epsilon {
+        f32::default_epsilon()
+    }
+
+    fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
+        self.dir().abs_diff_eq(&other.dir(), epsilon)
+            && self.cost().abs_diff_eq(&other.cost(), epsilon)
+    }
+}
+
+impl RelativeEq for FlowFieldEntry {
+    fn default_max_relative() -> Self::Epsilon {
+        f32::default_max_relative()
+    }
+
+    fn relative_eq(
+        &self,
+        other: &Self,
+        epsilon: Self::Epsilon,
+        max_relative: Self::Epsilon,
+    ) -> bool {
+        self.dir().relative_eq(&other.dir(), epsilon, max_relative)
+            && self
+                .cost()
+                .relative_eq(&other.cost(), epsilon, max_relative)
     }
 }

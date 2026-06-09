@@ -1,3 +1,4 @@
+pub mod find;
 pub mod flow;
 pub mod region;
 #[cfg(test)]

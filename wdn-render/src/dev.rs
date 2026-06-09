@@ -54,9 +54,9 @@ pub fn draw_door_flow_fields(
             continue;
         };
 
-        for (tile_pos, dir) in flow.iter() {
+        for (tile_pos, entry) in flow.iter() {
             let center = Vec2::new(tile_pos.x() as f32 + 0.5, tile_pos.y() as f32 + 0.5);
-            let end = center + dir.as_vec2() * 0.4;
+            let end = center + entry.dir().as_vec2() * 0.4;
             gizmos.arrow_2d(center, end, Color::srgb(0.95, 0.75, 0.1));
         }
     }
