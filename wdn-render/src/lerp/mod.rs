@@ -2,7 +2,7 @@
 mod tests;
 
 use bevy_app::prelude::*;
-use bevy_ecs::prelude::*;
+use bevy_ecs::{batching::BatchingStrategy, prelude::*};
 use bevy_math::prelude::*;
 use bevy_time::prelude::*;
 use bevy_transform::prelude::*;
@@ -66,6 +66,7 @@ pub fn interpolate_position(
 
     transforms
         .par_iter_mut()
+        .batching_strategy(BatchingStrategy::new().min_batch_size(16))
         .for_each(|(interpolate, position, mut transform, mut state)| {
             if interpolate.translation
                 && let Some(interpolated_translation) =

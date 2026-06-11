@@ -9,7 +9,7 @@ use bevy::{
 
 use wdn_physics::{
     PhysicsPlugin as WdnPhysicsPlugin,
-    kinematics::{GlobalPosition, Position},
+    kinematics::Position,
     layer::Layer,
     tile::{
         index::TileIndex, material::TileMaterial, position::TilePosition, storage::TileStorageMut,
@@ -19,8 +19,11 @@ use wdn_render::{RenderPlugin as WdnRenderPlugin, RenderSystems, dev::DevRenderS
 use wdn_save::SavePlugin as WdnSavePlugin;
 use wdn_tasks::TasksPlugin as WdnTasksPlugin;
 use wdn_ui::UiPlugin as WdnUiPlugin;
-use wdn_world::pawn::{Pawn, PawnAction};
-use wdn_world::{WorldPlugin as WdnWorldPlugin, door::Door};
+use wdn_world::{
+    WorldPlugin as WdnWorldPlugin,
+    door::Door,
+    pawn::{Pawn, action::PawnAction, path::PawnPath},
+};
 
 pub fn main() {
     App::new()
@@ -136,9 +139,10 @@ fn handle_pawn_input(
     keys: Res<ButtonInput<KeyCode>>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
     window: Single<&Window>,
-    pawn_query: Single<(&mut PawnAction, &GlobalPosition), (With<Pawn>, With<Player>)>,
+    layer: Single<Entity, With<Layer>>,
+    pawn_query: Single<(&mut PawnAction, &mut PawnPath), (With<Pawn>, With<Player>)>,
 ) {
-    let (mut action, pawn_transform) = pawn_query.into_inner();
+    let (mut action, mut path) = pawn_query.into_inner();
 
     let (camera, camera_transform) = camera_query.into_inner();
 
@@ -152,47 +156,14 @@ fn handle_pawn_input(
         return;
     }
 
-    // Handle movement towards cursor on left click
-    if mouse.pressed(MouseButton::Left)
+    // Handle movement towards cursor on right click
+    if mouse.pressed(MouseButton::Right)
         && let Some(cursor_pos) = window.cursor_position()
         && let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_pos)
     {
-        let pawn_pos = pawn_transform.position();
-        let direction = world_pos - pawn_pos;
-
-        if let Ok(direction) = Dir2::try_from(direction) {
-            // Calculate the target angle
-            let target_angle = direction.rotation_from_y();
-
-            // Get current rotation (assuming Z-axis rotation)
-            let current_angle = pawn_transform.rotation();
-
-            let angle_diff = current_angle.angle_to(target_angle);
-
-            // Threshold for considering the pawn aligned
-            const ANGLE_THRESHOLD: f32 = 0.1;
-            const LARGE_ANGLE_THRESHOLD: f32 = 1.0;
-
-            if angle_diff.abs() > LARGE_ANGLE_THRESHOLD {
-                // Turn in place for large angle differences
-                *action = if angle_diff > 0.0 {
-                    PawnAction::TurnLeft
-                } else {
-                    PawnAction::TurnRight
-                };
-            } else if angle_diff.abs() > ANGLE_THRESHOLD {
-                // Steer while moving for small adjustments
-                *action = if angle_diff > 0.0 {
-                    PawnAction::SteerLeft
-                } else {
-                    PawnAction::SteerRight
-                };
-            } else {
-                // Walk forward when aligned
-                *action = PawnAction::Walk;
-            }
-            return;
-        }
+        let tile_pos = TilePosition::floor(*layer, world_pos);
+        path.set_target(tile_pos);
+        return;
     }
 
     // Default to standing

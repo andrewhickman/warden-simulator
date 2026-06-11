@@ -4,7 +4,7 @@ mod tests;
 use std::mem;
 
 use bevy_app::prelude::*;
-use bevy_ecs::{prelude::*, query::QueryData};
+use bevy_ecs::{batching::BatchingStrategy, prelude::*, query::QueryData};
 use bevy_math::prelude::*;
 use bevy_time::prelude::*;
 
@@ -84,6 +84,7 @@ pub fn resolve_collisions(
 
     colliders
         .par_iter_mut()
+        .batching_strategy(BatchingStrategy::new().min_batch_size(16))
         .for_each(|(collider_id, collider, &tile_position, mut collisions)| {
             collisions.clear();
 

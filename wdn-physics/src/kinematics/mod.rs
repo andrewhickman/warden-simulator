@@ -6,7 +6,7 @@ mod tests;
 use std::any::type_name_of_val;
 
 use bevy_app::prelude::*;
-use bevy_ecs::prelude::*;
+use bevy_ecs::{batching::BatchingStrategy, prelude::*};
 use bevy_math::prelude::*;
 use bevy_time::prelude::*;
 
@@ -51,6 +51,7 @@ pub fn update_kinematics(
 ) {
     query
         .par_iter_mut()
+        .batching_strategy(BatchingStrategy::new().min_batch_size(16))
         .for_each(|(mut position, mut velocity, collisions)| {
             if velocity.is_zero() {
                 return;

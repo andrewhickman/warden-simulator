@@ -2277,7 +2277,7 @@ fn set_door_tile(app: &mut App, position: TilePosition) -> Entity {
 fn clear_tile(app: &mut App, position: TilePosition) {
     app.world_mut()
         .run_system_once(move |mut commands: Commands, mut storage: TileStorageMut| {
-            if let Some(tile) = storage.index().get_tile(position) {
+            if let Some(tile) = storage.index.get_tile(position) {
                 commands.entity(tile).despawn();
             }
 

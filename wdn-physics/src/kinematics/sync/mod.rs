@@ -1,7 +1,9 @@
 #[cfg(test)]
 mod tests;
 
-use bevy_ecs::{prelude::*, query::QueryData, relationship::Relationship};
+use bevy_ecs::{
+    batching::BatchingStrategy, prelude::*, query::QueryData, relationship::Relationship,
+};
 use bevy_math::prelude::*;
 
 use crate::{
@@ -35,9 +37,12 @@ pub fn sync_kinematics(
     parents: Query<SyncRelativeQuery>,
     layers: Query<&Layer>,
 ) {
-    entities.par_iter_mut().for_each(|mut item| {
-        commands.command_scope(|mut commands| item.sync(&mut commands, &layers, &parents))
-    });
+    entities
+        .par_iter_mut()
+        .batching_strategy(BatchingStrategy::new().min_batch_size(16))
+        .for_each(|mut item| {
+            commands.command_scope(|mut commands| item.sync(&mut commands, &layers, &parents))
+        });
 }
 
 pub fn sync_kinematics_on_add_global_position(

@@ -17,7 +17,7 @@ pub struct WorldPlugin;
 pub enum WorldSystems {
     ApplyPawnActions,
     ApplyProjectiles,
-    UpdatePaths,
+    UpdateRegions,
     UpdateDoors,
 }
 

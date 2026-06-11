@@ -295,6 +295,10 @@ impl TileChunkSection {
         self.tiles.len()
     }
 
+    pub fn region(&self) -> Entity {
+        self.region
+    }
+
     pub fn doors(&self) -> impl Iterator<Item = (TileLayerOffset, Adjacency)> + '_ {
         self.doors.iter().map(|(&pos, &adj)| (pos, adj))
     }

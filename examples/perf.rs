@@ -3,6 +3,7 @@
 use bevy::{
     camera_controller::pan_camera::{PanCamera, PanCameraPlugin},
     dev_tools::fps_overlay::FpsOverlayPlugin,
+    ecs::batching::BatchingStrategy,
     prelude::*,
     window::WindowPlugin,
 };
@@ -22,7 +23,7 @@ use wdn_world::{
     WorldPlugin as WdnWorldPlugin, WorldSystems,
     door::Door,
     path::region::Region,
-    pawn::{Pawn, PawnAction},
+    pawn::{Pawn, action::PawnAction},
 };
 
 pub fn main() {
@@ -41,7 +42,7 @@ pub fn main() {
         .add_systems(Startup, startup)
         .add_systems(
             FixedUpdate,
-            update_storage.before(WorldSystems::UpdatePaths),
+            update_storage.before(WorldSystems::UpdateRegions),
         )
         .add_systems(
             FixedUpdate,
@@ -126,7 +127,7 @@ fn update_storage(
     let tile = TilePosition::new(*layer, x, y);
 
     if x % 5 == 0 || y % 5 == 0 {
-        if let Some(entity) = storage.index().get_tile(tile) {
+        if let Some(entity) = storage.index.get_tile(tile) {
             commands.entity(entity).despawn();
         }
 
@@ -143,6 +144,7 @@ fn update_storage(
 fn update_pawns(mut query: Query<&mut PawnAction>) {
     query
         .par_iter_mut()
+        .batching_strategy(BatchingStrategy::new().min_batch_size(16))
         .for_each_init(rand::rng, |rng, mut action| {
             if !rng.random_bool(0.01) {
                 return;
