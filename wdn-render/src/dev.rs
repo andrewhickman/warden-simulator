@@ -4,8 +4,10 @@ use bevy_ecs::prelude::*;
 use bevy_gizmos::prelude::*;
 use bevy_math::prelude::*;
 use wdn_physics::kinematics::Position;
+use wdn_world::path::find::PathEntry;
 use wdn_world::path::flow::{DoorRegions, FlowField};
 use wdn_world::pawn::Pawn;
+use wdn_world::pawn::path::PawnPath;
 
 use crate::RenderSystems;
 
@@ -15,6 +17,7 @@ pub struct DevPlugin;
 pub struct DevRenderSettings {
     pub draw_pawn_colliders: bool,
     pub draw_door_flow_fields: Option<Entity>,
+    pub draw_pawn_paths: Option<Entity>,
 }
 
 pub fn draw_pawn_colliders_enabled(settings: Res<DevRenderSettings>) -> bool {
@@ -62,11 +65,49 @@ pub fn draw_door_flow_fields(
     }
 }
 
+pub fn draw_pawn_paths_enabled(settings: Res<DevRenderSettings>) -> bool {
+    settings.draw_pawn_paths.is_some()
+}
+
+pub fn draw_pawn_paths(
+    mut gizmos: Gizmos,
+    settings: Res<DevRenderSettings>,
+    pawn_paths: Query<&PawnPath>,
+) {
+    let Some(entity) = settings.draw_pawn_paths else {
+        return;
+    };
+
+    let Ok(path) = pawn_paths.get(entity) else {
+        return;
+    };
+
+    let Some(target) = path.target() else {
+        return;
+    };
+
+    let Some(path) = path.path() else {
+        return;
+    };
+
+    match path.next() {
+        Some(PathEntry::InRegion { cost_field, .. }) => {
+            for (tile_pos, entry) in cost_field.iter_flow(target.layer_offset()) {
+                let center = Vec2::new(tile_pos.x() as f32 + 0.5, tile_pos.y() as f32 + 0.5);
+                let end = center + entry.dir().as_vec2() * 0.4;
+                gizmos.arrow_2d(center, end, Color::srgb(0.95, 0.75, 0.1));
+            }
+        }
+        _ => {}
+    }
+}
+
 impl Plugin for DevPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(DevRenderSettings {
             draw_pawn_colliders: true,
             draw_door_flow_fields: None,
+            draw_pawn_paths: None,
         });
 
         app.add_systems(
@@ -74,6 +115,7 @@ impl Plugin for DevPlugin {
             (
                 draw_pawn_colliders.run_if(draw_pawn_colliders_enabled),
                 draw_door_flow_fields.run_if(draw_door_flow_fields_enabled),
+                draw_pawn_paths.run_if(draw_pawn_paths_enabled),
             )
                 .in_set(RenderSystems::RenderDev),
         );

@@ -40,7 +40,7 @@ pub fn main() {
         .add_systems(
             Update,
             (
-                handle_pawn_input,
+                handle_pawn_input.before(RenderSystems::RenderDamage),
                 handle_tile_toggle
                     .before(RenderSystems::RenderDoors)
                     .before(RenderSystems::RenderTiles)
@@ -116,14 +116,7 @@ fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
         Player,
         Pawn::default(),
         ChildOf(layer),
-        Position::new(Vec2::new(0.0, -1.0), Rot2::IDENTITY),
-    ));
-
-    commands.spawn((
-        Target,
-        Pawn::default(),
-        ChildOf(layer),
-        Position::new(Vec2::new(0.0, 0.0), Rot2::IDENTITY),
+        Position::new(Vec2::new(0.5, 0.5), Rot2::IDENTITY),
     ));
 
     commands.spawn((Door::default(), TilePosition::new(layer, 2, 2)));
@@ -140,9 +133,10 @@ fn handle_pawn_input(
     camera_query: Single<(&Camera, &GlobalTransform)>,
     window: Single<&Window>,
     layer: Single<Entity, With<Layer>>,
-    pawn_query: Single<(&mut PawnAction, &mut PawnPath), (With<Pawn>, With<Player>)>,
+    pawn_query: Single<(Entity, &mut PawnAction, &mut PawnPath), (With<Pawn>, With<Player>)>,
+    mut dev_render: ResMut<DevRenderSettings>,
 ) {
-    let (mut action, mut path) = pawn_query.into_inner();
+    let (entity, mut action, mut path) = pawn_query.into_inner();
 
     let (camera, camera_transform) = camera_query.into_inner();
 
@@ -163,7 +157,8 @@ fn handle_pawn_input(
     {
         let tile_pos = TilePosition::floor(*layer, world_pos);
         path.set_target(tile_pos);
-        return;
+
+        dev_render.draw_pawn_paths = Some(entity);
     }
 
     // Default to standing
@@ -178,7 +173,7 @@ fn handle_tile_toggle(
     layer: Single<Entity, With<Layer>>,
     index: Res<TileIndex>,
     mut tile_storage: TileStorageMut,
-    mut dev_render: ResMut<DevRenderSettings>,
+    // mut dev_render: ResMut<DevRenderSettings>,
 ) {
     if (mouse.just_pressed(MouseButton::Right) || mouse.just_pressed(MouseButton::Left))
         && let Some(cursor_pos) = window.cursor_position()
@@ -209,9 +204,9 @@ fn handle_tile_toggle(
                             commands.entity(door_id).despawn();
                         }
                         tile_storage.set_material(tile_pos, TileMaterial::Empty);
-                    } else if mouse.just_pressed(MouseButton::Right) {
-                        dev_render.draw_door_flow_fields = door_id;
-                    }
+                    } /*else if mouse.just_pressed(MouseButton::Right) {
+                    dev_render.draw_door_flow_fields = door_id;
+                    }*/
                 }
             };
         }

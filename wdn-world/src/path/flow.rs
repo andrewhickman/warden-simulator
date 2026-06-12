@@ -81,7 +81,7 @@ struct CostNode {
 
 #[derive(Clone, Copy, Debug)]
 struct CostEntry {
-    cost: f32,
+    base_cost: f32,
     adjacency: Adjacency,
     accepted: bool,
     door: bool,
@@ -276,20 +276,11 @@ impl FlowField {
             self.door_adjacency,
         );
         debug_assert_eq!(costs.len(), region.size() + doors.door_count());
+        debug_assert!(costs.costs.values().all(|e| e.accepted));
 
         self.flow.reserve(region.size() + doors.door_count() - 1);
-        for (position, entry) in costs.iter() {
-            debug_assert!(entry.cost.is_finite());
-            debug_assert!(entry.accepted);
-
-            if position == self.door_position.layer_offset() {
-                continue;
-            }
-
-            let dir = costs.flow_vector(position, entry.cost(), entry.adjacency);
-            self.flow
-                .insert(position, FlowFieldEntry::new(dir, entry.cost));
-        }
+        self.flow
+            .extend(costs.iter_flow(self.door_position.layer_offset()));
 
         debug_assert_eq!(self.flow.len(), region.size() + doors.door_count() - 1);
     }
@@ -490,7 +481,7 @@ impl CostField {
             hash_map::Entry::Occupied(entry) if cost >= entry.get().cost() => false,
             entry => {
                 entry.insert(CostEntry {
-                    cost,
+                    base_cost: cost,
                     adjacency,
                     door,
                     accepted: false,
@@ -504,8 +495,20 @@ impl CostField {
         self.costs.len()
     }
 
-    fn iter(&self) -> impl Iterator<Item = (TileLayerOffset, &CostEntry)> {
-        self.costs.iter().map(|(&pos, entry)| (pos, entry))
+    pub fn iter_flow(
+        &self,
+        start: TileLayerOffset,
+    ) -> impl Iterator<Item = (TileLayerOffset, FlowFieldEntry)> {
+        self.costs
+            .iter()
+            .filter(move |&(&pos, _)| pos != start)
+            .map(|(&pos, entry)| {
+                debug_assert!(entry.base_cost.is_finite());
+
+                let flow = self.flow_vector(pos, entry.cost(), entry.adjacency);
+
+                (pos, FlowFieldEntry::new(flow, entry.base_cost))
+            })
     }
 
     fn accept(&mut self, position: TileLayerOffset) -> bool {
@@ -608,9 +611,9 @@ impl CostEntry {
 
     fn cost(&self) -> f32 {
         if self.door {
-            self.cost + DOOR_COST
+            self.base_cost + DOOR_COST
         } else {
-            self.cost
+            self.base_cost
         }
     }
 }

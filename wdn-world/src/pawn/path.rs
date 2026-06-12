@@ -1,5 +1,5 @@
 use bevy_ecs::{batching::BatchingStrategy, prelude::*};
-use bevy_log::warn;
+use bevy_log::{info, warn};
 use wdn_physics::{kinematics::GlobalPosition, tile::position::TilePosition};
 
 use crate::{
@@ -38,8 +38,8 @@ pub fn follow_pawn_paths(
                 }
 
                 let path = match pawn_path.path.as_mut() {
-                    Some(path) => path,
-                    None => {
+                    Some(path) if paths.is_valid(path) => path,
+                    _ => {
                         let Some(new_path) = paths.find_path(tile_position, target) else {
                             warn!(
                                 "Failed to find path from {:?} to {:?}",
@@ -54,8 +54,8 @@ pub fn follow_pawn_paths(
 
                 let Some(desired_dir) = paths.path_dir(path, tile_position) else {
                     warn!(
-                        "Failed to get path direction for {:?} at position {:?}",
-                        path, tile_position
+                        "Failed to get path direction for at position {:?}",
+                        tile_position
                     );
                     return;
                 };
@@ -66,15 +66,15 @@ pub fn follow_pawn_paths(
 
                 if delta.abs() > 1.0 {
                     *action = if delta > 0.0 {
-                        PawnAction::TurnRight
-                    } else {
                         PawnAction::TurnLeft
+                    } else {
+                        PawnAction::TurnRight
                     };
                 } else if delta.abs() > 0.1 {
                     *action = if delta > 0.0 {
-                        PawnAction::SteerRight
-                    } else {
                         PawnAction::SteerLeft
+                    } else {
+                        PawnAction::SteerRight
                     };
                 } else {
                     *action = PawnAction::Walk;
@@ -87,5 +87,13 @@ impl PawnPath {
     pub fn set_target(&mut self, target: TilePosition) {
         self.target = Some(target);
         self.path = None;
+    }
+
+    pub fn target(&self) -> Option<TilePosition> {
+        self.target
+    }
+
+    pub fn path(&self) -> Option<&Path> {
+        self.path.as_ref()
     }
 }

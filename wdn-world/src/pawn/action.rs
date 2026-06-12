@@ -33,7 +33,7 @@ pub fn apply_pawn_actions(
             }
             PawnAction::Walk => {
                 velocity.accelerate(
-                    position.rotation() * Vec2::new(0.0, Pawn::WALK_SPEED),
+                    position.rotation() * Vec2::new(Pawn::WALK_SPEED, 0.0),
                     Pawn::ACCELERATION * time.delta_secs(),
                 );
                 velocity.set_angular(0.0);
@@ -48,14 +48,14 @@ pub fn apply_pawn_actions(
             }
             PawnAction::SteerLeft => {
                 velocity.accelerate(
-                    position.rotation() * Vec2::new(0.0, Pawn::WALK_SPEED * 0.75),
+                    position.rotation() * Vec2::new(Pawn::WALK_SPEED * 0.75, 0.0),
                     Pawn::ACCELERATION * 0.75 * time.delta_secs(),
                 );
                 velocity.set_angular(Pawn::TURN_SPEED * 0.7);
             }
             PawnAction::SteerRight => {
                 velocity.accelerate(
-                    position.rotation() * Vec2::new(0.0, Pawn::WALK_SPEED * 0.75),
+                    position.rotation() * Vec2::new(Pawn::WALK_SPEED * 0.75, 0.0),
                     Pawn::ACCELERATION * 0.75 * time.delta_secs(),
                 );
                 velocity.set_angular(-Pawn::TURN_SPEED * 0.7);

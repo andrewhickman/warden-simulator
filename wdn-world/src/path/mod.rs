@@ -37,8 +37,8 @@ impl Plugin for PathPlugin {
                     .chain()
                     .run_if(chunk_sections_changed),
             )
-                .in_set(WorldSystems::UpdateRegions)
-                .chain(),
+                .chain()
+                .in_set(WorldSystems::UpdateRegions),
         );
 
         app.world_mut()

@@ -52,15 +52,13 @@ impl PathParam<'_, '_> {
         self.find_path_in_region(from_region, from, to)
     }
 
-    pub fn is_invalid(&self, path: &Path, position: TilePosition) -> bool {
+    pub fn is_valid(&self, path: &Path) -> bool {
         match path.next() {
             Some(PathEntry::FromDoor { flow_field }) | Some(PathEntry::ToDoor { flow_field }) => {
-                !self.flow_fields.contains(*flow_field)
+                self.flow_fields.contains(*flow_field)
             }
-            Some(PathEntry::InRegion { region, cost_field }) => {
-                !self.regions.contains(*region) || !cost_field.contains(position.layer_offset())
-            }
-            None => true,
+            Some(PathEntry::InRegion { region, .. }) => self.regions.contains(*region),
+            None => false,
         }
     }
 
@@ -86,11 +84,13 @@ impl PathParam<'_, '_> {
                 }
 
                 let cost = cost_field.get_cost(position.layer_offset())?;
-                Some(cost_field.flow_vector(
+                let dir = cost_field.flow_vector(
                     position.layer_offset(),
                     cost,
                     self.storage.get_adjacency(position).solid(),
-                ))
+                );
+
+                Some(dir)
             }
             None => None,
         }
@@ -124,10 +124,9 @@ impl PathParam<'_, '_> {
             adjacency.complement(),
         );
         info!(
-            "Generated cost field for region {:?} with {} entries: {:?}",
+            "Generated cost field for region {:?} with {} entries",
             region,
-            cost_field.len(),
-            cost_field
+            cost_field.len()
         );
         debug_assert!(cost_field.contains(from.layer_offset()));
 
