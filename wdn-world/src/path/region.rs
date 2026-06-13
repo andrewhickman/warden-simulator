@@ -12,7 +12,7 @@ use wdn_physics::tile::{
     storage::{TileChunk, TileMap},
 };
 
-use crate::path::flow::RegionDoors;
+use crate::path::door::RegionDoors;
 
 #[derive(Component)]
 #[require(RegionDoors)]

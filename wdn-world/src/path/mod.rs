@@ -1,3 +1,4 @@
+pub mod door;
 pub mod find;
 pub mod flow;
 pub mod region;
@@ -13,7 +14,8 @@ use wdn_physics::tile::storage::TileChunk;
 use crate::{
     WorldSystems,
     path::{
-        flow::{on_remove_region_doors, update_flow_fields, update_region_doors},
+        door::{on_remove_region_doors, update_region_doors},
+        flow::update_flow_fields,
         region::{
             TileChunkSectionChanges, TileChunkSections, chunk_sections_changed, on_add_region,
             update_chunk_sections, update_regions,

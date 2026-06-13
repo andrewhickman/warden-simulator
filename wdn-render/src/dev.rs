@@ -4,8 +4,9 @@ use bevy_ecs::prelude::*;
 use bevy_gizmos::prelude::*;
 use bevy_math::prelude::*;
 use wdn_physics::kinematics::Position;
+use wdn_world::path::door::DoorRegions;
 use wdn_world::path::find::PathEntry;
-use wdn_world::path::flow::{DoorRegions, FlowField};
+use wdn_world::path::flow::FlowField;
 use wdn_world::pawn::Pawn;
 use wdn_world::pawn::path::PawnPath;
 

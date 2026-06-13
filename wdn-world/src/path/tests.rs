@@ -16,8 +16,9 @@ use wdn_physics::tile::{
     storage::{TileMap, TileStorage, TileStorageMut},
 };
 
-use crate::door::{self, Door};
-use crate::path::flow::{DoorRegions, FlowField, FlowFieldEntry, RegionDoors};
+use crate::door::Door;
+use crate::path::door::{DoorRegions, RegionDoors};
+use crate::path::flow::{FlowField, FlowFieldEntry};
 
 use super::{
     PathPlugin,

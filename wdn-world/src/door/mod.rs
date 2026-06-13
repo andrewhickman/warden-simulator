@@ -9,7 +9,7 @@ use bevy_time::prelude::*;
 
 use wdn_physics::{PhysicsSystems, collision::TileCollider, tile::material::TileMaterial};
 
-use crate::{WorldSystems, path::flow::DoorRegions};
+use crate::{WorldSystems, path::door::DoorRegions};
 
 pub struct DoorPlugin;
 

@@ -4,7 +4,8 @@ use bevy_math::Dir2;
 use wdn_physics::tile::{position::TilePosition, storage::TileStorage};
 
 use crate::path::{
-    flow::{CostField, DoorRegions, FlowField, PathPolicy, RegionDoors},
+    door::{DoorRegions, RegionDoors},
+    flow::{CostField, FlowField, PathPolicy},
     region::TileChunkSections,
 };
 
@@ -102,10 +103,10 @@ impl PathParam<'_, '_> {
 
     fn find_path_between_regions(
         &self,
-        from_region: Entity,
-        from: TilePosition,
-        to_region: Entity,
-        to: TilePosition,
+        _from_region: Entity,
+        _from: TilePosition,
+        _to_region: Entity,
+        _to: TilePosition,
     ) -> Option<Path> {
         todo!()
     }
