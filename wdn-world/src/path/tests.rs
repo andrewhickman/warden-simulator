@@ -16,7 +16,7 @@ use wdn_physics::tile::{
     storage::{TileMap, TileStorage, TileStorageMut},
 };
 
-use crate::door::Door;
+use crate::door::{self, Door};
 use crate::path::flow::{DoorRegions, FlowField, FlowFieldEntry, RegionDoors};
 
 use super::{
@@ -157,6 +157,16 @@ fn region_door_update1() {
     assert!(inside_doors.contains(&door));
     assert_eq!(outside_doors.len(), 1);
     assert!(outside_doors.contains(&door));
+
+    let door_regions = door_regions(&app, door);
+    assert!(door_regions.west().is_none());
+    assert!(door_regions.east().is_none());
+    let door_region_north = door_regions.north().unwrap();
+    assert_eq!(door_region_north.region(), new_inside);
+    assert!(door_region_north.dead_end());
+    let door_region_south = door_regions.south().unwrap();
+    assert_eq!(door_region_south.region(), new_outside);
+    assert!(door_region_south.dead_end());
 }
 
 #[test]
@@ -178,7 +188,7 @@ fn region_door_update2() {
     assert!(regions.contains(&outside));
     assert_ne!(inside, outside);
 
-    let door = set_door_tile(&mut app, center.south());
+    let door = set_door_tile(&mut app, center.east());
 
     update_regions(&mut app);
 
@@ -202,6 +212,16 @@ fn region_door_update2() {
     assert!(inside_doors.contains(&door));
     assert_eq!(outside_doors.len(), 1);
     assert!(outside_doors.contains(&door));
+
+    let door_regions = door_regions(&app, door);
+    assert!(door_regions.north().is_none());
+    assert!(door_regions.south().is_none());
+    let door_region_west = door_regions.west().unwrap();
+    assert_eq!(door_region_west.region(), new_inside);
+    assert!(door_region_west.dead_end());
+    let door_region_east = door_regions.east().unwrap();
+    assert_eq!(door_region_east.region(), new_outside);
+    assert!(door_region_east.dead_end());
 }
 
 #[test]
@@ -490,6 +510,46 @@ fn region_door() {
     assert!(outside_doors.contains(&east_door));
     assert!(outside_doors.contains(&north_door));
     assert!(outside_doors.contains(&west_door));
+
+    let north_door_regions = door_regions(&app, north_door);
+    assert!(north_door_regions.east().is_none());
+    assert!(north_door_regions.west().is_none());
+    let north_door_south = north_door_regions.south().unwrap();
+    assert_eq!(north_door_south.region(), inside);
+    assert!(!north_door_south.dead_end());
+    let north_door_north = north_door_regions.north().unwrap();
+    assert_eq!(north_door_north.region(), outside);
+    assert!(!north_door_north.dead_end());
+
+    let east_door_regions = door_regions(&app, east_door);
+    assert!(east_door_regions.north().is_none());
+    assert!(east_door_regions.south().is_none());
+    let east_door_west = east_door_regions.west().unwrap();
+    assert_eq!(east_door_west.region(), inside);
+    assert!(!east_door_west.dead_end());
+    let east_door_east = east_door_regions.east().unwrap();
+    assert_eq!(east_door_east.region(), outside);
+    assert!(!east_door_east.dead_end());
+
+    let south_door_regions = door_regions(&app, south_door);
+    assert!(south_door_regions.east().is_none());
+    assert!(south_door_regions.west().is_none());
+    let south_door_north = south_door_regions.north().unwrap();
+    assert_eq!(south_door_north.region(), inside);
+    assert!(!south_door_north.dead_end());
+    let south_door_south = south_door_regions.south().unwrap();
+    assert_eq!(south_door_south.region(), outside);
+    assert!(!south_door_south.dead_end());
+
+    let west_door_regions = door_regions(&app, west_door);
+    assert!(west_door_regions.north().is_none());
+    assert!(west_door_regions.south().is_none());
+    let west_door_east = west_door_regions.east().unwrap();
+    assert_eq!(west_door_east.region(), inside);
+    assert!(!west_door_east.dead_end());
+    let west_door_west = west_door_regions.west().unwrap();
+    assert_eq!(west_door_west.region(), outside);
+    assert!(!west_door_west.dead_end());
 }
 
 #[test]
@@ -2349,6 +2409,10 @@ fn region_door_flow_field_id(app: &App, region: Entity, door: Entity) -> Entity 
 fn region_door_flow_field(app: &App, region: Entity, door: Entity) -> &FlowField {
     let id = region_door_flow_field_id(app, region, door);
     app.world().get::<FlowField>(id).unwrap()
+}
+
+fn door_regions(app: &App, door: Entity) -> &DoorRegions {
+    app.world().get::<DoorRegions>(door).unwrap()
 }
 
 fn flow_entry(dir_x: f32, dir_y: f32, cost: f32) -> FlowFieldEntry {

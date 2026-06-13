@@ -39,6 +39,7 @@ pub struct DoorRegions {
 pub struct DoorRegion {
     region: Entity,
     flow_field: Entity,
+    dead_end: bool,
 }
 
 #[derive(Component, Debug)]
@@ -127,6 +128,7 @@ pub fn update_region_doors(
                 }
             }
 
+            let dead_end = region_doors.door_count() == 1;
             for (&door_position, door) in region_doors.doors.iter_mut() {
                 door.flow_field = commands
                     .spawn((
@@ -143,6 +145,7 @@ pub fn update_region_doors(
                     region_id,
                     door.flow_field,
                     door.adjacency,
+                    dead_end,
                 );
             }
         });
@@ -208,36 +211,56 @@ impl DoorRegions {
             .flatten()
     }
 
+    pub fn north(&self) -> Option<&DoorRegion> {
+        self.north.as_ref()
+    }
+
+    pub fn south(&self) -> Option<&DoorRegion> {
+        self.south.as_ref()
+    }
+
+    pub fn east(&self) -> Option<&DoorRegion> {
+        self.east.as_ref()
+    }
+
+    pub fn west(&self) -> Option<&DoorRegion> {
+        self.west.as_ref()
+    }
+
     pub fn flow_fields(&self) -> impl Iterator<Item = Entity> {
         self.iter().map(|door_region| door_region.flow_field())
     }
 
-    pub fn insert(&mut self, region: Entity, flow: Entity, adjacency: Adjacency) {
+    pub fn insert(&mut self, region: Entity, flow: Entity, adjacency: Adjacency, dead_end: bool) {
         if adjacency.contains(Adjacency::NORTH) {
             debug_assert!(self.north.is_none());
-            self.north = Some(DoorRegion::new(region, flow));
+            self.north = Some(DoorRegion::new(region, flow, dead_end));
         }
 
         if adjacency.contains(Adjacency::SOUTH) {
             debug_assert!(self.south.is_none());
-            self.south = Some(DoorRegion::new(region, flow));
+            self.south = Some(DoorRegion::new(region, flow, dead_end));
         }
 
         if adjacency.contains(Adjacency::EAST) {
             debug_assert!(self.east.is_none());
-            self.east = Some(DoorRegion::new(region, flow));
+            self.east = Some(DoorRegion::new(region, flow, dead_end));
         }
 
         if adjacency.contains(Adjacency::WEST) {
             debug_assert!(self.west.is_none());
-            self.west = Some(DoorRegion::new(region, flow));
+            self.west = Some(DoorRegion::new(region, flow, dead_end));
         }
     }
 }
 
 impl DoorRegion {
-    pub fn new(region: Entity, flow_field: Entity) -> Self {
-        Self { region, flow_field }
+    pub fn new(region: Entity, flow_field: Entity, dead_end: bool) -> Self {
+        Self {
+            region,
+            flow_field,
+            dead_end,
+        }
     }
 
     pub fn region(&self) -> Entity {
@@ -246,6 +269,10 @@ impl DoorRegion {
 
     pub fn flow_field(&self) -> Entity {
         self.flow_field
+    }
+
+    pub fn dead_end(&self) -> bool {
+        self.dead_end
     }
 }
 
