@@ -42,14 +42,18 @@ impl PathParam<'_, '_> {
             return None;
         }
 
+        if from == to {
+            return Some(Path { entries: vec![] });
+        }
+
         let from_region = self.tile_region(from)?;
         let to_region = self.tile_region(to)?;
 
         if from_region != to_region {
-            return None;
+            self.find_path_between_regions(from_region, from, to_region, to)
+        } else {
+            self.find_path_in_region(from_region, from, to)
         }
-
-        self.find_path_in_region(from_region, from, to)
     }
 
     pub fn is_valid(&self, path: &Path) -> bool {
@@ -96,16 +100,22 @@ impl PathParam<'_, '_> {
         }
     }
 
+    fn find_path_between_regions(
+        &self,
+        from_region: Entity,
+        from: TilePosition,
+        to_region: Entity,
+        to: TilePosition,
+    ) -> Option<Path> {
+        todo!()
+    }
+
     fn find_path_in_region(
         &self,
         region: Entity,
         from: TilePosition,
         to: TilePosition,
     ) -> Option<Path> {
-        if from == to {
-            return Some(Path { entries: vec![] });
-        }
-
         info!(
             "Finding path in region {:?} from {:?} to {:?}",
             region, from, to
