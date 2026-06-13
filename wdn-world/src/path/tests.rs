@@ -2474,9 +2474,9 @@ fn validate_regions(
                     ] {
                         if let Some(neighbor_chunk_id) = storage.chunk_id(neighbor.chunk_position())
                         {
-                            let (_, neighbour_chunk, neighbor_sections) =
+                            let (_, neighbor_chunk, neighbor_sections) =
                                 chunks.get(neighbor_chunk_id).unwrap();
-                            if neighbour_chunk.material(neighbor.chunk_offset())
+                            if neighbor_chunk.material(neighbor.chunk_offset())
                                 == TileMaterial::Empty
                             {
                                 assert!(

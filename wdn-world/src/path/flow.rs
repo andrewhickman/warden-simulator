@@ -1,7 +1,7 @@
 use std::{cmp::Ordering, collections::BinaryHeap, mem::replace, ops::Index};
 
 use bevy_ecs::prelude::*;
-use bevy_math::{FloatOrd, FloatPow, prelude::*};
+use bevy_math::{FloatPow, prelude::*};
 use bevy_platform::collections::{HashMap, hash_map};
 use wdn_physics::tile::{
     adjacency::Adjacency,
@@ -43,10 +43,9 @@ pub struct PathPolicy {
     goal: TileLayerOffset,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug)]
 struct CostNode {
-    priority: FloatOrd,
-    cost: FloatOrd,
+    priority: f32,
     position: TileLayerOffset,
     adjacency: Adjacency,
 }
@@ -409,8 +408,7 @@ impl CostNode {
         Self {
             position,
             adjacency,
-            cost: FloatOrd(cost),
-            priority: FloatOrd(policy.priority(position, cost)),
+            priority: policy.priority(position, cost),
         }
     }
 
@@ -447,9 +445,17 @@ impl CostEntry {
     }
 }
 
+impl PartialEq for CostNode {
+    fn eq(&self, _: &Self) -> bool {
+        unimplemented!()
+    }
+}
+
+impl Eq for CostNode {}
+
 impl Ord for CostNode {
     fn cmp(&self, other: &Self) -> Ordering {
-        other.priority.cmp(&self.priority)
+        other.priority.total_cmp(&self.priority)
     }
 }
 
@@ -477,7 +483,7 @@ impl PathPolicy {
 
 impl CostPolicy for PathPolicy {
     fn priority(&self, position: TileLayerOffset, cost: f32) -> f32 {
-        cost + (position.position().distance_squared(self.goal.position()) as f32).sqrt()
+        cost + position.distance(self.goal)
     }
 
     fn finished(&self, position: TileLayerOffset) -> bool {

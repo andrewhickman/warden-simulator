@@ -199,10 +199,10 @@ impl TileStorageMut<'_, '_> {
         for (adj, offset) in Adjacency::OFFSETS {
             let neighbor_pos = position.with_offset(offset);
 
-            let neighbour_tile = self
+            let neighbor_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
-            neighbour_tile.adjacency.walls.insert(adj);
+            neighbor_tile.adjacency.walls.insert(adj);
 
             if let Some(mut entity_adjacency) = self.get_entity_adjacency(neighbor_pos) {
                 entity_adjacency.walls.insert(adj);
@@ -214,10 +214,10 @@ impl TileStorageMut<'_, '_> {
         for (adj, offset) in Adjacency::OFFSETS {
             let neighbor_pos = position.with_offset(offset);
 
-            let neighbour_tile = self
+            let neighbor_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
-            neighbour_tile.adjacency.walls.remove(adj);
+            neighbor_tile.adjacency.walls.remove(adj);
 
             if let Some(mut entity_adjacency) = self.get_entity_adjacency(neighbor_pos) {
                 entity_adjacency.walls.remove(adj);
@@ -229,10 +229,10 @@ impl TileStorageMut<'_, '_> {
         for (adj, offset) in Adjacency::OFFSETS {
             let neighbor_pos = position.with_offset(offset);
 
-            let neighbour_tile = self
+            let neighbor_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
-            neighbour_tile.adjacency.doors.insert(adj);
+            neighbor_tile.adjacency.doors.insert(adj);
 
             if let Some(mut entity_adjacency) = self.get_entity_adjacency(neighbor_pos) {
                 entity_adjacency.doors.insert(adj);
@@ -244,10 +244,10 @@ impl TileStorageMut<'_, '_> {
         for (adj, offset) in Adjacency::OFFSETS {
             let neighbor_pos = position.with_offset(offset);
 
-            let neighbour_tile = self
+            let neighbor_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
-            neighbour_tile.adjacency.doors.remove(adj);
+            neighbor_tile.adjacency.doors.remove(adj);
 
             if let Some(mut entity_adjacency) = self.get_entity_adjacency(neighbor_pos) {
                 entity_adjacency.doors.remove(adj);

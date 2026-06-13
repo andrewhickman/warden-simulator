@@ -1,6 +1,12 @@
-use bevy_ecs::{prelude::*, system::SystemParam};
+use std::{
+    collections::{BinaryHeap, VecDeque},
+    hash::Hash,
+};
+
+use bevy_ecs::{entity::EntityHash, prelude::*, system::SystemParam};
 use bevy_log::info;
-use bevy_math::Dir2;
+use bevy_math::prelude::*;
+use bevy_platform::collections::{HashMap, hash_map};
 use wdn_physics::tile::{position::TilePosition, storage::TileStorage};
 
 use crate::path::{
@@ -11,6 +17,7 @@ use crate::path::{
 
 #[derive(Debug)]
 pub struct Path {
+    cost: f32,
     entries: Vec<PathEntry>,
 }
 
@@ -37,6 +44,29 @@ pub struct PathParam<'w, 's> {
     pub regions: Query<'w, 's, &'static RegionDoors>,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+enum SearchNodeId {
+    Start,
+    Door(Entity),
+    Goal,
+}
+
+#[derive(Debug, Copy, Clone)]
+struct SearchNode {
+    region: Entity,
+    id: SearchNodeId,
+    position: TilePosition,
+    cost: f32,
+    estimated_cost: f32,
+}
+
+#[derive(Debug, Copy, Clone)]
+struct SearchEntry {
+    parent: SearchNodeId,
+    flow_field: Entity,
+    cost: f32,
+}
+
 impl PathParam<'_, '_> {
     pub fn find_path(&self, from: TilePosition, to: TilePosition) -> Option<Path> {
         if from.layer() != to.layer() {
@@ -44,7 +74,10 @@ impl PathParam<'_, '_> {
         }
 
         if from == to {
-            return Some(Path { entries: vec![] });
+            return Some(Path {
+                entries: vec![],
+                cost: 0.0,
+            });
         }
 
         let from_region = self.tile_region(from)?;
@@ -101,16 +134,6 @@ impl PathParam<'_, '_> {
         }
     }
 
-    fn find_path_between_regions(
-        &self,
-        _from_region: Entity,
-        _from: TilePosition,
-        _to_region: Entity,
-        _to: TilePosition,
-    ) -> Option<Path> {
-        todo!()
-    }
-
     fn find_path_in_region(
         &self,
         region: Entity,
@@ -140,10 +163,78 @@ impl PathParam<'_, '_> {
             cost_field.len()
         );
         debug_assert!(cost_field.contains(from.layer_offset()));
+        let cost = cost_field
+            .get_cost(from.layer_offset())
+            .expect("position not in cost field");
 
         Some(Path {
+            cost,
             entries: vec![PathEntry::InRegion { region, cost_field }],
         })
+    }
+
+    fn find_path_between_regions(
+        &self,
+        start_region: Entity,
+        start: TilePosition,
+        goal_region: Entity,
+        goal: TilePosition,
+    ) -> Option<Path> {
+        let mut open: BinaryHeap<SearchNode> = BinaryHeap::new();
+        let mut map: HashMap<SearchNodeId, SearchEntry, EntityHash> = HashMap::default();
+
+        open.push(SearchNode {
+            region: start_region,
+            id: SearchNodeId::Start,
+            position: start,
+            cost: 0.0,
+            estimated_cost: start.distance(goal),
+        });
+
+        while let Some(node) = open.pop() {
+            if node.id == SearchNodeId::Goal {
+                return Some(self.collect_path(map));
+            }
+
+            if let Some(entry) = map.get(&node.id) {
+                if entry.cost <= node.cost {
+                    continue;
+                }
+            }
+
+            self.for_each_neighbor(
+                &node,
+                goal_region,
+                goal,
+                |id, position, region, flow_field, cost| {
+                    let new_cost = node.cost + cost;
+
+                    match map.entry(id) {
+                        hash_map::Entry::Occupied(entry) if new_cost >= entry.get().cost => {
+                            return;
+                        }
+                        entry => {
+                            entry.insert(SearchEntry {
+                                parent: node.id,
+                                flow_field,
+                                cost: new_cost,
+                            });
+                        }
+                    }
+
+                    let estimated_cost = new_cost + position.distance(goal);
+                    open.push(SearchNode {
+                        region,
+                        id,
+                        position,
+                        cost: new_cost,
+                        estimated_cost,
+                    });
+                },
+            );
+        }
+
+        None
     }
 
     fn tile_region(&self, position: TilePosition) -> Option<Entity> {
@@ -151,10 +242,149 @@ impl PathParam<'_, '_> {
         let chunk_sections = self.chunks.get(chunk_id).ok()?;
         chunk_sections.region(position.chunk_offset())
     }
+
+    fn for_each_neighbor(
+        &self,
+        node: &SearchNode,
+        goal_region: Entity,
+        goal: TilePosition,
+        mut f: impl FnMut(SearchNodeId, TilePosition, Entity, Entity, f32),
+    ) {
+        match node.id {
+            SearchNodeId::Start => {
+                let region_doors = self.regions.get(node.region).expect("invalid region");
+                region_doors
+                    .iter()
+                    .for_each(|(door_position, region_door)| {
+                        let flow_field = self
+                            .flow_fields
+                            .get(region_door.flow_field())
+                            .expect("invalid flow field");
+                        let cost = flow_field
+                            .get(node.position.layer_offset())
+                            .expect("position not in flow field")
+                            .cost();
+                        f(
+                            SearchNodeId::Door(region_door.door()),
+                            TilePosition::from((node.position.layer(), door_position)),
+                            node.region,
+                            region_door.flow_field(),
+                            cost,
+                        );
+                    });
+            }
+            SearchNodeId::Door(door) => {
+                let door_regions = self.doors.get(door).expect("invalid door");
+                door_regions.iter().for_each(|door_region| {
+                    let region_doors = self
+                        .regions
+                        .get(door_region.region())
+                        .expect("invalid region");
+                    region_doors
+                        .iter()
+                        .for_each(|(door_position, region_door)| {
+                            let flow_field = self
+                                .flow_fields
+                                .get(region_door.flow_field())
+                                .expect("invalid flow field");
+                            let cost = flow_field
+                                .get(node.position.layer_offset())
+                                .expect("position not in flow field")
+                                .cost();
+                            f(
+                                SearchNodeId::Door(region_door.door()),
+                                TilePosition::from((node.position.layer(), door_position)),
+                                door_region.region(),
+                                region_door.flow_field(),
+                                cost,
+                            );
+                        });
+                });
+
+                if node.region == goal_region {
+                    let region_doors = self.regions.get(node.region).expect("invalid region");
+                    let flow_field_id = region_doors
+                        .get(node.position.layer_offset())
+                        .expect("door not found for region")
+                        .flow_field();
+                    let flow_field = self
+                        .flow_fields
+                        .get(flow_field_id)
+                        .expect("invalid flow field");
+                    let cost = flow_field
+                        .get(goal.layer_offset())
+                        .expect("goal not in flow field")
+                        .cost();
+                    f(SearchNodeId::Goal, goal, node.region, flow_field_id, cost);
+                }
+            }
+            SearchNodeId::Goal => unreachable!(),
+        }
+    }
+
+    fn collect_path(&self, mut map: HashMap<SearchNodeId, SearchEntry, EntityHash>) -> Path {
+        let mut entries = VecDeque::new();
+
+        let goal_entry = map[&SearchNodeId::Goal];
+
+        entries.push_front(PathEntry::FromDoor {
+            flow_field: goal_entry.flow_field,
+        });
+
+        let mut current = goal_entry.parent;
+        while let Some(entry) = map.remove(&current) {
+            if matches!(entry.parent, SearchNodeId::Door(_)) {
+                entries.push_front(PathEntry::ToDoor {
+                    flow_field: entry.flow_field,
+                });
+            }
+
+            current = entry.parent;
+        }
+
+        Path {
+            cost: goal_entry.cost,
+            entries: entries.into(),
+        }
+    }
 }
 
 impl Path {
+    pub fn cost(&self) -> f32 {
+        self.cost
+    }
+
     pub fn next(&self) -> Option<&PathEntry> {
         self.entries.last()
+    }
+}
+
+impl PartialEq for SearchNode {
+    fn eq(&self, _: &Self) -> bool {
+        unimplemented!()
+    }
+}
+
+impl Eq for SearchNode {}
+
+impl PartialOrd for SearchNode {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for SearchNode {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        other.estimated_cost.total_cmp(&self.estimated_cost)
+    }
+}
+
+impl Hash for SearchNodeId {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        match self {
+            SearchNodeId::Start => u64::MAX.hash(state),
+            SearchNodeId::Door(entity) => entity.hash(state),
+            SearchNodeId::Goal => (u64::MAX - 1).hash(state),
+        }
     }
 }
