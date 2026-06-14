@@ -346,34 +346,43 @@ impl fmt::Debug for TileChunk {
     }
 }
 
+impl TileMapBuffer {
+    fn is_empty(&self) -> bool {
+        self.chunks.is_empty()
+    }
+
+    fn take_chunk_bundles(
+        &mut self,
+    ) -> impl ExactSizeIterator<Item = (Name, ChildOf, TileChunk)> + use<> {
+        mem::take(&mut self.chunks)
+            .into_iter()
+            .map(|(position, chunk)| {
+                (
+                    Name::new(format!("{chunk:?}")),
+                    ChildOf(position.layer()),
+                    chunk,
+                )
+            })
+    }
+}
+
 impl SystemBuffer for TileStorageDeferred {
     fn queue(&mut self, _system_meta: &SystemMeta, mut world: DeferredWorld) {
         if self.modified {
-            let chunks = mem::take(&mut world.resource_mut::<TileMapBuffer>().chunks);
-            world
-                .commands()
-                .spawn_batch(chunks.into_iter().map(|(position, chunk)| {
-                    (
-                        Name::new(format!("{chunk:?}")),
-                        ChildOf(position.layer()),
-                        chunk,
-                    )
-                }));
+            let mut map = world.resource_mut::<TileMapBuffer>();
+            if !map.is_empty() {
+                let chunks = map.take_chunk_bundles();
+                world.commands().spawn_batch(chunks);
+            }
         }
     }
 
     fn apply(&mut self, _: &SystemMeta, world: &mut World) {
         if self.modified {
             world.resource_scope(|world: &mut World, mut map: Mut<TileMapBuffer>| {
-                if !map.chunks.is_empty() {
-                    world.spawn_batch(map.chunks.drain().map(|(position, chunk)| {
-                        (
-                            Name::new(format!("{chunk:?}")),
-                            ChildOf(position.layer()),
-                            chunk,
-                        )
-                    }));
-                };
+                if !map.is_empty() {
+                    world.spawn_batch(map.take_chunk_bundles());
+                }
             })
         }
     }

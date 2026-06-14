@@ -25,9 +25,11 @@ pub struct Path {
 pub enum PathEntry {
     ToDoor {
         flow_field: Entity,
+        goal: TilePosition,
     },
     FromDoor {
         flow_field: Entity,
+        goal: TilePosition,
     },
     InRegion {
         region: Entity,
@@ -64,6 +66,7 @@ struct SearchNode {
 struct SearchEntry {
     parent: SearchNodeId,
     flow_field: Entity,
+    position: TilePosition,
     cost: f32,
 }
 
@@ -92,45 +95,54 @@ impl PathParam<'_, '_> {
 
     pub fn is_valid(&self, path: &Path) -> bool {
         match path.next() {
-            Some(PathEntry::FromDoor { flow_field }) | Some(PathEntry::ToDoor { flow_field }) => {
-                self.flow_fields.contains(*flow_field)
-            }
+            Some(PathEntry::FromDoor { flow_field, .. })
+            | Some(PathEntry::ToDoor { flow_field, .. }) => self.flow_fields.contains(*flow_field),
             Some(PathEntry::InRegion { region, .. }) => self.regions.contains(*region),
             None => false,
         }
     }
 
-    pub fn path_dir(&self, path: &Path, position: TilePosition) -> Option<Dir2> {
-        match path.next() {
-            Some(PathEntry::ToDoor { flow_field }) => Some(
-                self.flow_fields
-                    .get(*flow_field)
-                    .ok()?
-                    .get(position.layer_offset())?
-                    .dir(),
-            ),
-            Some(PathEntry::FromDoor { flow_field }) => Some(
-                self.flow_fields
-                    .get(*flow_field)
-                    .ok()?
-                    .get(position.layer_offset())?
-                    .reverse_dir(),
-            ),
-            Some(PathEntry::InRegion { region, cost_field }) => {
-                if !self.regions.contains(*region) {
-                    return None;
+    pub fn path_dir(&self, path: &mut Path, position: TilePosition) -> Option<Dir2> {
+        loop {
+            match path.next() {
+                Some(&PathEntry::ToDoor { flow_field, goal }) => {
+                    if position == goal {
+                        path.entries.pop();
+                    } else {
+                        return Some(
+                            self.flow_fields
+                                .get(flow_field)
+                                .ok()?
+                                .get(position.layer_offset())?
+                                .dir(),
+                        );
+                    }
                 }
+                Some(&PathEntry::FromDoor { flow_field, goal }) => {
+                    if position == goal {
+                        path.entries.pop();
+                    } else {
+                        return Some(
+                            self.flow_fields
+                                .get(flow_field)
+                                .ok()?
+                                .get(position.layer_offset())?
+                                .reverse_dir(),
+                        );
+                    }
+                }
+                Some(PathEntry::InRegion { cost_field, .. }) => {
+                    let cost = cost_field.get_cost(position.layer_offset())?;
+                    let dir = cost_field.flow_vector(
+                        position.layer_offset(),
+                        cost,
+                        self.storage.get_adjacency(position).solid(),
+                    );
 
-                let cost = cost_field.get_cost(position.layer_offset())?;
-                let dir = cost_field.flow_vector(
-                    position.layer_offset(),
-                    cost,
-                    self.storage.get_adjacency(position).solid(),
-                );
-
-                Some(dir)
+                    return Some(dir);
+                }
+                None => return None,
             }
-            None => None,
         }
     }
 
@@ -192,21 +204,32 @@ impl PathParam<'_, '_> {
         });
 
         while let Some(node) = open.pop() {
+            info!("pop node {:?} at {:?}", node.id, node.position);
+
             if node.id == SearchNodeId::Goal {
                 return Some(self.collect_path(map));
             }
 
             if let Some(entry) = map.get(&node.id) {
                 if entry.cost <= node.cost {
+                    info!(
+                        "skip node {:?} at {:?} with cost {} (existing cost {})",
+                        node.id, node.position, node.cost, entry.cost
+                    );
                     continue;
                 }
             }
 
-            self.for_each_neighbor(
+            self.visit_neighbors(
                 &node,
                 goal_region,
                 goal,
                 |id, position, region, flow_field, cost| {
+                    info!(
+                        "visit neighbor {:?} at {:?} with cost {}",
+                        id, position, cost
+                    );
+
                     let new_cost = node.cost + cost;
 
                     match map.entry(id) {
@@ -218,6 +241,7 @@ impl PathParam<'_, '_> {
                                 parent: node.id,
                                 flow_field,
                                 cost: new_cost,
+                                position,
                             });
                         }
                     }
@@ -243,7 +267,7 @@ impl PathParam<'_, '_> {
         chunk_sections.region(position.chunk_offset())
     }
 
-    fn for_each_neighbor(
+    fn visit_neighbors(
         &self,
         node: &SearchNode,
         goal_region: Entity,
@@ -301,6 +325,10 @@ impl PathParam<'_, '_> {
                         });
                 });
 
+                info!(
+                    "node region {:?}, goal region {:?}",
+                    node.region, goal_region
+                );
                 if node.region == goal_region {
                     let region_doors = self.regions.get(node.region).expect("invalid region");
                     let flow_field_id = region_doors
@@ -329,16 +357,16 @@ impl PathParam<'_, '_> {
 
         entries.push_front(PathEntry::FromDoor {
             flow_field: goal_entry.flow_field,
+            goal: goal_entry.position,
         });
 
         let mut current = goal_entry.parent;
-        while let Some(entry) = map.remove(&current) {
-            if matches!(entry.parent, SearchNodeId::Door(_)) {
-                entries.push_front(PathEntry::ToDoor {
-                    flow_field: entry.flow_field,
-                });
-            }
-
+        while current != SearchNodeId::Start {
+            let entry = map.remove(&current).expect("invalid path");
+            entries.push_front(PathEntry::ToDoor {
+                flow_field: entry.flow_field,
+                goal: entry.position,
+            });
             current = entry.parent;
         }
 
