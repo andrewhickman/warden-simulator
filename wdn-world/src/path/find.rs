@@ -211,7 +211,7 @@ impl PathParam<'_, '_> {
             }
 
             if let Some(entry) = map.get(&node.id) {
-                if entry.cost <= node.cost {
+                if node.cost > entry.cost {
                     info!(
                         "skip node {:?} at {:?} with cost {} (existing cost {})",
                         node.id, node.position, node.cost, entry.cost
@@ -277,73 +277,58 @@ impl PathParam<'_, '_> {
         match node.id {
             SearchNodeId::Start => {
                 let region_doors = self.regions.get(node.region).expect("invalid region");
-                region_doors
-                    .iter()
-                    .for_each(|(door_position, region_door)| {
-                        let flow_field = self
-                            .flow_fields
-                            .get(region_door.flow_field())
-                            .expect("invalid flow field");
-                        let cost = flow_field
-                            .get(node.position.layer_offset())
-                            .expect("position not in flow field")
-                            .cost();
-                        f(
-                            SearchNodeId::Door(region_door.door()),
-                            TilePosition::from((node.position.layer(), door_position)),
-                            node.region,
-                            region_door.flow_field(),
-                            cost,
-                        );
-                    });
-            }
-            SearchNodeId::Door(door) => {
-                let door_regions = self.doors.get(door).expect("invalid door");
-                door_regions.iter().for_each(|door_region| {
-                    let region_doors = self
-                        .regions
-                        .get(door_region.region())
-                        .expect("invalid region");
-                    region_doors
-                        .iter()
-                        .for_each(|(door_position, region_door)| {
-                            let flow_field = self
-                                .flow_fields
-                                .get(region_door.flow_field())
-                                .expect("invalid flow field");
-                            let cost = flow_field
-                                .get(node.position.layer_offset())
-                                .expect("position not in flow field")
-                                .cost();
-                            f(
-                                SearchNodeId::Door(region_door.door()),
-                                TilePosition::from((node.position.layer(), door_position)),
-                                door_region.region(),
-                                region_door.flow_field(),
-                                cost,
-                            );
-                        });
-                });
-
-                info!(
-                    "node region {:?}, goal region {:?}",
-                    node.region, goal_region
-                );
-                if node.region == goal_region {
-                    let region_doors = self.regions.get(node.region).expect("invalid region");
-                    let flow_field_id = region_doors
-                        .get(node.position.layer_offset())
-                        .expect("door not found for region")
-                        .flow_field();
+                for (door_position, region_door) in region_doors.iter() {
                     let flow_field = self
                         .flow_fields
-                        .get(flow_field_id)
+                        .get(region_door.flow_field())
                         .expect("invalid flow field");
                     let cost = flow_field
-                        .get(goal.layer_offset())
-                        .expect("goal not in flow field")
+                        .get(node.position.layer_offset())
+                        .expect("position not in flow field")
                         .cost();
-                    f(SearchNodeId::Goal, goal, node.region, flow_field_id, cost);
+                    f(
+                        SearchNodeId::Door(region_door.door()),
+                        TilePosition::from((node.position.layer(), door_position)),
+                        node.region,
+                        region_door.flow_field(),
+                        cost,
+                    );
+                }
+            }
+            SearchNodeId::Door(door) => {
+                info!("evaluate neighbors of door {:?}", door);
+
+                let door_regions = self.doors.get(door).expect("invalid door");
+                for door_region in door_regions.iter() {
+                    let flow_field = self
+                        .flow_fields
+                        .get(door_region.flow_field())
+                        .expect("invalid flow field");
+                    for (neighbor_position, cost, neighbor_door) in flow_field.doors() {
+                        info!("neighbor door: {:?}", neighbor_door);
+                        f(
+                            SearchNodeId::Door(neighbor_door),
+                            TilePosition::from((node.position.layer(), neighbor_position)),
+                            door_region.region(),
+                            door_region.flow_field(),
+                            cost,
+                        );
+                    }
+
+                    if door_region.region() == goal_region {
+                        info!("door region is goal region, adding goal node");
+                        let cost = flow_field
+                            .get(goal.layer_offset())
+                            .expect("goal not in flow field")
+                            .cost();
+                        f(
+                            SearchNodeId::Goal,
+                            goal,
+                            door_region.region(),
+                            door_region.flow_field(),
+                            cost,
+                        );
+                    }
                 }
             }
             SearchNodeId::Goal => unreachable!(),
@@ -351,11 +336,11 @@ impl PathParam<'_, '_> {
     }
 
     fn collect_path(&self, mut map: HashMap<SearchNodeId, SearchEntry, EntityHash>) -> Path {
-        let mut entries = VecDeque::new();
+        let mut entries = Vec::new();
 
         let goal_entry = map[&SearchNodeId::Goal];
 
-        entries.push_front(PathEntry::FromDoor {
+        entries.push(PathEntry::FromDoor {
             flow_field: goal_entry.flow_field,
             goal: goal_entry.position,
         });
@@ -363,16 +348,21 @@ impl PathParam<'_, '_> {
         let mut current = goal_entry.parent;
         while current != SearchNodeId::Start {
             let entry = map.remove(&current).expect("invalid path");
-            entries.push_front(PathEntry::ToDoor {
+            entries.push(PathEntry::ToDoor {
                 flow_field: entry.flow_field,
                 goal: entry.position,
             });
             current = entry.parent;
         }
 
+        info!(
+            "found path with cost {:?} and entries: {:#?} entries",
+            goal_entry.cost, entries
+        );
+
         Path {
             cost: goal_entry.cost,
-            entries: entries.into(),
+            entries,
         }
     }
 }

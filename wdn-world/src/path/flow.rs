@@ -18,6 +18,7 @@ pub struct FlowField {
     door_position: TilePosition,
     door_adjacency: Adjacency,
     flow: HashMap<TileLayerOffset, FlowFieldEntry>,
+    doors: Vec<(TileLayerOffset, f32, Entity)>,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -75,6 +76,7 @@ impl FlowField {
             door_position,
             door_adjacency,
             flow: HashMap::default(),
+            doors: Vec::new(),
         }
     }
 
@@ -84,6 +86,10 @@ impl FlowField {
 
     pub fn iter(&self) -> impl Iterator<Item = (TileLayerOffset, FlowFieldEntry)> {
         self.flow.iter().map(|(&pos, &entry)| (pos, entry))
+    }
+
+    pub fn doors(&self) -> impl Iterator<Item = (TileLayerOffset, f32, Entity)> + '_ {
+        self.doors.iter().copied()
     }
 
     pub fn get(&self, position: TileLayerOffset) -> Option<FlowFieldEntry> {
@@ -107,8 +113,25 @@ impl FlowField {
         debug_assert!(costs.costs.values().all(|e| e.accepted));
 
         self.flow.reserve(region.size() + doors.door_count() - 1);
-        self.flow
-            .extend(costs.iter_flow(self.door_position.layer_offset()));
+        self.doors.reserve(doors.door_count() - 1);
+
+        for (&position, entry) in costs.costs.iter() {
+            debug_assert!(entry.accepted);
+            debug_assert!(entry.base_cost.is_finite());
+
+            if position == self.door_position.layer_offset() {
+                continue;
+            }
+
+            let flow = costs.flow_vector(position, entry.cost(), entry.adjacency);
+            self.flow
+                .insert(position, FlowFieldEntry::new(flow, entry.base_cost));
+
+            if entry.door {
+                let door = doors[position].door();
+                self.doors.push((position, entry.base_cost, door));
+            }
+        }
 
         debug_assert_eq!(self.flow.len(), region.size() + doors.door_count() - 1);
     }
@@ -326,7 +349,7 @@ impl CostField {
     pub fn iter_flow(
         &self,
         start: TileLayerOffset,
-    ) -> impl Iterator<Item = (TileLayerOffset, FlowFieldEntry)> {
+    ) -> impl Iterator<Item = (TileLayerOffset, bool, FlowFieldEntry)> {
         self.costs
             .iter()
             .filter(move |&(&pos, _)| pos != start)
@@ -335,7 +358,7 @@ impl CostField {
 
                 let flow = self.flow_vector(pos, entry.cost(), entry.adjacency);
 
-                (pos, FlowFieldEntry::new(flow, entry.base_cost))
+                (pos, entry.door, FlowFieldEntry::new(flow, entry.base_cost))
             })
     }
 

@@ -93,10 +93,16 @@ pub fn draw_pawn_paths(
 
     match path.next() {
         Some(PathEntry::InRegion { cost_field, .. }) => {
-            for (tile_pos, entry) in cost_field.iter_flow(target.layer_offset()) {
+            for (tile_pos, door, entry) in cost_field.iter_flow(target.layer_offset()) {
+                let color = if door {
+                    Color::srgb(0.95, 0.75, 0.1)
+                } else {
+                    Color::srgb(0.3, 0.95, 0.35)
+                };
+
                 let center = Vec2::new(tile_pos.x() as f32 + 0.5, tile_pos.y() as f32 + 0.5);
                 let end = center + entry.dir().as_vec2() * 0.4;
-                gizmos.arrow_2d(center, end, Color::srgb(0.95, 0.75, 0.1));
+                gizmos.arrow_2d(center, end, color);
             }
         }
         _ => {}

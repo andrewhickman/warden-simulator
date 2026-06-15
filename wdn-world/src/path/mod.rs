@@ -14,11 +14,12 @@ use wdn_physics::tile::storage::TileChunk;
 use crate::{
     WorldSystems,
     path::{
-        door::{on_remove_region_doors, update_region_doors},
+        door::{on_remove_region_doors, update_door_regions, update_region_doors},
         flow::update_flow_fields,
         region::{
-            TileChunkSectionChanges, TileChunkSections, chunk_sections_changed, on_add_region,
-            update_chunk_sections, update_regions,
+            AddedRegions, TileChunkSectionChanges, TileChunkSections, chunk_sections_changed,
+            clear_added_regions, on_add_region, regions_added, update_chunk_sections,
+            update_regions,
         },
     },
 };
@@ -29,15 +30,22 @@ impl Plugin for PathPlugin {
     fn build(&self, app: &mut App) {
         app.register_required_components::<TileChunk, TileChunkSections>();
 
-        app.init_resource::<TileChunkSectionChanges>();
+        app.init_resource::<TileChunkSectionChanges>()
+            .init_resource::<AddedRegions>();
 
         app.add_systems(
             FixedUpdate,
             (
                 update_chunk_sections,
-                (update_regions, update_region_doors, update_flow_fields)
+                update_regions.run_if(chunk_sections_changed),
+                (
+                    update_region_doors,
+                    update_flow_fields,
+                    update_door_regions,
+                    clear_added_regions,
+                )
                     .chain()
-                    .run_if(chunk_sections_changed),
+                    .run_if(regions_added),
             )
                 .chain()
                 .in_set(WorldSystems::UpdateRegions),

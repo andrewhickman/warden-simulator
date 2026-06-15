@@ -119,12 +119,22 @@ fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
         Position::new(Vec2::new(0.5, 0.5), Rot2::IDENTITY),
     ));
 
-    commands.spawn((Door::default(), TilePosition::new(layer, 2, 2)));
-    storage.set_material(TilePosition::new(layer, 1, 2), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 3, 0), TileMaterial::Wall);
+    commands.spawn((Door::default(), TilePosition::new(layer, 3, 1)));
     storage.set_material(TilePosition::new(layer, 3, 2), TileMaterial::Wall);
-
-    commands.spawn((Door::default(), TilePosition::new(layer, 1, 1)));
-    storage.set_material(TilePosition::new(layer, 1, 0), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 3, 3), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 4, 3), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 5, 3), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 6, 3), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 7, 3), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 7, 2), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 7, 1), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 7, 0), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 7, -1), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 6, -1), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 5, -1), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 4, -1), TileMaterial::Wall);
+    storage.set_material(TilePosition::new(layer, 3, -1), TileMaterial::Wall);
 }
 
 fn handle_pawn_input(

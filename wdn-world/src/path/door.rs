@@ -1,5 +1,6 @@
 use std::ops::Index;
 
+use arrayvec::ArrayVec;
 use bevy_ecs::prelude::*;
 use bevy_log::error;
 use bevy_platform::collections::{HashMap, hash_map};
@@ -11,7 +12,7 @@ use wdn_physics::tile::{
 
 use crate::path::{
     flow::FlowField,
-    region::{Region, TileChunkSections},
+    region::{AddedRegions, Region, TileChunkSections},
 };
 
 #[derive(Clone, Component, Default, Debug)]
@@ -28,16 +29,14 @@ pub struct RegionDoor {
 
 #[derive(Component, Default)]
 pub struct DoorRegions {
-    north: Option<DoorRegion>,
-    south: Option<DoorRegion>,
-    east: Option<DoorRegion>,
-    west: Option<DoorRegion>,
+    regions: ArrayVec<DoorRegion, 4>,
 }
 
 #[derive(Copy, Clone, Debug)]
 pub struct DoorRegion {
     region: Entity,
     flow_field: Entity,
+    adjacency: Adjacency,
     dead_end: bool,
 }
 
@@ -46,11 +45,10 @@ pub fn update_region_doors(
     index: Res<TileIndex>,
     mut regions: Query<(Entity, &Region, &mut RegionDoors), Added<Region>>,
     sections: Query<&TileChunkSections>,
-    mut doors: Query<&mut DoorRegions>,
+    added_regions: Res<AddedRegions>,
 ) {
-    regions
-        .iter_mut()
-        .for_each(|(region_id, region, mut region_doors)| {
+    regions.iter_many_unique_mut(added_regions.iter()).for_each(
+        |(region_id, region, mut region_doors)| {
             for (chunk_id, section_id) in region.sections() {
                 let section = sections
                     .get(chunk_id)
@@ -81,7 +79,6 @@ pub fn update_region_doors(
                 }
             }
 
-            let dead_end = region_doors.door_count() == 1;
             for (&door_position, door) in region_doors.doors.iter_mut() {
                 door.flow_field = commands
                     .spawn((
@@ -92,11 +89,26 @@ pub fn update_region_doors(
                         ),
                     ))
                     .id();
+            }
+        },
+    );
+}
 
-                doors.get_mut(door.door).expect("door not found").insert(
+pub fn update_door_regions(
+    mut doors: Query<&mut DoorRegions>,
+    regions: Query<(Entity, &RegionDoors)>,
+    added_regions: Res<AddedRegions>,
+) {
+    regions
+        .iter_many_unique(added_regions.iter())
+        .for_each(|(region_id, region_doors)| {
+            let dead_end = region_doors.door_count() == 1;
+            for region_door in region_doors.iter_values() {
+                let mut door_regions = doors.get_mut(region_door.door()).unwrap();
+                door_regions.insert(
                     region_id,
-                    door.flow_field,
-                    door.adjacency,
+                    region_door.flow_field(),
+                    region_door.adjacency(),
                     dead_end,
                 );
             }
@@ -109,12 +121,11 @@ pub fn on_remove_region_doors(
     mut doors: Query<&mut DoorRegions>,
 ) -> Result {
     let region = regions.get(trigger.entity)?;
-    for (_, door) in region.iter() {
-        if let Ok(mut door) = doors.get_mut(door.door()) {
-            remove_door_region(&mut door.north, trigger.entity);
-            remove_door_region(&mut door.south, trigger.entity);
-            remove_door_region(&mut door.east, trigger.entity);
-            remove_door_region(&mut door.west, trigger.entity);
+    for (_, region_door) in region.iter() {
+        if let Ok(mut door_regions) = doors.get_mut(region_door.door()) {
+            door_regions
+                .regions
+                .retain(|door_region| door_region.region() != trigger.entity);
         }
     }
 
@@ -128,6 +139,10 @@ impl RegionDoors {
 
     pub fn iter(&self) -> impl Iterator<Item = (TileLayerOffset, &RegionDoor)> {
         self.doors.iter().map(|(&pos, door)| (pos, door))
+    }
+
+    pub fn iter_values(&self) -> impl Iterator<Item = &RegionDoor> {
+        self.doors.values()
     }
 
     pub fn door_count(&self) -> usize {
@@ -159,30 +174,27 @@ impl RegionDoor {
 
 impl DoorRegions {
     pub fn iter(&self) -> impl Iterator<Item = &DoorRegion> {
-        [
-            self.north.as_ref(),
-            self.south.as_ref(),
-            self.east.as_ref(),
-            self.west.as_ref(),
-        ]
-        .into_iter()
-        .flatten()
+        self.regions.iter()
     }
 
     pub fn north(&self) -> Option<&DoorRegion> {
-        self.north.as_ref()
-    }
-
-    pub fn south(&self) -> Option<&DoorRegion> {
-        self.south.as_ref()
-    }
-
-    pub fn east(&self) -> Option<&DoorRegion> {
-        self.east.as_ref()
+        self.iter()
+            .find(|door_region| door_region.adjacency().contains(Adjacency::NORTH))
     }
 
     pub fn west(&self) -> Option<&DoorRegion> {
-        self.west.as_ref()
+        self.iter()
+            .find(|door_region| door_region.adjacency().contains(Adjacency::WEST))
+    }
+
+    pub fn south(&self) -> Option<&DoorRegion> {
+        self.iter()
+            .find(|door_region| door_region.adjacency().contains(Adjacency::SOUTH))
+    }
+
+    pub fn east(&self) -> Option<&DoorRegion> {
+        self.iter()
+            .find(|door_region| door_region.adjacency().contains(Adjacency::EAST))
     }
 
     pub fn flow_fields(&self) -> impl Iterator<Item = Entity> {
@@ -190,37 +202,34 @@ impl DoorRegions {
     }
 
     pub fn insert(&mut self, region: Entity, flow: Entity, adjacency: Adjacency, dead_end: bool) {
-        if adjacency.contains(Adjacency::NORTH) {
-            debug_assert!(self.north.is_none());
-            self.north = Some(DoorRegion::new(region, flow, dead_end));
-        }
+        debug_assert!(
+            !self
+                .regions
+                .iter()
+                .any(|door_region| door_region.region() == region
+                    || door_region.adjacency.intersects(adjacency))
+        );
 
-        if adjacency.contains(Adjacency::SOUTH) {
-            debug_assert!(self.south.is_none());
-            self.south = Some(DoorRegion::new(region, flow, dead_end));
-        }
+        self.regions.push(DoorRegion {
+            region,
+            flow_field: flow,
+            adjacency,
+            dead_end,
+        });
+    }
 
-        if adjacency.contains(Adjacency::EAST) {
-            debug_assert!(self.east.is_none());
-            self.east = Some(DoorRegion::new(region, flow, dead_end));
-        }
-
-        if adjacency.contains(Adjacency::WEST) {
-            debug_assert!(self.west.is_none());
-            self.west = Some(DoorRegion::new(region, flow, dead_end));
+    pub fn remove(&mut self, region: Entity) {
+        if let Some(index) = self
+            .regions
+            .iter()
+            .position(|door_region| door_region.region() == region)
+        {
+            self.regions.swap_remove(index);
         }
     }
 }
 
 impl DoorRegion {
-    pub fn new(region: Entity, flow_field: Entity, dead_end: bool) -> Self {
-        Self {
-            region,
-            flow_field,
-            dead_end,
-        }
-    }
-
     pub fn region(&self) -> Entity {
         self.region
     }
@@ -229,13 +238,11 @@ impl DoorRegion {
         self.flow_field
     }
 
+    pub fn adjacency(&self) -> Adjacency {
+        self.adjacency
+    }
+
     pub fn dead_end(&self) -> bool {
         self.dead_end
-    }
-}
-
-fn remove_door_region(flow: &mut Option<DoorRegion>, region: Entity) {
-    if matches!(flow, Some(door_region) if door_region.region == region) {
-        *flow = None;
     }
 }

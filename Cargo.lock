@@ -5307,6 +5307,7 @@ name = "wdn-world"
 version = "0.1.0"
 dependencies = [
  "approx",
+ "arrayvec",
  "bevy_app",
  "bevy_ecs",
  "bevy_log",

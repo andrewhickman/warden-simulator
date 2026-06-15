@@ -1,7 +1,10 @@
 use core::fmt;
 use std::collections::VecDeque;
 
-use bevy_ecs::{entity::EntityHashSet, prelude::*};
+use bevy_ecs::{
+    entity::{EntityHashSet, EntitySetIterator},
+    prelude::*,
+};
 use bevy_platform::collections::{HashMap, HashSet, hash_map};
 use smallvec::SmallVec;
 use wdn_physics::tile::{
@@ -49,6 +52,11 @@ pub struct TileChunkSectionChanges {
     removed_sections: HashSet<TilePosition>,
     invalid_sections: HashMap<TilePosition, Entity>,
     invalid_regions: EntityHashSet,
+}
+
+#[derive(Default, Resource)]
+pub struct AddedRegions {
+    added_regions: EntityHashSet,
 }
 
 pub fn update_chunk_sections(
@@ -146,6 +154,7 @@ pub fn update_regions(
     mut changes: ResMut<TileChunkSectionChanges>,
     map: Res<TileMap>,
     mut queue: Local<VecDeque<(Entity, TilePosition)>>,
+    mut added_regions: ResMut<AddedRegions>,
 ) -> Result {
     let TileChunkSectionChanges {
         ref mut removed_sections,
@@ -206,14 +215,17 @@ pub fn update_regions(
             })?;
         }
 
-        commands.spawn((
-            Region {
-                layer: section.layer(),
-                size: region_size,
-                sections: region_sections,
-            },
-            ChildOf(section.layer()),
-        ));
+        let region = commands
+            .spawn((
+                Region {
+                    layer: section.layer(),
+                    size: region_size,
+                    sections: region_sections,
+                },
+                ChildOf(section.layer()),
+            ))
+            .id();
+        added_regions.insert(region);
     }
 
     for &region in invalid_regions.iter() {
@@ -224,6 +236,14 @@ pub fn update_regions(
     invalid_sections.clear();
     visited_sections.clear();
     Ok(())
+}
+
+pub fn regions_added(changes: Res<AddedRegions>) -> bool {
+    !changes.added_regions.is_empty()
+}
+
+pub fn clear_added_regions(mut changes: ResMut<AddedRegions>) {
+    changes.added_regions.clear();
 }
 
 pub fn on_add_region(
@@ -533,6 +553,16 @@ impl fmt::Debug for TileChunkDisjointSetEntry {
                 .field(&self.door_adjacency())
                 .finish()
         }
+    }
+}
+
+impl AddedRegions {
+    fn insert(&mut self, region: Entity) {
+        self.added_regions.insert(region);
+    }
+
+    pub fn iter(&self) -> impl EntitySetIterator {
+        self.added_regions.iter()
     }
 }
 
