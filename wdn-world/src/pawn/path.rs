@@ -53,7 +53,7 @@ pub fn follow_pawn_paths(
                                 break dir;
                             } else {
                                 warn!(
-                                    "Failed to get path direction for at position {:?}",
+                                    "Failed to get path direction at position {:?}",
                                     tile_position
                                 );
                                 pawn_path.state = PathState::Pending;

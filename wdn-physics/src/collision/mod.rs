@@ -191,7 +191,7 @@ impl TileCollider {
 
 impl Default for TileCollider {
     fn default() -> Self {
-        Self { solid: false }
+        Self { solid: true }
     }
 }
 
