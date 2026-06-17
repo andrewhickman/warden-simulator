@@ -1,10 +1,15 @@
 use bevy_ecs::{batching::BatchingStrategy, prelude::*};
 use bevy_log::warn;
-use wdn_physics::{kinematics::GlobalPosition, tile::position::TilePosition};
+use wdn_physics::{
+    collision::{CollisionTarget, Collisions},
+    kinematics::GlobalPosition,
+    tile::position::TilePosition,
+};
 
 use crate::{
+    door::Door,
     path::find::{Path, PathParam},
-    pawn::action::PawnAction,
+    pawn::{Pawn, action::PawnAction},
 };
 
 #[derive(Component, Default, Debug)]
@@ -96,6 +101,30 @@ pub fn follow_pawn_paths(
                 }
             },
         );
+}
+
+pub fn open_doors_on_collision(
+    collisions: Query<&Collisions, With<Pawn>>,
+    mut doors: Query<&mut Door>,
+) {
+    collisions.iter().for_each(|collisions| {
+        for collision in collisions.iter() {
+            if !collision.solid {
+                continue;
+            }
+
+            match collision.target {
+                CollisionTarget::Tile {
+                    id: Some(tile_id), ..
+                } => {
+                    if let Ok(mut door) = doors.get_mut(tile_id) {
+                        door.open();
+                    }
+                }
+                _ => {}
+            }
+        }
+    });
 }
 
 impl PawnPath {

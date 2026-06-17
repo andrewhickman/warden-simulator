@@ -18,7 +18,7 @@ use crate::{
     combat::{Health, Projectile},
     pawn::{
         action::{PawnAction, apply_pawn_actions},
-        path::{PawnPath, follow_pawn_paths},
+        path::{PawnPath, follow_pawn_paths, open_doors_on_collision},
     },
 };
 
@@ -61,9 +61,12 @@ impl Plugin for PawnPlugin {
 
         app.add_systems(
             FixedUpdate,
-            (follow_pawn_paths, apply_pawn_actions)
-                .chain()
-                .in_set(WorldSystems::ApplyPawnActions),
+            (
+                (follow_pawn_paths, apply_pawn_actions)
+                    .chain()
+                    .in_set(WorldSystems::ApplyPawnActions),
+                (open_doors_on_collision.after(PhysicsSystems::Collisions)),
+            ),
         );
     }
 }
