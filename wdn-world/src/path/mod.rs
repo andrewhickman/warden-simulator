@@ -15,7 +15,7 @@ use crate::{
     WorldSystems,
     path::{
         door::{on_remove_region_doors, update_door_regions, update_region_doors},
-        flow::update_flow_fields,
+        flow::{AddedFlowFields, clear_added_flow_fields, flow_fields_added, update_flow_fields},
         region::{
             AddedRegions, TileChunkSectionChanges, TileChunkSections, chunk_sections_changed,
             clear_added_regions, on_add_region, regions_added, update_chunk_sections,
@@ -31,7 +31,8 @@ impl Plugin for PathPlugin {
         app.register_required_components::<TileChunk, TileChunkSections>();
 
         app.init_resource::<TileChunkSectionChanges>()
-            .init_resource::<AddedRegions>();
+            .init_resource::<AddedRegions>()
+            .init_resource::<AddedFlowFields>();
 
         app.add_systems(
             FixedUpdate,
@@ -40,7 +41,9 @@ impl Plugin for PathPlugin {
                 update_regions.run_if(chunk_sections_changed),
                 (
                     update_region_doors,
-                    update_flow_fields,
+                    (update_flow_fields, clear_added_flow_fields)
+                        .chain()
+                        .run_if(flow_fields_added),
                     update_door_regions,
                     clear_added_regions,
                 )

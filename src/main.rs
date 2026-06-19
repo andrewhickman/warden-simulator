@@ -15,7 +15,10 @@ use wdn_physics::{
         index::TileIndex, material::TileMaterial, position::TilePosition, storage::TileStorageMut,
     },
 };
-use wdn_render::{RenderPlugin as WdnRenderPlugin, RenderSystems, dev::DevRenderSettings};
+use wdn_render::{
+    RenderPlugin as WdnRenderPlugin, RenderSystems,
+    dev::{DevPlugin as WdnDevRenderPlugin, DevRenderSettings},
+};
 use wdn_save::SavePlugin as WdnSavePlugin;
 use wdn_tasks::TasksPlugin as WdnTasksPlugin;
 use wdn_ui::UiPlugin as WdnUiPlugin;
@@ -34,6 +37,7 @@ pub fn main() {
             WdnTasksPlugin,
             WdnSavePlugin,
             WdnRenderPlugin,
+            WdnDevRenderPlugin,
             WdnUiPlugin,
         ))
         .add_systems(Startup, spawn_pawn)

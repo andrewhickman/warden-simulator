@@ -2,7 +2,7 @@ use core::fmt;
 use std::collections::VecDeque;
 
 use bevy_ecs::{
-    entity::{EntityHashSet, EntitySetIterator},
+    entity::{EntityHashSet, hash_set},
     prelude::*,
 };
 use bevy_platform::collections::{HashMap, HashSet, hash_map};
@@ -239,11 +239,11 @@ pub fn update_regions(
 }
 
 pub fn regions_added(changes: Res<AddedRegions>) -> bool {
-    !changes.added_regions.is_empty()
+    changes.has_regions()
 }
 
 pub fn clear_added_regions(mut changes: ResMut<AddedRegions>) {
-    changes.added_regions.clear();
+    changes.clear();
 }
 
 pub fn on_add_region(
@@ -557,11 +557,19 @@ impl fmt::Debug for TileChunkDisjointSetEntry {
 }
 
 impl AddedRegions {
-    fn insert(&mut self, region: Entity) {
+    pub fn insert(&mut self, region: Entity) {
         self.added_regions.insert(region);
     }
 
-    pub fn iter(&self) -> impl EntitySetIterator {
+    pub fn clear(&mut self) {
+        self.added_regions.clear();
+    }
+
+    pub fn has_regions(&self) -> bool {
+        !self.added_regions.is_empty()
+    }
+
+    pub fn iter(&'_ self) -> hash_set::Iter<'_> {
         self.added_regions.iter()
     }
 }

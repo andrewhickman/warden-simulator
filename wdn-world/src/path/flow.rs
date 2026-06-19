@@ -1,6 +1,11 @@
 use std::{cmp::Ordering, collections::BinaryHeap, mem::replace, ops::Index};
 
-use bevy_ecs::prelude::*;
+use bevy_ecs::{
+    batching::BatchingStrategy,
+    entity::{EntityHashSet, hash_set},
+    prelude::*,
+};
+use bevy_log::info;
 use bevy_math::{FloatPow, prelude::*};
 use bevy_platform::collections::{HashMap, hash_map};
 use wdn_physics::tile::{
@@ -18,6 +23,11 @@ pub struct FlowField {
     door_position: TilePosition,
     door_adjacency: Adjacency,
     flow: HashMap<TileLayerOffset, FlowFieldEntry>,
+}
+
+#[derive(Resource, Default, Debug)]
+pub struct AddedFlowFields {
+    added_flow_fields: EntityHashSet,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -61,12 +71,27 @@ struct CostEntry {
 pub fn update_flow_fields(
     storage: TileStorage,
     regions: Query<(&Region, &RegionDoors)>,
-    mut flow_fields: Query<(&ChildOf, &mut FlowField), Added<FlowField>>,
+    mut flow_fields: Query<(&ChildOf, &mut FlowField)>,
+    added_flow_fields: Res<AddedFlowFields>,
 ) {
-    flow_fields.par_iter_mut().for_each(|(parent, mut flow)| {
-        let (region, doors) = regions.get(parent.parent()).expect("region not found");
-        flow.generate(&storage, region, doors);
-    });
+    info!(
+        "updating {} flow fields",
+        added_flow_fields.added_flow_fields.len()
+    );
+    flow_fields
+        .par_iter_many_unique_mut(added_flow_fields.iter())
+        .for_each(|(parent, mut flow)| {
+            let (region, doors) = regions.get(parent.parent()).expect("region not found");
+            flow.generate(&storage, region, doors);
+        });
+}
+
+pub fn flow_fields_added(changes: Res<AddedFlowFields>) -> bool {
+    changes.has_flow_fields()
+}
+
+pub fn clear_added_flow_fields(mut changes: ResMut<AddedFlowFields>) {
+    changes.clear();
 }
 
 impl FlowField {
@@ -133,6 +158,24 @@ impl Index<TileLayerOffset> for FlowField {
                 position, self.door_position
             ),
         }
+    }
+}
+
+impl AddedFlowFields {
+    pub fn insert(&mut self, flow_field: Entity) {
+        self.added_flow_fields.insert(flow_field);
+    }
+
+    pub fn clear(&mut self) {
+        self.added_flow_fields.clear();
+    }
+
+    pub fn has_flow_fields(&self) -> bool {
+        !self.added_flow_fields.is_empty()
+    }
+
+    pub fn iter(&'_ self) -> hash_set::Iter<'_> {
+        self.added_flow_fields.iter()
     }
 }
 

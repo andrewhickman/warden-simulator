@@ -11,7 +11,7 @@ use wdn_physics::tile::{
 };
 
 use crate::path::{
-    flow::FlowField,
+    flow::{AddedFlowFields, FlowField},
     region::{AddedRegions, Region, TileChunkSections},
 };
 
@@ -46,6 +46,7 @@ pub fn update_region_doors(
     mut regions: Query<(Entity, &Region, &mut RegionDoors), Added<Region>>,
     sections: Query<&TileChunkSections>,
     added_regions: Res<AddedRegions>,
+    mut added_flow_fields: ResMut<AddedFlowFields>,
 ) {
     regions.iter_many_unique_mut(added_regions.iter()).for_each(
         |(region_id, region, mut region_doors)| {
@@ -89,6 +90,7 @@ pub fn update_region_doors(
                         ),
                     ))
                     .id();
+                added_flow_fields.insert(door.flow_field);
             }
         },
     );

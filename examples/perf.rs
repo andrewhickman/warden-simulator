@@ -116,11 +116,8 @@ fn startup(mut commands: Commands, mut time: ResMut<Time<Virtual>>, mut storage:
 fn update_storage(
     mut commands: Commands,
     layer: Single<Entity, With<Layer>>,
-    regions: Query<&Region>,
     mut storage: TileStorageMut,
 ) {
-    info!("{} regions", regions.iter().count());
-
     let mut random = rand::rng();
     let x = random.random_range(1..511);
     let y = random.random_range(1..511);
