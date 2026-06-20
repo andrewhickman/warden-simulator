@@ -1,12 +1,11 @@
 use std::{cmp::Ordering, collections::BinaryHeap, mem::replace, ops::Index};
 
 use bevy_ecs::{
-    batching::BatchingStrategy,
     entity::{EntityHashSet, hash_set},
     prelude::*,
 };
 use bevy_log::info;
-use bevy_math::{FloatPow, prelude::*};
+use bevy_math::prelude::*;
 use bevy_platform::collections::{HashMap, hash_map};
 use wdn_physics::tile::{
     adjacency::Adjacency,
@@ -16,7 +15,11 @@ use wdn_physics::tile::{
 
 use crate::path::{door::RegionDoors, region::Region};
 
-const DOOR_COST: f32 = 1048576.0;
+pub const COST_MULTIPLIER: f32 = 5.0;
+pub const CARDINAL_COST: u32 = 5;
+pub const DIAGONAL_COST: u32 = 7;
+
+const DOOR_COST: u32 = 8388608;
 
 #[derive(Component, Debug)]
 pub struct FlowField {
@@ -33,7 +36,7 @@ pub struct AddedFlowFields {
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct FlowFieldEntry {
     dir: Dir2,
-    cost: f32,
+    cost: u32,
 }
 
 #[derive(Debug)]
@@ -42,7 +45,7 @@ pub struct CostField {
 }
 
 pub trait CostPolicy {
-    fn priority(&self, position: TileLayerOffset, cost: f32) -> f32;
+    fn priority(&self, position: TileLayerOffset, cost: u32) -> u32;
 
     fn finished(&self, position: TileLayerOffset) -> bool;
 }
@@ -55,14 +58,14 @@ pub struct PathPolicy {
 
 #[derive(Clone, Copy, Debug)]
 struct CostNode {
-    priority: f32,
+    priority: u32,
     position: TileLayerOffset,
     adjacency: Adjacency,
 }
 
 #[derive(Clone, Copy, Debug)]
 struct CostEntry {
-    base_cost: f32,
+    base_cost: u32,
     adjacency: Adjacency,
     accepted: bool,
     door: bool,
@@ -92,6 +95,15 @@ pub fn flow_fields_added(changes: Res<AddedFlowFields>) -> bool {
 
 pub fn clear_added_flow_fields(mut changes: ResMut<AddedFlowFields>) {
     changes.clear();
+}
+
+pub fn octile_cost(a: TileLayerOffset, b: TileLayerOffset) -> u32 {
+    let dx = a.x().abs_diff(b.x());
+    let dy = a.y().abs_diff(b.y());
+
+    let (min, max) = if dx < dy { (dx, dy) } else { (dy, dx) };
+
+    max + (DIAGONAL_COST - CARDINAL_COST) * min
 }
 
 impl FlowField {
@@ -180,7 +192,7 @@ impl AddedFlowFields {
 }
 
 impl FlowFieldEntry {
-    pub fn new(dir: Dir2, cost: f32) -> Self {
+    pub fn new(dir: Dir2, cost: u32) -> Self {
         FlowFieldEntry { dir, cost }
     }
 
@@ -188,11 +200,7 @@ impl FlowFieldEntry {
         self.dir
     }
 
-    pub fn reverse_dir(&self) -> Dir2 {
-        Dir2::from_xy_unchecked(-self.dir.x, -self.dir.y)
-    }
-
-    pub fn cost(&self) -> f32 {
+    pub fn cost(&self) -> u32 {
         self.cost
     }
 }
@@ -220,12 +228,12 @@ impl CostField {
     ) {
         let mut open = BinaryHeap::new();
 
-        self.insert(start.layer_offset(), 0.0, Adjacency::NONE, false);
+        self.insert(start.layer_offset(), 0, Adjacency::NONE, false);
         open.push(CostNode::new(
             policy,
             start.layer_offset(),
             start_adjacency.complement(),
-            0.0,
+            0,
         ));
 
         while let Some(node) = open.pop() {
@@ -249,7 +257,7 @@ impl CostField {
                 };
 
                 let is_door = !neighbor_data.material().is_empty();
-                let move_cost = neighbor_data.move_cost();
+                let move_cost = neighbor_data.move_cost() * CARDINAL_COST;
                 let adjacency = if is_door {
                     doors[neighbor].adjacency().complement()
                 } else {
@@ -265,7 +273,7 @@ impl CostField {
         }
     }
 
-    pub fn flow_vector(&self, position: TileLayerOffset, cost: f32, adjacency: Adjacency) -> Dir2 {
+    pub fn flow_vector(&self, position: TileLayerOffset, cost: u32, adjacency: Adjacency) -> Dir2 {
         let mut north = if !adjacency.contains(Adjacency::NORTH) {
             self.flow_delta(position.north(), cost)
         } else {
@@ -337,14 +345,14 @@ impl CostField {
         self.costs.contains_key(&position)
     }
 
-    pub fn get_cost(&self, position: TileLayerOffset) -> Option<f32> {
+    pub fn get_cost(&self, position: TileLayerOffset) -> Option<u32> {
         Some(self.costs.get(&position)?.cost())
     }
 
     fn insert(
         &mut self,
         position: TileLayerOffset,
-        cost: f32,
+        cost: u32,
         adjacency: Adjacency,
         door: bool,
     ) -> bool {
@@ -374,8 +382,6 @@ impl CostField {
             .iter()
             .filter(move |&(&pos, _)| pos != start)
             .map(|(&pos, entry)| {
-                debug_assert!(entry.base_cost.is_finite());
-
                 let flow = self.flow_vector(pos, entry.cost(), entry.adjacency);
 
                 (pos, FlowFieldEntry::new(flow, entry.base_cost))
@@ -392,52 +398,55 @@ impl CostField {
             .is_some_and(|entry| entry.accepted)
     }
 
-    fn get_accepted_cost(&self, position: TileLayerOffset) -> f32 {
+    fn get_accepted_cost(&self, position: TileLayerOffset) -> u32 {
         match self.costs.get(&position) {
             Some(entry) if entry.accepted => entry.cost(),
-            _ => f32::INFINITY,
+            _ => u32::MAX,
         }
     }
 
-    fn eikonal_cost(&self, position: TileLayerOffset, adjacency: Adjacency, cost: f32) -> f32 {
+    fn eikonal_cost(&self, position: TileLayerOffset, adjacency: Adjacency, cost: u32) -> u32 {
         let west = if !adjacency.contains(Adjacency::WEST) {
             self.get_accepted_cost(position.west())
         } else {
-            f32::INFINITY
+            u32::MAX
         };
 
         let east = if !adjacency.contains(Adjacency::EAST) {
             self.get_accepted_cost(position.east())
         } else {
-            f32::INFINITY
+            u32::MAX
         };
 
         let north = if !adjacency.contains(Adjacency::NORTH) {
             self.get_accepted_cost(position.north())
         } else {
-            f32::INFINITY
+            u32::MAX
         };
 
         let south = if !adjacency.contains(Adjacency::SOUTH) {
             self.get_accepted_cost(position.south())
         } else {
-            f32::INFINITY
+            u32::MAX
         };
 
         let a = west.min(east);
         let b = north.min(south);
 
-        if (a - b).abs() >= cost {
+        debug_assert!(a != u32::MAX || b != u32::MAX);
+
+        let diff = a.abs_diff(b);
+        if diff >= cost {
             a.min(b) + cost
         } else {
-            let discr = 2.0 * cost.squared() - (a - b).squared();
-            (a + b + discr.sqrt()) * 0.5
+            let discr = 2 * (cost * cost) - (diff * diff);
+            (a + b + discr.isqrt()) / 2
         }
     }
 
-    fn flow_delta(&self, neighbor: TileLayerOffset, cost: f32) -> Option<f32> {
-        let delta = cost - self.get_cost(neighbor)?;
-        if delta > 0.0 { Some(delta) } else { None }
+    fn flow_delta(&self, neighbor: TileLayerOffset, cost: u32) -> Option<f32> {
+        let delta = cost.checked_sub(self.get_cost(neighbor)?)?;
+        if delta > 0 { Some(delta as f32) } else { None }
     }
 }
 
@@ -446,7 +455,7 @@ impl CostNode {
         policy: &S,
         position: TileLayerOffset,
         adjacency: Adjacency,
-        cost: f32,
+        cost: u32,
     ) -> Self {
         Self {
             position,
@@ -479,7 +488,7 @@ impl CostEntry {
         !replace(&mut self.accepted, true)
     }
 
-    fn cost(&self) -> f32 {
+    fn cost(&self) -> u32 {
         if self.door {
             self.base_cost + DOOR_COST
         } else {
@@ -498,7 +507,7 @@ impl Eq for CostNode {}
 
 impl Ord for CostNode {
     fn cmp(&self, other: &Self) -> Ordering {
-        other.priority.total_cmp(&self.priority)
+        other.priority.cmp(&self.priority)
     }
 }
 
@@ -509,7 +518,7 @@ impl PartialOrd for CostNode {
 }
 
 impl CostPolicy for FlowPolicy {
-    fn priority(&self, _position: TileLayerOffset, cost: f32) -> f32 {
+    fn priority(&self, _position: TileLayerOffset, cost: u32) -> u32 {
         cost
     }
 
@@ -525,8 +534,8 @@ impl PathPolicy {
 }
 
 impl CostPolicy for PathPolicy {
-    fn priority(&self, position: TileLayerOffset, cost: f32) -> f32 {
-        cost + position.distance(self.goal)
+    fn priority(&self, position: TileLayerOffset, cost: u32) -> u32 {
+        cost + octile_cost(position, self.goal)
     }
 
     fn finished(&self, position: TileLayerOffset) -> bool {
@@ -535,6 +544,7 @@ impl CostPolicy for PathPolicy {
 }
 
 fn flow_tiebreak(a_flow: &mut Option<f32>, b_flow: &mut Option<f32>) {
+    // todo revisit equal?
     if let (Some(a), Some(b)) = (*a_flow, *b_flow) {
         if b > a {
             *a_flow = None;

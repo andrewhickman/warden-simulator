@@ -1,4 +1,4 @@
-// #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use bevy::{
     camera_controller::pan_camera::{PanCamera, PanCameraPlugin},
@@ -22,7 +22,6 @@ use wdn_ui::UiPlugin as WdnUiPlugin;
 use wdn_world::{
     WorldPlugin as WdnWorldPlugin, WorldSystems,
     door::Door,
-    path::region::Region,
     pawn::{Pawn, action::PawnAction},
 };
 

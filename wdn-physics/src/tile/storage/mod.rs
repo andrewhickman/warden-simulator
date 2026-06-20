@@ -397,11 +397,11 @@ impl TileData {
     }
 
     pub fn move_speed(&self) -> f32 {
-        self.move_cost().recip()
+        (self.move_cost() as f32).recip()
     }
 
-    pub fn move_cost(&self) -> f32 {
-        1.0
+    pub fn move_cost(&self) -> u32 {
+        1
     }
 
     pub fn material(&self) -> TileMaterial {

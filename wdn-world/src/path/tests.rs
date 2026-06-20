@@ -2416,7 +2416,7 @@ fn door_regions(app: &App, door: Entity) -> &DoorRegions {
     app.world().get::<DoorRegions>(door).unwrap()
 }
 
-fn flow_entry(dir_x: f32, dir_y: f32, cost: f32) -> FlowFieldEntry {
+fn flow_entry(dir_x: f32, dir_y: f32, cost: u32) -> FlowFieldEntry {
     FlowFieldEntry::new(Dir2::from_xy(dir_x, dir_y).unwrap(), cost)
 }
 

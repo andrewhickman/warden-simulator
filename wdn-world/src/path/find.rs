@@ -1,20 +1,19 @@
 use std::{collections::BinaryHeap, hash::Hash};
 
 use bevy_ecs::{prelude::*, system::SystemParam};
-use bevy_log::info;
 use bevy_math::prelude::*;
 use bevy_platform::collections::{HashMap, hash_map};
 use wdn_physics::tile::{index::TileIndex, position::TilePosition, storage::TileStorage};
 
 use crate::path::{
     door::{DoorRegions, RegionDoors},
-    flow::{CostField, FlowField, PathPolicy},
+    flow::{COST_MULTIPLIER, CostField, FlowField, PathPolicy, octile_cost},
     region::TileChunkSections,
 };
 
 #[derive(Debug)]
 pub struct Path {
-    cost: f32,
+    cost: u32,
     entries: Vec<PathEntry>,
 }
 
@@ -51,8 +50,8 @@ enum SearchNodeId {
 struct SearchNode {
     id: SearchNodeId,
     position: TilePosition,
-    cost: f32,
-    estimated_cost: f32,
+    cost: u32,
+    estimated_cost: u32,
 }
 
 #[derive(Debug)]
@@ -60,7 +59,7 @@ struct SearchEntry {
     parent: SearchNodeId,
     path: SearchEntryPath,
     position: TilePosition,
-    cost: f32,
+    cost: u32,
 }
 
 #[derive(Debug)]
@@ -79,7 +78,7 @@ impl PathParam<'_, '_> {
         if start == goal {
             return Some(Path {
                 entries: vec![],
-                cost: 0.0,
+                cost: 0,
             });
         }
 
@@ -92,8 +91,8 @@ impl PathParam<'_, '_> {
         open.push(SearchNode {
             id: start_id,
             position: start,
-            cost: 0.0,
-            estimated_cost: start.distance(goal),
+            cost: 0,
+            estimated_cost: octile_cost(start.layer_offset(), goal.layer_offset()),
         });
 
         while let Some(node) = open.pop() {
@@ -124,7 +123,8 @@ impl PathParam<'_, '_> {
                     }
                 }
 
-                let estimated_cost = new_cost + position.distance(goal);
+                let estimated_cost =
+                    new_cost + octile_cost(position.layer_offset(), goal.layer_offset());
                 open.push(SearchNode {
                     id,
                     position,
@@ -232,7 +232,7 @@ impl PathParam<'_, '_> {
         node: &SearchNode,
         goal: TilePosition,
         goal_id: SearchNodeId,
-        mut f: impl FnMut(SearchNodeId, TilePosition, SearchEntryPath, f32),
+        mut f: impl FnMut(SearchNodeId, TilePosition, SearchEntryPath, u32),
     ) {
         match node.id {
             SearchNodeId::Position(region, position) => {
@@ -345,18 +345,13 @@ impl PathParam<'_, '_> {
             current = entry.parent;
         }
 
-        info!(
-            "found path with cost {:?} and entries: {:#?} entries",
-            cost, entries
-        );
-
         Path { cost, entries }
     }
 }
 
 impl Path {
     pub fn cost(&self) -> f32 {
-        self.cost
+        self.cost as f32 * COST_MULTIPLIER.recip()
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &PathEntry> {
@@ -384,7 +379,7 @@ impl PartialOrd for SearchNode {
 
 impl Ord for SearchNode {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.estimated_cost.total_cmp(&self.estimated_cost)
+        other.estimated_cost.cmp(&self.estimated_cost)
     }
 }
 

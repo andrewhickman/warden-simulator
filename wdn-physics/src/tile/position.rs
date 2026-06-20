@@ -100,10 +100,6 @@ impl TilePosition {
         )
     }
 
-    pub fn distance(&self, other: Self) -> f32 {
-        f32::sqrt(self.position.distance_squared(other.position) as _)
-    }
-
     pub fn on_chunk_edge(&self) -> bool {
         self.chunk_offset().on_chunk_edge()
     }

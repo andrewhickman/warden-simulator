@@ -9,6 +9,9 @@ license = "GPL-3.0"
 name = "wdn"
 path = "src/main.rs"
 
+[profile.release]
+debug = true
+
 [workspace]
 members = [
     "wdn-build",
