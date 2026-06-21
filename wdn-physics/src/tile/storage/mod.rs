@@ -15,7 +15,7 @@ use crate::tile::{
     CHUNK_SIZE_SQUARED,
     adjacency::{Adjacency, TileAdjacency},
     index::TileIndex,
-    material::TileMaterial,
+    material::{TileMaterial, TileMoveSpeed},
     position::{TileChunkOffset, TileChunkPosition, TilePosition},
 };
 
@@ -396,12 +396,8 @@ impl TileData {
         }
     }
 
-    pub fn move_speed(&self) -> f32 {
-        (self.move_cost() as f32).recip()
-    }
-
-    pub fn move_cost(&self) -> u32 {
-        1
+    pub fn move_speed(&self) -> TileMoveSpeed {
+        TileMoveSpeed::Medium
     }
 
     pub fn material(&self) -> TileMaterial {

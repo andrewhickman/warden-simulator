@@ -12,6 +12,13 @@ pub enum TileMaterial {
     Door,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum TileMoveSpeed {
+    Slow = 3,
+    Medium = 5,
+    Fast = 7,
+}
+
 pub fn on_insert_material(
     trigger: On<Insert, TileMaterial>,
     tiles: Query<(&TileMaterial, &TilePosition)>,
@@ -25,5 +32,15 @@ pub fn on_insert_material(
 impl TileMaterial {
     pub fn is_empty(&self) -> bool {
         matches!(self, TileMaterial::Empty)
+    }
+}
+
+impl TileMoveSpeed {
+    pub fn factor(&self) -> f32 {
+        match self {
+            TileMoveSpeed::Slow => 0.6,
+            TileMoveSpeed::Medium => 1.0,
+            TileMoveSpeed::Fast => 1.4,
+        }
     }
 }

@@ -3,12 +3,17 @@ use std::{collections::BinaryHeap, hash::Hash};
 use bevy_ecs::{prelude::*, system::SystemParam};
 use bevy_math::prelude::*;
 use bevy_platform::collections::{HashMap, hash_map};
-use wdn_physics::tile::{index::TileIndex, position::TilePosition, storage::TileStorage};
+use wdn_physics::tile::{
+    index::TileIndex,
+    material::TileMoveSpeed,
+    position::{TileLayerOffset, TilePosition},
+    storage::TileStorage,
+};
 
 use crate::path::{
-    door::{DoorRegions, RegionDoors},
-    flow::{COST_MULTIPLIER, CostField, FlowField, PathPolicy, octile_cost},
-    region::TileChunkSections,
+    door::DoorRegions,
+    flow::{COST_MULTIPLIER, CostField, CostPolicy, FlowField, PathPolicy, octile_cost},
+    region::{RegionTiles, TileChunkSections},
 };
 
 #[derive(Debug)]
@@ -37,7 +42,7 @@ pub struct PathParam<'w, 's> {
     pub chunks: Query<'w, 's, &'static TileChunkSections>,
     pub flow_fields: Query<'w, 's, &'static FlowField>,
     pub doors: Query<'w, 's, &'static DoorRegions>,
-    pub regions: Query<'w, 's, &'static RegionDoors>,
+    pub regions: Query<'w, 's, &'static RegionTiles>,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -92,7 +97,7 @@ impl PathParam<'_, '_> {
             id: start_id,
             position: start,
             cost: 0,
-            estimated_cost: octile_cost(start.layer_offset(), goal.layer_offset()),
+            estimated_cost: octile_cost_heuristic(start.layer_offset(), goal.layer_offset()),
         });
 
         while let Some(node) = open.pop() {
@@ -124,7 +129,7 @@ impl PathParam<'_, '_> {
                 }
 
                 let estimated_cost =
-                    new_cost + octile_cost(position.layer_offset(), goal.layer_offset());
+                    new_cost + octile_cost_heuristic(position.layer_offset(), goal.layer_offset());
                 open.push(SearchNode {
                     id,
                     position,
@@ -164,7 +169,7 @@ impl PathParam<'_, '_> {
                 Some(PathEntry::InRegion {
                     cost_field,
                     current,
-                    ..
+                    region,
                 }) => {
                     if let Some((current_position, current_dir)) = current {
                         if *current_position == position {
@@ -172,12 +177,13 @@ impl PathParam<'_, '_> {
                         }
                     }
 
-                    let cost = cost_field.get_cost(position.layer_offset())?;
-                    let dir = cost_field.flow_vector(
-                        position.layer_offset(),
-                        cost,
-                        self.storage.get_adjacency(position).solid(),
-                    );
+                    let region_tiles = self.regions.get(*region).expect("invalid region");
+                    let position_index = region_tiles
+                        .get_tile_index(position.layer_offset())
+                        .expect("position not in region");
+
+                    let cost = cost_field[position_index];
+                    let dir = cost_field.flow_vector(&region_tiles[position_index], cost);
 
                     *current = Some((position, dir));
                     return Some(dir);
@@ -192,26 +198,38 @@ impl PathParam<'_, '_> {
         region: Entity,
         start: TilePosition,
         goal: TilePosition,
-    ) -> CostField {
-        let mut cost_field = CostField::new();
-        let region_doors = self.regions.get(region).expect("invalid region");
-        let policy = PathPolicy::new(start.layer_offset());
-        let adjacency = self.storage.get_adjacency(goal).walls();
+    ) -> (CostField, u32) {
+        let region_tiles = self.regions.get(region).expect("invalid region");
 
-        cost_field.generate(
+        let start_position = start.layer_offset();
+        let start_index = region_tiles
+            .get_tile_index(start_position)
+            .expect("start not in region");
+        let goal_position = goal.layer_offset();
+        let goal_index = region_tiles
+            .get_tile_index(goal_position)
+            .expect("goal not in region");
+        let goal_adjacency = self.storage.get_adjacency(goal).walls().complement();
+
+        let mut cost_field = CostField::new(region_tiles.size());
+        let policy = PathPolicy::new(start_position, start_index);
+
+        cost_field.generate::<PathPolicy, { PathPolicy::BUCKETS }>(
             &policy,
-            &self.storage,
-            region_doors,
-            goal,
-            adjacency.complement(),
+            region_tiles,
+            goal_index,
+            goal_position,
+            goal_adjacency,
         );
         debug_assert!(
-            cost_field.contains(start.layer_offset()),
+            cost_field.contains(start_index),
             "cost field does not contain start position: {:#?}",
             cost_field
         );
 
-        cost_field
+        let cost = cost_field[start_index];
+
+        (cost_field, cost)
     }
 
     fn position_id(&self, position: TilePosition) -> Option<SearchNodeId> {
@@ -236,8 +254,8 @@ impl PathParam<'_, '_> {
     ) {
         match node.id {
             SearchNodeId::Position(region, position) => {
-                let region_doors = self.regions.get(region).expect("invalid region");
-                for (door_position, region_door) in region_doors.iter() {
+                let region_tiles = self.regions.get(region).expect("invalid region");
+                for region_door in region_tiles.doors() {
                     let flow_field = self
                         .flow_fields
                         .get(region_door.flow_field())
@@ -248,17 +266,14 @@ impl PathParam<'_, '_> {
                         .cost();
                     f(
                         SearchNodeId::Door(region_door.door()),
-                        TilePosition::from((node.position.layer(), door_position)),
+                        TilePosition::from((node.position.layer(), region_door.position())),
                         SearchEntryPath::FlowField(region_door.flow_field()),
                         cost,
                     );
                 }
 
                 if goal_id.in_region(region) {
-                    let cost_field = self.generate_cost_field_path(region, position, goal);
-                    let cost = cost_field
-                        .get_cost(position.layer_offset())
-                        .expect("position not in cost field");
+                    let (cost_field, cost) = self.generate_cost_field_path(region, position, goal);
                     f(
                         goal_id,
                         goal,
@@ -270,7 +285,7 @@ impl PathParam<'_, '_> {
             SearchNodeId::Door(door) => {
                 let door_regions = self.doors.get(door).expect("invalid door");
                 for door_region in door_regions.iter() {
-                    let region_doors = self
+                    let region_tiles = self
                         .regions
                         .get(door_region.region())
                         .expect("invalid region");
@@ -279,18 +294,18 @@ impl PathParam<'_, '_> {
                         .get(door_region.flow_field())
                         .expect("invalid flow field");
 
-                    for (neighbor_position, region_door) in region_doors.iter() {
+                    for region_door in region_tiles.doors() {
                         if region_door.door() == door {
                             continue;
                         }
 
                         let cost = flow_field
-                            .get(neighbor_position)
+                            .get(region_door.position())
                             .expect("position not in flow field")
                             .cost();
                         f(
                             SearchNodeId::Door(region_door.door()),
-                            TilePosition::from((node.position.layer(), neighbor_position)),
+                            TilePosition::from((node.position.layer(), region_door.position())),
                             SearchEntryPath::FlowField(region_door.flow_field()),
                             cost,
                         );
@@ -336,7 +351,9 @@ impl PathParam<'_, '_> {
                 },
                 SearchEntryPath::LazyCostField(region, start) => PathEntry::InRegion {
                     region: region,
-                    cost_field: self.generate_cost_field_path(region, start, entry.position),
+                    cost_field: self
+                        .generate_cost_field_path(region, start, entry.position)
+                        .0,
                     current: None,
                 },
             };
@@ -347,6 +364,10 @@ impl PathParam<'_, '_> {
 
         Path { cost, entries }
     }
+}
+
+fn octile_cost_heuristic(start: TileLayerOffset, goal: TileLayerOffset) -> u32 {
+    octile_cost(start, goal, TileMoveSpeed::Slow)
 }
 
 impl Path {

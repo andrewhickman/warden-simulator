@@ -2,6 +2,7 @@ pub mod door;
 pub mod find;
 pub mod flow;
 pub mod region;
+pub mod section;
 #[cfg(test)]
 mod tests;
 
@@ -14,12 +15,12 @@ use wdn_physics::tile::storage::TileChunk;
 use crate::{
     WorldSystems,
     path::{
-        door::{on_remove_region_doors, update_door_regions, update_region_doors},
+        door::{on_remove_region_doors, update_door_regions},
         flow::{AddedFlowFields, clear_added_flow_fields, flow_fields_added, update_flow_fields},
         region::{
             AddedRegions, TileChunkSectionChanges, TileChunkSections, chunk_sections_changed,
             clear_added_regions, on_add_region, regions_added, update_chunk_sections,
-            update_regions,
+            update_region_doors, update_region_tiles, update_regions,
         },
     },
 };
@@ -40,6 +41,7 @@ impl Plugin for PathPlugin {
                 update_chunk_sections,
                 update_regions.run_if(chunk_sections_changed),
                 (
+                    update_region_tiles,
                     update_region_doors,
                     (update_flow_fields, clear_added_flow_fields)
                         .chain()
