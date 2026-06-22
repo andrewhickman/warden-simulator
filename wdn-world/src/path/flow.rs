@@ -1,12 +1,19 @@
-use std::{array, ops::Index};
+use std::{
+    array,
+    cmp::{Ordering, Reverse},
+    collections::{BinaryHeap, VecDeque},
+    fmt,
+    ops::Index,
+};
 
 use bevy_ecs::{
     entity::{EntityHashSet, hash_set},
     prelude::*,
 };
-use bevy_log::info;
+use bevy_log::warn;
 use bevy_math::prelude::*;
 use bevy_platform::collections::HashMap;
+use radix_heap::RadixHeapMap;
 use smallvec::SmallVec;
 use wdn_physics::tile::{
     adjacency::Adjacency,
@@ -49,13 +56,14 @@ pub struct CostField {
 }
 
 struct CostNodeQueue<const N: usize> {
-    buckets: [SmallVec<[CostNode; 32]>; N],
-    min: u32,
+    buckets: [VecDeque<CostNode>; N],
+    current: u32,
+    len: u32,
 }
 
 #[derive(Clone, Copy, Debug)]
 struct CostNode {
-    priority: u32,
+    // priority: u32,
     cost: u32,
     index: RegionTileIndex,
     adjacency: Adjacency,
@@ -81,16 +89,39 @@ pub fn update_flow_fields(
     mut flow_fields: Query<(&ChildOf, &mut FlowField)>,
     added_flow_fields: Res<AddedFlowFields>,
 ) {
-    info!(
-        "updating {} flow fields",
-        added_flow_fields.added_flow_fields.len()
-    );
+    let start = std::time::Instant::now();
+
     flow_fields
         .par_iter_many_unique_mut(added_flow_fields.iter())
         .for_each(|(parent, mut flow)| {
             let tiles = regions.get(parent.parent()).expect("region not found");
             flow.generate(tiles);
         });
+
+    let elapsed = start.elapsed();
+    if elapsed > std::time::Duration::from_secs_f32(0.001953125) {
+        let mut regions = HashMap::<Entity, (usize, usize)>::new();
+
+        for (parent, flow) in flow_fields.iter_many(added_flow_fields.iter()) {
+            let entry = regions.entry(parent.parent()).or_insert((0, 0));
+            entry.0 += 1;
+            entry.1 = flow.len();
+        }
+
+        warn!(
+            "updating {} flow fields took {:.2?} (sizes: {:?})",
+            added_flow_fields.added_flow_fields.len(),
+            elapsed,
+            regions
+                .into_values()
+                .map(|(count, size)| fmt::from_fn(move |f| write!(
+                    f,
+                    "(doors: {}, size: {})",
+                    count, size
+                )))
+                .collect::<Vec<_>>()
+        );
+    }
 }
 
 pub fn flow_fields_added(changes: Res<AddedFlowFields>) -> bool {
@@ -253,13 +284,19 @@ impl CostField {
         start_position: TileLayerOffset,
         start_adjacency: Adjacency,
     ) {
-        let mut open = CostNodeQueue::<BUCKETS>::new();
+        // let mut open = BinaryHeap::new();
+        // let mut open = CostNodeQueue::<BUCKETS>::new();
+        let mut open = RadixHeapMap::<Reverse<u32>, CostNode>::new();
 
         let start_priority = policy.priority(start_position, 0);
         self.insert(start, 0);
-        open.push(CostNode::new(start, start_adjacency, 0, start_priority));
+        // open.push(CostNode::new(start, start_adjacency, 0, start_priority));
+        open.push(
+            Reverse(start_priority),
+            CostNode::new(start, start_adjacency, 0 /*, start_priority */),
+        );
 
-        while let Some(node) = open.pop() {
+        while let Some((node_priority, node)) = open.pop() {
             debug_assert!(self.contains(node.index));
 
             if policy.finished(node.index) {
@@ -283,7 +320,7 @@ impl CostField {
                 let priority = policy.priority(neighbor_data.position(), new_cost);
 
                 debug_assert!(
-                    node.priority.abs_diff(priority) < BUCKETS as u32,
+                    node_priority.0.abs_diff(priority) < BUCKETS as u32,
                     "priority difference between {:?} and {:?} is too large for the queue with bucket size {}. Base cost: {}, new cost: {}",
                     node.index,
                     neighbor,
@@ -293,7 +330,8 @@ impl CostField {
                 );
 
                 if self.insert(neighbor, new_cost) {
-                    open.push(CostNode::new(neighbor, adjacency, new_cost, priority));
+                    // open.push(CostNode::new(neighbor, adjacency, new_cost, priority));
+                    open.push(Reverse(priority), CostNode::new(neighbor, adjacency, new_cost/*, priority */));
                 }
             });
         }
@@ -403,12 +441,16 @@ impl Index<RegionTileIndex> for CostField {
 }
 
 impl CostNode {
-    fn new(index: RegionTileIndex, adjacency: Adjacency, cost: u32, priority: u32) -> Self {
+    fn new(
+        index: RegionTileIndex,
+        adjacency: Adjacency,
+        cost: u32, /*, priority: u32 */
+    ) -> Self {
         CostNode {
             index,
             adjacency,
             cost,
-            priority,
+            // priority,
         }
     }
 
@@ -445,33 +487,72 @@ impl CostNode {
     }
 }
 
-impl<const N: usize> CostNodeQueue<N> {
-    fn new() -> Self {
-        Self {
-            buckets: array::from_fn(|_| SmallVec::new()),
-            min: N as u32,
-        }
-    }
+// impl PartialEq for CostNode {
+//     fn eq(&self, _: &Self) -> bool {
+//         unimplemented!()
+//     }
+// }
 
-    fn pop(&mut self) -> Option<CostNode> {
-        for i in self.min as usize..N {
-            if let Some(node) = self.buckets[i].pop() {
-                self.min = i as u32;
-                return Some(node);
-            }
-        }
+// impl Eq for CostNode {}
 
-        None
-    }
+// impl Ord for CostNode {
+//     fn cmp(&self, other: &Self) -> Ordering {
+//         other.priority.cmp(&self.priority)
+//     }
+// }
 
-    fn push(&mut self, node: CostNode) {
-        let index = node.priority % N as u32;
-        self.buckets[index as usize].push(node);
-        if index < self.min {
-            self.min = index;
-        }
-    }
-}
+// impl PartialOrd for CostNode {
+//     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+//         Some(self.cmp(other))
+//     }
+// }
+
+// impl<const N: usize> CostNodeQueue<N> {
+//     fn new() -> Self {
+//         Self {
+//             buckets: array::from_fn(|_| VecDeque::new()),
+//             current: 0,
+//             len: 0,
+//         }
+//     }
+
+//     fn push(&mut self, node: CostNode) {
+//         debug_assert!(node.priority >= self.current);
+
+//         let delta = node.priority - self.current;
+
+//         debug_assert!(
+//             delta < N as u32,
+//             "priority {} exceeds window [{}, {}]",
+//             node.priority,
+//             self.current,
+//             self.current + (N as u32 - 1),
+//         );
+
+//         self.buckets[delta as usize].push_back(node);
+//         self.len += 1;
+//     }
+
+//     #[inline]
+//     fn advance(&mut self) {
+//         self.buckets.rotate_left(1);
+//         self.buckets[N - 1].clear();
+//         self.current += 1;
+//     }
+
+//     pub fn pop(&mut self) -> Option<CostNode> {
+//         if self.len == 0 {
+//             return None;
+//         }
+
+//         while self.buckets[0].is_empty() {
+//             self.advance();
+//         }
+
+//         self.len -= 1;
+//         self.buckets[0].pop_front()
+//     }
+// }
 
 impl CostPolicy for FlowPolicy {
     const BUCKETS: usize = SLOW_DIAGONAL_COST as usize + 1;
