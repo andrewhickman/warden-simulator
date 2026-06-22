@@ -56,6 +56,7 @@ struct CostNodeQueue<const N: usize> {
 #[derive(Clone, Copy, Debug)]
 struct CostNode {
     priority: u32,
+    cost: u32,
     index: RegionTileIndex,
     adjacency: Adjacency,
 }
@@ -256,7 +257,7 @@ impl CostField {
 
         let start_priority = policy.priority(start_position, 0);
         self.insert(start, 0);
-        open.push(CostNode::new(start, start_adjacency, start_priority));
+        open.push(CostNode::new(start, start_adjacency, 0, start_priority));
 
         while let Some(node) = open.pop() {
             debug_assert!(self.contains(node.index));
@@ -265,7 +266,7 @@ impl CostField {
                 break;
             }
 
-            if self[node.index] < node.priority {
+            if self[node.index] < node.cost {
                 continue;
             }
 
@@ -292,7 +293,7 @@ impl CostField {
                 );
 
                 if self.insert(neighbor, new_cost) {
-                    open.push(CostNode::new(neighbor, adjacency, priority));
+                    open.push(CostNode::new(neighbor, adjacency, new_cost, priority));
                 }
             });
         }
@@ -402,10 +403,11 @@ impl Index<RegionTileIndex> for CostField {
 }
 
 impl CostNode {
-    fn new(index: RegionTileIndex, adjacency: Adjacency, priority: u32) -> Self {
+    fn new(index: RegionTileIndex, adjacency: Adjacency, cost: u32, priority: u32) -> Self {
         CostNode {
             index,
             adjacency,
+            cost,
             priority,
         }
     }

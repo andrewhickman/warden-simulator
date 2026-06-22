@@ -27,7 +27,7 @@ pub struct Region {
     sections: SmallVec<[(Entity, TileLayerOffset); 2]>,
 }
 
-#[derive(Component, Default)]
+#[derive(Component, Debug, Default)]
 pub struct RegionTiles {
     tiles: Vec<RegionTile>,
     tile_index: HashMap<TileLayerOffset, RegionTileIndex>,

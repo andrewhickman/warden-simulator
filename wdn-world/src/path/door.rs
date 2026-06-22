@@ -90,7 +90,9 @@ impl DoorRegions {
                 .regions
                 .iter()
                 .any(|door_region| door_region.region() == region
-                    || door_region.adjacency.intersects(adjacency))
+                    || door_region.adjacency.intersects(adjacency)),
+            "new door region {region:?} with adjacency {adjacency:?} overlaps with existing door regions: {:#?}",
+            self.regions,
         );
 
         self.regions.push(DoorRegion {

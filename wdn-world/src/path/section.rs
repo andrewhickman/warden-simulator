@@ -156,7 +156,6 @@ impl TileChunkSection {
     }
 
     pub fn set_region(&mut self, entity: Entity) {
-        debug_assert_eq!(self.region, Entity::PLACEHOLDER);
         self.region = entity;
     }
 
