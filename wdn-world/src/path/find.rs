@@ -13,7 +13,8 @@ use wdn_physics::tile::{
 use crate::path::{
     door::DoorRegions,
     flow::{COST_MULTIPLIER, CostField, CostPolicy, FlowField, PathPolicy, octile_cost},
-    region::{RegionTiles, TileChunkSections},
+    region::RegionTiles,
+    section::TileChunkSections,
 };
 
 #[derive(Debug)]

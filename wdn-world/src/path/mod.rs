@@ -18,9 +18,12 @@ use crate::{
         door::{on_remove_region_doors, update_door_regions},
         flow::{AddedFlowFields, clear_added_flow_fields, flow_fields_added, update_flow_fields},
         region::{
-            AddedRegions, TileChunkSectionChanges, TileChunkSections, chunk_sections_changed,
-            clear_added_regions, on_add_region, regions_added, update_chunk_sections,
-            update_region_doors, update_region_tiles, update_regions,
+            AddedRegions, clear_added_regions, on_add_region, regions_added, update_region_doors,
+            update_region_tiles, update_regions,
+        },
+        section::{
+            TileChunkSectionChanges, TileChunkSections, chunk_sections_changed,
+            update_chunk_sections,
         },
     },
 };
