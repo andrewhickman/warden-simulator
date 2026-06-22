@@ -1,5 +1,3 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
 use bevy::{
     camera_controller::pan_camera::{PanCamera, PanCameraPlugin},
     dev_tools::fps_overlay::FpsOverlayPlugin,

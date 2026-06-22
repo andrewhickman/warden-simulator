@@ -26,6 +26,7 @@ members = [
 [features]
 default = ["dev"]
 dev = ["bevy/dev"]
+tracy = ["bevy/trace_tracy"]
 
 [dependencies]
 bevy = { version = "0.18.0", default-features = false, features = ["default_app", "default_platform", "2d_bevy_render", "ui_bevy_render"] }
