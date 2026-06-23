@@ -26,6 +26,7 @@ pub struct Path {
 #[derive(Debug)]
 pub enum PathEntry {
     ToDoor {
+        region: Entity,
         flow_field: Entity,
         goal: TilePosition,
     },
@@ -70,7 +71,7 @@ struct SearchEntry {
 
 #[derive(Debug)]
 enum SearchEntryPath {
-    FlowField(Entity),
+    FlowField(Entity, Entity),
     CostField(Entity, CostField),
     LazyCostField(Entity, TilePosition),
 }
@@ -154,15 +155,20 @@ impl PathParam<'_, '_> {
     pub fn path_dir(&self, path: &mut Path, position: TilePosition) -> Option<Dir2> {
         loop {
             match path.entries.last_mut() {
-                Some(&mut PathEntry::ToDoor { flow_field, goal }) => {
+                Some(&mut PathEntry::ToDoor {
+                    region,
+                    flow_field,
+                    goal,
+                }) => {
                     if position == goal {
                         path.entries.pop();
                     } else {
+                        let region_tiles = self.regions.get(region).expect("invalid region");
                         return Some(
                             self.flow_fields
                                 .get(flow_field)
                                 .ok()?
-                                .get(position.layer_offset())?
+                                .get(region_tiles, position.layer_offset())?
                                 .dir(),
                         );
                     }
@@ -262,13 +268,13 @@ impl PathParam<'_, '_> {
                         .get(region_door.flow_field())
                         .expect("invalid flow field");
                     let cost = flow_field
-                        .get(node.position.layer_offset())
+                        .get(region_tiles, node.position.layer_offset())
                         .expect("position not in flow field")
                         .cost();
                     f(
                         SearchNodeId::Door(region_door.door()),
                         TilePosition::from((node.position.layer(), region_door.position())),
-                        SearchEntryPath::FlowField(region_door.flow_field()),
+                        SearchEntryPath::FlowField(region, region_door.flow_field()),
                         cost,
                     );
                 }
@@ -301,20 +307,23 @@ impl PathParam<'_, '_> {
                         }
 
                         let cost = flow_field
-                            .get(region_door.position())
+                            .get(region_tiles, region_door.position())
                             .expect("position not in flow field")
                             .cost();
                         f(
                             SearchNodeId::Door(region_door.door()),
                             TilePosition::from((node.position.layer(), region_door.position())),
-                            SearchEntryPath::FlowField(region_door.flow_field()),
+                            SearchEntryPath::FlowField(
+                                door_region.region(),
+                                region_door.flow_field(),
+                            ),
                             cost,
                         );
                     }
 
                     if goal_id.in_region(door_region.region()) {
                         let cost = flow_field
-                            .get(goal.layer_offset())
+                            .get(region_tiles, goal.layer_offset())
                             .expect("goal not in flow field")
                             .cost();
                         f(
@@ -341,7 +350,8 @@ impl PathParam<'_, '_> {
 
         while let Some(entry) = map.remove(&current) {
             let path_entry = match entry.path {
-                SearchEntryPath::FlowField(flow_field) => PathEntry::ToDoor {
+                SearchEntryPath::FlowField(region, flow_field) => PathEntry::ToDoor {
+                    region,
                     flow_field,
                     goal: entry.position,
                 },

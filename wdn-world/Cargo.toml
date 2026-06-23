@@ -17,10 +17,15 @@ bevy_tasks = "0.18.1"
 bevy_time = "0.18.0-rc.0"
 bevy_transform = "0.18.0"
 bytemuck = { version = "1.24.0", features = ["derive"] }
-radix-heap = "0.4.2"
 smallvec = "1.15.1"
+tracing = "0.1.44"
 wdn-physics = { version = "0.1.0", path = "../wdn-physics" }
 
 [dev-dependencies]
 approx = "0.5.1"
 bevy_math = { version = "0.18.0", features = ["approx"] }
+criterion = "0.7.0"
+
+[[bench]]
+name = "flow_field_generate"
+harness = false
