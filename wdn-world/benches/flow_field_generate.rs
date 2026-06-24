@@ -10,7 +10,7 @@ use wdn_world::{
     door::Door,
     path::{
         PathPlugin,
-        flow::{CostField, CostPolicy, FlowField, FlowPolicy},
+        flow::{CostField, FlowField, FlowPolicy},
         region::RegionTiles,
     },
 };
@@ -56,7 +56,7 @@ fn bench_flow_field_generate(c: &mut Criterion) {
     c.bench_function("CostField::generate", |b| {
         b.iter(|| {
             let mut cost_field = CostField::new(region_tiles.size());
-            cost_field.generate::<FlowPolicy, { FlowPolicy::BUCKETS }>(
+            cost_field.generate::<FlowPolicy>(
                 &FlowPolicy,
                 region_tiles,
                 door.index(),
@@ -69,7 +69,7 @@ fn bench_flow_field_generate(c: &mut Criterion) {
     });
 
     let mut cost_field = CostField::new(region_tiles.size());
-    cost_field.generate::<FlowPolicy, { FlowPolicy::BUCKETS }>(
+    cost_field.generate::<FlowPolicy>(
         &FlowPolicy,
         region_tiles,
         door.index(),

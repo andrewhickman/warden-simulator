@@ -12,7 +12,7 @@ use wdn_physics::tile::{
 
 use crate::path::{
     door::DoorRegions,
-    flow::{COST_MULTIPLIER, CostField, CostPolicy, FlowField, PathPolicy, octile_cost},
+    flow::{COST_MULTIPLIER, CostField, FlowField, PathPolicy, octile_cost},
     region::RegionTiles,
     section::TileChunkSections,
 };
@@ -221,7 +221,7 @@ impl PathParam<'_, '_> {
         let mut cost_field = CostField::new(region_tiles.size());
         let policy = PathPolicy::new(start_position, start_index);
 
-        cost_field.generate::<PathPolicy, { PathPolicy::BUCKETS }>(
+        cost_field.generate::<PathPolicy>(
             &policy,
             region_tiles,
             goal_index,

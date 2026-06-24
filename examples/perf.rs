@@ -17,7 +17,7 @@ use wdn_physics::{
     PhysicsPlugin as WdnPhysicsPlugin,
     kinematics::Position,
     layer::Layer,
-    tile::{material::TileMaterial, position::TilePosition, storage::TileStorageMut},
+    tile::{material::TileMaterial, storage::TileStorageMut},
 };
 use wdn_render::RenderPlugin as WdnRenderPlugin;
 use wdn_save::SavePlugin as WdnSavePlugin;
@@ -25,10 +25,11 @@ use wdn_tasks::TasksPlugin as WdnTasksPlugin;
 use wdn_ui::UiPlugin as WdnUiPlugin;
 use wdn_world::{
     WorldPlugin as WdnWorldPlugin, WorldSystems,
-    door::Door,
     path::region::RegionTiles,
     pawn::{Pawn, action::PawnAction},
 };
+
+pub mod generate;
 
 #[derive(Resource, Default)]
 struct RegionImageExported(bool);
@@ -55,9 +56,13 @@ pub fn main() {
             WdnUiPlugin,
         ))
         .add_systems(Startup, startup)
+        // .add_systems(
+        //     FixedUpdate,
+        //     update_storage.before(WorldSystems::UpdateRegions),
+        // )
         .add_systems(
             FixedUpdate,
-            update_storage.before(WorldSystems::UpdateRegions),
+            update_generated_map.before(WorldSystems::UpdateRegions),
         )
         .add_systems(
             FixedUpdate,
@@ -102,25 +107,13 @@ fn startup(mut commands: Commands, mut time: ResMut<Time<Virtual>>, mut storage:
     time.set_relative_speed(8.0);
 
     let layer = commands.spawn(Layer::default()).id();
+    let grid = generate::GeneratedTileGrid::new();
+    let changed_tiles =
+        generate::apply_grid_to_map(&mut commands, &mut storage, layer, grid.kinds());
+    info!("map updated: {} changed tiles", changed_tiles);
+    commands.insert_resource(grid);
 
     let mut random = rand::rng();
-    for x in 0..512 {
-        for y in 0..512 {
-            let tile = TilePosition::new(layer, x, y);
-            if (x % 5 == 0 || y % 5 == 0) && x != 0 && y != 0 && x != 511 && y != 511 {
-                if random.random_bool(0.05) {
-                    commands.spawn((Door::default(), tile));
-                } else if random.random_bool(0.1) {
-                    storage.set_material(tile, TileMaterial::Empty);
-                } else {
-                    storage.set_material(tile, TileMaterial::Wall);
-                }
-            } else {
-                storage.set_material(tile, TileMaterial::Empty);
-            }
-        }
-    }
-
     for _ in 0..3000 {
         let x = random.random_range(1.0f32..=511.0);
         let y = random.random_range(1.0f32..=511.0);
@@ -133,29 +126,20 @@ fn startup(mut commands: Commands, mut time: ResMut<Time<Virtual>>, mut storage:
     }
 }
 
-fn update_storage(
+fn update_generated_map(
     mut commands: Commands,
-    layer: Single<Entity, With<Layer>>,
     mut storage: TileStorageMut,
+    layer: Single<Entity, With<Layer>>,
+    mut grid: ResMut<generate::GeneratedTileGrid>,
+    time: Res<Time<Virtual>>,
 ) {
-    let mut random = rand::rng();
-    let x = random.random_range(1..511);
-    let y = random.random_range(1..511);
-    let tile = TilePosition::new(*layer, x, y);
-
-    if x % 5 == 0 || y % 5 == 0 {
-        if let Some(entity) = storage.index.get_tile(tile) {
-            commands.entity(entity).despawn();
-        }
-
-        if random.random_bool(0.05) {
-            commands.spawn((Door::default(), tile));
-        } else if random.random_bool(0.05) {
-            storage.set_material(tile, TileMaterial::Empty);
-        } else {
-            storage.set_material(tile, TileMaterial::Wall);
-        }
+    if !grid.tick_and_maybe_regenerate(time.delta()) {
+        return;
     }
+
+    let changed_tiles =
+        generate::apply_grid_to_map(&mut commands, &mut storage, *layer, grid.kinds());
+    info!("map updated: {} changed tiles", changed_tiles);
 }
 
 fn update_pawns(mut query: Query<&mut PawnAction>) {

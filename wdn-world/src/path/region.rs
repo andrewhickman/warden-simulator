@@ -7,6 +7,7 @@ use bevy_ecs::{
 use bevy_log::error;
 use bevy_platform::collections::HashMap;
 use smallvec::SmallVec;
+use tracing::info;
 use wdn_physics::tile::{
     adjacency::Adjacency,
     index::TileIndex,
@@ -76,6 +77,11 @@ pub fn update_regions(
         ref mut invalid_sections,
         ref mut invalid_regions,
     } = *changes;
+
+    info!(
+        "updating regions for {} changed or invalidated sections",
+        removed_sections.len() + invalid_sections.len()
+    );
 
     for &region in invalid_regions.iter() {
         let region = regions.get(region)?;
@@ -154,6 +160,11 @@ pub fn update_region_tiles(
     chunks: Query<(&TileChunk, &TileChunkSections)>,
     added_regions: Res<AddedRegions>,
 ) {
+    info!(
+        "updating tiles for {} added regions",
+        added_regions.added_regions.len()
+    );
+
     regions
         .par_iter_many_unique_mut(added_regions.iter())
         .for_each(|(region, mut region_tiles)| {
