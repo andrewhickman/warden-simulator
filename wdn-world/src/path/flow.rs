@@ -379,27 +379,28 @@ impl CostField {
             flow_tiebreak(&mut south, &mut west);
         }
 
-        let mut dir = Vec2::ZERO;
-
-        if let Some(north) = north {
-            dir += Vec2::Y * north;
-        }
-
-        if let Some(south) = south {
-            dir -= Vec2::Y * south;
-        }
-
-        if let Some(east) = east {
-            dir += Vec2::X * east;
-        }
-
-        if let Some(west) = west {
-            dir -= Vec2::X * west;
-        }
-
-        match Dir2::new(dir) {
-            Ok(dir) => dir,
-            Err(_) => panic!(
+        match (north, east, south, west) {
+            (Some(_), None, None, None) => Dir2::NORTH,
+            (Some(n), Some(e), None, None) => {
+                let (x, y) = flow_dir(n, e);
+                Dir2::from_xy_unchecked(x, y)
+            }
+            (None, Some(_), None, None) => Dir2::EAST,
+            (None, Some(e), Some(s), None) => {
+                let (x, y) = flow_dir(e, s);
+                Dir2::from_xy_unchecked(x, -y)
+            }
+            (None, None, Some(_), None) => Dir2::SOUTH,
+            (None, None, Some(s), Some(w)) => {
+                let (x, y) = flow_dir(s, w);
+                Dir2::from_xy_unchecked(-x, -y)
+            }
+            (None, None, None, Some(_)) => Dir2::WEST,
+            (Some(n), None, None, Some(w)) => {
+                let (x, y) = flow_dir(w, n);
+                Dir2::from_xy_unchecked(-x, y)
+            }
+            _ => panic!(
                 "failed to resolve flow vector for tile {:?} with cost {}",
                 tile.position(),
                 cost
@@ -425,9 +426,8 @@ impl CostField {
         self.costs.len()
     }
 
-    fn flow_delta(&self, neighbor: RegionTileIndex, cost: u32) -> Option<f32> {
-        let delta = cost.checked_sub(self[neighbor])?;
-        if delta > 0 { Some(delta as f32) } else { None }
+    fn flow_delta(&self, neighbor: RegionTileIndex, cost: u32) -> Option<u32> {
+        cost.checked_sub(self[neighbor])
     }
 }
 
@@ -629,8 +629,7 @@ impl CostPolicyQueue for BinaryHeap<CostNode> {
     }
 }
 
-fn flow_tiebreak(a_flow: &mut Option<f32>, b_flow: &mut Option<f32>) {
-    // todo revisit equal?
+fn flow_tiebreak(a_flow: &mut Option<u32>, b_flow: &mut Option<u32>) {
     if let (Some(a), Some(b)) = (*a_flow, *b_flow) {
         if b > a {
             *a_flow = None;
@@ -638,4 +637,91 @@ fn flow_tiebreak(a_flow: &mut Option<f32>, b_flow: &mut Option<f32>) {
             *b_flow = None;
         }
     }
+}
+
+fn flow_dir(a: u32, b: u32) -> (f32, f32) {
+    const LOOKUP: [[(f32, f32); 8]; 8] = [
+        [
+            (0.0, 0.0),
+            (1.0, 0.0),
+            (1.0, 0.0),
+            (1.0, 0.0),
+            (1.0, 0.0),
+            (1.0, 0.0),
+            (1.0, 0.0),
+            (1.0, 0.0),
+        ],
+        [
+            (0.0, 1.0),
+            (0.70710677, 0.70710677),
+            (0.8944272, 0.4472136),
+            (0.9486833, 0.31622776),
+            (0.9701425, 0.24253562),
+            (0.9805807, 0.19611613),
+            (0.9863939, 0.16439898),
+            (0.98994946, 0.14142136),
+        ],
+        [
+            (0.0, 1.0),
+            (0.4472136, 0.8944272),
+            (0.70710677, 0.70710677),
+            (0.8320503, 0.5547002),
+            (0.8944272, 0.4472136),
+            (0.9284767, 0.37139067),
+            (0.9486833, 0.31622776),
+            (0.96152395, 0.27472112),
+        ],
+        [
+            (0.0, 1.0),
+            (0.31622776, 0.9486833),
+            (0.5547002, 0.8320503),
+            (0.70710677, 0.70710677),
+            (0.8, 0.6),
+            (0.8574929, 0.51449573),
+            (0.8944272, 0.4472136),
+            (0.91914505, 0.3939193),
+        ],
+        [
+            (0.0, 1.0),
+            (0.24253562, 0.9701425),
+            (0.4472136, 0.8944272),
+            (0.6, 0.8),
+            (0.70710677, 0.70710677),
+            (0.7808688, 0.62469506),
+            (0.8320503, 0.5547002),
+            (0.86824316, 0.49613893),
+        ],
+        [
+            (0.0, 1.0),
+            (0.19611613, 0.9805807),
+            (0.37139067, 0.9284767),
+            (0.51449573, 0.8574929),
+            (0.62469506, 0.7808688),
+            (0.70710677, 0.70710677),
+            (0.76822126, 0.6401844),
+            (0.81373346, 0.5812382),
+        ],
+        [
+            (0.0, 1.0),
+            (0.16439898, 0.9863939),
+            (0.31622776, 0.9486833),
+            (0.4472136, 0.8944272),
+            (0.5547002, 0.8320503),
+            (0.6401844, 0.76822126),
+            (0.70710677, 0.70710677),
+            (0.7592566, 0.65079135),
+        ],
+        [
+            (0.0, 1.0),
+            (0.14142136, 0.98994946),
+            (0.27472112, 0.96152395),
+            (0.3939193, 0.91914505),
+            (0.49613893, 0.86824316),
+            (0.5812382, 0.81373346),
+            (0.65079135, 0.7592566),
+            (0.70710677, 0.70710677),
+        ],
+    ];
+
+    LOOKUP[a.min(SLOW_CARDINAL_COST) as usize][b.min(SLOW_CARDINAL_COST) as usize]
 }
