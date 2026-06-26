@@ -189,8 +189,7 @@ impl PathParam<'_, '_> {
                         .get_tile_index(position.layer_offset())
                         .expect("position not in region");
 
-                    let cost = cost_field[position_index];
-                    let dir = cost_field.flow_vector(&region_tiles[position_index], cost);
+                    let dir = cost_field.flow_vector(position_index, &region_tiles[position_index]);
 
                     *current = Some((position, dir));
                     return Some(dir);

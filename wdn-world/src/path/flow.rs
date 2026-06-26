@@ -2,7 +2,6 @@ use std::{
     array,
     cmp::Ordering,
     collections::{BinaryHeap, VecDeque},
-    fmt,
     ops::Index,
 };
 
@@ -182,10 +181,7 @@ impl FlowField {
         self.door_position.layer()
     }
 
-    pub fn iter(
-        &self,
-        tiles: &RegionTiles,
-    ) -> impl Iterator<Item = (TileLayerOffset, FlowFieldEntry)> {
+    pub fn iter(&self) -> impl Iterator<Item = (RegionTileIndex, FlowFieldEntry)> {
         (0..self.costs.len()).filter_map(move |index| {
             let index = index as RegionTileIndex;
             if index == self.door_index {
@@ -195,7 +191,7 @@ impl FlowField {
             let dir = self.flow[index as usize];
             let cost = self.costs[index];
 
-            Some((tiles[index].position(), FlowFieldEntry::new(dir, cost)))
+            Some((index, FlowFieldEntry::new(dir, cost)))
         })
     }
 
@@ -236,16 +232,14 @@ impl FlowField {
                 continue;
             }
 
-            let cost = self.costs[index];
-            debug_assert_ne!(
-                cost,
-                u32::MAX,
+            debug_assert!(
+                self.costs.contains(index),
                 "{:?} is unreachable from door {:?}",
                 position,
                 self.door_position
             );
 
-            let dir = self.costs.flow_vector(tile, cost);
+            let dir = self.costs.flow_vector(index, tile);
             self.flow.push(dir);
         }
 
@@ -340,7 +334,9 @@ impl CostField {
         }
     }
 
-    pub fn flow_vector(&self, tile: &RegionTile, cost: u32) -> Dir2 {
+    pub fn flow_vector(&self, index: RegionTileIndex, tile: &RegionTile) -> Dir2 {
+        let cost = self[index];
+
         let mut north = if let Some(north) = tile.north() {
             self.flow_delta(north, cost)
         } else {
@@ -458,7 +454,7 @@ impl CostNode {
         F: FnMut(RegionTileIndex, u32),
     {
         let tile = &tiles[self.index];
-        let (cardinal_cost, _diagonal_cost) = move_cost(tile.move_speed());
+        let (cardinal_cost, diagonal_cost) = move_cost(tile.move_speed());
 
         if self.adjacency.contains(Adjacency::NORTH)
             && let Some(north) = tile.north()
@@ -482,6 +478,42 @@ impl CostNode {
             && let Some(west) = tile.west()
         {
             f(west, cardinal_cost);
+        }
+
+        if self
+            .adjacency
+            .contains(Adjacency::NORTH | Adjacency::NORTH_EAST | Adjacency::EAST)
+            && let Some(north) = tile.north()
+            && let Some(north_east) = tiles[north].east()
+        {
+            f(north_east, diagonal_cost);
+        }
+
+        if self
+            .adjacency
+            .contains(Adjacency::EAST | Adjacency::SOUTH_EAST | Adjacency::SOUTH)
+            && let Some(east) = tile.east()
+            && let Some(south_east) = tiles[east].south()
+        {
+            f(south_east, diagonal_cost);
+        }
+
+        if self
+            .adjacency
+            .contains(Adjacency::SOUTH | Adjacency::SOUTH_WEST | Adjacency::WEST)
+            && let Some(south) = tile.south()
+            && let Some(south_west) = tiles[south].west()
+        {
+            f(south_west, diagonal_cost);
+        }
+
+        if self
+            .adjacency
+            .contains(Adjacency::WEST | Adjacency::NORTH_WEST | Adjacency::NORTH)
+            && let Some(west) = tile.west()
+            && let Some(north_west) = tiles[west].north()
+        {
+            f(north_west, diagonal_cost);
         }
     }
 }
