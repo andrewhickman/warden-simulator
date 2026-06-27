@@ -91,7 +91,12 @@ pub fn resolve_collisions(
             let mut wall_adjacency = storage.get_wall_adjacency(tile_position);
 
             for (neighbor, adjacency) in tile_neighborhood(tile_position) {
-                for &candidate in index.get_objects(neighbor) {
+                let index_entry = match index.get(neighbor) {
+                    Some(entry) => entry,
+                    None => continue,
+                };
+
+                for &candidate in index_entry.objects() {
                     if candidate == collider_id {
                         continue;
                     }
@@ -108,7 +113,7 @@ pub fn resolve_collisions(
                     );
                 }
 
-                if let Some(candidate) = index.get_tile(neighbor)
+                if let Some(candidate) = index_entry.tile()
                     && let Ok(candidate_tile) = candidate_tiles.get(candidate)
                     && candidate_tile.collider.solid
                 {

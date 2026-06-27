@@ -6,11 +6,11 @@ use crate::tile::position::TilePosition;
 
 #[derive(Resource, Default, Debug)]
 pub struct TileIndex {
-    index: HashMap<TilePosition, TileIndexValue>,
+    index: HashMap<TilePosition, TileIndexEntry>,
 }
 
 #[derive(Default, Debug)]
-struct TileIndexValue {
+pub struct TileIndexEntry {
     objects: SmallVec<[Entity; 4]>,
     tile: Option<Entity>,
 }
@@ -48,6 +48,10 @@ impl TileIndex {
         }
     }
 
+    pub fn get(&self, tile: TilePosition) -> Option<&TileIndexEntry> {
+        self.index.get(&tile)
+    }
+
     pub fn get_objects(&self, tile: TilePosition) -> &[Entity] {
         match self.index.get(&tile) {
             Some(entities) => &entities.objects,
@@ -63,9 +67,19 @@ impl TileIndex {
     }
 }
 
+impl TileIndexEntry {
+    pub fn objects(&self) -> &[Entity] {
+        &self.objects
+    }
+
+    pub fn tile(&self) -> Option<Entity> {
+        self.tile
+    }
+}
+
 #[test]
 fn test_index_entry_size() {
-    assert_eq!(std::mem::size_of::<(TilePosition, TileIndexValue)>(), 64);
+    assert_eq!(std::mem::size_of::<(TilePosition, TileIndexEntry)>(), 64);
 }
 
 #[test]

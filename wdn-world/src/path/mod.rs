@@ -3,6 +3,8 @@ pub mod find;
 pub mod flow;
 pub mod region;
 pub mod section;
+#[cfg(test)]
+pub mod tests;
 
 use std::any::type_name_of_val;
 

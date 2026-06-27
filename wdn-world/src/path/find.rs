@@ -163,12 +163,18 @@ impl PathParam<'_, '_> {
                     if position == goal {
                         path.entries.pop();
                     } else {
-                        let region_tiles = self.regions.get(region).expect("invalid region");
+                        let position_index = self
+                            .regions
+                            .get(region)
+                            .expect("invalid region")
+                            .get_tile_index(position.layer_offset())
+                            .expect("position not in region");
+
                         return Some(
                             self.flow_fields
                                 .get(flow_field)
                                 .ok()?
-                                .get(region_tiles, position.layer_offset())?
+                                .get(position_index)?
                                 .dir(),
                         );
                     }
@@ -261,13 +267,17 @@ impl PathParam<'_, '_> {
         match node.id {
             SearchNodeId::Position(region, position) => {
                 let region_tiles = self.regions.get(region).expect("invalid region");
+                let node_position_index = region_tiles
+                    .get_tile_index(position.layer_offset())
+                    .expect("position not in region");
+
                 for region_door in region_tiles.doors() {
                     let flow_field = self
                         .flow_fields
                         .get(region_door.flow_field())
                         .expect("invalid flow field");
                     let cost = flow_field
-                        .get(region_tiles, node.position.layer_offset())
+                        .get(node_position_index)
                         .expect("position not in flow field")
                         .cost();
                     f(
@@ -306,7 +316,7 @@ impl PathParam<'_, '_> {
                         }
 
                         let cost = flow_field
-                            .get(region_tiles, region_door.position())
+                            .get(region_door.index())
                             .expect("position not in flow field")
                             .cost();
                         f(
@@ -321,8 +331,12 @@ impl PathParam<'_, '_> {
                     }
 
                     if goal_id.in_region(door_region.region()) {
+                        let goal_index = region_tiles
+                            .get_tile_index(goal.layer_offset())
+                            .expect("goal not in region");
+
                         let cost = flow_field
-                            .get(region_tiles, goal.layer_offset())
+                            .get(goal_index)
                             .expect("goal not in flow field")
                             .cost();
                         f(

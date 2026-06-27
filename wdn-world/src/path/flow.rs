@@ -195,8 +195,7 @@ impl FlowField {
         })
     }
 
-    pub fn get(&self, tiles: &RegionTiles, position: TileLayerOffset) -> Option<FlowFieldEntry> {
-        let index = tiles.get_tile_index(position)?;
+    pub fn get(&self, index: RegionTileIndex) -> Option<FlowFieldEntry> {
         if index == self.door_index {
             return None;
         }
