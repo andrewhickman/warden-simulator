@@ -24,7 +24,7 @@ wdn-physics = { version = "0.1.0", path = "../wdn-physics" }
 [dev-dependencies]
 approx = "0.5.1"
 bevy_math = { version = "0.19.0", features = ["approx"] }
-criterion = "0.7.0"
+criterion = "0.8.2"
 
 [[bench]]
 name = "flow_field_generate"
