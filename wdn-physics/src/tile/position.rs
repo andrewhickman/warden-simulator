@@ -7,7 +7,7 @@ use tracing::error;
 use crate::tile::{CHUNK_SIZE, CHUNK_SIZE_SQUARED, Tile, index::TileIndex};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Component)]
-#[component(immutable, on_insert = TilePosition::on_insert, on_replace = TilePosition::on_replace)]
+#[component(immutable, on_insert = TilePosition::on_insert, on_discard = TilePosition::on_discard)]
 pub struct TilePosition {
     layer: Entity,
     position: IVec2,
@@ -121,7 +121,7 @@ impl TilePosition {
         }
     }
 
-    fn on_replace(mut world: DeferredWorld, context: HookContext) {
+    fn on_discard(mut world: DeferredWorld, context: HookContext) {
         let entity = world.entity(context.entity);
         let is_tile = entity.contains::<Tile>();
 

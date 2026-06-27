@@ -121,8 +121,14 @@ pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
     assert_eq!(layout.add_texture(DOOR_VERTICAL_RECT), DOOR_VERTICAL_INDEX);
 
     commands.insert_resource(AssetHandles {
-        tileset: assets.load_with_settings("image/tileset.png", configure_tileset),
-        atlas: assets.load_with_settings("image/atlas.png", configure_atlas),
+        tileset: assets
+            .load_builder()
+            .with_settings(configure_tileset)
+            .load("image/tileset.png"),
+        atlas: assets
+            .load_builder()
+            .with_settings(configure_atlas)
+            .load("image/atlas.png"),
         layout: assets.add(layout),
     });
 }

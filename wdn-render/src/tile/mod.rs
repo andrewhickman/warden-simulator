@@ -133,7 +133,7 @@ impl TileChunkSpriteParam<'_, '_> {
             return;
         };
 
-        let Some(image) = self.images.get_mut(material.tile_data.id()) else {
+        let Some(mut image) = self.images.get_mut(material.tile_data.id()) else {
             error!("image asset not found for chunk {chunk:?}");
             return;
         };

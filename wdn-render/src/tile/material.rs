@@ -58,7 +58,7 @@ impl Material2d for TileChunkMaterial {
             .depth_stencil
             .as_mut()
             .expect("no depth stencil for Mesh2d pipeline")
-            .depth_write_enabled = true;
+            .depth_write_enabled = Some(true);
         Ok(())
     }
 }
