@@ -12,8 +12,6 @@ use crate::{
     tile::position::TilePosition,
 };
 
-pub struct SyncPlugin;
-
 #[derive(QueryData, Debug)]
 #[query_data(mutable)]
 pub struct SyncQuery {

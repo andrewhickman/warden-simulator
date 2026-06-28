@@ -64,6 +64,14 @@ impl Default for TileMaterial {
 }
 
 impl TileKind {
+    pub fn is_empty(&self) -> bool {
+        matches!(self, TileKind::Empty)
+    }
+
+    pub fn bits(&self) -> u16 {
+        *self as u16
+    }
+
     pub fn from_bits(bits: u16) -> Self {
         match bits {
             0b00 => TileKind::Empty,
@@ -72,26 +80,9 @@ impl TileKind {
             _ => panic!("invalid TileKind bits: {bits}"),
         }
     }
-
-    pub fn is_empty(&self) -> bool {
-        matches!(self, TileKind::Empty)
-    }
-
-    pub fn bits(&self) -> u16 {
-        *self as u16
-    }
 }
 
 impl TileMoveSpeed {
-    fn from_bits(bits: u16) -> Self {
-        match bits {
-            0b00 => TileMoveSpeed::Medium,
-            0b01 => TileMoveSpeed::Slow,
-            0b10 => TileMoveSpeed::Fast,
-            _ => panic!("invalid TileMoveSpeed bits: {bits}"),
-        }
-    }
-
     pub fn factor(&self) -> f32 {
         match self {
             TileMoveSpeed::Slow => 0.6,
@@ -102,6 +93,15 @@ impl TileMoveSpeed {
 
     pub fn bits(&self) -> u16 {
         *self as u16
+    }
+
+    pub fn from_bits(bits: u16) -> Self {
+        match bits {
+            0b00 => TileMoveSpeed::Medium,
+            0b01 => TileMoveSpeed::Slow,
+            0b10 => TileMoveSpeed::Fast,
+            _ => panic!("invalid TileMoveSpeed bits: {bits}"),
+        }
     }
 }
 

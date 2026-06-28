@@ -13,7 +13,7 @@ use wdn_physics::tile::material::TileMaterial;
 use wdn_physics::tile::storage::TileChunk;
 use wdn_physics::tile::{
     TilePlugin,
-    material::TileKind,
+    material::{TileKind, TileMoveSpeed},
     position::{TileChunkOffset, TilePosition},
     storage::{TileMap, TileStorage, TileStorageMut},
 };
@@ -117,6 +117,27 @@ fn region_update2() {
         Some(outside)
     );
     assert_ne!(new_inside, outside);
+}
+
+#[test]
+fn region_update_move_speed() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 16, 16);
+
+    clear_tile(&mut app, center);
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 1);
+    let initial_region = tile_region(&mut app, center).unwrap();
+
+    set_tile_move_speed(&mut app, center, TileMoveSpeed::Slow);
+    update_regions(&mut app);
+
+    let new_regions = get_regions(&mut app);
+    assert_eq!(new_regions.len(), 1);
+    let new_region = tile_region(&mut app, center).unwrap();
+    assert_ne!(new_region, initial_region);
 }
 
 #[test]
@@ -2926,6 +2947,14 @@ fn set_wall_tile(app: &mut App, position: TilePosition) {
 
 fn set_door_tile(app: &mut App, position: TilePosition) -> Entity {
     app.world_mut().spawn((Door::default(), position)).id()
+}
+
+fn set_tile_move_speed(app: &mut App, position: TilePosition, move_speed: TileMoveSpeed) {
+    app.world_mut()
+        .run_system_once(move |mut storage: TileStorageMut| {
+            storage.set_material(position, TileMaterial::new(TileKind::Empty, move_speed, 0));
+        })
+        .unwrap();
 }
 
 fn clear_tile(app: &mut App, position: TilePosition) {

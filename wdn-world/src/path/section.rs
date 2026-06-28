@@ -5,7 +5,7 @@ use bevy_platform::collections::{HashMap, HashSet, hash_map};
 use wdn_physics::tile::{
     CHUNK_SIZE, CHUNK_SIZE_SQUARED,
     adjacency::Adjacency,
-    material::TileKind,
+    material::{TileKind, TileMoveSpeed},
     position::{TileChunkOffset, TilePosition},
     storage::TileChunk,
 };
@@ -58,7 +58,7 @@ pub fn update_chunk_sections(
                 let tile = chunk.get(offset);
 
                 if tile.kind() == TileKind::Empty {
-                    set.insert(offset, tile.door_adjacency());
+                    set.insert(offset, tile.door_adjacency(), tile.move_speed());
                 } else {
                     set.remove(offset);
                 }
@@ -257,7 +257,7 @@ impl TileChunkDisjointSet {
         self.find(offset.west()?)
     }
 
-    fn insert(&mut self, offset: TileChunkOffset, doors: Adjacency) {
+    fn insert(&mut self, offset: TileChunkOffset, doors: Adjacency, speed: TileMoveSpeed) {
         let section = match (self.find_west(offset), self.find_south(offset)) {
             (Some(west_section), Some(north_section)) => {
                 if west_section != north_section {
@@ -270,7 +270,7 @@ impl TileChunkDisjointSet {
             (None, None) => offset,
         };
 
-        self.entries[offset.index()] = TileChunkDisjointSetEntry::new(section, doors);
+        self.entries[offset.index()] = TileChunkDisjointSetEntry::new(section, doors, speed);
     }
 
     fn remove(&mut self, offset: TileChunkOffset) {
@@ -282,7 +282,7 @@ impl TileChunkDisjointSetEntry {
     const EMPTY: TileChunkDisjointSetEntry = TileChunkDisjointSetEntry(0);
     const SOLID: TileChunkDisjointSetEntry = TileChunkDisjointSetEntry(u16::MAX);
 
-    fn new(section: TileChunkOffset, doors: Adjacency) -> Self {
+    fn new(section: TileChunkOffset, doors: Adjacency, move_speed: TileMoveSpeed) -> Self {
         let mut bits = section.index_u16();
         if doors.contains(Adjacency::NORTH) {
             bits |= 1 << 10;
@@ -296,6 +296,7 @@ impl TileChunkDisjointSetEntry {
         if doors.contains(Adjacency::WEST) {
             bits |= 1 << 13;
         }
+        bits |= (move_speed as u16) << 14;
 
         TileChunkDisjointSetEntry(bits)
     }
@@ -339,6 +340,10 @@ impl TileChunkDisjointSetEntry {
         adjacency
     }
 
+    fn move_speed(self) -> TileMoveSpeed {
+        TileMoveSpeed::from_bits((self.0 >> 14) & 0b11)
+    }
+
     fn invalid_sections(self, other: Self) -> impl Iterator<Item = TileChunkOffset> {
         [self.try_section(), other.try_section()]
             .into_iter()
@@ -355,6 +360,7 @@ impl fmt::Debug for TileChunkDisjointSetEntry {
                 .field(&self.section().x())
                 .field(&self.section().y())
                 .field(&self.door_adjacency())
+                .field(&self.move_speed())
                 .finish()
         }
     }
@@ -364,14 +370,21 @@ impl fmt::Debug for TileChunkDisjointSetEntry {
 fn test_pack_disjoint_set_entry() {
     for offset in TileChunkOffset::iter() {
         for doors in Adjacency::values() {
-            let entry = TileChunkDisjointSetEntry::new(offset, doors);
-            assert_eq!(entry.section(), offset);
-            assert_eq!(
-                entry.door_adjacency(),
-                doors.intersection(
-                    Adjacency::NORTH | Adjacency::EAST | Adjacency::SOUTH | Adjacency::WEST
-                )
-            );
+            for move_speed in [
+                TileMoveSpeed::Slow,
+                TileMoveSpeed::Medium,
+                TileMoveSpeed::Fast,
+            ] {
+                let entry = TileChunkDisjointSetEntry::new(offset, doors, move_speed);
+                assert_eq!(entry.section(), offset);
+                assert_eq!(entry.move_speed(), move_speed);
+                assert_eq!(
+                    entry.door_adjacency(),
+                    doors.intersection(
+                        Adjacency::NORTH | Adjacency::EAST | Adjacency::SOUTH | Adjacency::WEST
+                    )
+                );
+            }
         }
     }
 }
