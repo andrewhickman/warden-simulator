@@ -13,7 +13,7 @@ use wdn_physics::tile::{
 #[derive(Component, Default, Debug)]
 pub struct TileChunkSections {
     sections: HashMap<TileChunkOffset, TileChunkSection>,
-    set: TileChunkDisjointSet,
+    set: Box<TileChunkDisjointSet>,
 }
 
 #[derive(Debug)]
@@ -103,7 +103,7 @@ pub fn update_chunk_sections(
                 }
             }
 
-            chunk_sections.set = set;
+            *chunk_sections.set = set;
         });
 
     Ok(())

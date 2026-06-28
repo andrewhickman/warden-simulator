@@ -29,3 +29,7 @@ criterion = "0.8.2"
 [[bench]]
 name = "flow_field_generate"
 harness = false
+
+[[bench]]
+name = "path_section"
+harness = false
