@@ -27,7 +27,7 @@ pub fn update_door_regions(
         .for_each(|(region_id, region_tiles)| {
             let dead_end = region_tiles.door_count() == 1;
             for region_door in region_tiles.doors() {
-                let mut door_regions = doors.get_mut(region_door.door()).unwrap();
+                let mut door_regions = doors.get_mut(region_door.door()).expect("invalid door");
                 door_regions.insert(
                     region_id,
                     region_door.flow_field(),

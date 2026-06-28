@@ -11,7 +11,6 @@ use bevy_ecs::{
 };
 use bevy_log::warn;
 use bevy_math::prelude::*;
-use bevy_platform::collections::HashMap;
 use wdn_physics::tile::{
     adjacency::Adjacency,
     material::TileMoveSpeed,
@@ -20,7 +19,6 @@ use wdn_physics::tile::{
 
 use crate::path::region::{RegionTile, RegionTileIndex, RegionTiles};
 
-pub const COST_MULTIPLIER: f32 = 5.0;
 pub const SLOW_DIAGONAL_COST: u32 = 10;
 pub const SLOW_CARDINAL_COST: u32 = 7;
 pub const MEDIUM_DIAGONAL_COST: u32 = 7;
@@ -98,21 +96,13 @@ pub fn update_flow_fields(
     flow_fields
         .par_iter_many_unique_mut(added_flow_fields.iter())
         .for_each(|(parent, mut flow)| {
-            let tiles = regions.get(parent.parent()).expect("region not found");
-            flow.generate(tiles);
+            let tiles = regions.get(parent.parent()).expect("invalid region");
+            flow.populate_cost(tiles);
             flow.populate_flow(tiles);
         });
 
     let elapsed = start.elapsed();
     if elapsed > std::time::Duration::from_secs_f32(0.001953125) {
-        let mut regions = HashMap::<Entity, (usize, usize)>::new();
-
-        for (parent, flow) in flow_fields.iter_many(added_flow_fields.iter()) {
-            let entry = regions.entry(parent.parent()).or_insert((0, 0));
-            entry.0 += 1;
-            entry.1 = flow.len();
-        }
-
         warn!(
             "updating {} flow fields took {:.2?}",
             added_flow_fields.added_flow_fields.len(),
@@ -152,13 +142,14 @@ impl FlowField {
         door_position: TilePosition,
         door_index: RegionTileIndex,
         door_adjacency: Adjacency,
+        size: usize,
     ) -> Self {
         FlowField {
             door_position,
             door_index,
             door_adjacency,
-            flow: Vec::default(),
-            costs: CostField::new(0),
+            flow: Vec::with_capacity(size),
+            costs: CostField::new(size),
         }
     }
 
@@ -210,8 +201,7 @@ impl FlowField {
         self.costs.len() - 1
     }
 
-    pub fn generate(&mut self, tiles: &RegionTiles) {
-        self.costs.resize(tiles.size());
+    pub fn populate_cost(&mut self, tiles: &RegionTiles) {
         self.costs.generate::<FlowPolicy>(
             &FlowPolicy,
             tiles,
@@ -222,8 +212,6 @@ impl FlowField {
     }
 
     pub fn populate_flow(&mut self, tiles: &RegionTiles) {
-        self.flow.reserve(tiles.size());
-
         for (index, tile) in tiles.tiles() {
             let position = tile.position();
             if position == self.door_position.layer_offset() {
@@ -285,10 +273,6 @@ impl CostField {
         }
     }
 
-    pub fn resize(&mut self, size: usize) {
-        self.costs.resize(size, u32::MAX);
-    }
-
     pub fn generate<S: CostPolicy>(
         &mut self,
         policy: &S,
@@ -297,6 +281,8 @@ impl CostField {
         start_position: TileLayerOffset,
         start_adjacency: Adjacency,
     ) {
+        debug_assert_eq!(tiles.size(), self.costs.len());
+
         let mut open = S::Queue::default();
 
         let start_priority = policy.priority(start_position, 0);

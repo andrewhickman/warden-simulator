@@ -54,28 +54,34 @@ pub fn follow_pawn_paths(
                 let desired_dir = loop {
                     match &mut pawn_path.state {
                         PathState::Active(path) if paths.is_valid(path) => {
-                            if let Some(dir) = paths.path_dir(path, tile_position) {
-                                break dir;
-                            } else {
-                                warn!(
-                                    "Failed to get path direction at position {:?}",
-                                    tile_position
-                                );
-                                pawn_path.state = PathState::Pending;
+                            match paths.path_dir(path, tile_position).unwrap() {
+                                Some(dir) => {
+                                    break dir;
+                                }
+                                None => {
+                                    warn!(
+                                        "Failed to get path direction at position {:?}",
+                                        tile_position
+                                    );
+                                    pawn_path.state = PathState::Pending;
+                                }
                             }
                         }
                         PathState::Finished | PathState::Failed => {
                             return;
                         }
                         PathState::Active(_) | PathState::Pending => {
-                            if let Some(new_path) = paths.find_path(tile_position, target) {
-                                pawn_path.state = PathState::Active(new_path);
-                            } else {
-                                warn!(
-                                    "Failed to find path from {:?} to {:?}",
-                                    tile_position, target
-                                );
-                                pawn_path.state = PathState::Failed;
+                            match paths.find_path(tile_position, target).unwrap() {
+                                Some(new_path) => {
+                                    pawn_path.state = PathState::Active(new_path);
+                                }
+                                None => {
+                                    warn!(
+                                        "Failed to find path from {:?} to {:?}",
+                                        tile_position, target
+                                    );
+                                    pawn_path.state = PathState::Failed;
+                                }
                             }
                         }
                     };

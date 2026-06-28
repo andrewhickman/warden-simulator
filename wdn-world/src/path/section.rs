@@ -138,11 +138,11 @@ impl TileChunkSections {
     }
 
     pub fn section(&self, offset: TileChunkOffset) -> &TileChunkSection {
-        &self.sections[&offset]
+        self.sections.get(&offset).expect("invalid section id")
     }
 
     pub fn section_mut(&mut self, offset: TileChunkOffset) -> &mut TileChunkSection {
-        self.sections.get_mut(&offset).unwrap()
+        self.sections.get_mut(&offset).expect("invalid section id")
     }
 }
 

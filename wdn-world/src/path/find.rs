@@ -12,7 +12,7 @@ use wdn_physics::tile::{
 
 use crate::path::{
     door::DoorRegions,
-    flow::{COST_MULTIPLIER, CostField, FlowField, PathPolicy, octile_cost},
+    flow::{CostField, FlowField, PathPolicy, octile_cost},
     region::RegionTiles,
     section::TileChunkSections,
 };
@@ -77,20 +77,24 @@ enum SearchEntryPath {
 }
 
 impl PathParam<'_, '_> {
-    pub fn find_path(&self, start: TilePosition, goal: TilePosition) -> Option<Path> {
+    pub fn find_path(&self, start: TilePosition, goal: TilePosition) -> Result<Option<Path>> {
         if start.layer() != goal.layer() {
-            return None;
+            return Err("start and goal must be on the same layer".into());
         }
 
         if start == goal {
-            return Some(Path {
+            return Ok(Some(Path {
                 entries: vec![],
                 cost: 0,
-            });
+            }));
         }
 
-        let start_id = self.position_id(start)?;
-        let goal_id = self.position_id(goal)?;
+        let start_id = self
+            .position_id(start)
+            .ok_or("start position not in valid region or door")?;
+        let goal_id = self
+            .position_id(goal)
+            .ok_or("goal position not in valid region or door")?;
 
         let mut open: BinaryHeap<SearchNode> = BinaryHeap::new();
         let mut map: HashMap<SearchNodeId, SearchEntry> = HashMap::default();
@@ -104,7 +108,7 @@ impl PathParam<'_, '_> {
 
         while let Some(node) = open.pop() {
             if node.id == goal_id {
-                return Some(self.collect_path(map, goal_id));
+                return Ok(Some(self.collect_path(map, goal_id)?));
             }
 
             if let Some(entry) = map.get(&node.id) {
@@ -138,10 +142,10 @@ impl PathParam<'_, '_> {
                     cost: new_cost,
                     estimated_cost,
                 });
-            });
+            })?;
         }
 
-        None
+        Ok(None)
     }
 
     pub fn is_valid(&self, path: &Path) -> bool {
@@ -152,7 +156,7 @@ impl PathParam<'_, '_> {
         }
     }
 
-    pub fn path_dir(&self, path: &mut Path, position: TilePosition) -> Option<Dir2> {
+    pub fn path_dir(&self, path: &mut Path, position: TilePosition) -> Result<Option<Dir2>> {
         loop {
             match path.entries.last_mut() {
                 Some(&mut PathEntry::ToDoor {
@@ -163,20 +167,16 @@ impl PathParam<'_, '_> {
                     if position == goal {
                         path.entries.pop();
                     } else {
-                        let position_index = self
-                            .regions
-                            .get(region)
-                            .expect("invalid region")
+                        let region_tiles = self.regions.get(region)?;
+                        let position_index = region_tiles
                             .get_tile_index(position.layer_offset())
-                            .expect("position not in region");
+                            .ok_or("position not in region")?;
 
-                        return Some(
-                            self.flow_fields
-                                .get(flow_field)
-                                .ok()?
-                                .get(position_index)?
-                                .dir(),
-                        );
+                        let flow_field_data = self.flow_fields.get(flow_field)?;
+                        let entry = flow_field_data
+                            .get(position_index)
+                            .ok_or("position not in flow field")?;
+                        return Ok(Some(entry.dir()));
                     }
                 }
                 Some(PathEntry::InRegion {
@@ -186,21 +186,21 @@ impl PathParam<'_, '_> {
                 }) => {
                     if let Some((current_position, current_dir)) = current {
                         if *current_position == position {
-                            return Some(*current_dir);
+                            return Ok(Some(*current_dir));
                         }
                     }
 
-                    let region_tiles = self.regions.get(*region).expect("invalid region");
+                    let region_tiles = self.regions.get(*region)?;
                     let position_index = region_tiles
                         .get_tile_index(position.layer_offset())
-                        .expect("position not in region");
+                        .ok_or("position not in region")?;
 
                     let dir = cost_field.flow_vector(position_index, &region_tiles[position_index]);
 
                     *current = Some((position, dir));
-                    return Some(dir);
+                    return Ok(Some(dir));
                 }
-                None => return None,
+                None => return Ok(None),
             }
         }
     }
@@ -210,17 +210,17 @@ impl PathParam<'_, '_> {
         region: Entity,
         start: TilePosition,
         goal: TilePosition,
-    ) -> (CostField, u32) {
-        let region_tiles = self.regions.get(region).expect("invalid region");
+    ) -> Result<(CostField, u32)> {
+        let region_tiles = self.regions.get(region)?;
 
         let start_position = start.layer_offset();
         let start_index = region_tiles
             .get_tile_index(start_position)
-            .expect("start not in region");
+            .ok_or("start position not in region")?;
         let goal_position = goal.layer_offset();
         let goal_index = region_tiles
             .get_tile_index(goal_position)
-            .expect("goal not in region");
+            .ok_or("goal position not in region")?;
         let goal_adjacency = self.storage.get_adjacency(goal).walls().complement();
 
         let mut cost_field = CostField::new(region_tiles.size());
@@ -241,7 +241,7 @@ impl PathParam<'_, '_> {
 
         let cost = cost_field[start_index];
 
-        (cost_field, cost)
+        Ok((cost_field, cost))
     }
 
     fn position_id(&self, position: TilePosition) -> Option<SearchNodeId> {
@@ -263,22 +263,19 @@ impl PathParam<'_, '_> {
         goal: TilePosition,
         goal_id: SearchNodeId,
         mut f: impl FnMut(SearchNodeId, TilePosition, SearchEntryPath, u32),
-    ) {
+    ) -> Result<()> {
         match node.id {
             SearchNodeId::Position(region, position) => {
-                let region_tiles = self.regions.get(region).expect("invalid region");
+                let region_tiles = self.regions.get(region)?;
                 let node_position_index = region_tiles
                     .get_tile_index(position.layer_offset())
-                    .expect("position not in region");
+                    .ok_or("position not in region")?;
 
                 for region_door in region_tiles.doors() {
-                    let flow_field = self
-                        .flow_fields
-                        .get(region_door.flow_field())
-                        .expect("invalid flow field");
+                    let flow_field = self.flow_fields.get(region_door.flow_field())?;
                     let cost = flow_field
                         .get(node_position_index)
-                        .expect("position not in flow field")
+                        .ok_or("position not in flow field")?
                         .cost();
                     f(
                         SearchNodeId::Door(region_door.door()),
@@ -289,7 +286,8 @@ impl PathParam<'_, '_> {
                 }
 
                 if goal_id.in_region(region) {
-                    let (cost_field, cost) = self.generate_cost_field_path(region, position, goal);
+                    let (cost_field, cost) =
+                        self.generate_cost_field_path(region, position, goal)?;
                     f(
                         goal_id,
                         goal,
@@ -299,16 +297,10 @@ impl PathParam<'_, '_> {
                 }
             }
             SearchNodeId::Door(door) => {
-                let door_regions = self.doors.get(door).expect("invalid door");
+                let door_regions = self.doors.get(door)?;
                 for door_region in door_regions.iter() {
-                    let region_tiles = self
-                        .regions
-                        .get(door_region.region())
-                        .expect("invalid region");
-                    let flow_field = self
-                        .flow_fields
-                        .get(door_region.flow_field())
-                        .expect("invalid flow field");
+                    let region_tiles = self.regions.get(door_region.region())?;
+                    let flow_field = self.flow_fields.get(door_region.flow_field())?;
 
                     for region_door in region_tiles.doors() {
                         if region_door.door() == door {
@@ -317,7 +309,7 @@ impl PathParam<'_, '_> {
 
                         let cost = flow_field
                             .get(region_door.index())
-                            .expect("position not in flow field")
+                            .ok_or("position not in flow field")?
                             .cost();
                         f(
                             SearchNodeId::Door(region_door.door()),
@@ -333,11 +325,11 @@ impl PathParam<'_, '_> {
                     if goal_id.in_region(door_region.region()) {
                         let goal_index = region_tiles
                             .get_tile_index(goal.layer_offset())
-                            .expect("goal not in region");
+                            .ok_or("goal not in region")?;
 
                         let cost = flow_field
                             .get(goal_index)
-                            .expect("goal not in flow field")
+                            .ok_or("goal not in flow field")?
                             .cost();
                         f(
                             goal_id,
@@ -349,17 +341,42 @@ impl PathParam<'_, '_> {
                 }
             }
         }
+        Ok(())
     }
 
     fn collect_path(
         &self,
         mut map: HashMap<SearchNodeId, SearchEntry>,
         goal: SearchNodeId,
-    ) -> Path {
+    ) -> Result<Path> {
         let mut entries = Vec::new();
 
         let mut current = goal;
-        let cost = map[&current].cost;
+        let entry = map.remove(&current).ok_or("goal not found in search map")?;
+        let cost = entry.cost;
+
+        let path_entry = match entry.path {
+            SearchEntryPath::FlowField(region, flow_field) => PathEntry::ToDoor {
+                region,
+                flow_field,
+                goal: entry.position,
+            },
+            SearchEntryPath::CostField(region, cost_field) => PathEntry::InRegion {
+                region,
+                cost_field,
+                current: None,
+            },
+            SearchEntryPath::LazyCostField(region, start) => PathEntry::InRegion {
+                region: region,
+                cost_field: self
+                    .generate_cost_field_path(region, start, entry.position)?
+                    .0,
+                current: None,
+            },
+        };
+
+        entries.push(path_entry);
+        current = entry.parent;
 
         while let Some(entry) = map.remove(&current) {
             let path_entry = match entry.path {
@@ -376,7 +393,7 @@ impl PathParam<'_, '_> {
                 SearchEntryPath::LazyCostField(region, start) => PathEntry::InRegion {
                     region: region,
                     cost_field: self
-                        .generate_cost_field_path(region, start, entry.position)
+                        .generate_cost_field_path(region, start, entry.position)?
                         .0,
                     current: None,
                 },
@@ -386,7 +403,7 @@ impl PathParam<'_, '_> {
             current = entry.parent;
         }
 
-        Path { cost, entries }
+        Ok(Path { cost, entries })
     }
 }
 
@@ -395,10 +412,6 @@ fn octile_cost_heuristic(start: TileLayerOffset, goal: TileLayerOffset) -> u32 {
 }
 
 impl Path {
-    pub fn cost(&self) -> f32 {
-        self.cost as f32 * COST_MULTIPLIER.recip()
-    }
-
     pub fn iter(&self) -> impl Iterator<Item = &PathEntry> {
         self.entries.iter().rev()
     }
@@ -406,11 +419,15 @@ impl Path {
     pub fn next(&self) -> Option<&PathEntry> {
         self.entries.last()
     }
+
+    pub fn cost(&self) -> u32 {
+        self.cost
+    }
 }
 
 impl PartialEq for SearchNode {
-    fn eq(&self, _: &Self) -> bool {
-        unimplemented!()
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
     }
 }
 

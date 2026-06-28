@@ -170,7 +170,7 @@ pub fn update_region_tiles(
         .par_iter_many_unique_mut(added_regions.iter())
         .for_each(|(region, mut region_tiles)| {
             for (chunk_id, section_offset) in region.sections() {
-                let (chunk, chunk_sections) = chunks.get(chunk_id).unwrap();
+                let (chunk, chunk_sections) = chunks.get(chunk_id).expect("invalid chunk");
                 let section = chunk_sections.section(section_offset.chunk_offset());
 
                 region_tiles.reserve(section.size(), 8);
@@ -225,6 +225,7 @@ pub fn update_region_doors(
                             TilePosition::from((region.layer(), door_position)),
                             door.index,
                             door_adjacency,
+                            tiles.len(),
                         ),
                     ))
                     .id();
