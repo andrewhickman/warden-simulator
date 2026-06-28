@@ -17,7 +17,7 @@ use wdn_physics::{
     layer::Layer,
     tile::{
         CHUNK_SIZE,
-        material::TileMaterial,
+        material::TileKind,
         position::{TileChunkOffset, TileChunkPosition},
         storage::{TileChunk, TileData},
     },
@@ -159,12 +159,12 @@ fn pack_ground_tile(offset: TileChunkOffset, _tile: TileData) -> PackedTileData 
 
 fn pack_wall_tile(_: TileChunkOffset, tile: TileData) -> PackedTileData {
     let index = wall::sprite_offset(
-        tile.material(),
+        tile.kind(),
         tile.wall_adjacency(),
         tile.door_adjacency(),
     );
 
-    let depth = if tile.material() == TileMaterial::Wall {
+    let depth = if tile.kind() == TileKind::Wall {
         0
     } else {
         (WALL_TOP_LAYER - WALL_BASE_LAYER) as u16

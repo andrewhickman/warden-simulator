@@ -14,7 +14,7 @@ use crate::{WorldSystems, path::door::DoorRegions};
 pub struct DoorPlugin;
 
 #[derive(Component, Clone, Copy, Debug, Default)]
-#[require(TileCollider, TileMaterial::Door, DoorRegions)]
+#[require(TileCollider, TileMaterial::DOOR, DoorRegions)]
 pub struct Door {
     state: DoorState,
 }

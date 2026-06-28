@@ -9,10 +9,11 @@ use wdn_physics::layer::Layer;
 use wdn_physics::tile::CHUNK_SIZE;
 use wdn_physics::tile::adjacency::Adjacency;
 use wdn_physics::tile::index::TileIndex;
+use wdn_physics::tile::material::TileMaterial;
 use wdn_physics::tile::storage::TileChunk;
 use wdn_physics::tile::{
     TilePlugin,
-    material::TileMaterial,
+    material::TileKind,
     position::{TileChunkOffset, TilePosition},
     storage::{TileMap, TileStorage, TileStorageMut},
 };
@@ -2918,7 +2919,7 @@ fn make_app() -> (App, Entity) {
 fn set_wall_tile(app: &mut App, position: TilePosition) {
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(position, TileMaterial::Wall);
+            storage.set_material(position, TileMaterial::WALL);
         })
         .unwrap();
 }
@@ -2934,7 +2935,7 @@ fn clear_tile(app: &mut App, position: TilePosition) {
                 commands.entity(tile).despawn();
             }
 
-            storage.set_material(position, TileMaterial::Empty);
+            storage.set_material(position, TileMaterial::EMPTY);
         })
         .unwrap();
 }
@@ -3052,7 +3053,7 @@ fn validate_regions(
             .map(|chunk| {
                 chunk
                     .tiles()
-                    .filter(|tile| tile.1.material() == TileMaterial::Empty)
+                    .filter(|tile| tile.1.kind() == TileKind::Empty)
                     .count()
             })
             .sum::<usize>(),
@@ -3078,11 +3079,11 @@ fn validate_regions(
     for (chunk_id, chunk, chunk_sections) in &chunks {
         for offset in TileChunkOffset::iter() {
             let position = TilePosition::from((chunk.position(), offset));
-            match chunk.material(offset) {
-                TileMaterial::Wall => {
+            match chunk.kind(offset) {
+                TileKind::Wall => {
                     assert!(chunk_sections.region(offset).is_none());
                 }
-                TileMaterial::Door => {
+                TileKind::Door => {
                     assert!(chunk_sections.region(offset).is_none());
 
                     let door_id = index.get_tile(position).unwrap();
@@ -3098,9 +3099,7 @@ fn validate_regions(
                         {
                             let (_, neighbor_chunk, neighbor_sections) =
                                 chunks.get(neighbor_chunk_id).unwrap();
-                            if neighbor_chunk.material(neighbor.chunk_offset())
-                                == TileMaterial::Empty
-                            {
+                            if neighbor_chunk.kind(neighbor.chunk_offset()) == TileKind::Empty {
                                 let region =
                                     neighbor_sections.region(neighbor.chunk_offset()).unwrap();
                                 let region_tiles = regions.get(region).unwrap().2;
@@ -3121,7 +3120,7 @@ fn validate_regions(
                         }
                     }
                 }
-                TileMaterial::Empty => {
+                TileKind::Empty => {
                     let region = chunk_sections.region(offset).unwrap();
 
                     for neighbor in [
@@ -3134,9 +3133,7 @@ fn validate_regions(
                         {
                             let (_, neighbor_chunk, neighbor_sections) =
                                 chunks.get(neighbor_chunk_id).unwrap();
-                            if neighbor_chunk.material(neighbor.chunk_offset())
-                                == TileMaterial::Empty
-                            {
+                            if neighbor_chunk.kind(neighbor.chunk_offset()) == TileKind::Empty {
                                 let neighbor_region =
                                     neighbor_sections.region(neighbor.chunk_offset()).unwrap();
                                 assert_eq!(neighbor_region, region);
@@ -3165,7 +3162,7 @@ fn validate_regions(
                     );
                 }
 
-                assert_eq!(storage.get_material(door_position), TileMaterial::Door);
+                assert_eq!(storage.get_kind(door_position), TileKind::Door);
             }
 
             let (_, region, _) = regions.get(region_id).unwrap();

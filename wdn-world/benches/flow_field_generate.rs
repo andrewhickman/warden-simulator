@@ -33,9 +33,9 @@ fn bench_flow_field_generate(c: &mut Criterion) {
             for x in 0..WIDTH {
                 for y in 0..HEIGHT {
                     if y > HEIGHT / 4 && y < HEIGHT / 4 * 3 && x % 16 == 0 {
-                        storage.set_material(TilePosition::new(layer, x, y), TileMaterial::Wall);
+                        storage.set_material(TilePosition::new(layer, x, y), TileMaterial::WALL);
                     } else {
-                        storage.set_material(TilePosition::new(layer, x, y), TileMaterial::Empty);
+                        storage.set_material(TilePosition::new(layer, x, y), TileMaterial::EMPTY);
                     }
                 }
             }

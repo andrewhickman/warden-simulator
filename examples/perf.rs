@@ -17,7 +17,7 @@ use wdn_physics::{
     PhysicsPlugin as WdnPhysicsPlugin,
     kinematics::Position,
     layer::Layer,
-    tile::{material::TileMaterial, storage::TileStorageMut},
+    tile::{material::TileKind, storage::TileStorageMut},
 };
 use wdn_render::RenderPlugin as WdnRenderPlugin;
 use wdn_save::SavePlugin as WdnSavePlugin;
@@ -215,7 +215,7 @@ fn export_regions_image_once(
             let color = if tile.is_door() {
                 door_count += 1;
                 [255, 255, 255]
-            } else if tile.material() == TileMaterial::Wall {
+            } else if tile.kind() == TileKind::Wall {
                 region_size += 1;
                 [0, 0, 0]
             } else {

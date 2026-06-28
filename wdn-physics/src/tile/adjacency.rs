@@ -100,7 +100,7 @@ mod tests {
         tile::{
             Tile, TilePlugin,
             adjacency::{Adjacency, TileAdjacency},
-            material::TileMaterial,
+            material::{TileKind, TileMaterial},
             position::TilePosition,
             storage::{TileStorage, TileStorageMut},
         },
@@ -116,14 +116,14 @@ mod tests {
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
-                storage.set_material(position.west(), TileMaterial::Wall);
-                storage.set_material(position.east(), TileMaterial::Wall);
+                storage.set_material(position.west(), TileMaterial::WALL);
+                storage.set_material(position.east(), TileMaterial::WALL);
             })
             .unwrap();
 
         let tile = app
             .world_mut()
-            .spawn((Tile, position, TileMaterial::Door))
+            .spawn((Tile, position, TileMaterial::DOOR))
             .id();
 
         assert_eq!(
@@ -137,8 +137,8 @@ mod tests {
 
         app.world_mut()
             .run_system_once(move |storage: TileStorage| {
-                assert_eq!(storage.get_material(position), TileMaterial::Door);
-                assert_eq!(storage.get_material(position), TileMaterial::Door);
+                assert_eq!(storage.get_kind(position), TileKind::Door);
+                assert_eq!(storage.get_kind(position), TileKind::Door);
             })
             .unwrap();
     }
@@ -153,13 +153,13 @@ mod tests {
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
-                storage.set_material(position, TileMaterial::Empty);
+                storage.set_material(position, TileMaterial::EMPTY);
             })
             .unwrap();
 
         let tile = app
             .world_mut()
-            .spawn((Tile, position, TileMaterial::Door))
+            .spawn((Tile, position, TileMaterial::DOOR))
             .id();
 
         assert_eq!(
@@ -173,10 +173,10 @@ mod tests {
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
-                assert_eq!(storage.get_material(position), TileMaterial::Door);
+                assert_eq!(storage.get_kind(position), TileKind::Door);
 
-                storage.set_material(position.west(), TileMaterial::Wall);
-                storage.set_material(position.east(), TileMaterial::Wall);
+                storage.set_material(position.west(), TileMaterial::WALL);
+                storage.set_material(position.east(), TileMaterial::WALL);
             })
             .unwrap();
 
@@ -199,7 +199,7 @@ mod tests {
         let position = TilePosition::new(layer, 5, 5);
         let tile = app
             .world_mut()
-            .spawn((Tile, position, TileMaterial::Door))
+            .spawn((Tile, position, TileMaterial::DOOR))
             .id();
 
         assert_eq!(
@@ -213,10 +213,10 @@ mod tests {
 
         app.world_mut()
             .run_system_once(move |mut storage: TileStorageMut| {
-                assert_eq!(storage.get_material(position), TileMaterial::Door);
+                assert_eq!(storage.get_kind(position), TileKind::Door);
 
-                storage.set_material(position.west(), TileMaterial::Wall);
-                storage.set_material(position.east(), TileMaterial::Wall);
+                storage.set_material(position.west(), TileMaterial::WALL);
+                storage.set_material(position.east(), TileMaterial::WALL);
             })
             .unwrap();
 
@@ -241,10 +241,10 @@ mod tests {
         let tile = app
             .world_mut()
             .run_system_once(move |mut commands: Commands, mut storage: TileStorageMut| {
-                storage.set_material(position.west(), TileMaterial::Wall);
-                storage.set_material(position.east(), TileMaterial::Wall);
+                storage.set_material(position.west(), TileMaterial::WALL);
+                storage.set_material(position.east(), TileMaterial::WALL);
 
-                commands.spawn((Tile, position, TileMaterial::Door)).id()
+                commands.spawn((Tile, position, TileMaterial::DOOR)).id()
             })
             .unwrap();
 

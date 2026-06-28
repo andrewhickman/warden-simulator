@@ -15,7 +15,7 @@ use crate::tile::{
     CHUNK_SIZE_SQUARED,
     adjacency::{Adjacency, TileAdjacency},
     index::TileIndex,
-    material::{TileMaterial, TileMoveSpeed},
+    material::{TileKind, TileMaterial, TileMoveSpeed},
     position::{TileChunkOffset, TileChunkPosition, TilePosition},
 };
 
@@ -78,10 +78,10 @@ impl TileStorage<'_, '_> {
             .map(|chunk| chunk.get(tile.chunk_offset()))
     }
 
-    pub fn get_material(&self, tile: TilePosition) -> TileMaterial {
+    pub fn get_kind(&self, tile: TilePosition) -> TileKind {
         match self.get(tile) {
-            Some(t) => t.material,
-            None => TileMaterial::Empty,
+            Some(t) => t.kind(),
+            None => TileKind::Empty,
         }
     }
 
@@ -118,10 +118,10 @@ impl TileStorageMut<'_, '_> {
             .map(|chunk| chunk.get(tile.chunk_offset()))
     }
 
-    pub fn get_material(&self, tile: TilePosition) -> TileMaterial {
+    pub fn get_kind(&self, tile: TilePosition) -> TileKind {
         match self.get(tile) {
-            Some(t) => t.material,
-            None => TileMaterial::Empty,
+            Some(t) => t.kind(),
+            None => TileKind::Empty,
         }
     }
 
@@ -145,30 +145,30 @@ impl TileStorageMut<'_, '_> {
             .get_mut(position.chunk_offset());
         let prev_material = mem::replace(&mut tile.material, material);
 
-        match (prev_material, material) {
-            (TileMaterial::Empty, TileMaterial::Wall) => {
+        match (prev_material.kind(), material.kind()) {
+            (TileKind::Empty, TileKind::Wall) => {
                 self.add_adjacent_wall(position);
             }
-            (TileMaterial::Empty, TileMaterial::Door) => {
+            (TileKind::Empty, TileKind::Door) => {
                 self.add_adjacent_door(position);
             }
-            (TileMaterial::Wall, TileMaterial::Empty) => {
+            (TileKind::Wall, TileKind::Empty) => {
                 self.remove_adjacent_wall(position);
             }
-            (TileMaterial::Wall, TileMaterial::Door) => {
+            (TileKind::Wall, TileKind::Door) => {
                 self.remove_adjacent_wall(position);
                 self.add_adjacent_door(position);
             }
-            (TileMaterial::Door, TileMaterial::Empty) => {
+            (TileKind::Door, TileKind::Empty) => {
                 self.remove_adjacent_door(position);
             }
-            (TileMaterial::Door, TileMaterial::Wall) => {
+            (TileKind::Door, TileKind::Wall) => {
                 self.remove_adjacent_door(position);
                 self.add_adjacent_wall(position);
             }
-            (TileMaterial::Empty, TileMaterial::Empty)
-            | (TileMaterial::Wall, TileMaterial::Wall)
-            | (TileMaterial::Door, TileMaterial::Door) => {}
+            (TileKind::Empty, TileKind::Empty)
+            | (TileKind::Wall, TileKind::Wall)
+            | (TileKind::Door, TileKind::Door) => {}
         }
     }
 
@@ -300,8 +300,8 @@ impl TileChunk {
         self.position.layer()
     }
 
-    pub fn material(&self, offset: TileChunkOffset) -> TileMaterial {
-        self.get(offset).material()
+    pub fn kind(&self, offset: TileChunkOffset) -> TileKind {
+        self.get(offset).kind()
     }
 
     pub fn adjacency(&self, offset: TileChunkOffset) -> Adjacency {
@@ -391,17 +391,17 @@ impl SystemBuffer for TileStorageDeferred {
 impl TileData {
     pub fn empty() -> Self {
         Self {
-            material: TileMaterial::Empty,
+            material: TileMaterial::EMPTY,
             adjacency: TileAdjacency::NONE,
         }
     }
 
     pub fn move_speed(&self) -> TileMoveSpeed {
-        TileMoveSpeed::Medium
+        self.material.move_speed()
     }
 
-    pub fn material(&self) -> TileMaterial {
-        self.material
+    pub fn kind(&self) -> TileKind {
+        self.material.kind()
     }
 
     pub fn adjacency(&self) -> TileAdjacency {

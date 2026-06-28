@@ -6,8 +6,9 @@ use crate::{
     layer::Layer,
     tile::{
         CHUNK_SIZE_SQUARED, TilePlugin,
+        material::TileMaterial,
         position::{TileChunkOffset, TileChunkPosition, TilePosition},
-        storage::{Adjacency, TileChunk, TileMap, TileMaterial, TileStorage, TileStorageMut},
+        storage::{Adjacency, TileChunk, TileKind, TileMap, TileStorage, TileStorageMut},
     },
 };
 
@@ -20,7 +21,7 @@ fn tile_chunk_empty() {
     assert_eq!(chunk.tiles().len(), CHUNK_SIZE_SQUARED);
 
     for (_, tile) in chunk.tiles() {
-        assert_eq!(tile.material, TileMaterial::Empty);
+        assert_eq!(tile.material, TileMaterial::EMPTY);
     }
 }
 
@@ -30,10 +31,10 @@ fn tile_chunk_material_access() {
     let mut chunk = TileChunk::empty(position);
     let offset = TileChunkOffset::new(10, 1);
 
-    assert_eq!(chunk.get(offset).material, TileMaterial::Empty);
+    assert_eq!(chunk.get(offset).material, TileMaterial::EMPTY);
 
-    chunk.get_mut(offset).material = TileMaterial::Wall;
-    assert_eq!(chunk.get(offset).material, TileMaterial::Wall);
+    chunk.get_mut(offset).material = TileMaterial::WALL;
+    assert_eq!(chunk.get(offset).material, TileMaterial::WALL);
 }
 
 #[test]
@@ -47,7 +48,7 @@ fn tile_storage_chunk_not_found() {
         .run_system_once(move |storage: TileStorage| {
             let tile_pos = TilePosition::new(layer, 0, 0);
             assert!(storage.get(tile_pos).is_none());
-            assert_eq!(storage.get_material(tile_pos), TileMaterial::Empty);
+            assert_eq!(storage.get_kind(tile_pos), TileKind::Empty);
         })
         .unwrap();
 }
@@ -62,9 +63,9 @@ fn tile_storage_set_material() {
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
             let tile_pos = TilePosition::new(layer, 5, 7);
-            storage.set_material(tile_pos, TileMaterial::Wall);
+            storage.set_material(tile_pos, TileMaterial::WALL);
             assert!(storage.get(tile_pos).is_some());
-            assert_eq!(storage.get_material(tile_pos), TileMaterial::Wall);
+            assert_eq!(storage.get_kind(tile_pos), TileKind::Wall);
         })
         .unwrap();
 
@@ -72,7 +73,7 @@ fn tile_storage_set_material() {
         .run_system_once(move |storage: TileStorage| {
             let tile_pos = TilePosition::new(layer, 5, 7);
             assert!(storage.get(tile_pos).is_some());
-            assert_eq!(storage.get_material(tile_pos), TileMaterial::Wall);
+            assert_eq!(storage.get_kind(tile_pos), TileKind::Wall);
         })
         .unwrap();
 }
@@ -92,12 +93,12 @@ fn tile_storage_set_range() {
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
             for &tile in &range {
-                storage.set_material(tile, TileMaterial::Wall);
+                storage.set_material(tile, TileMaterial::WALL);
             }
 
             for &tile in &range {
                 assert!(storage.get(tile).is_some());
-                assert_eq!(storage.get_material(tile), TileMaterial::Wall);
+                assert_eq!(storage.get_kind(tile), TileKind::Wall);
             }
         })
         .unwrap();
@@ -106,7 +107,7 @@ fn tile_storage_set_range() {
         .run_system_once(move |storage: TileStorage| {
             for &tile in &range_clone {
                 assert!(storage.get(tile).is_some());
-                assert_eq!(storage.get_material(tile), TileMaterial::Wall);
+                assert_eq!(storage.get_kind(tile), TileKind::Wall);
             }
         })
         .unwrap();
@@ -126,11 +127,11 @@ fn tile_storage_multiple_layers() {
             let tile1 = TilePosition::from_vec(layer1, position);
             let tile2 = TilePosition::from_vec(layer2, position);
 
-            storage.set_material(tile1, TileMaterial::Wall);
-            storage.set_material(tile2, TileMaterial::Empty);
+            storage.set_material(tile1, TileMaterial::WALL);
+            storage.set_material(tile2, TileMaterial::EMPTY);
 
-            assert_eq!(storage.get_material(tile1), TileMaterial::Wall);
-            assert_eq!(storage.get_material(tile2), TileMaterial::Empty);
+            assert_eq!(storage.get_kind(tile1), TileKind::Wall);
+            assert_eq!(storage.get_kind(tile2), TileKind::Empty);
         })
         .unwrap();
 
@@ -140,8 +141,8 @@ fn tile_storage_multiple_layers() {
             let tile1 = TilePosition::from_vec(layer1, position);
             let tile2 = TilePosition::from_vec(layer2, position);
 
-            assert_eq!(storage.get_material(tile1), TileMaterial::Wall);
-            assert_eq!(storage.get_material(tile2), TileMaterial::Empty);
+            assert_eq!(storage.get_kind(tile1), TileKind::Wall);
+            assert_eq!(storage.get_kind(tile2), TileKind::Empty);
         })
         .unwrap();
 }
@@ -194,7 +195,7 @@ fn wall_adjacency() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(center, TileMaterial::Wall);
+            storage.set_material(center, TileMaterial::WALL);
 
             assert_eq!(
                 storage.get_wall_adjacency(TilePosition::new(layer, 5, 5)),
@@ -278,7 +279,7 @@ fn wall_adjacency() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(center, TileMaterial::Empty);
+            storage.set_material(center, TileMaterial::EMPTY);
 
             assert_eq!(
                 storage.get_wall_adjacency(TilePosition::new(layer, 5, 5)),
@@ -372,7 +373,7 @@ fn door_adjacency() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(center, TileMaterial::Door);
+            storage.set_material(center, TileMaterial::DOOR);
 
             assert_eq!(
                 storage.get(center).unwrap().door_adjacency(),
@@ -462,7 +463,7 @@ fn door_adjacency() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(center, TileMaterial::Empty);
+            storage.set_material(center, TileMaterial::EMPTY);
 
             assert_eq!(
                 storage.get(center).unwrap().door_adjacency(),
@@ -567,7 +568,7 @@ fn door_adjacency_chunk_edge_horizontal() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(edge_tile, TileMaterial::Door);
+            storage.set_material(edge_tile, TileMaterial::DOOR);
 
             assert_eq!(
                 storage.get(east_neighbor).unwrap().door_adjacency(),
@@ -578,7 +579,7 @@ fn door_adjacency_chunk_edge_horizontal() {
                 Adjacency::EAST
             );
 
-            storage.set_material(edge_tile, TileMaterial::Empty);
+            storage.set_material(edge_tile, TileMaterial::EMPTY);
 
             assert_eq!(
                 storage.get(east_neighbor).unwrap().door_adjacency(),
@@ -608,7 +609,7 @@ fn door_adjacency_chunk_edge_vertical() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(edge_tile, TileMaterial::Door);
+            storage.set_material(edge_tile, TileMaterial::DOOR);
 
             assert_eq!(
                 storage.get(north_neighbor).unwrap().door_adjacency(),
@@ -619,7 +620,7 @@ fn door_adjacency_chunk_edge_vertical() {
                 Adjacency::NORTH
             );
 
-            storage.set_material(edge_tile, TileMaterial::Empty);
+            storage.set_material(edge_tile, TileMaterial::EMPTY);
 
             assert_eq!(
                 storage.get(north_neighbor).unwrap().door_adjacency(),
@@ -653,7 +654,7 @@ fn door_adjacency_chunk_corner() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(corner_tile, TileMaterial::Door);
+            storage.set_material(corner_tile, TileMaterial::DOOR);
 
             assert_eq!(
                 storage.get(corner_tile).unwrap().door_adjacency(),
@@ -676,7 +677,7 @@ fn door_adjacency_chunk_corner() {
                 Adjacency::NORTH
             );
 
-            storage.set_material(corner_tile, TileMaterial::Empty);
+            storage.set_material(corner_tile, TileMaterial::EMPTY);
 
             assert_eq!(
                 storage.get(corner_tile).unwrap().door_adjacency(),
@@ -711,9 +712,9 @@ fn door_adjacency_multiple_doors() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(TilePosition::new(layer, 10, 10), TileMaterial::Door);
-            storage.set_material(TilePosition::new(layer, 11, 10), TileMaterial::Door);
-            storage.set_material(TilePosition::new(layer, 10, 11), TileMaterial::Door);
+            storage.set_material(TilePosition::new(layer, 10, 10), TileMaterial::DOOR);
+            storage.set_material(TilePosition::new(layer, 11, 10), TileMaterial::DOOR);
+            storage.set_material(TilePosition::new(layer, 10, 11), TileMaterial::DOOR);
 
             assert_eq!(
                 storage
@@ -774,7 +775,7 @@ fn wall_adjacency_chunk_edge_horizontal() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(edge_tile, TileMaterial::Wall);
+            storage.set_material(edge_tile, TileMaterial::WALL);
 
             assert_eq!(storage.get_wall_adjacency(east_neighbor), Adjacency::WEST);
             assert_eq!(storage.get_wall_adjacency(west_neighbor), Adjacency::EAST);
@@ -787,7 +788,7 @@ fn wall_adjacency_chunk_edge_horizontal() {
                 Adjacency::NORTH_WEST
             );
 
-            storage.set_material(edge_tile, TileMaterial::Empty);
+            storage.set_material(edge_tile, TileMaterial::EMPTY);
             assert_eq!(storage.get_wall_adjacency(east_neighbor), Adjacency::NONE);
             assert_eq!(storage.get_wall_adjacency(west_neighbor), Adjacency::NONE);
             assert_eq!(
@@ -829,7 +830,7 @@ fn wall_adjacency_chunk_edge_vertical() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(edge_tile, TileMaterial::Wall);
+            storage.set_material(edge_tile, TileMaterial::WALL);
 
             assert_eq!(storage.get_wall_adjacency(north_neighbor), Adjacency::SOUTH);
             assert_eq!(storage.get_wall_adjacency(south_neighbor), Adjacency::NORTH);
@@ -842,7 +843,7 @@ fn wall_adjacency_chunk_edge_vertical() {
                 Adjacency::SOUTH_WEST
             );
 
-            storage.set_material(edge_tile, TileMaterial::Empty);
+            storage.set_material(edge_tile, TileMaterial::EMPTY);
 
             assert_eq!(storage.get_wall_adjacency(north_neighbor), Adjacency::NONE);
             assert_eq!(storage.get_wall_adjacency(south_neighbor), Adjacency::NONE);
@@ -899,7 +900,7 @@ fn wall_adjacency_chunk_corner() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(corner_tile, TileMaterial::Wall);
+            storage.set_material(corner_tile, TileMaterial::WALL);
 
             assert_eq!(storage.get_wall_adjacency(corner_tile), Adjacency::NONE);
             assert_eq!(storage.get_wall_adjacency(east_tile), Adjacency::WEST);
@@ -928,7 +929,7 @@ fn wall_adjacency_chunk_corner() {
                 Adjacency::NORTH_WEST
             );
 
-            storage.set_material(corner_tile, TileMaterial::Empty);
+            storage.set_material(corner_tile, TileMaterial::EMPTY);
 
             assert_eq!(storage.get_wall_adjacency(corner_tile), Adjacency::NONE);
             assert_eq!(storage.get_wall_adjacency(east_tile), Adjacency::NONE);
@@ -954,9 +955,9 @@ fn wall_adjacency_multiple_solid_tiles() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(TilePosition::new(layer, 10, 10), TileMaterial::Wall);
-            storage.set_material(TilePosition::new(layer, 11, 10), TileMaterial::Wall);
-            storage.set_material(TilePosition::new(layer, 10, 11), TileMaterial::Wall);
+            storage.set_material(TilePosition::new(layer, 10, 10), TileMaterial::WALL);
+            storage.set_material(TilePosition::new(layer, 11, 10), TileMaterial::WALL);
+            storage.set_material(TilePosition::new(layer, 10, 11), TileMaterial::WALL);
 
             assert_eq!(
                 storage.get_wall_adjacency(TilePosition::new(layer, 9, 9)),
@@ -1038,14 +1039,14 @@ fn wall_adjacency_overwrite() {
             let center = TilePosition::new(layer, 5, 5);
             let east_neighbor = center.east();
 
-            storage.set_material(center, TileMaterial::Wall);
-            storage.set_material(east_neighbor, TileMaterial::Empty);
+            storage.set_material(center, TileMaterial::WALL);
+            storage.set_material(east_neighbor, TileMaterial::EMPTY);
 
             assert_eq!(storage.get_wall_adjacency(center), Adjacency::NONE);
             assert_eq!(storage.get_wall_adjacency(east_neighbor), Adjacency::WEST);
 
-            storage.set_material(center, TileMaterial::Wall);
-            storage.set_material(east_neighbor, TileMaterial::Empty);
+            storage.set_material(center, TileMaterial::WALL);
+            storage.set_material(east_neighbor, TileMaterial::EMPTY);
 
             assert_eq!(storage.get_wall_adjacency(center), Adjacency::NONE);
             assert_eq!(storage.get_wall_adjacency(east_neighbor), Adjacency::WEST);
@@ -1064,8 +1065,8 @@ fn tile_storage_change_detection() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(tile1, TileMaterial::Wall);
-            storage.set_material(tile2, TileMaterial::Wall);
+            storage.set_material(tile1, TileMaterial::WALL);
+            storage.set_material(tile2, TileMaterial::WALL);
         })
         .unwrap();
 
@@ -1110,7 +1111,7 @@ fn tile_storage_change_detection() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(tile1, TileMaterial::Empty);
+            storage.set_material(tile1, TileMaterial::EMPTY);
         })
         .unwrap();
 
@@ -1138,7 +1139,7 @@ fn tile_storage_change_detection_border() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(edge, TileMaterial::Wall);
+            storage.set_material(edge, TileMaterial::WALL);
         })
         .unwrap();
 
@@ -1184,7 +1185,7 @@ fn tile_storage_change_detection_border() {
 
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(edge, TileMaterial::Empty);
+            storage.set_material(edge, TileMaterial::EMPTY);
         })
         .unwrap();
 
@@ -1213,16 +1214,16 @@ fn tile_storage_nested_buffer() {
 
     app.world_mut()
         .run_system_once(move |mut commands: Commands, mut storage: TileStorageMut| {
-            storage.set_material(tile1, TileMaterial::Wall);
+            storage.set_material(tile1, TileMaterial::WALL);
 
-            commands.spawn((TilePosition::new(layer, 10, 10), TileMaterial::Wall));
+            commands.spawn((TilePosition::new(layer, 10, 10), TileMaterial::WALL));
         })
         .unwrap();
 
     app.world_mut()
         .run_system_once(move |storage: TileStorage| {
-            assert_eq!(storage.get(tile1).unwrap().material(), TileMaterial::Wall);
-            assert_eq!(storage.get(tile2).unwrap().material(), TileMaterial::Wall);
+            assert_eq!(storage.get(tile1).unwrap().kind(), TileKind::Wall);
+            assert_eq!(storage.get(tile2).unwrap().kind(), TileKind::Wall);
         })
         .unwrap();
 }

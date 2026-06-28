@@ -1,12 +1,12 @@
-use wdn_physics::tile::{adjacency::Adjacency, material::TileMaterial};
+use wdn_physics::tile::{adjacency::Adjacency, material::TileKind};
 
 use crate::tile::WALL_OFFSET;
 
-pub fn sprite_offset(material: TileMaterial, walls: Adjacency, doors: Adjacency) -> u16 {
-    let offset = match material {
-        TileMaterial::Empty => empty_sprite_offset(walls),
-        TileMaterial::Wall => wall_sprite_offset(walls, doors),
-        TileMaterial::Door => door_sprite_offset(walls),
+pub fn sprite_offset(kind: TileKind, walls: Adjacency, doors: Adjacency) -> u16 {
+    let offset = match kind {
+        TileKind::Empty => empty_sprite_offset(walls),
+        TileKind::Wall => wall_sprite_offset(walls, doors),
+        TileKind::Door => door_sprite_offset(walls),
     };
 
     offset + WALL_OFFSET

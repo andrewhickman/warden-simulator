@@ -2264,7 +2264,7 @@ fn spawn_non_solid_tile_collider(app: &mut App, position: TilePosition) -> Entit
 fn set_tile(app: &mut App, position: TilePosition) {
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(position, TileMaterial::Wall);
+            storage.set_material(position, TileMaterial::WALL);
         })
         .unwrap();
 }
@@ -2280,7 +2280,7 @@ fn update_collider(app: &mut App, id: Entity, position: Vec2, velocity: Vec2) {
 fn clear_tile(app: &mut App, position: TilePosition) {
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(position, TileMaterial::Empty);
+            storage.set_material(position, TileMaterial::EMPTY);
         })
         .unwrap();
 }

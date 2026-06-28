@@ -11,7 +11,7 @@ use tracing::info;
 use wdn_physics::tile::{
     adjacency::Adjacency,
     index::TileIndex,
-    material::{TileMaterial, TileMoveSpeed},
+    material::{TileKind, TileMoveSpeed},
     position::{TileLayerOffset, TilePosition},
     storage::{TileChunk, TileData, TileMap},
 };
@@ -41,7 +41,7 @@ pub type RegionTileIndex = u32;
 pub struct RegionTile {
     position: TileLayerOffset,
     move_speed: TileMoveSpeed,
-    material: TileMaterial,
+    kind: TileKind,
     adjacency: Adjacency,
     north: RegionTileIndex,
     east: RegionTileIndex,
@@ -311,7 +311,7 @@ impl RegionTiles {
         self.tiles.push(RegionTile {
             position,
             adjacency,
-            material: tile.material(),
+            kind: tile.kind(),
             move_speed: tile.move_speed(),
             north: u32::MAX,
             east: u32::MAX,
@@ -410,7 +410,7 @@ impl RegionTiles {
             self.tiles.push(RegionTile {
                 position,
                 adjacency: Adjacency::NONE,
-                material: TileMaterial::Door,
+                kind: TileKind::Door,
                 move_speed: TileMoveSpeed::Medium,
                 north: u32::MAX,
                 east: u32::MAX,
@@ -439,12 +439,12 @@ impl RegionTile {
         self.adjacency
     }
 
-    pub fn material(&self) -> TileMaterial {
-        self.material
+    pub fn kind(&self) -> TileKind {
+        self.kind
     }
 
     pub fn is_door(&self) -> bool {
-        self.material == TileMaterial::Door
+        self.kind == TileKind::Door
     }
 
     pub fn move_speed(&self) -> TileMoveSpeed {

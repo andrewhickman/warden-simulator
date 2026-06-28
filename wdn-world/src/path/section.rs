@@ -5,7 +5,7 @@ use bevy_platform::collections::{HashMap, HashSet, hash_map};
 use wdn_physics::tile::{
     CHUNK_SIZE, CHUNK_SIZE_SQUARED,
     adjacency::Adjacency,
-    material::TileMaterial,
+    material::TileKind,
     position::{TileChunkOffset, TilePosition},
     storage::TileChunk,
 };
@@ -57,7 +57,7 @@ pub fn update_chunk_sections(
             for offset in TileChunkOffset::iter() {
                 let tile = chunk.get(offset);
 
-                if tile.material() == TileMaterial::Empty {
+                if tile.kind() == TileKind::Empty {
                     set.insert(offset, tile.door_adjacency());
                 } else {
                     set.remove(offset);

@@ -4,7 +4,11 @@ use bevy::{
 };
 use rand::RngExt;
 use std::{collections::VecDeque, time::Duration};
-use wdn_physics::tile::{material::TileMaterial, position::TilePosition, storage::TileStorageMut};
+use wdn_physics::tile::{
+    material::{TileKind, TileMaterial, TileMoveSpeed},
+    position::TilePosition,
+    storage::TileStorageMut,
+};
 use wdn_world::door::Door;
 
 pub const MAP_SIZE: usize = 126;
@@ -15,19 +19,19 @@ const WORLD_SIZE: usize = 512;
 const TILE_SIZE: usize = 4;
 const LOGICAL_SIZE: usize = WORLD_SIZE / TILE_SIZE;
 
-const ALL_TILE_KINDS: [TileKind; 6] = [
-    TileKind::Outside,
-    TileKind::Inside,
-    TileKind::CellsNorth,
-    TileKind::CellsSouth,
-    TileKind::CellsEast,
-    TileKind::CellsWest,
+const ALL_TILE_KINDS: [MacroTile; 6] = [
+    MacroTile::Outside,
+    MacroTile::Inside,
+    MacroTile::CellsNorth,
+    MacroTile::CellsSouth,
+    MacroTile::CellsEast,
+    MacroTile::CellsWest,
 ];
 
 const ALL_TILE_MASK: u8 = (1u8 << ALL_TILE_KINDS.len()) - 1;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum TileKind {
+pub enum MacroTile {
     Outside,
     Inside,
     CellsNorth,
@@ -38,7 +42,7 @@ pub enum TileKind {
 
 #[derive(Resource)]
 pub struct GeneratedTileGrid {
-    kinds: Box<[[TileKind; MAP_SIZE]; MAP_SIZE]>,
+    kinds: Box<[[MacroTile; MAP_SIZE]; MAP_SIZE]>,
     timer: Timer,
 }
 
@@ -50,7 +54,7 @@ impl GeneratedTileGrid {
         }
     }
 
-    pub fn kinds(&self) -> &[[TileKind; MAP_SIZE]; MAP_SIZE] {
+    pub fn kinds(&self) -> &[[MacroTile; MAP_SIZE]; MAP_SIZE] {
         &self.kinds
     }
 
@@ -64,56 +68,55 @@ impl GeneratedTileGrid {
     }
 }
 
-impl TileKind {
+impl MacroTile {
     fn is_cells_variant(&self) -> bool {
         matches!(
             self,
-            TileKind::CellsNorth | TileKind::CellsSouth | TileKind::CellsEast | TileKind::CellsWest
+            MacroTile::CellsNorth
+                | MacroTile::CellsSouth
+                | MacroTile::CellsEast
+                | MacroTile::CellsWest
         )
     }
 
-    pub fn allowed_north(&self, other: TileKind) -> bool {
+    pub fn allowed_north(&self, other: MacroTile) -> bool {
         match (*self, other) {
-            (TileKind::CellsNorth, TileKind::Inside) | (TileKind::Inside, TileKind::CellsSouth) => {
-                true
-            }
-            (TileKind::CellsNorth, _) | (_, TileKind::CellsSouth) => false,
+            (MacroTile::CellsNorth, MacroTile::Inside)
+            | (MacroTile::Inside, MacroTile::CellsSouth) => true,
+            (MacroTile::CellsNorth, _) | (_, MacroTile::CellsSouth) => false,
             _ => true,
         }
     }
 
-    pub fn allowed_south(&self, other: TileKind) -> bool {
+    pub fn allowed_south(&self, other: MacroTile) -> bool {
         match (*self, other) {
-            (TileKind::CellsSouth, TileKind::Inside) | (TileKind::Inside, TileKind::CellsNorth) => {
-                true
-            }
-            (TileKind::CellsSouth, _) | (_, TileKind::CellsNorth) => false,
+            (MacroTile::CellsSouth, MacroTile::Inside)
+            | (MacroTile::Inside, MacroTile::CellsNorth) => true,
+            (MacroTile::CellsSouth, _) | (_, MacroTile::CellsNorth) => false,
             _ => true,
         }
     }
 
-    pub fn allowed_east(&self, other: TileKind) -> bool {
+    pub fn allowed_east(&self, other: MacroTile) -> bool {
         match (*self, other) {
-            (TileKind::CellsEast, TileKind::Inside) | (TileKind::Inside, TileKind::CellsWest) => {
-                true
-            }
-            (TileKind::CellsEast, _) | (_, TileKind::CellsWest) => false,
+            (MacroTile::CellsEast, MacroTile::Inside)
+            | (MacroTile::Inside, MacroTile::CellsWest) => true,
+            (MacroTile::CellsEast, _) | (_, MacroTile::CellsWest) => false,
             _ => true,
         }
     }
 
-    pub fn allowed_west(&self, other: TileKind) -> bool {
+    pub fn allowed_west(&self, other: MacroTile) -> bool {
         match (*self, other) {
-            (TileKind::CellsWest, TileKind::Inside) | (TileKind::Inside, TileKind::CellsEast) => {
-                true
-            }
-            (TileKind::CellsWest, _) | (_, TileKind::CellsEast) => false,
+            (MacroTile::CellsWest, MacroTile::Inside)
+            | (MacroTile::Inside, MacroTile::CellsEast) => true,
+            (MacroTile::CellsWest, _) | (_, MacroTile::CellsEast) => false,
             _ => true,
         }
     }
 }
 
-pub fn generate_random_tile_grid() -> Box<[[TileKind; MAP_SIZE]; MAP_SIZE]> {
+pub fn generate_random_tile_grid() -> Box<[[MacroTile; MAP_SIZE]; MAP_SIZE]> {
     let mut random = rand::rng();
 
     for _ in 0..64 {
@@ -126,7 +129,7 @@ pub fn generate_random_tile_grid() -> Box<[[TileKind; MAP_SIZE]; MAP_SIZE]> {
 }
 
 pub fn mutate_and_regenerate_tile_grid(
-    kinds: &mut Box<[[TileKind; MAP_SIZE]; MAP_SIZE]>,
+    kinds: &mut Box<[[MacroTile; MAP_SIZE]; MAP_SIZE]>,
     cleared_tiles: usize,
 ) {
     let mut random = rand::rng();
@@ -147,15 +150,15 @@ pub fn apply_grid_to_map(
     commands: &mut Commands,
     storage: &mut TileStorageMut,
     layer: Entity,
-    kinds: &[[TileKind; MAP_SIZE]; MAP_SIZE],
+    kinds: &[[MacroTile; MAP_SIZE]; MAP_SIZE],
 ) -> usize {
     debug_assert_eq!(MAP_SIZE + 2, LOGICAL_SIZE);
 
-    let mut desired = vec![TileMaterial::Empty; WORLD_SIZE * WORLD_SIZE];
+    let mut desired = vec![TileKind::Empty; WORLD_SIZE * WORLD_SIZE];
     let mut desired_doors = Vec::<(usize, usize)>::new();
 
     let mut mark_wall = |x: usize, y: usize| {
-        desired[world_xy_to_index(x, y)] = TileMaterial::Wall;
+        desired[world_xy_to_index(x, y)] = TileKind::Wall;
     };
     let mut mark_door = |x: usize, y: usize| {
         desired_doors.push((x, y));
@@ -220,14 +223,14 @@ pub fn apply_grid_to_map(
     // Add walls between the generated interior ring and the empty map border.
     for logical_y in 1..(LOGICAL_SIZE - 1) {
         let left_edge_tile = kinds[logical_y - 1][0];
-        if should_fill_wall(left_edge_tile, TileKind::Outside) {
+        if should_fill_wall(left_edge_tile, MacroTile::Outside) {
             let world_x = TILE_SIZE;
             let world_y_start = logical_y * TILE_SIZE;
             for world_y in world_y_start..=(world_y_start + TILE_SIZE) {
                 mark_wall(world_x, world_y);
             }
 
-            if is_inside_outside_border(left_edge_tile, TileKind::Outside)
+            if is_inside_outside_border(left_edge_tile, MacroTile::Outside)
                 && deterministic_border_door(world_x, world_y_start + 2)
             {
                 mark_door(world_x, world_y_start + 2);
@@ -235,14 +238,14 @@ pub fn apply_grid_to_map(
         }
 
         let right_edge_tile = kinds[logical_y - 1][MAP_SIZE - 1];
-        if should_fill_wall(right_edge_tile, TileKind::Outside) {
+        if should_fill_wall(right_edge_tile, MacroTile::Outside) {
             let world_x = (LOGICAL_SIZE - 1) * TILE_SIZE;
             let world_y_start = logical_y * TILE_SIZE;
             for world_y in world_y_start..=(world_y_start + TILE_SIZE) {
                 mark_wall(world_x, world_y);
             }
 
-            if is_inside_outside_border(right_edge_tile, TileKind::Outside)
+            if is_inside_outside_border(right_edge_tile, MacroTile::Outside)
                 && deterministic_border_door(world_x, world_y_start + 2)
             {
                 mark_door(world_x, world_y_start + 2);
@@ -252,14 +255,14 @@ pub fn apply_grid_to_map(
 
     for logical_x in 1..(LOGICAL_SIZE - 1) {
         let top_edge_tile = kinds[0][logical_x - 1];
-        if should_fill_wall(top_edge_tile, TileKind::Outside) {
+        if should_fill_wall(top_edge_tile, MacroTile::Outside) {
             let world_y = TILE_SIZE;
             let world_x_start = logical_x * TILE_SIZE;
             for world_x in world_x_start..=(world_x_start + TILE_SIZE) {
                 mark_wall(world_x, world_y);
             }
 
-            if is_inside_outside_border(top_edge_tile, TileKind::Outside)
+            if is_inside_outside_border(top_edge_tile, MacroTile::Outside)
                 && deterministic_border_door(world_x_start + 2, world_y)
             {
                 mark_door(world_x_start + 2, world_y);
@@ -267,14 +270,14 @@ pub fn apply_grid_to_map(
         }
 
         let bottom_edge_tile = kinds[MAP_SIZE - 1][logical_x - 1];
-        if should_fill_wall(bottom_edge_tile, TileKind::Outside) {
+        if should_fill_wall(bottom_edge_tile, MacroTile::Outside) {
             let world_y = (LOGICAL_SIZE - 1) * TILE_SIZE;
             let world_x_start = logical_x * TILE_SIZE;
             for world_x in world_x_start..=(world_x_start + TILE_SIZE) {
                 mark_wall(world_x, world_y);
             }
 
-            if is_inside_outside_border(bottom_edge_tile, TileKind::Outside)
+            if is_inside_outside_border(bottom_edge_tile, MacroTile::Outside)
                 && deterministic_border_door(world_x_start + 2, world_y)
             {
                 mark_door(world_x_start + 2, world_y);
@@ -291,25 +294,25 @@ pub fn apply_grid_to_map(
             let world_y_start = logical_y * TILE_SIZE;
 
             match tile_kind {
-                TileKind::CellsNorth | TileKind::CellsSouth => {
+                MacroTile::CellsNorth | MacroTile::CellsSouth => {
                     let center_x = world_x_start + 2;
                     for world_y in world_y_start..=(world_y_start + TILE_SIZE) {
                         mark_wall(center_x, world_y);
                     }
                 }
-                TileKind::CellsEast | TileKind::CellsWest => {
+                MacroTile::CellsEast | MacroTile::CellsWest => {
                     let center_y = world_y_start + 2;
                     for world_x in world_x_start..=(world_x_start + TILE_SIZE) {
                         mark_wall(world_x, center_y);
                     }
                 }
-                TileKind::Outside | TileKind::Inside => {}
+                MacroTile::Outside | MacroTile::Inside => {}
             }
         }
     }
 
     for (x, y) in desired_doors {
-        desired[world_xy_to_index(x, y)] = TileMaterial::Door;
+        desired[world_xy_to_index(x, y)] = TileKind::Door;
     }
 
     let mut changed_tiles = 0usize;
@@ -317,7 +320,7 @@ pub fn apply_grid_to_map(
         for y in 0..WORLD_SIZE {
             let target = desired[world_xy_to_index(x, y)];
             let position = TilePosition::new(layer, x as i32, y as i32);
-            changed_tiles += if target == TileMaterial::Door {
+            changed_tiles += if target == TileKind::Door {
                 spawn_door_if_needed(commands, storage, position) as usize
             } else {
                 set_material_if_needed(commands, storage, position, target) as usize
@@ -345,20 +348,20 @@ fn set_material_if_needed(
     commands: &mut Commands,
     storage: &mut TileStorageMut,
     position: TilePosition,
-    material: TileMaterial,
+    kind: TileKind,
 ) -> bool {
-    let current = storage.get_material(position);
-    if current == material {
+    let current = storage.get_kind(position);
+    if current == kind {
         return false;
     }
 
-    if current == TileMaterial::Door {
+    if current == TileKind::Door {
         if let Some(entity) = storage.index.get_tile(position) {
             commands.entity(entity).try_despawn();
         }
     }
 
-    storage.set_material(position, material);
+    storage.set_material(position, TileMaterial::new(kind, TileMoveSpeed::Medium, 0));
     true
 }
 
@@ -367,7 +370,7 @@ fn spawn_door_if_needed(
     storage: &mut TileStorageMut,
     position: TilePosition,
 ) -> bool {
-    if storage.get_material(position) == TileMaterial::Door {
+    if storage.get_kind(position) == TileKind::Door {
         return false;
     }
 
@@ -379,43 +382,43 @@ fn spawn_door_if_needed(
     true
 }
 
-fn should_fill_wall(a: TileKind, b: TileKind) -> bool {
+fn should_fill_wall(a: MacroTile, b: MacroTile) -> bool {
     if a.is_cells_variant() || b.is_cells_variant() {
         return true;
     }
 
     matches!(
         (a, b),
-        (TileKind::Outside, TileKind::Inside) | (TileKind::Inside, TileKind::Outside)
+        (MacroTile::Outside, MacroTile::Inside) | (MacroTile::Inside, MacroTile::Outside)
     )
 }
 
-fn is_inside_outside_border(a: TileKind, b: TileKind) -> bool {
+fn is_inside_outside_border(a: MacroTile, b: MacroTile) -> bool {
     matches!(
         (a, b),
-        (TileKind::Inside, TileKind::Outside) | (TileKind::Outside, TileKind::Inside)
+        (MacroTile::Inside, MacroTile::Outside) | (MacroTile::Outside, MacroTile::Inside)
     )
 }
 
-fn should_spawn_two_doors_vertical(a: TileKind, b: TileKind) -> bool {
+fn should_spawn_two_doors_vertical(a: MacroTile, b: MacroTile) -> bool {
     match (a, b) {
-        (TileKind::CellsNorth, _) | (_, TileKind::CellsSouth) => true,
+        (MacroTile::CellsNorth, _) | (_, MacroTile::CellsSouth) => true,
         _ => false,
     }
 }
 
-fn should_spawn_two_doors_horizontal(a: TileKind, b: TileKind) -> bool {
+fn should_spawn_two_doors_horizontal(a: MacroTile, b: MacroTile) -> bool {
     match (a, b) {
-        (TileKind::CellsEast, _) | (_, TileKind::CellsWest) => true,
+        (MacroTile::CellsEast, _) | (_, MacroTile::CellsWest) => true,
         _ => false,
     }
 }
 
 fn mutate_and_regenerate_tile_grid_attempt<R: RngExt>(
-    kinds: &[[TileKind; MAP_SIZE]; MAP_SIZE],
+    kinds: &[[MacroTile; MAP_SIZE]; MAP_SIZE],
     cleared_tiles: usize,
     random: &mut R,
-) -> Option<Box<[[TileKind; MAP_SIZE]; MAP_SIZE]>> {
+) -> Option<Box<[[MacroTile; MAP_SIZE]; MAP_SIZE]>> {
     let mut possibilities = vec![0u8; MAP_SIZE * MAP_SIZE];
 
     for y in 0..MAP_SIZE {
@@ -448,7 +451,7 @@ fn mutate_and_regenerate_tile_grid_attempt<R: RngExt>(
 
 fn generate_random_tile_grid_attempt<R: RngExt>(
     random: &mut R,
-) -> Option<Box<[[TileKind; MAP_SIZE]; MAP_SIZE]>> {
+) -> Option<Box<[[MacroTile; MAP_SIZE]; MAP_SIZE]>> {
     let mut possibilities = vec![ALL_TILE_MASK; MAP_SIZE * MAP_SIZE];
 
     while let Some(index) = pick_lowest_entropy_index(&possibilities, random) {
@@ -464,10 +467,10 @@ fn generate_random_tile_grid_attempt<R: RngExt>(
     possibilities_to_grid(possibilities)
 }
 
-fn possibilities_to_grid(possibilities: Vec<u8>) -> Option<Box<[[TileKind; MAP_SIZE]; MAP_SIZE]>> {
+fn possibilities_to_grid(possibilities: Vec<u8>) -> Option<Box<[[MacroTile; MAP_SIZE]; MAP_SIZE]>> {
     let mut rows = Vec::with_capacity(MAP_SIZE);
     for y in 0..MAP_SIZE {
-        let mut row = [TileKind::Outside; MAP_SIZE];
+        let mut row = [MacroTile::Outside; MAP_SIZE];
         for x in 0..MAP_SIZE {
             let index = xy_to_index(x, y);
             row[x] = tile_from_single_mask(possibilities[index])?;
@@ -639,8 +642,8 @@ fn compatible_neighbor_mask(source_mask: u8, direction: Direction) -> u8 {
     neighbor_mask
 }
 
-fn random_tile_from_mask<R: RngExt>(mask: u8, random: &mut R) -> Option<TileKind> {
-    let mut candidates = [TileKind::Outside; ALL_TILE_KINDS.len()];
+fn random_tile_from_mask<R: RngExt>(mask: u8, random: &mut R) -> Option<MacroTile> {
+    let mut candidates = [MacroTile::Outside; ALL_TILE_KINDS.len()];
     let mut count = 0usize;
 
     for tile in tiles_from_mask(mask) {
@@ -655,7 +658,7 @@ fn random_tile_from_mask<R: RngExt>(mask: u8, random: &mut R) -> Option<TileKind
     }
 }
 
-fn tiles_from_mask(mask: u8) -> impl Iterator<Item = TileKind> {
+fn tiles_from_mask(mask: u8) -> impl Iterator<Item = MacroTile> {
     ALL_TILE_KINDS
         .into_iter()
         .enumerate()
@@ -663,29 +666,29 @@ fn tiles_from_mask(mask: u8) -> impl Iterator<Item = TileKind> {
         .map(|(_, tile)| tile)
 }
 
-fn mask_for_tile(tile: TileKind) -> u8 {
+fn mask_for_tile(tile: MacroTile) -> u8 {
     match tile {
-        TileKind::Outside => 1 << 0,
-        TileKind::Inside => 1 << 1,
-        TileKind::CellsNorth => 1 << 2,
-        TileKind::CellsSouth => 1 << 3,
-        TileKind::CellsEast => 1 << 4,
-        TileKind::CellsWest => 1 << 5,
+        MacroTile::Outside => 1 << 0,
+        MacroTile::Inside => 1 << 1,
+        MacroTile::CellsNorth => 1 << 2,
+        MacroTile::CellsSouth => 1 << 3,
+        MacroTile::CellsEast => 1 << 4,
+        MacroTile::CellsWest => 1 << 5,
     }
 }
 
-fn tile_from_single_mask(mask: u8) -> Option<TileKind> {
+fn tile_from_single_mask(mask: u8) -> Option<MacroTile> {
     if mask.count_ones() != 1 {
         return None;
     }
 
     Some(match mask {
-        m if m == mask_for_tile(TileKind::Outside) => TileKind::Outside,
-        m if m == mask_for_tile(TileKind::Inside) => TileKind::Inside,
-        m if m == mask_for_tile(TileKind::CellsNorth) => TileKind::CellsNorth,
-        m if m == mask_for_tile(TileKind::CellsSouth) => TileKind::CellsSouth,
-        m if m == mask_for_tile(TileKind::CellsEast) => TileKind::CellsEast,
-        m if m == mask_for_tile(TileKind::CellsWest) => TileKind::CellsWest,
+        m if m == mask_for_tile(MacroTile::Outside) => MacroTile::Outside,
+        m if m == mask_for_tile(MacroTile::Inside) => MacroTile::Inside,
+        m if m == mask_for_tile(MacroTile::CellsNorth) => MacroTile::CellsNorth,
+        m if m == mask_for_tile(MacroTile::CellsSouth) => MacroTile::CellsSouth,
+        m if m == mask_for_tile(MacroTile::CellsEast) => MacroTile::CellsEast,
+        m if m == mask_for_tile(MacroTile::CellsWest) => MacroTile::CellsWest,
         _ => return None,
     })
 }

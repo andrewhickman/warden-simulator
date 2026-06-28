@@ -40,19 +40,19 @@ fn bench_update_chunk_sections_after_tile_modify(c: &mut Criterion) {
     let (mut app, layer) = make_app();
     let position = TilePosition::new(layer, 10, 10);
 
-    set_material(&mut app, position, TileMaterial::Wall);
+    set_material(&mut app, position, TileMaterial::WALL);
     run_update_chunk_sections(&mut app);
 
-    set_material(&mut app, position, TileMaterial::Empty);
+    set_material(&mut app, position, TileMaterial::EMPTY);
     run_update_chunk_sections(&mut app);
 
     let mut place_wall = true;
     c.bench_function("update_chunk_sections_after_tile_modify", |b| {
         b.iter(|| {
             let material = if place_wall {
-                TileMaterial::Wall
+                TileMaterial::WALL
             } else {
-                TileMaterial::Empty
+                TileMaterial::EMPTY
             };
             place_wall = !place_wall;
 
@@ -66,12 +66,12 @@ fn bench_update_chunk_sections_after_tile_unchanged(c: &mut Criterion) {
     let (mut app, layer) = make_app();
     let position = TilePosition::new(layer, 10, 10);
 
-    set_material(&mut app, position, TileMaterial::Empty);
+    set_material(&mut app, position, TileMaterial::EMPTY);
     run_update_chunk_sections(&mut app);
 
     c.bench_function("bench_update_chunk_sections_after_tile_unchanged", |b| {
         b.iter(|| {
-            set_material(&mut app, position, TileMaterial::Empty);
+            set_material(&mut app, position, TileMaterial::EMPTY);
             run_update_chunk_sections(&mut app);
         });
     });
@@ -81,7 +81,7 @@ fn bench_tile_chunk_sections_region_lookup(c: &mut Criterion) {
     let (mut app, layer) = make_app();
     let position = TilePosition::new(layer, 5, 5);
 
-    set_material(&mut app, position, TileMaterial::Empty);
+    set_material(&mut app, position, TileMaterial::EMPTY);
     run_update_chunk_sections(&mut app);
 
     let chunk_entity = app
