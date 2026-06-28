@@ -5,7 +5,7 @@ use bevy_ecs::{
     prelude::*,
 };
 use bevy_log::error;
-use bevy_platform::collections::HashMap;
+use bevy_platform::collections::{HashMap, HashSet};
 use smallvec::SmallVec;
 use tracing::info;
 use wdn_physics::tile::{
@@ -71,6 +71,7 @@ pub fn update_regions(
     map: Res<TileMap>,
     mut queue: Local<VecDeque<(Entity, TilePosition)>>,
     mut added_regions: ResMut<AddedRegions>,
+    mut visited_sections: Local<HashSet<TilePosition>>,
 ) -> Result {
     let TileChunkSectionChanges {
         ref mut removed_sections,
@@ -92,8 +93,7 @@ pub fn update_regions(
         }
     }
 
-    removed_sections.clear();
-    let visited_sections = removed_sections;
+    visited_sections.reserve(invalid_sections.len());
 
     for (&section, &chunk_id) in invalid_sections.iter() {
         if !visited_sections.insert(section) {
@@ -151,6 +151,7 @@ pub fn update_regions(
 
     invalid_regions.clear();
     invalid_sections.clear();
+    removed_sections.clear();
     visited_sections.clear();
     Ok(())
 }

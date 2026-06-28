@@ -40,7 +40,7 @@ impl TileAdjacency {
     }
 
     pub fn empty(&self) -> Adjacency {
-        (self.walls | self.doors).complement()
+        self.solid().complement()
     }
 
     pub fn walls(&self) -> Adjacency {

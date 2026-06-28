@@ -25,9 +25,9 @@ pub struct TileChunkSection {
 
 #[derive(Default, Resource)]
 pub struct TileChunkSectionChanges {
-    pub(crate) removed_sections: HashSet<TilePosition>,
-    pub(crate) invalid_sections: HashMap<TilePosition, Entity>,
-    pub(crate) invalid_regions: EntityHashSet,
+    pub(super) removed_sections: HashSet<TilePosition>,
+    pub(super) invalid_sections: HashMap<TilePosition, Entity>,
+    pub(super) invalid_regions: EntityHashSet,
 }
 
 #[derive(Debug)]

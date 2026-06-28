@@ -224,10 +224,6 @@ impl TileLayerOffset {
             self.y().rem_euclid(CHUNK_SIZE as i32) as u16,
         )
     }
-
-    pub fn distance(&self, other: Self) -> f32 {
-        f32::sqrt(self.position.distance_squared(other.position) as _)
-    }
 }
 
 impl From<(TileChunkPosition, TileChunkOffset)> for TileLayerOffset {
