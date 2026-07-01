@@ -5,7 +5,8 @@ use bevy_math::prelude::*;
 use crate::{
     layer::Layer,
     tile::{
-        CHUNK_SIZE_SQUARED, TilePlugin,
+        CHUNK_SIZE_SQUARED, Tile, TilePlugin,
+        adjacency::TileAdjacency,
         material::TileMaterial,
         position::{TileChunkOffset, TileChunkPosition, TilePosition},
         storage::{Adjacency, TileChunk, TileKind, TileMap, TileStorage, TileStorageMut},
@@ -1216,7 +1217,13 @@ fn tile_storage_nested_buffer() {
         .run_system_once(move |mut commands: Commands, mut storage: TileStorageMut| {
             storage.set_material(tile1, TileMaterial::WALL);
 
-            commands.spawn((TilePosition::new(layer, 10, 10), TileMaterial::WALL));
+            commands.queue(move |world: &mut World| {
+                world
+                    .run_system_once(move |mut storage: TileStorageMut| {
+                        storage.set_material(tile2, TileMaterial::WALL);
+                    })
+                    .unwrap()
+            });
         })
         .unwrap();
 
@@ -1226,4 +1233,112 @@ fn tile_storage_nested_buffer() {
             assert_eq!(storage.get(tile2).unwrap().kind(), TileKind::Wall);
         })
         .unwrap();
+}
+
+#[test]
+fn tile_storage_sync_material_adjacency() {
+    let mut app = App::new();
+    app.add_plugins(TilePlugin);
+
+    let layer = app.world_mut().spawn(Layer::default()).id();
+
+    let center = TilePosition::new(layer, 8, 8);
+    let east = TilePosition::new(layer, 9, 8);
+
+    let center_tile = app.world_mut().spawn((ChildOf(layer), center, Tile)).id();
+    let center_object = app
+        .world_mut()
+        .spawn((
+            ChildOf(layer),
+            center,
+            TileMaterial::EMPTY,
+            TileAdjacency::NONE,
+        ))
+        .id();
+    let east_tile = app.world_mut().spawn((ChildOf(layer), east, Tile)).id();
+    let east_object = app
+        .world_mut()
+        .spawn((
+            ChildOf(layer),
+            east,
+            TileMaterial::EMPTY,
+            TileAdjacency::NONE,
+        ))
+        .id();
+
+    app.world_mut()
+        .run_system_once(move |mut storage: TileStorageMut| {
+            storage.set_material(center, TileMaterial::WALL);
+        })
+        .unwrap();
+
+    assert_eq!(
+        app.world()
+            .get::<TileMaterial>(center_tile)
+            .copied()
+            .unwrap(),
+        TileMaterial::WALL
+    );
+    assert_eq!(
+        app.world()
+            .get::<TileMaterial>(center_object)
+            .copied()
+            .unwrap(),
+        TileMaterial::WALL
+    );
+
+    assert_eq!(
+        app.world()
+            .get::<TileAdjacency>(east_tile)
+            .copied()
+            .unwrap()
+            .walls(),
+        Adjacency::WEST
+    );
+    assert_eq!(
+        app.world()
+            .get::<TileAdjacency>(east_object)
+            .copied()
+            .unwrap()
+            .walls(),
+        Adjacency::WEST
+    );
+
+    app.world_mut()
+        .run_system_once(move |mut storage: TileStorageMut| {
+            storage.set_material(center, TileMaterial::EMPTY);
+        })
+        .unwrap();
+
+    assert_eq!(
+        app.world()
+            .get::<TileMaterial>(center_tile)
+            .copied()
+            .unwrap(),
+        TileMaterial::EMPTY
+    );
+    assert_eq!(
+        app.world()
+            .get::<TileMaterial>(center_object)
+            .copied()
+            .unwrap(),
+        TileMaterial::EMPTY
+    );
+
+    assert_eq!(
+        app.world()
+            .get::<TileAdjacency>(east_tile)
+            .copied()
+            .unwrap()
+            .walls(),
+        Adjacency::NONE
+    );
+    assert_eq!(
+        app.world()
+            .get::<TileAdjacency>(east_object)
+            .copied()
+            .unwrap()
+            .walls(),
+        Adjacency::NONE
+    );
 }

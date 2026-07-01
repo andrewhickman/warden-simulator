@@ -1,9 +1,8 @@
 use bevy_ecs::prelude::*;
 
-use crate::tile::{position::TilePosition, storage::TileStorageMut};
+use crate::tile::position::TilePosition;
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[component(immutable)]
 #[require(TilePosition)]
 pub struct TileMaterial(u16);
 
@@ -45,16 +44,6 @@ impl TileMaterial {
     pub fn move_speed(&self) -> TileMoveSpeed {
         TileMoveSpeed::from_bits((self.0 >> 12) & 0b11)
     }
-}
-
-pub fn on_insert_material(
-    trigger: On<Insert, TileMaterial>,
-    tiles: Query<(&TileMaterial, &TilePosition)>,
-    mut storage: TileStorageMut,
-) -> Result {
-    let (material, position) = tiles.get(trigger.entity)?;
-    storage.set_material(*position, *material);
-    Ok(())
 }
 
 impl Default for TileMaterial {

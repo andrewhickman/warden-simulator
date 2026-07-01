@@ -4,13 +4,22 @@ use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
 use bevy_math::{I16Vec2, prelude::*};
 use tracing::error;
 
-use crate::tile::{CHUNK_SIZE, CHUNK_SIZE_SQUARED, Tile, index::TileIndex};
+use crate::tile::{
+    CHUNK_SIZE, CHUNK_SIZE_SQUARED, Tile, adjacency::TileAdjacency, index::TileIndex,
+    material::TileMaterial, storage::TileStorage,
+};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Component)]
-#[component(immutable, on_insert = TilePosition::on_insert, on_discard = TilePosition::on_discard)]
+#[component(on_discard = TilePosition::on_discard)]
 pub struct TilePosition {
     layer: Entity,
     position: IVec2,
+}
+
+#[derive(Clone, Copy, Debug, Message)]
+pub struct TilePositionChanged {
+    pub old: Option<TilePosition>,
+    pub new: TilePosition,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -26,6 +35,41 @@ pub struct TileChunkPosition {
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TileChunkOffset(u16);
+
+pub fn on_insert_tile_position(
+    trigger: On<Insert, TilePosition>,
+    mut tiles: Query<(
+        &TilePosition,
+        Option<&mut TileMaterial>,
+        Option<&mut TileAdjacency>,
+        Has<Tile>,
+    )>,
+    mut index: ResMut<TileIndex>,
+    storage: TileStorage,
+) -> Result {
+    let (position, material, adjacency, is_tile) = tiles.get_mut(trigger.entity)?;
+    if position != &TilePosition::default() {
+        if is_tile {
+            if index.insert_tile(trigger.entity, *position).is_some() {
+                error!("multiple tile entities at position {position:?}");
+            }
+        } else {
+            index.insert_object(trigger.entity, *position);
+        }
+
+        if material.is_some() || adjacency.is_some() {
+            if let Some(tile) = storage.get(*position) {
+                if let Some(mut material) = material {
+                    material.set_if_neq(tile.material());
+                }
+                if let Some(mut adjacency) = adjacency {
+                    adjacency.set_if_neq(tile.adjacency());
+                }
+            }
+        }
+    }
+    Ok(())
+}
 
 impl TilePosition {
     pub fn new(layer: Entity, x: i32, y: i32) -> Self {
@@ -102,23 +146,6 @@ impl TilePosition {
 
     pub fn on_chunk_edge(&self) -> bool {
         self.chunk_offset().on_chunk_edge()
-    }
-
-    fn on_insert(mut world: DeferredWorld, context: HookContext) {
-        let entity = world.entity(context.entity);
-        let is_tile = entity.contains::<Tile>();
-
-        let position = *entity.get::<TilePosition>().unwrap();
-        if position != TilePosition::default() {
-            let mut index = world.resource_mut::<TileIndex>();
-            if is_tile {
-                if index.insert_tile(context.entity, position).is_some() {
-                    error!("multiple tile entities at position {position:?}");
-                }
-            } else {
-                index.insert_object(context.entity, position);
-            }
-        }
     }
 
     fn on_discard(mut world: DeferredWorld, context: HookContext) {

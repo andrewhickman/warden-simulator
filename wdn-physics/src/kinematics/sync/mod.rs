@@ -17,7 +17,7 @@ use crate::{
 pub struct SyncQuery {
     id: Entity,
     relative: SyncRelativeQuery,
-    tile: &'static TilePosition,
+    tile: Mut<'static, TilePosition>,
     position: Mut<'static, GlobalPosition>,
     velocity: Option<Mut<'static, GlobalVelocity>>,
 }

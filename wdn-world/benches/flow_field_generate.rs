@@ -41,6 +41,7 @@ fn bench_flow_field_generate(c: &mut Criterion) {
             }
 
             let door = TilePosition::new(layer, WIDTH / 2, HEIGHT / 2);
+            storage.set_material(door, TileMaterial::DOOR);
             commands.spawn((ChildOf(layer), Door::default(), door));
         })
         .expect("failed to seed benchmark tiles");

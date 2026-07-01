@@ -2946,6 +2946,11 @@ fn set_wall_tile(app: &mut App, position: TilePosition) {
 }
 
 fn set_door_tile(app: &mut App, position: TilePosition) -> Entity {
+    app.world_mut()
+        .run_system_once(move |mut storage: TileStorageMut| {
+            storage.set_material(position, TileMaterial::DOOR);
+        })
+        .unwrap();
     app.world_mut().spawn((Door::default(), position)).id()
 }
 

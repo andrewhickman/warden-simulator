@@ -127,6 +127,7 @@ fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
     ));
 
     storage.set_material(TilePosition::new(layer, 3, 0), TileMaterial::WALL);
+    storage.set_material(TilePosition::new(layer, 3, 1), TileMaterial::DOOR);
     commands.spawn((Door::default(), TilePosition::new(layer, 3, 1)));
     storage.set_material(TilePosition::new(layer, 3, 2), TileMaterial::WALL);
     storage.set_material(TilePosition::new(layer, 3, 3), TileMaterial::WALL);
@@ -210,6 +211,7 @@ fn handle_tile_toggle(
                 }
                 TileKind::Wall => {
                     if mouse.just_pressed(MouseButton::Left) {
+                        tile_storage.set_material(tile_pos, TileMaterial::DOOR);
                         commands.spawn((Door::default(), tile_pos));
                     }
                 }
