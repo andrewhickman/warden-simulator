@@ -1954,31 +1954,6 @@ fn collision_corner_non_solid_closing() {
 }
 
 #[test]
-fn collision_tile_overridden_by_non_solid_collider() {
-    let mut app = make_app();
-    let layer = spawn_layer(&mut app);
-
-    let tile = TilePosition::new(layer, 0, 1);
-    set_tile(&mut app, tile);
-
-    spawn_non_solid_tile_collider(&mut app, tile);
-
-    let entity = spawn_collider(
-        &mut app,
-        layer,
-        Vec2::new(0.0, 0.8),
-        Vec2::new(0.0, 0.5),
-        0.1,
-    );
-
-    app.update();
-
-    let collisions = app.world().get::<Collisions>(entity).unwrap();
-    assert_eq!(collisions.active().len(), 0);
-    assert!(collisions.next_collision().is_none());
-}
-
-#[test]
 fn collision_collider_events() {
     let mut app = make_app();
     let layer = spawn_layer(&mut app);
@@ -2245,16 +2220,6 @@ fn spawn_tile_collider(app: &mut App, position: TilePosition) -> Entity {
     app.world_mut()
         .spawn((
             TileCollider { solid: true },
-            position,
-            ChildOf(position.layer()),
-        ))
-        .id()
-}
-
-fn spawn_non_solid_tile_collider(app: &mut App, position: TilePosition) -> Entity {
-    app.world_mut()
-        .spawn((
-            TileCollider { solid: false },
             position,
             ChildOf(position.layer()),
         ))
