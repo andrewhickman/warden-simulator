@@ -2,6 +2,7 @@
 
 use bevy::{
     app::TaskPoolThreadAssignmentPolicy,
+    camera_controller::pan_camera::{PanCamera, PanCameraPlugin},
     ecs::schedule::{LogLevel, ScheduleBuildSettings},
     prelude::*,
     window::WindowPlugin,
@@ -42,6 +43,7 @@ pub fn main() {
             WdnRenderPlugin,
             WdnDevRenderPlugin,
             WdnUiPlugin,
+            PanCameraPlugin,
         ))
         .add_systems(Startup, spawn_pawn)
         .add_systems(
@@ -117,6 +119,13 @@ fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
             scale: 0.01,
             ..OrthographicProjection::default_2d()
         }),
+        PanCamera {
+            pan_speed: 10.0,
+            max_zoom: 50.0,
+            key_rotate_cw: None,
+            key_rotate_ccw: None,
+            ..default()
+        },
     ));
     let layer = commands.spawn((Layer::default(),)).id();
     commands.spawn((

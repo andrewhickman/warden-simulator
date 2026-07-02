@@ -2876,6 +2876,103 @@ fn flow_room2() {
 }
 
 #[test]
+fn flow_room3() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 0, 0);
+    let start = center.with_offset(IVec2::new(0, 3));
+
+    set_rect(&mut app, center, 5, 6);
+
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, 4)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-1, 4)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, 4)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, 4)));
+
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, 3)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, 3)));
+
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, 2)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-2, 2)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-1, 2)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, 2)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(2, 2)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, 2)));
+
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, 1)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, 1)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(2, 1)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, 1)));
+
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, 0)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-1, 0)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, 0)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(2, 0)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, 0)));
+
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, -1)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, -1)));
+
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, -2)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-2, -2)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-1, -2)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(0, -2)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, -2)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, -2)));
+
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, -3)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, -3)));
+
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, -4)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(-1, -4)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(0, -4)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, -4)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(2, -4)));
+    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, -4)));
+
+    let door = set_door_tile(&mut app, center.with_offset(IVec2::new(0, -6)));
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    assert_eq!(get_flow_fields(&mut app).len(), 2);
+
+    let inside = tile_region(&mut app, start).unwrap();
+
+    let flow = region_door_flow_field(&app, inside, door);
+
+    assert_eq!(flow.len(), 61);
+
+    assert_relative_eq!(
+        get_flow(&app, inside, door, start),
+        flow_entry(0.0, 1.0, 105),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, start.north()),
+        flow_entry(0.0, 1.0, 100),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, start.east()),
+        flow_entry(1.0, 0.0, 100),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, start.south()),
+        flow_entry(0.0, -1.0, 100),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, start.west()),
+        flow_entry(-1.0, 0.0, 100),
+        epsilon = 0.01
+    );
+}
+
+#[test]
 fn flow_update() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 0, 0);
@@ -2980,6 +3077,18 @@ fn set_square(app: &mut App, center: TilePosition, radius: i32) {
         set_wall_tile(app, center.with_offset(IVec2::new(i, radius)));
         set_wall_tile(app, center.with_offset(IVec2::new(-radius, i)));
         set_wall_tile(app, center.with_offset(IVec2::new(radius, i)));
+    }
+}
+
+fn set_rect(app: &mut App, center: TilePosition, half_width: i32, half_height: i32) {
+    for i in -half_width..=half_width {
+        set_wall_tile(app, center.with_offset(IVec2::new(i, -half_height)));
+        set_wall_tile(app, center.with_offset(IVec2::new(i, half_height)));
+    }
+
+    for i in -half_height..=half_height {
+        set_wall_tile(app, center.with_offset(IVec2::new(-half_width, i)));
+        set_wall_tile(app, center.with_offset(IVec2::new(half_width, i)));
     }
 }
 
