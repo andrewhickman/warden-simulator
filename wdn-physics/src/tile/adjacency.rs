@@ -4,8 +4,8 @@ use bitflags::bitflags;
 
 #[derive(Debug, Default, Clone, Copy, Component, PartialEq, Eq)]
 pub struct TileAdjacency {
-    pub(crate) walls: Adjacency,
-    pub(crate) doors: Adjacency,
+    walls: Adjacency,
+    doors: Adjacency,
 }
 
 bitflags! {
@@ -45,8 +45,16 @@ impl TileAdjacency {
         self.walls
     }
 
+    pub fn walls_mut(&mut self) -> &mut Adjacency {
+        &mut self.walls
+    }
+
     pub fn doors(&self) -> Adjacency {
         self.doors
+    }
+
+    pub fn doors_mut(&mut self) -> &mut Adjacency {
+        &mut self.doors
     }
 }
 

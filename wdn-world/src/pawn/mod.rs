@@ -11,6 +11,7 @@ use wdn_physics::{
     PhysicsSystems,
     collision::Collider,
     kinematics::{Position, Velocity},
+    tile::material::TileMaterial,
 };
 
 use crate::{
@@ -31,7 +32,8 @@ pub struct PawnPlugin;
     Velocity,
     Health::new(Pawn::MAX_HEALTH),
     PawnAction,
-    PawnPath
+    PawnPath,
+    TileMaterial
 )]
 #[expect(unused)]
 pub struct Pawn {

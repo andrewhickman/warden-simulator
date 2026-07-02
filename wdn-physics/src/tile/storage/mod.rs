@@ -212,10 +212,10 @@ impl TileStorageMut<'_, '_> {
             let neighbor_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
-            neighbor_tile.adjacency.walls.insert(adj);
+            neighbor_tile.adjacency.walls_mut().insert(adj);
 
             self.visit_entity_adjacencies(neighbor_pos, |adjacency| {
-                adjacency.walls.insert(adj);
+                adjacency.walls_mut().insert(adj);
             });
         }
     }
@@ -227,10 +227,10 @@ impl TileStorageMut<'_, '_> {
             let neighbor_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
-            neighbor_tile.adjacency.walls.remove(adj);
+            neighbor_tile.adjacency.walls_mut().remove(adj);
 
             self.visit_entity_adjacencies(neighbor_pos, |adjacency| {
-                adjacency.walls.remove(adj);
+                adjacency.walls_mut().remove(adj);
             });
         }
     }
@@ -242,10 +242,10 @@ impl TileStorageMut<'_, '_> {
             let neighbor_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
-            neighbor_tile.adjacency.doors.insert(adj);
+            neighbor_tile.adjacency.doors_mut().insert(adj);
 
             self.visit_entity_adjacencies(neighbor_pos, |adjacency| {
-                adjacency.doors.insert(adj);
+                adjacency.doors_mut().insert(adj);
             });
         }
     }
@@ -257,10 +257,10 @@ impl TileStorageMut<'_, '_> {
             let neighbor_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
                 .get_mut(neighbor_pos.chunk_offset());
-            neighbor_tile.adjacency.doors.remove(adj);
+            neighbor_tile.adjacency.doors_mut().remove(adj);
 
             self.visit_entity_adjacencies(neighbor_pos, |adjacency| {
-                adjacency.doors.remove(adj);
+                adjacency.doors_mut().remove(adj);
             });
         }
     }
@@ -463,10 +463,10 @@ impl TileData {
     }
 
     pub fn wall_adjacency(&self) -> Adjacency {
-        self.adjacency.walls
+        self.adjacency.walls()
     }
 
     pub fn door_adjacency(&self) -> Adjacency {
-        self.adjacency.doors
+        self.adjacency.doors()
     }
 }

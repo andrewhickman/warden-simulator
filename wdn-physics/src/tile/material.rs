@@ -1,8 +1,14 @@
+use std::fmt;
+
 use bevy_ecs::prelude::*;
 
 use crate::tile::position::TilePosition;
 
-#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub const TILE_SLOW_SPEED: f32 = 0.6;
+pub const TILE_MEDIUM_SPEED: f32 = 1.0;
+pub const TILE_FAST_SPEED: f32 = 1.4;
+
+#[derive(Component, Clone, Copy, PartialEq, Eq, Hash)]
 #[require(TilePosition)]
 pub struct TileMaterial(u16);
 
@@ -52,6 +58,16 @@ impl Default for TileMaterial {
     }
 }
 
+impl fmt::Debug for TileMaterial {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("TileMaterial")
+            .field("kind", &self.kind())
+            .field("move_speed", &self.move_speed())
+            .field("id", &self.id())
+            .finish()
+    }
+}
+
 impl TileKind {
     pub fn is_empty(&self) -> bool {
         matches!(self, TileKind::Empty)
@@ -74,9 +90,9 @@ impl TileKind {
 impl TileMoveSpeed {
     pub fn factor(&self) -> f32 {
         match self {
-            TileMoveSpeed::Slow => 0.6,
-            TileMoveSpeed::Medium => 1.0,
-            TileMoveSpeed::Fast => 1.4,
+            TileMoveSpeed::Slow => TILE_SLOW_SPEED,
+            TileMoveSpeed::Medium => TILE_MEDIUM_SPEED,
+            TileMoveSpeed::Fast => TILE_FAST_SPEED,
         }
     }
 
