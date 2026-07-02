@@ -4,7 +4,7 @@ use bevy_ecs::prelude::*;
 use bevy_gizmos::prelude::*;
 use bevy_math::Vec2;
 use wdn_physics::kinematics::Position;
-use wdn_world::path::find::PathEntry;
+use wdn_world::path::find::PathStep;
 use wdn_world::path::flow::FlowField;
 use wdn_world::path::region::RegionTiles;
 use wdn_world::pawn::Pawn;
@@ -63,7 +63,7 @@ pub fn draw_pawn_paths(
 
     for entry in path.iter() {
         match entry {
-            PathEntry::InRegion {
+            PathStep::RegionCostField {
                 cost_field, region, ..
             } => {
                 let Ok(tiles) = regions.get(*region) else {
@@ -87,7 +87,7 @@ pub fn draw_pawn_paths(
                     }
                 }
             }
-            PathEntry::ToDoor {
+            PathStep::DoorFlowField {
                 flow_field, region, ..
             } => {
                 let Ok(flow) = flow_fields.get(*flow_field) else {
