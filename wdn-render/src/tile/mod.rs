@@ -158,11 +158,7 @@ fn pack_ground_tile(offset: TileChunkOffset, _tile: TileData) -> PackedTileData 
 }
 
 fn pack_wall_tile(_: TileChunkOffset, tile: TileData) -> PackedTileData {
-    let index = wall::sprite_offset(
-        tile.kind(),
-        tile.wall_adjacency(),
-        tile.door_adjacency(),
-    );
+    let index = wall::sprite_offset(tile.kind(), tile.wall_adjacency(), tile.door_adjacency());
 
     let depth = if tile.kind() == TileKind::Wall {
         0

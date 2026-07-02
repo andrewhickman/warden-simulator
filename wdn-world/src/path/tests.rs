@@ -13,7 +13,7 @@ use wdn_physics::tile::material::TileMaterial;
 use wdn_physics::tile::storage::TileChunk;
 use wdn_physics::tile::{
     TilePlugin,
-    material::{TileKind, TileMoveSpeed},
+    material::TileKind,
     position::{TileChunkOffset, TilePosition},
     storage::{TileMap, TileStorage, TileStorageMut},
 };
@@ -120,7 +120,7 @@ fn region_update2() {
 }
 
 #[test]
-fn region_update_move_speed() {
+fn region_speed_update() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
@@ -131,7 +131,7 @@ fn region_update_move_speed() {
     assert_eq!(regions.len(), 1);
     let initial_region = tile_region(&mut app, center).unwrap();
 
-    set_tile_move_speed(&mut app, center, TileMoveSpeed::Slow);
+    set_slow_tile(&mut app, center);
     update_regions(&mut app);
 
     let new_regions = get_regions(&mut app);
@@ -1964,7 +1964,7 @@ fn flow_wall3() {
             door,
             center.with_offset(IVec2::new(-2, -3))
         ),
-        flow_entry(-0.9284767, 0.37139067, 37),
+        flow_entry(-0.37139067, 0.9284767, 37),
         epsilon = 0.01
     );
     assert_relative_eq!(
@@ -2044,7 +2044,7 @@ fn flow_wall3() {
             door,
             center.with_offset(IVec2::new(-1, -2))
         ),
-        flow_entry(-0.37139067, 0.9284767, 37),
+        flow_entry(-0.9284767, 0.37139067, 37),
         epsilon = 0.01
     );
     assert_relative_eq!(
@@ -2204,7 +2204,7 @@ fn flow_wall3() {
             door,
             center.with_offset(IVec2::new(-3, 2))
         ),
-        flow_entry(0.37139067, -0.9284767, 17),
+        flow_entry(0.9284767, -0.37139067, 17),
         epsilon = 0.01
     );
     assert_relative_eq!(
@@ -2259,7 +2259,7 @@ fn flow_wall3() {
             door,
             center.with_offset(IVec2::new(-2, 3))
         ),
-        flow_entry(0.9284767, -0.37139067, 17),
+        flow_entry(0.37139067, -0.9284767, 17),
         epsilon = 0.01
     );
     assert_relative_eq!(
@@ -2973,6 +2973,233 @@ fn flow_room3() {
 }
 
 #[test]
+fn flow_speed_room1() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 0, 0);
+
+    set_square(&mut app, center, 2);
+
+    for x in -1..=1 {
+        for y in -1..=1 {
+            set_slow_tile(&mut app, center.with_offset(IVec2::new(x, y)));
+        }
+    }
+
+    let door = set_door_tile(&mut app, center.with_offset(IVec2::new(0, 2)));
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    assert_eq!(get_flow_fields(&mut app).len(), 2);
+
+    let inside = tile_region(&mut app, center).unwrap();
+
+    let flow = region_door_flow_field(&app, inside, door);
+    assert_eq!(flow.len(), 9);
+
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, -1))),
+        flow_entry(0.3939193, 0.91914505, 22),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(0, -1))),
+        flow_entry(0.0, 1.0, 19),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, -1))),
+        flow_entry(-0.3939193, 0.91914505, 22),
+        epsilon = 0.01
+    );
+
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, 0))),
+        flow_entry(0.70710677, 0.70710677, 15),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(0, 0))),
+        flow_entry(0.0, 1.0, 12),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, 0))),
+        flow_entry(-0.70710677, 0.70710677, 15),
+        epsilon = 0.01
+    );
+
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, 1))),
+        flow_entry(1.0, 0.0, 12),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(0, 1))),
+        flow_entry(0.0, 1.0, 5),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, 1))),
+        flow_entry(-1.0, 0.0, 12),
+        epsilon = 0.01
+    );
+}
+
+#[test]
+fn flow_speed_room2() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 0, 0);
+
+    set_square(&mut app, center, 2);
+
+    for x in -1..=1 {
+        for y in -1..=1 {
+            set_fast_tile(&mut app, center.with_offset(IVec2::new(x, y)));
+        }
+    }
+
+    let door = set_door_tile(&mut app, center.with_offset(IVec2::new(0, 2)));
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    assert_eq!(get_flow_fields(&mut app).len(), 2);
+
+    let inside = tile_region(&mut app, center).unwrap();
+
+    let flow = region_door_flow_field(&app, inside, door);
+    assert_eq!(flow.len(), 9);
+
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, -1))),
+        flow_entry(0.31622776, 0.9486833, 12),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(0, -1))),
+        flow_entry(0.0, 1.0, 11),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, -1))),
+        flow_entry(-0.31622776, 0.9486833, 12),
+        epsilon = 0.01
+    );
+
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, 0))),
+        flow_entry(0.70710677, 0.70710677, 9),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(0, 0))),
+        flow_entry(0.0, 1.0, 8),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, 0))),
+        flow_entry(-0.70710677, 0.70710677, 9),
+        epsilon = 0.01
+    );
+
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, 1))),
+        flow_entry(1.0, 0.0, 8),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(0, 1))),
+        flow_entry(0.0, 1.0, 5),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, 1))),
+        flow_entry(-1.0, 0.0, 8),
+        epsilon = 0.01
+    );
+}
+
+#[test]
+fn flow_speed_room3() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 0, 0);
+
+    set_square(&mut app, center, 3);
+
+    set_wall_tile(&mut app, center.north());
+    set_wall_tile(&mut app, center.south());
+
+    set_slow_tile(&mut app, center.with_offset(IVec2::new(-1, 0)));
+    set_slow_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
+    set_slow_tile(&mut app, center.with_offset(IVec2::new(1, 0)));
+
+    set_fast_tile(&mut app, center.with_offset(IVec2::new(-2, -1)));
+    set_fast_tile(&mut app, center.with_offset(IVec2::new(-2, -2)));
+    set_fast_tile(&mut app, center.with_offset(IVec2::new(-1, -1)));
+    set_fast_tile(&mut app, center.with_offset(IVec2::new(-1, -2)));
+    set_fast_tile(&mut app, center.with_offset(IVec2::new(0, -2)));
+    set_fast_tile(&mut app, center.with_offset(IVec2::new(1, -1)));
+    set_fast_tile(&mut app, center.with_offset(IVec2::new(1, -2)));
+    set_fast_tile(&mut app, center.with_offset(IVec2::new(2, -1)));
+    set_fast_tile(&mut app, center.with_offset(IVec2::new(2, -2)));
+
+    let door = set_door_tile(&mut app, center.with_offset(IVec2::new(3, 0)));
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    assert_eq!(get_flow_fields(&mut app).len(), 2);
+
+    let inside = tile_region(&mut app, center).unwrap();
+
+    let flow = region_door_flow_field(&app, inside, door);
+    assert_eq!(flow.len(), 23);
+
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(-2, 0))),
+        flow_entry(0.70710677, -0.70710677, 27),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, -1))),
+        flow_entry(0.0, -1.0, 23),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, -2))),
+        flow_entry(1.0, 0.0, 20),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(0, -2))),
+        flow_entry(1.0, 0.0, 17),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, -2))),
+        flow_entry(0.4472136, 0.8944272, 14),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, -1))),
+        flow_entry(0.70710677, 0.70710677, 12),
+        epsilon = 0.01
+    );
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.with_offset(IVec2::new(2, 0))),
+        flow_entry(1.0, 0.0, 5),
+        epsilon = 0.01
+    );
+}
+
+#[test]
 fn flow_update() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 0, 0);
@@ -3027,6 +3254,61 @@ fn flow_update() {
     );
 }
 
+#[test]
+fn flow_speed_update() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 0, 0);
+
+    set_square(&mut app, center, 2);
+    let door = set_door_tile(&mut app, center.with_offset(IVec2::new(0, 2)));
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    let flow_fields = get_flow_fields(&mut app);
+    assert_eq!(flow_fields.len(), 2);
+
+    let inside = tile_region(&mut app, center).unwrap();
+
+    let flow_field_id = region_door_flow_field_id(&app, inside, door);
+    let flow_field = app.world().get::<FlowField>(flow_field_id).unwrap();
+    assert_eq!(flow_field.len(), 9);
+
+    assert_relative_eq!(
+        get_flow(&app, inside, door, center.south()),
+        flow_entry(0.0, 1.0, 15),
+        epsilon = 0.01
+    );
+
+    set_fast_tile(&mut app, center);
+    update_regions(&mut app);
+
+    let new_regions = get_regions(&mut app);
+    assert_eq!(new_regions.len(), 2);
+    assert!(!new_regions.contains(&inside));
+
+    let new_flow_fields = get_flow_fields(&mut app);
+    assert_eq!(new_flow_fields.len(), 2);
+    assert!(!new_flow_fields.contains(&flow_field_id));
+
+    let new_inside = tile_region(&mut app, center.south()).unwrap();
+    assert_ne!(new_inside, inside);
+
+    let new_flow_field_id = region_door_flow_field_id(&app, new_inside, door);
+    assert_ne!(new_flow_field_id, flow_field_id);
+
+    let new_flow_field = app.world().get::<FlowField>(new_flow_field_id).unwrap();
+    assert_eq!(new_flow_field.len(), 9);
+
+    assert_relative_eq!(
+        get_flow(&app, new_inside, door, center.south()),
+        flow_entry(0.0, 1.0, 13),
+        epsilon = 0.01
+    );
+}
+
 fn make_app() -> (App, Entity) {
     let mut app = App::new();
     app.add_plugins((TaskPoolPlugin::default(), TilePlugin, PathPlugin));
@@ -3051,10 +3333,18 @@ fn set_door_tile(app: &mut App, position: TilePosition) -> Entity {
     app.world_mut().spawn((Door::default(), position)).id()
 }
 
-fn set_tile_move_speed(app: &mut App, position: TilePosition, move_speed: TileMoveSpeed) {
+fn set_slow_tile(app: &mut App, position: TilePosition) {
     app.world_mut()
         .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(position, TileMaterial::new(TileKind::Empty, move_speed, 0));
+            storage.set_material(position, TileMaterial::SLOW);
+        })
+        .unwrap();
+}
+
+fn set_fast_tile(app: &mut App, position: TilePosition) {
+    app.world_mut()
+        .run_system_once(move |mut storage: TileStorageMut| {
+            storage.set_material(position, TileMaterial::FAST);
         })
         .unwrap();
 }

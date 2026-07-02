@@ -33,6 +33,8 @@ impl TileMaterial {
     pub const EMPTY: Self = TileMaterial::new(TileKind::Empty, TileMoveSpeed::Medium, 0);
     pub const WALL: Self = TileMaterial::new(TileKind::Wall, TileMoveSpeed::Medium, 0);
     pub const DOOR: Self = TileMaterial::new(TileKind::Door, TileMoveSpeed::Medium, 0);
+    pub const SLOW: Self = TileMaterial::new(TileKind::Empty, TileMoveSpeed::Slow, 0);
+    pub const FAST: Self = TileMaterial::new(TileKind::Empty, TileMoveSpeed::Fast, 0);
 
     pub const fn new(kind: TileKind, move_speed: TileMoveSpeed, id: u16) -> Self {
         debug_assert!(id <= 0x0FFF);

@@ -373,7 +373,7 @@ impl CostField {
             (None, Some(_), None, None) => Dir2::EAST,
             (None, Some(e), Some(s), None) => {
                 let (x, y) = flow_dir(e, s);
-                Dir2::from_xy_unchecked(x, -y)
+                Dir2::from_xy_unchecked(y, -x)
             }
             (None, None, Some(_), None) => Dir2::SOUTH,
             (None, None, Some(s), Some(w)) => {
@@ -383,7 +383,7 @@ impl CostField {
             (None, None, None, Some(_)) => Dir2::WEST,
             (Some(n), None, None, Some(w)) => {
                 let (x, y) = flow_dir(w, n);
-                Dir2::from_xy_unchecked(-x, y)
+                Dir2::from_xy_unchecked(-y, x)
             }
             _ => panic!(
                 "failed to resolve flow vector for tile {:?} with cost {}",
