@@ -87,8 +87,8 @@ impl TilePosition {
         TilePosition::new(layer, floor(position.x), floor(position.y))
     }
 
-    pub fn with_offset(&self, offset: IVec2) -> Self {
-        TilePosition::from_vec(self.layer(), self.position() + offset)
+    pub fn with_offset(&self, x: i32, y: i32) -> Self {
+        TilePosition::from_vec(self.layer(), self.position() + IVec2::new(x, y))
     }
 
     pub fn layer(&self) -> Entity {
@@ -108,19 +108,19 @@ impl TilePosition {
     }
 
     pub fn north(&self) -> Self {
-        self.with_offset(IVec2::new(0, 1))
+        self.with_offset(0, 1)
     }
 
     pub fn south(&self) -> Self {
-        self.with_offset(IVec2::new(0, -1))
+        self.with_offset(0, -1)
     }
 
     pub fn east(&self) -> Self {
-        self.with_offset(IVec2::new(1, 0))
+        self.with_offset(1, 0)
     }
 
     pub fn west(&self) -> Self {
-        self.with_offset(IVec2::new(-1, 0))
+        self.with_offset(-1, 0)
     }
 
     pub fn layer_offset(&self) -> TileLayerOffset {
@@ -225,24 +225,24 @@ impl TileLayerOffset {
         self.position
     }
 
-    pub fn with_offset(&self, offset: IVec2) -> Self {
-        TileLayerOffset::from_vec(self.position() + offset)
+    pub fn with_offset(&self, x: i32, y: i32) -> Self {
+        TileLayerOffset::from_vec(self.position() + IVec2::new(x, y))
     }
 
     pub fn north(&self) -> Self {
-        self.with_offset(IVec2::new(0, 1))
+        self.with_offset(0, 1)
     }
 
     pub fn south(&self) -> Self {
-        self.with_offset(IVec2::new(0, -1))
+        self.with_offset(0, -1)
     }
 
     pub fn east(&self) -> Self {
-        self.with_offset(IVec2::new(1, 0))
+        self.with_offset(1, 0)
     }
 
     pub fn west(&self) -> Self {
-        self.with_offset(IVec2::new(-1, 0))
+        self.with_offset(-1, 0)
     }
 
     pub fn chunk_offset(&self) -> TileChunkOffset {

@@ -2,7 +2,7 @@ use approx::{AbsDiffEq, RelativeEq, assert_relative_eq};
 use bevy_app::prelude::*;
 use bevy_ecs::entity::EntityHashSet;
 use bevy_ecs::{prelude::*, system::RunSystemOnce};
-use bevy_math::{Dir2, IVec2};
+use bevy_math::Dir2;
 
 use bevy_platform::collections::HashSet;
 use wdn_physics::layer::Layer;
@@ -99,7 +99,7 @@ fn region_update2() {
     assert_eq!(region_size(&mut app, inside), 24);
     assert_eq!(region_size(&mut app, outside), 975);
 
-    clear_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
+    clear_tile(&mut app, center.with_offset(0, 0));
     update_regions(&mut app);
 
     let new_regions = get_regions(&mut app);
@@ -108,9 +108,9 @@ fn region_update2() {
     assert!(new_regions.contains(&outside));
     assert!(!new_regions.contains(&inside));
 
-    let new_inside = tile_region(&mut app, center.with_offset(IVec2::new(0, 0))).unwrap();
+    let new_inside = tile_region(&mut app, center.with_offset(0, 0)).unwrap();
     assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(1, 1))),
+        tile_region(&mut app, center.with_offset(1, 1)),
         Some(new_inside)
     );
     assert_eq!(
@@ -313,12 +313,12 @@ fn region_room3() {
     let start = TilePosition::new(layer, 0, 0);
 
     for x in -10i32..=10 {
-        set_wall_tile(&mut app, start.with_offset(IVec2::new(x, -1)));
-        set_wall_tile(&mut app, start.with_offset(IVec2::new(x, 1)));
+        set_wall_tile(&mut app, start.with_offset(x, -1));
+        set_wall_tile(&mut app, start.with_offset(x, 1));
     }
     for y in -1i32..=1 {
-        set_wall_tile(&mut app, start.with_offset(IVec2::new(-10, y)));
-        set_wall_tile(&mut app, start.with_offset(IVec2::new(10, y)));
+        set_wall_tile(&mut app, start.with_offset(-10, y));
+        set_wall_tile(&mut app, start.with_offset(10, y));
     }
 
     update_regions(&mut app);
@@ -327,17 +327,14 @@ fn region_room3() {
     assert_eq!(regions.len(), 2);
 
     let inside = tile_region(&mut app, start).unwrap();
-    let outside = tile_region(&mut app, start.with_offset(IVec2::new(0, 5))).unwrap();
+    let outside = tile_region(&mut app, start.with_offset(0, 5)).unwrap();
 
     assert!(regions.contains(&inside));
     assert!(regions.contains(&outside));
     assert_ne!(inside, outside);
 
     for x in -9i32..=9 {
-        assert_eq!(
-            tile_region(&mut app, start.with_offset(IVec2::new(x, 0))),
-            Some(inside)
-        );
+        assert_eq!(tile_region(&mut app, start.with_offset(x, 0)), Some(inside));
     }
 }
 
@@ -355,7 +352,7 @@ fn region_room4() {
     assert_eq!(regions.len(), 3);
 
     let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
-    let middle = tile_region(&mut app, center.with_offset(IVec2::new(3, 0))).unwrap();
+    let middle = tile_region(&mut app, center.with_offset(3, 0)).unwrap();
     let inside = tile_region(&mut app, center).unwrap();
 
     assert!(regions.contains(&outside));
@@ -367,19 +364,19 @@ fn region_room4() {
     assert_ne!(inside, middle);
 
     assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(3, 0))),
+        tile_region(&mut app, center.with_offset(3, 0)),
         Some(middle)
     );
     assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(-3, 0))),
+        tile_region(&mut app, center.with_offset(-3, 0)),
         Some(middle)
     );
     assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(0, 3))),
+        tile_region(&mut app, center.with_offset(0, 3)),
         Some(middle)
     );
     assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(0, -3))),
+        tile_region(&mut app, center.with_offset(0, -3)),
         Some(middle)
     );
 }
@@ -390,20 +387,20 @@ fn region_room5() {
     let origin = TilePosition::new(layer, 0, 0);
 
     for i in 0..10 {
-        set_wall_tile(&mut app, origin.with_offset(IVec2::new(i, 0)));
-        set_wall_tile(&mut app, origin.with_offset(IVec2::new(i, 9)));
-        set_wall_tile(&mut app, origin.with_offset(IVec2::new(0, i)));
-        set_wall_tile(&mut app, origin.with_offset(IVec2::new(9, i)));
+        set_wall_tile(&mut app, origin.with_offset(i, 0));
+        set_wall_tile(&mut app, origin.with_offset(i, 9));
+        set_wall_tile(&mut app, origin.with_offset(0, i));
+        set_wall_tile(&mut app, origin.with_offset(9, i));
     }
 
     for i in 1i32..8 {
         if i != 4 {
-            set_wall_tile(&mut app, origin.with_offset(IVec2::new(5, i)));
+            set_wall_tile(&mut app, origin.with_offset(5, i));
         }
     }
     for i in 1i32..6 {
         if i != 2 {
-            set_wall_tile(&mut app, origin.with_offset(IVec2::new(i, 5)));
+            set_wall_tile(&mut app, origin.with_offset(i, 5));
         }
     }
 
@@ -412,15 +409,15 @@ fn region_room5() {
     let regions = get_regions(&mut app);
     assert_eq!(regions.len(), 2);
 
-    let maze_inside = tile_region(&mut app, origin.with_offset(IVec2::new(1, 1))).unwrap();
+    let maze_inside = tile_region(&mut app, origin.with_offset(1, 1)).unwrap();
     let outside = tile_region(&mut app, TilePosition::new(layer, 20, 20)).unwrap();
 
     assert!(regions.contains(&maze_inside));
     assert!(regions.contains(&outside));
     assert_ne!(maze_inside, outside);
 
-    let top_left = tile_region(&mut app, origin.with_offset(IVec2::new(1, 1))).unwrap();
-    let bottom_right = tile_region(&mut app, origin.with_offset(IVec2::new(7, 7))).unwrap();
+    let top_left = tile_region(&mut app, origin.with_offset(1, 1)).unwrap();
+    let bottom_right = tile_region(&mut app, origin.with_offset(7, 7)).unwrap();
 
     assert_eq!(top_left, bottom_right);
 }
@@ -434,7 +431,7 @@ fn region_room6() {
     set_square(&mut app, center, 5);
 
     for y in -3..5 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(1, y)));
+        set_wall_tile(&mut app, center.with_offset(1, y));
     }
 
     update_regions(&mut app);
@@ -442,8 +439,8 @@ fn region_room6() {
     let regions = get_regions(&mut app);
     assert_eq!(regions.len(), 2);
 
-    let left = tile_region(&mut app, center.with_offset(IVec2::new(-1, 0))).unwrap();
-    let right = tile_region(&mut app, center.with_offset(IVec2::new(3, 0))).unwrap();
+    let left = tile_region(&mut app, center.with_offset(-1, 0)).unwrap();
+    let right = tile_region(&mut app, center.with_offset(3, 0)).unwrap();
 
     assert_eq!(left, right);
 }
@@ -481,7 +478,7 @@ fn region_room_many() {
     for x in -4..=4 {
         for y in -4..=4 {
             if (x + y) % 2 == 0 {
-                set_wall_tile(&mut app, center.with_offset(IVec2::new(x, y)));
+                set_wall_tile(&mut app, center.with_offset(x, y));
             }
         }
     }
@@ -599,18 +596,18 @@ fn region_wall2() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 16, 16);
 
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, 1)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, 3)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(4, 4)));
+    set_wall_tile(&mut app, center.with_offset(0, 0));
+    set_wall_tile(&mut app, center.with_offset(1, 1));
+    set_wall_tile(&mut app, center.with_offset(3, 3));
+    set_wall_tile(&mut app, center.with_offset(4, 4));
 
     update_regions(&mut app);
 
     let regions = get_regions(&mut app);
     assert_eq!(regions.len(), 1);
 
-    let ne_region = tile_region(&mut app, center.with_offset(IVec2::new(5, 0))).unwrap();
-    let sw_region = tile_region(&mut app, center.with_offset(IVec2::new(0, 5))).unwrap();
+    let ne_region = tile_region(&mut app, center.with_offset(5, 0)).unwrap();
+    let sw_region = tile_region(&mut app, center.with_offset(0, 5)).unwrap();
 
     assert!(regions.contains(&ne_region));
     assert_eq!(ne_region, sw_region);
@@ -622,13 +619,13 @@ fn region_wall3() {
     let center = TilePosition::new(layer, 16, 16);
 
     set_square(&mut app, center, 4);
-    clear_tile(&mut app, center.with_offset(IVec2::new(4, 0)));
+    clear_tile(&mut app, center.with_offset(4, 0));
 
     for i in -2i32..=3 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, -2)));
+        set_wall_tile(&mut app, center.with_offset(i, -2));
     }
     for i in -2i32..=2 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(-2, i)));
+        set_wall_tile(&mut app, center.with_offset(-2, i));
     }
 
     update_regions(&mut app);
@@ -641,7 +638,7 @@ fn region_wall3() {
     assert!(regions.contains(&outside));
 
     assert_eq!(
-        tile_region(&mut app, center.with_offset(IVec2::new(3, 0))),
+        tile_region(&mut app, center.with_offset(3, 0)),
         Some(outside)
     );
     assert_eq!(tile_region(&mut app, center), Some(outside));
@@ -678,7 +675,7 @@ fn region_insert() {
 
     for x in -2..=2 {
         for y in -2..=2 {
-            set_wall_tile(&mut app, center.with_offset(IVec2::new(x, y)));
+            set_wall_tile(&mut app, center.with_offset(x, y));
         }
     }
 
@@ -695,7 +692,7 @@ fn region_insert() {
 
     for x in -1..=1 {
         for y in -1..=1 {
-            clear_tile(&mut app, center.with_offset(IVec2::new(x, y)));
+            clear_tile(&mut app, center.with_offset(x, y));
         }
     }
 
@@ -738,7 +735,7 @@ fn region_remove() {
 
     for x in -1..=1 {
         for y in -1..=1 {
-            set_wall_tile(&mut app, center.with_offset(IVec2::new(x, y)));
+            set_wall_tile(&mut app, center.with_offset(x, y));
         }
     }
 
@@ -819,7 +816,7 @@ fn region_split2() {
 
     for dx in -4..=4 {
         for dy in -4..=4 {
-            let pos = center.with_offset(IVec2::new(dx, dy));
+            let pos = center.with_offset(dx, dy);
             if dx.abs() + dy.abs() == 4 {
                 set_wall_tile(&mut app, pos);
             }
@@ -840,7 +837,7 @@ fn region_split2() {
     assert_eq!(region_size(&mut app, inside), 25);
 
     for dy in -4..4 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(0, dy)));
+        set_wall_tile(&mut app, center.with_offset(0, dy));
     }
 
     update_regions(&mut app);
@@ -877,7 +874,7 @@ fn region_split3() {
     assert_eq!(regions.len(), 2);
 
     for i in -2..=2 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, i)));
+        set_wall_tile(&mut app, center.with_offset(i, i));
     }
 
     update_regions(&mut app);
@@ -885,8 +882,8 @@ fn region_split3() {
     let regions = get_regions(&mut app);
     assert_eq!(regions.len(), 3);
 
-    let ne_region = tile_region(&mut app, center.with_offset(IVec2::new(1, -1))).unwrap();
-    let sw_region = tile_region(&mut app, center.with_offset(IVec2::new(-1, 1))).unwrap();
+    let ne_region = tile_region(&mut app, center.with_offset(1, -1)).unwrap();
+    let sw_region = tile_region(&mut app, center.with_offset(-1, 1)).unwrap();
     let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
 
     assert!(regions.contains(&ne_region));
@@ -898,10 +895,7 @@ fn region_split3() {
     assert_ne!(sw_region, outside);
 
     for i in -2..=2 {
-        assert_eq!(
-            tile_region(&mut app, center.with_offset(IVec2::new(i, i))),
-            None
-        );
+        assert_eq!(tile_region(&mut app, center.with_offset(i, i)), None);
     }
 }
 
@@ -918,7 +912,7 @@ fn region_split4() {
     assert_eq!(initial_regions.len(), 2);
 
     for i in -3i32..=3 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(i, 0)));
+        set_wall_tile(&mut app, center.with_offset(i, 0));
     }
 
     update_regions(&mut app);
@@ -927,8 +921,8 @@ fn region_split4() {
     assert_eq!(split_regions.len(), 3);
 
     let outside = tile_region(&mut app, TilePosition::new(layer, 30, 30)).unwrap();
-    let north = tile_region(&mut app, center.with_offset(IVec2::new(0, 2))).unwrap();
-    let south = tile_region(&mut app, center.with_offset(IVec2::new(0, -2))).unwrap();
+    let north = tile_region(&mut app, center.with_offset(0, 2)).unwrap();
+    let south = tile_region(&mut app, center.with_offset(0, -2)).unwrap();
 
     assert!(split_regions.contains(&outside));
     assert!(split_regions.contains(&north));
@@ -1041,7 +1035,7 @@ fn region_door_insert() {
     assert!(region_doors(&mut app, inside).is_empty());
     assert!(region_doors(&mut app, outside).is_empty());
 
-    let door = set_door_tile(&mut app, center.with_offset(IVec2::new(0, 2)));
+    let door = set_door_tile(&mut app, center.with_offset(0, 2));
 
     update_regions(&mut app);
 
@@ -1070,7 +1064,7 @@ fn region_door_update() {
     let center = TilePosition::new(layer, 0, 0);
 
     set_square(&mut app, center, 2);
-    let door = set_door_tile(&mut app, center.with_offset(IVec2::new(0, 2)));
+    let door = set_door_tile(&mut app, center.with_offset(0, 2));
 
     update_regions(&mut app);
 
@@ -1092,7 +1086,7 @@ fn region_door_update() {
 
     for x in -1..=1 {
         for y in -1..=1 {
-            set_wall_tile(&mut app, center.with_offset(IVec2::new(x, y)));
+            set_wall_tile(&mut app, center.with_offset(x, y));
         }
     }
 
@@ -1113,7 +1107,7 @@ fn region_door_remove() {
     let center = TilePosition::new(layer, 0, 0);
 
     set_square(&mut app, center, 2);
-    let door = set_door_tile(&mut app, center.with_offset(IVec2::new(0, 2)));
+    let door = set_door_tile(&mut app, center.with_offset(0, 2));
 
     update_regions(&mut app);
 
@@ -1133,8 +1127,8 @@ fn region_door_remove() {
     assert_eq!(region_doors(&mut app, inside), vec![door]);
     assert_eq!(region_doors(&mut app, outside), vec![door]);
 
-    clear_tile(&mut app, center.with_offset(IVec2::new(0, 2)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(0, 2)));
+    clear_tile(&mut app, center.with_offset(0, 2));
+    set_wall_tile(&mut app, center.with_offset(0, 2));
 
     update_regions(&mut app);
 
@@ -1164,7 +1158,7 @@ fn region_merge1() {
 
     set_square(&mut app, center, 2);
     for dx in -2..=2 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(dx, 0)));
+        set_wall_tile(&mut app, center.with_offset(dx, 0));
     }
 
     update_regions(&mut app);
@@ -1214,7 +1208,7 @@ fn region_merge2() {
 
     set_square(&mut app, center, 5);
     for dy in -5..=5 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(0, dy)));
+        set_wall_tile(&mut app, center.with_offset(0, dy));
     }
 
     update_regions(&mut app);
@@ -1437,137 +1431,82 @@ fn flow_empty() {
     );
 
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(0, 2))),
+        get_flow(&app, regions[0], door, center.with_offset(0, 2)),
         flow_entry(0.0, -1.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(1, 2))),
+        get_flow(&app, regions[0], door, center.with_offset(1, 2)),
         flow_entry(-0.70710677, -0.70710677, 12),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(2, 2))),
+        get_flow(&app, regions[0], door, center.with_offset(2, 2)),
         flow_entry(-0.70710677, -0.70710677, 17),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(2, 1))),
+        get_flow(&app, regions[0], door, center.with_offset(2, 1)),
         flow_entry(-0.70710677, -0.70710677, 12),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(2, 0))),
+        get_flow(&app, regions[0], door, center.with_offset(2, 0)),
         flow_entry(-1.0, 0.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(2, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(2, -1)),
         flow_entry(-0.70710677, 0.70710677, 12),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(2, -2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(2, -2)),
         flow_entry(-0.70710677, 0.70710677, 17),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(1, -2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(1, -2)),
         flow_entry(-0.70710677, 0.70710677, 12),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(0, -2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(0, -2)),
         flow_entry(0.0, 1.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, -2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, -2)),
         flow_entry(0.70710677, 0.70710677, 12),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-2, -2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-2, -2)),
         flow_entry(0.70710677, 0.70710677, 17),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-2, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-2, -1)),
         flow_entry(0.70710677, 0.70710677, 12),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-2, 0))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-2, 0)),
         flow_entry(1.0, 0.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-2, 1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-2, 1)),
         flow_entry(0.70710677, -0.70710677, 12),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-2, 2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-2, 2)),
         flow_entry(0.70710677, -0.70710677, 17),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, 2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, 2)),
         flow_entry(0.70710677, -0.70710677, 12),
         epsilon = 0.01
     );
@@ -1579,7 +1518,7 @@ fn flow_wall1() {
     let center = TilePosition::new(layer, 0, 0);
 
     for x in -2..=2 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(x, 0)));
+        set_wall_tile(&mut app, center.with_offset(x, 0));
     }
 
     let door = set_door_tile(&mut app, center);
@@ -1613,137 +1552,82 @@ fn flow_wall1() {
     );
 
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(0, 1))),
+        get_flow(&app, regions[0], door, center.with_offset(0, 1)),
         flow_entry(0.0, -1.0, 5),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(1, 1))),
+        get_flow(&app, regions[0], door, center.with_offset(1, 1)),
         flow_entry(-1.0, 0.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(2, 1))),
+        get_flow(&app, regions[0], door, center.with_offset(2, 1)),
         flow_entry(-1.0, 0.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(3, 1))),
+        get_flow(&app, regions[0], door, center.with_offset(3, 1)),
         flow_entry(-1.0, 0.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(3, 0))),
+        get_flow(&app, regions[0], door, center.with_offset(3, 0)),
         flow_entry(0.0, 1.0, 25),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(3, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(3, -1)),
         flow_entry(-1.0, 0.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(2, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(2, -1)),
         flow_entry(-1.0, 0.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(1, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(1, -1)),
         flow_entry(-1.0, 0.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(0, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(0, -1)),
         flow_entry(0.0, 1.0, 5),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, -1)),
         flow_entry(1.0, 0.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-2, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-2, -1)),
         flow_entry(1.0, 0.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-3, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-3, -1)),
         flow_entry(1.0, 0.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-3, 0))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-3, 0)),
         flow_entry(0.0, 1.0, 25),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-3, 1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-3, 1)),
         flow_entry(1.0, 0.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-2, 1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-2, 1)),
         flow_entry(1.0, 0.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, 1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, 1)),
         flow_entry(1.0, 0.0, 10),
         epsilon = 0.01
     );
@@ -1755,7 +1639,7 @@ fn flow_wall2() {
     let center = TilePosition::new(layer, 0, 0);
 
     for y in -2..=2 {
-        set_wall_tile(&mut app, center.with_offset(IVec2::new(0, y)));
+        set_wall_tile(&mut app, center.with_offset(0, y));
     }
 
     let door = set_door_tile(&mut app, center);
@@ -1789,137 +1673,82 @@ fn flow_wall2() {
     );
 
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(1, 0))),
+        get_flow(&app, regions[0], door, center.with_offset(1, 0)),
         flow_entry(-1.0, 0.0, 5),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(1, 1))),
+        get_flow(&app, regions[0], door, center.with_offset(1, 1)),
         flow_entry(0.0, -1.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(1, 2))),
+        get_flow(&app, regions[0], door, center.with_offset(1, 2)),
         flow_entry(0.0, -1.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(1, 3))),
+        get_flow(&app, regions[0], door, center.with_offset(1, 3)),
         flow_entry(0.0, -1.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(0, 3))),
+        get_flow(&app, regions[0], door, center.with_offset(0, 3)),
         flow_entry(1.0, 0.0, 25),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, 3))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, 3)),
         flow_entry(0.0, -1.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, 2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, 2)),
         flow_entry(0.0, -1.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, 1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, 1)),
         flow_entry(0.0, -1.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, 0))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, 0)),
         flow_entry(1.0, 0.0, 5),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, -1)),
         flow_entry(0.0, 1.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, -2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, -2)),
         flow_entry(0.0, 1.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, -3))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, -3)),
         flow_entry(0.0, 1.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(0, -3))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(0, -3)),
         flow_entry(1.0, 0.0, 25),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(1, -3))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(1, -3)),
         flow_entry(0.0, 1.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(1, -2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(1, -2)),
         flow_entry(0.0, 1.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(1, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(1, -1)),
         flow_entry(0.0, 1.0, 10),
         epsilon = 0.01
     );
@@ -1949,347 +1778,202 @@ fn flow_wall3() {
     assert_eq!(flow_field.len(), 4087);
 
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-3, -3))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-3, -3)),
         flow_entry(0.0, 1.0, 35),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-2, -3))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-2, -3)),
         flow_entry(-0.37139067, 0.9284767, 37),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, -3))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, -3)),
         flow_entry(-0.70710677, 0.70710677, 39),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(0, -3))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(0, -3)),
         flow_entry(1.0, 0.0, 44),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(1, -3))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(1, -3)),
         flow_entry(0.70710677, 0.70710677, 39),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(2, -3))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(2, -3)),
         flow_entry(0.37139067, 0.9284767, 37),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(3, -3))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(3, -3)),
         flow_entry(0.0, 1.0, 35),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-3, -2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-3, -2)),
         flow_entry(0.0, 1.0, 30),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-2, -2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-2, -2)),
         flow_entry(-0.70710677, 0.70710677, 32),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, -2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, -2)),
         flow_entry(-0.9284767, 0.37139067, 37),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(1, -2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(1, -2)),
         flow_entry(0.9284767, 0.37139067, 37),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(2, -2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(2, -2)),
         flow_entry(0.70710677, 0.70710677, 32),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(3, -2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(3, -2)),
         flow_entry(0.0, 1.0, 30),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-3, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-3, -1)),
         flow_entry(0.0, 1.0, 25),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-2, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-2, -1)),
         flow_entry(-1.0, 0.0, 30),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, -1)),
         flow_entry(-1.0, 0.0, 35),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(1, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(1, -1)),
         flow_entry(1.0, 0.0, 35),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(2, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(2, -1)),
         flow_entry(1.0, 0.0, 30),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(3, -1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(3, -1)),
         flow_entry(0.0, 1.0, 25),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-3, 0))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-3, 0)),
         flow_entry(0.0, 1.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(3, 0))),
+        get_flow(&app, regions[0], door, center.with_offset(3, 0)),
         flow_entry(0.0, 1.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-3, 1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-3, 1)),
         flow_entry(1.0, 0.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-2, 1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-2, 1)),
         flow_entry(1.0, 0.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, 1))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, 1)),
         flow_entry(1.0, 0.0, 5),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(1, 1))),
+        get_flow(&app, regions[0], door, center.with_offset(1, 1)),
         flow_entry(-1.0, 0.0, 5),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(2, 1))),
+        get_flow(&app, regions[0], door, center.with_offset(2, 1)),
         flow_entry(-1.0, 0.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(3, 1))),
+        get_flow(&app, regions[0], door, center.with_offset(3, 1)),
         flow_entry(-1.0, 0.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-3, 2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-3, 2)),
         flow_entry(0.9284767, -0.37139067, 17),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-2, 2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-2, 2)),
         flow_entry(0.70710677, -0.70710677, 12),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, 2))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, 2)),
         flow_entry(0.0, -1.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(1, 2))),
+        get_flow(&app, regions[0], door, center.with_offset(1, 2)),
         flow_entry(0.0, -1.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(2, 2))),
+        get_flow(&app, regions[0], door, center.with_offset(2, 2)),
         flow_entry(-0.70710677, -0.70710677, 12),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(3, 2))),
+        get_flow(&app, regions[0], door, center.with_offset(3, 2)),
         flow_entry(-0.9284767, -0.37139067, 17),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-3, 3))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-3, 3)),
         flow_entry(0.70710677, -0.70710677, 19),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-2, 3))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-2, 3)),
         flow_entry(0.37139067, -0.9284767, 17),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            regions[0],
-            door,
-            center.with_offset(IVec2::new(-1, 3))
-        ),
+        get_flow(&app, regions[0], door, center.with_offset(-1, 3)),
         flow_entry(0.0, -1.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(0, 3))),
+        get_flow(&app, regions[0], door, center.with_offset(0, 3)),
         flow_entry(1.0, 0.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(1, 3))),
+        get_flow(&app, regions[0], door, center.with_offset(1, 3)),
         flow_entry(0.0, -1.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(2, 3))),
+        get_flow(&app, regions[0], door, center.with_offset(2, 3)),
         flow_entry(-0.37139067, -0.9284767, 17),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, regions[0], door, center.with_offset(IVec2::new(3, 3))),
+        get_flow(&app, regions[0], door, center.with_offset(3, 3)),
         flow_entry(-0.70710677, -0.70710677, 19),
         epsilon = 0.01
     );
@@ -2310,7 +1994,7 @@ fn flow_room1() {
     assert_eq!(regions.len(), 2);
 
     let inside = tile_region(&mut app, center).unwrap();
-    let outside = tile_region(&mut app, center.with_offset(IVec2::new(0, 2))).unwrap();
+    let outside = tile_region(&mut app, center.with_offset(0, 2)).unwrap();
 
     assert_eq!(get_flow_fields(&mut app).len(), 4);
 
@@ -2346,343 +2030,173 @@ fn flow_room1() {
     );
 
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(-2, -2))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(-2, -2)),
         flow_entry(0.0, 1.0, 35),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(-1, -2))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(-1, -2)),
         flow_entry(-1.0, 0.0, 40),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(0, -2))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(0, -2)),
         flow_entry(1.0, 0.0, 45),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(1, -2))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(1, -2)),
         flow_entry(1.0, 0.0, 40),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(2, -2))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(2, -2)),
         flow_entry(0.0, 1.0, 35),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(-2, -1))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(-2, -1)),
         flow_entry(0.0, 1.0, 30),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(0, -1))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(0, -1)),
         flow_entry(0.0, -1.0, 50),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(2, -1))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(2, -1)),
         flow_entry(0.0, 1.0, 30),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(-2, 0))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(-2, 0)),
         flow_entry(0.0, 1.0, 25),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(2, 0))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(2, 0)),
         flow_entry(0.0, 1.0, 25),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(-2, 1))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(-2, 1)),
         flow_entry(0.0, 1.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(2, 1))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(2, 1)),
         flow_entry(0.0, 1.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(-2, 2))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(-2, 2)),
         flow_entry(1.0, 0.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(-1, 2))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(-1, 2)),
         flow_entry(1.0, 0.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(0, 2))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(0, 2)),
         flow_entry(0.0, -1.0, 5),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(1, 2))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(1, 2)),
         flow_entry(-1.0, 0.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            north_door,
-            center.with_offset(IVec2::new(2, 2))
-        ),
+        get_flow(&app, outside, north_door, center.with_offset(2, 2)),
         flow_entry(-1.0, 0.0, 15),
         epsilon = 0.01
     );
 
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(-2, -2))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(-2, -2)),
         flow_entry(1.0, 0.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(-1, -2))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(-1, -2)),
         flow_entry(1.0, 0.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(0, -2))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(0, -2)),
         flow_entry(0.0, 1.0, 5),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(1, -2))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(1, -2)),
         flow_entry(-1.0, 0.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(2, -2))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(2, -2)),
         flow_entry(-1.0, 0.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(-2, -1))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(-2, -1)),
         flow_entry(0.0, -1.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(2, -1))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(2, -1)),
         flow_entry(0.0, -1.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(-2, 0))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(-2, 0)),
         flow_entry(0.0, -1.0, 25),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(2, 0))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(2, 0)),
         flow_entry(0.0, -1.0, 25),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(-2, 1))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(-2, 1)),
         flow_entry(0.0, -1.0, 30),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(0, 1))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(0, 1)),
         flow_entry(0.0, 1.0, 50),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(2, 1))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(2, 1)),
         flow_entry(0.0, -1.0, 30),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(-2, 2))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(-2, 2)),
         flow_entry(0.0, -1.0, 35),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(-1, 2))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(-1, 2)),
         flow_entry(-1.0, 0.0, 40),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(0, 2))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(0, 2)),
         flow_entry(1.0, 0.0, 45),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(1, 2))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(1, 2)),
         flow_entry(1.0, 0.0, 40),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            outside,
-            south_door,
-            center.with_offset(IVec2::new(2, 2))
-        ),
+        get_flow(&app, outside, south_door, center.with_offset(2, 2)),
         flow_entry(0.0, -1.0, 35),
         epsilon = 0.01
     );
@@ -2695,7 +2209,7 @@ fn flow_room2() {
 
     set_square(&mut app, center, 2);
     set_wall_tile(&mut app, center);
-    let outside_door = set_door_tile(&mut app, center.with_offset(IVec2::new(1, 2)));
+    let outside_door = set_door_tile(&mut app, center.with_offset(1, 2));
     let inside_door = set_door_tile(&mut app, center.north());
 
     update_regions(&mut app);
@@ -2714,163 +2228,83 @@ fn flow_room2() {
     assert_eq!(inside_flow.len(), 8);
 
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            outside_door,
-            center.with_offset(IVec2::new(-1, -1))
-        ),
+        get_flow(&app, inside, outside_door, center.with_offset(-1, -1)),
         flow_entry(1.0, 0.0, 25),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            outside_door,
-            center.with_offset(IVec2::new(0, -1))
-        ),
+        get_flow(&app, inside, outside_door, center.with_offset(0, -1)),
         flow_entry(1.0, 0.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            outside_door,
-            center.with_offset(IVec2::new(1, -1))
-        ),
+        get_flow(&app, inside, outside_door, center.with_offset(1, -1)),
         flow_entry(0.0, 1.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            outside_door,
-            center.with_offset(IVec2::new(-1, 0))
-        ),
+        get_flow(&app, inside, outside_door, center.with_offset(-1, 0)),
         flow_entry(0.0, -1.0, 30),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            outside_door,
-            center.with_offset(IVec2::new(1, 1))
-        ),
+        get_flow(&app, inside, outside_door, center.with_offset(1, 1)),
         flow_entry(0.0, 1.0, 5),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            outside_door,
-            center.with_offset(IVec2::new(-1, 1))
-        ),
+        get_flow(&app, inside, outside_door, center.with_offset(-1, 1)),
         flow_entry(1.0, 0.0, 35),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            outside_door,
-            center.with_offset(IVec2::new(0, 1))
-        ),
+        get_flow(&app, inside, outside_door, center.with_offset(0, 1)),
         flow_entry(1.0, 0.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            outside_door,
-            center.with_offset(IVec2::new(1, 1))
-        ),
+        get_flow(&app, inside, outside_door, center.with_offset(1, 1)),
         flow_entry(0.0, 1.0, 5),
         epsilon = 0.01
     );
 
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            inside_door,
-            center.with_offset(IVec2::new(-1, -1))
-        ),
+        get_flow(&app, inside, inside_door, center.with_offset(-1, -1)),
         flow_entry(0.0, 1.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            inside_door,
-            center.with_offset(IVec2::new(0, -1))
-        ),
+        get_flow(&app, inside, inside_door, center.with_offset(0, -1)),
         flow_entry(1.0, 0.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            inside_door,
-            center.with_offset(IVec2::new(1, -1))
-        ),
+        get_flow(&app, inside, inside_door, center.with_offset(1, -1)),
         flow_entry(0.0, 1.0, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            inside_door,
-            center.with_offset(IVec2::new(-1, 0))
-        ),
+        get_flow(&app, inside, inside_door, center.with_offset(-1, 0)),
         flow_entry(0.0, 1.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            inside_door,
-            center.with_offset(IVec2::new(1, 0))
-        ),
+        get_flow(&app, inside, inside_door, center.with_offset(1, 0)),
         flow_entry(0.0, 1.0, 10),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            inside_door,
-            center.with_offset(IVec2::new(-1, 1))
-        ),
+        get_flow(&app, inside, inside_door, center.with_offset(-1, 1)),
         flow_entry(1.0, 0.0, 5),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            inside_door,
-            center.with_offset(IVec2::new(1, 1))
-        ),
+        get_flow(&app, inside, inside_door, center.with_offset(1, 1)),
         flow_entry(-1.0, 0.0, 5),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(
-            &app,
-            inside,
-            inside_door,
-            center.with_offset(IVec2::new(1, 2))
-        ),
+        get_flow(&app, inside, inside_door, center.with_offset(1, 2)),
         flow_entry(0.0, -1.0, 10),
         epsilon = 0.01
     );
@@ -2880,58 +2314,58 @@ fn flow_room2() {
 fn flow_room3() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 0, 0);
-    let start = center.with_offset(IVec2::new(0, 3));
+    let start = center.with_offset(0, 3);
 
     set_rect(&mut app, center, 5, 6);
 
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, 4)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-1, 4)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, 4)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, 4)));
+    set_wall_tile(&mut app, center.with_offset(-3, 4));
+    set_wall_tile(&mut app, center.with_offset(-1, 4));
+    set_wall_tile(&mut app, center.with_offset(1, 4));
+    set_wall_tile(&mut app, center.with_offset(3, 4));
 
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, 3)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, 3)));
+    set_wall_tile(&mut app, center.with_offset(-3, 3));
+    set_wall_tile(&mut app, center.with_offset(3, 3));
 
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, 2)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-2, 2)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-1, 2)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, 2)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(2, 2)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, 2)));
+    set_wall_tile(&mut app, center.with_offset(-3, 2));
+    set_wall_tile(&mut app, center.with_offset(-2, 2));
+    set_wall_tile(&mut app, center.with_offset(-1, 2));
+    set_wall_tile(&mut app, center.with_offset(1, 2));
+    set_wall_tile(&mut app, center.with_offset(2, 2));
+    set_wall_tile(&mut app, center.with_offset(3, 2));
 
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, 1)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, 1)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(2, 1)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, 1)));
+    set_wall_tile(&mut app, center.with_offset(-3, 1));
+    set_wall_tile(&mut app, center.with_offset(1, 1));
+    set_wall_tile(&mut app, center.with_offset(2, 1));
+    set_wall_tile(&mut app, center.with_offset(3, 1));
 
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, 0)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-1, 0)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, 0)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(2, 0)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, 0)));
+    set_wall_tile(&mut app, center.with_offset(-3, 0));
+    set_wall_tile(&mut app, center.with_offset(-1, 0));
+    set_wall_tile(&mut app, center.with_offset(0, 0));
+    set_wall_tile(&mut app, center.with_offset(1, 0));
+    set_wall_tile(&mut app, center.with_offset(2, 0));
+    set_wall_tile(&mut app, center.with_offset(3, 0));
 
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, -1)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, -1)));
+    set_wall_tile(&mut app, center.with_offset(-3, -1));
+    set_wall_tile(&mut app, center.with_offset(3, -1));
 
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, -2)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-2, -2)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-1, -2)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(0, -2)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, -2)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, -2)));
+    set_wall_tile(&mut app, center.with_offset(-3, -2));
+    set_wall_tile(&mut app, center.with_offset(-2, -2));
+    set_wall_tile(&mut app, center.with_offset(-1, -2));
+    set_wall_tile(&mut app, center.with_offset(0, -2));
+    set_wall_tile(&mut app, center.with_offset(1, -2));
+    set_wall_tile(&mut app, center.with_offset(3, -2));
 
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, -3)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, -3)));
+    set_wall_tile(&mut app, center.with_offset(-3, -3));
+    set_wall_tile(&mut app, center.with_offset(3, -3));
 
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-3, -4)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(-1, -4)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(0, -4)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(1, -4)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(2, -4)));
-    set_wall_tile(&mut app, center.with_offset(IVec2::new(3, -4)));
+    set_wall_tile(&mut app, center.with_offset(-3, -4));
+    set_wall_tile(&mut app, center.with_offset(-1, -4));
+    set_wall_tile(&mut app, center.with_offset(0, -4));
+    set_wall_tile(&mut app, center.with_offset(1, -4));
+    set_wall_tile(&mut app, center.with_offset(2, -4));
+    set_wall_tile(&mut app, center.with_offset(3, -4));
 
-    let door = set_door_tile(&mut app, center.with_offset(IVec2::new(0, -6)));
+    let door = set_door_tile(&mut app, center.with_offset(0, -6));
 
     update_regions(&mut app);
 
@@ -2982,11 +2416,11 @@ fn flow_speed_room1() {
 
     for x in -1..=1 {
         for y in -1..=1 {
-            set_slow_tile(&mut app, center.with_offset(IVec2::new(x, y)));
+            set_slow_tile(&mut app, center.with_offset(x, y));
         }
     }
 
-    let door = set_door_tile(&mut app, center.with_offset(IVec2::new(0, 2)));
+    let door = set_door_tile(&mut app, center.with_offset(0, 2));
 
     update_regions(&mut app);
 
@@ -3001,49 +2435,49 @@ fn flow_speed_room1() {
     assert_eq!(flow.len(), 9);
 
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, -1))),
+        get_flow(&app, inside, door, center.with_offset(-1, -1)),
         flow_entry(0.3939193, 0.91914505, 22),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(0, -1))),
+        get_flow(&app, inside, door, center.with_offset(0, -1)),
         flow_entry(0.0, 1.0, 19),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, -1))),
+        get_flow(&app, inside, door, center.with_offset(1, -1)),
         flow_entry(-0.3939193, 0.91914505, 22),
         epsilon = 0.01
     );
 
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, 0))),
+        get_flow(&app, inside, door, center.with_offset(-1, 0)),
         flow_entry(0.70710677, 0.70710677, 15),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(0, 0))),
+        get_flow(&app, inside, door, center.with_offset(0, 0)),
         flow_entry(0.0, 1.0, 12),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, 0))),
+        get_flow(&app, inside, door, center.with_offset(1, 0)),
         flow_entry(-0.70710677, 0.70710677, 15),
         epsilon = 0.01
     );
 
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, 1))),
+        get_flow(&app, inside, door, center.with_offset(-1, 1)),
         flow_entry(1.0, 0.0, 12),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(0, 1))),
+        get_flow(&app, inside, door, center.with_offset(0, 1)),
         flow_entry(0.0, 1.0, 5),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, 1))),
+        get_flow(&app, inside, door, center.with_offset(1, 1)),
         flow_entry(-1.0, 0.0, 12),
         epsilon = 0.01
     );
@@ -3058,11 +2492,11 @@ fn flow_speed_room2() {
 
     for x in -1..=1 {
         for y in -1..=1 {
-            set_fast_tile(&mut app, center.with_offset(IVec2::new(x, y)));
+            set_fast_tile(&mut app, center.with_offset(x, y));
         }
     }
 
-    let door = set_door_tile(&mut app, center.with_offset(IVec2::new(0, 2)));
+    let door = set_door_tile(&mut app, center.with_offset(0, 2));
 
     update_regions(&mut app);
 
@@ -3077,49 +2511,49 @@ fn flow_speed_room2() {
     assert_eq!(flow.len(), 9);
 
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, -1))),
+        get_flow(&app, inside, door, center.with_offset(-1, -1)),
         flow_entry(0.31622776, 0.9486833, 12),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(0, -1))),
+        get_flow(&app, inside, door, center.with_offset(0, -1)),
         flow_entry(0.0, 1.0, 11),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, -1))),
+        get_flow(&app, inside, door, center.with_offset(1, -1)),
         flow_entry(-0.31622776, 0.9486833, 12),
         epsilon = 0.01
     );
 
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, 0))),
+        get_flow(&app, inside, door, center.with_offset(-1, 0)),
         flow_entry(0.70710677, 0.70710677, 9),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(0, 0))),
+        get_flow(&app, inside, door, center.with_offset(0, 0)),
         flow_entry(0.0, 1.0, 8),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, 0))),
+        get_flow(&app, inside, door, center.with_offset(1, 0)),
         flow_entry(-0.70710677, 0.70710677, 9),
         epsilon = 0.01
     );
 
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, 1))),
+        get_flow(&app, inside, door, center.with_offset(-1, 1)),
         flow_entry(1.0, 0.0, 8),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(0, 1))),
+        get_flow(&app, inside, door, center.with_offset(0, 1)),
         flow_entry(0.0, 1.0, 5),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, 1))),
+        get_flow(&app, inside, door, center.with_offset(1, 1)),
         flow_entry(-1.0, 0.0, 8),
         epsilon = 0.01
     );
@@ -3135,21 +2569,21 @@ fn flow_speed_room3() {
     set_wall_tile(&mut app, center.north());
     set_wall_tile(&mut app, center.south());
 
-    set_slow_tile(&mut app, center.with_offset(IVec2::new(-1, 0)));
-    set_slow_tile(&mut app, center.with_offset(IVec2::new(0, 0)));
-    set_slow_tile(&mut app, center.with_offset(IVec2::new(1, 0)));
+    set_slow_tile(&mut app, center.with_offset(-1, 0));
+    set_slow_tile(&mut app, center.with_offset(0, 0));
+    set_slow_tile(&mut app, center.with_offset(1, 0));
 
-    set_fast_tile(&mut app, center.with_offset(IVec2::new(-2, -1)));
-    set_fast_tile(&mut app, center.with_offset(IVec2::new(-2, -2)));
-    set_fast_tile(&mut app, center.with_offset(IVec2::new(-1, -1)));
-    set_fast_tile(&mut app, center.with_offset(IVec2::new(-1, -2)));
-    set_fast_tile(&mut app, center.with_offset(IVec2::new(0, -2)));
-    set_fast_tile(&mut app, center.with_offset(IVec2::new(1, -1)));
-    set_fast_tile(&mut app, center.with_offset(IVec2::new(1, -2)));
-    set_fast_tile(&mut app, center.with_offset(IVec2::new(2, -1)));
-    set_fast_tile(&mut app, center.with_offset(IVec2::new(2, -2)));
+    set_fast_tile(&mut app, center.with_offset(-2, -1));
+    set_fast_tile(&mut app, center.with_offset(-2, -2));
+    set_fast_tile(&mut app, center.with_offset(-1, -1));
+    set_fast_tile(&mut app, center.with_offset(-1, -2));
+    set_fast_tile(&mut app, center.with_offset(0, -2));
+    set_fast_tile(&mut app, center.with_offset(1, -1));
+    set_fast_tile(&mut app, center.with_offset(1, -2));
+    set_fast_tile(&mut app, center.with_offset(2, -1));
+    set_fast_tile(&mut app, center.with_offset(2, -2));
 
-    let door = set_door_tile(&mut app, center.with_offset(IVec2::new(3, 0)));
+    let door = set_door_tile(&mut app, center.with_offset(3, 0));
 
     update_regions(&mut app);
 
@@ -3164,37 +2598,37 @@ fn flow_speed_room3() {
     assert_eq!(flow.len(), 23);
 
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(-2, 0))),
+        get_flow(&app, inside, door, center.with_offset(-2, 0)),
         flow_entry(0.70710677, -0.70710677, 27),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, -1))),
+        get_flow(&app, inside, door, center.with_offset(-1, -1)),
         flow_entry(0.0, -1.0, 23),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(-1, -2))),
+        get_flow(&app, inside, door, center.with_offset(-1, -2)),
         flow_entry(1.0, 0.0, 20),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(0, -2))),
+        get_flow(&app, inside, door, center.with_offset(0, -2)),
         flow_entry(1.0, 0.0, 17),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, -2))),
+        get_flow(&app, inside, door, center.with_offset(1, -2)),
         flow_entry(0.4472136, 0.8944272, 14),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(1, -1))),
+        get_flow(&app, inside, door, center.with_offset(1, -1)),
         flow_entry(0.70710677, 0.70710677, 12),
         epsilon = 0.01
     );
     assert_relative_eq!(
-        get_flow(&app, inside, door, center.with_offset(IVec2::new(2, 0))),
+        get_flow(&app, inside, door, center.with_offset(2, 0)),
         flow_entry(1.0, 0.0, 5),
         epsilon = 0.01
     );
@@ -3206,7 +2640,7 @@ fn flow_update() {
     let center = TilePosition::new(layer, 0, 0);
 
     set_square(&mut app, center, 2);
-    let door = set_door_tile(&mut app, center.with_offset(IVec2::new(0, 2)));
+    let door = set_door_tile(&mut app, center.with_offset(0, 2));
 
     update_regions(&mut app);
 
@@ -3261,7 +2695,7 @@ fn flow_speed_update() {
     let center = TilePosition::new(layer, 0, 0);
 
     set_square(&mut app, center, 2);
-    let door = set_door_tile(&mut app, center.with_offset(IVec2::new(0, 2)));
+    let door = set_door_tile(&mut app, center.with_offset(0, 2));
 
     update_regions(&mut app);
 
@@ -3414,10 +2848,10 @@ fn path_single_region() {
 fn path_cross_region1() {
     let (mut app, layer) = make_app();
     let goal = TilePosition::new(layer, 0, 0);
-    let start = goal.with_offset(IVec2::new(-5, 0));
+    let start = goal.with_offset(-5, 0);
 
     set_square(&mut app, goal, 2);
-    set_door_tile(&mut app, goal.with_offset(IVec2::new(0, 2)));
+    set_door_tile(&mut app, goal.with_offset(0, 2));
 
     update_regions(&mut app);
 
@@ -3433,7 +2867,7 @@ fn path_cross_region1() {
 
     let start_index = outside_tiles.get_tile_index(start.layer_offset()).unwrap();
     let door_index = inside_tiles
-        .get_tile_index(goal.with_offset(IVec2::new(0, 2)).layer_offset())
+        .get_tile_index(goal.with_offset(0, 2).layer_offset())
         .unwrap();
 
     assert_eq!(path.cost(), 49);
@@ -3446,7 +2880,7 @@ fn path_cross_region1() {
             goal: door_goal,
         } => {
             assert_eq!(region, outside);
-            assert_eq!(door_goal, goal.with_offset(IVec2::new(0, 2)));
+            assert_eq!(door_goal, goal.with_offset(0, 2));
 
             let flow_field = app.world().get::<FlowField>(flow_field).unwrap();
             assert_relative_eq!(
@@ -3478,15 +2912,15 @@ fn path_cross_region1() {
 fn path_cross_region2() {
     let (mut app, layer) = make_app();
     let center = TilePosition::new(layer, 0, 0);
-    let start = center.with_offset(IVec2::new(-5, 0));
-    let goal = center.with_offset(IVec2::new(3, -1));
+    let start = center.with_offset(-5, 0);
+    let goal = center.with_offset(3, -1);
 
     set_square(&mut app, center, 2);
-    set_square(&mut app, center.with_offset(IVec2::new(3, 1)), 1);
-    set_square(&mut app, center.with_offset(IVec2::new(3, -1)), 1);
-    set_door_tile(&mut app, center.with_offset(IVec2::new(-2, 0)));
-    set_door_tile(&mut app, center.with_offset(IVec2::new(2, 1)));
-    set_door_tile(&mut app, center.with_offset(IVec2::new(2, -1)));
+    set_square(&mut app, center.with_offset(3, 1), 1);
+    set_square(&mut app, center.with_offset(3, -1), 1);
+    set_door_tile(&mut app, center.with_offset(-2, 0));
+    set_door_tile(&mut app, center.with_offset(2, 1));
+    set_door_tile(&mut app, center.with_offset(2, -1));
 
     update_regions(&mut app);
 
@@ -3495,7 +2929,7 @@ fn path_cross_region2() {
 
     let path = find_path(&mut app, start, goal).unwrap();
 
-    let goal_region = tile_region(&mut app, center.with_offset(IVec2::new(3, -1))).unwrap();
+    let goal_region = tile_region(&mut app, center.with_offset(3, -1)).unwrap();
     let mid_region = tile_region(&mut app, center).unwrap();
     let outside_region = tile_region(&mut app, start).unwrap();
 
@@ -3509,10 +2943,10 @@ fn path_cross_region2() {
 
     let start_index = outside_tiles.get_tile_index(start.layer_offset()).unwrap();
     let mid_index = mid_tiles
-        .get_tile_index(center.with_offset(IVec2::new(-2, 0)).layer_offset())
+        .get_tile_index(center.with_offset(-2, 0).layer_offset())
         .unwrap();
     let goal_door_index = goal_tiles
-        .get_tile_index(center.with_offset(IVec2::new(2, -1)).layer_offset())
+        .get_tile_index(center.with_offset(2, -1).layer_offset())
         .unwrap();
 
     assert_eq!(path.cost(), 42);
@@ -3525,7 +2959,7 @@ fn path_cross_region2() {
             goal: door_goal,
         } => {
             assert_eq!(region, outside_region);
-            assert_eq!(door_goal, center.with_offset(IVec2::new(-2, 0)));
+            assert_eq!(door_goal, center.with_offset(-2, 0));
 
             let flow_field = app.world().get::<FlowField>(flow_field).unwrap();
             assert_relative_eq!(
@@ -3543,7 +2977,7 @@ fn path_cross_region2() {
             goal: door_goal,
         } => {
             assert_eq!(region, mid_region);
-            assert_eq!(door_goal, center.with_offset(IVec2::new(2, -1)));
+            assert_eq!(door_goal, center.with_offset(2, -1));
 
             let flow_field = app.world().get::<FlowField>(flow_field).unwrap();
             assert_relative_eq!(flow_field.get(mid_index).unwrap(), flow_entry(1.0, 0.0, 22));
@@ -3635,12 +3069,12 @@ fn path_single_region_cross_region() {
     let (mut app, layer) = make_app();
 
     let center = TilePosition::new(layer, 0, 0);
-    let start = center.with_offset(IVec2::new(-5, 0));
-    let goal = center.with_offset(IVec2::new(5, 0));
+    let start = center.with_offset(-5, 0);
+    let goal = center.with_offset(5, 0);
 
     set_square(&mut app, center, 2);
-    set_door_tile(&mut app, center.with_offset(IVec2::new(-2, 0)));
-    set_door_tile(&mut app, center.with_offset(IVec2::new(2, 0)));
+    set_door_tile(&mut app, center.with_offset(-2, 0));
+    set_door_tile(&mut app, center.with_offset(2, 0));
 
     update_regions(&mut app);
 
@@ -3662,10 +3096,10 @@ fn path_single_region_cross_region() {
 
     let start_index = outside_tiles.get_tile_index(start.layer_offset()).unwrap();
     let door1_index = inside_tiles
-        .get_tile_index(center.with_offset(IVec2::new(-2, 0)).layer_offset())
+        .get_tile_index(center.with_offset(-2, 0).layer_offset())
         .unwrap();
     let door2_index = outside_tiles
-        .get_tile_index(center.with_offset(IVec2::new(2, 0)).layer_offset())
+        .get_tile_index(center.with_offset(2, 0).layer_offset())
         .unwrap();
 
     match path.steps()[2] {
@@ -3675,7 +3109,7 @@ fn path_single_region_cross_region() {
             goal: door_goal,
         } => {
             assert_eq!(region, outside);
-            assert_eq!(door_goal, center.with_offset(IVec2::new(-2, 0)));
+            assert_eq!(door_goal, center.with_offset(-2, 0));
 
             let flow_field = app.world().get::<FlowField>(flow_field).unwrap();
             assert_relative_eq!(
@@ -3693,7 +3127,7 @@ fn path_single_region_cross_region() {
             goal,
         } => {
             assert_eq!(region, inside);
-            assert_eq!(goal, center.with_offset(IVec2::new(2, 0)));
+            assert_eq!(goal, center.with_offset(2, 0));
 
             let flow_field = app.world().get::<FlowField>(flow_field).unwrap();
             assert_relative_eq!(
@@ -3766,7 +3200,7 @@ fn path_goal_door() {
     let start = TilePosition::new(layer, 5, 5);
     let goal = TilePosition::new(layer, 10, 10);
 
-    set_square(&mut app, goal.with_offset(IVec2::new(0, 2)), 2);
+    set_square(&mut app, goal.with_offset(0, 2), 2);
     set_door_tile(&mut app, goal);
 
     update_regions(&mut app);
@@ -3856,22 +3290,22 @@ fn clear_tile(app: &mut App, position: TilePosition) {
 
 fn set_square(app: &mut App, center: TilePosition, radius: i32) {
     for i in -radius..=radius {
-        set_wall_tile(app, center.with_offset(IVec2::new(i, -radius)));
-        set_wall_tile(app, center.with_offset(IVec2::new(i, radius)));
-        set_wall_tile(app, center.with_offset(IVec2::new(-radius, i)));
-        set_wall_tile(app, center.with_offset(IVec2::new(radius, i)));
+        set_wall_tile(app, center.with_offset(i, -radius));
+        set_wall_tile(app, center.with_offset(i, radius));
+        set_wall_tile(app, center.with_offset(-radius, i));
+        set_wall_tile(app, center.with_offset(radius, i));
     }
 }
 
 fn set_rect(app: &mut App, center: TilePosition, half_width: i32, half_height: i32) {
     for i in -half_width..=half_width {
-        set_wall_tile(app, center.with_offset(IVec2::new(i, -half_height)));
-        set_wall_tile(app, center.with_offset(IVec2::new(i, half_height)));
+        set_wall_tile(app, center.with_offset(i, -half_height));
+        set_wall_tile(app, center.with_offset(i, half_height));
     }
 
     for i in -half_height..=half_height {
-        set_wall_tile(app, center.with_offset(IVec2::new(-half_width, i)));
-        set_wall_tile(app, center.with_offset(IVec2::new(half_width, i)));
+        set_wall_tile(app, center.with_offset(-half_width, i));
+        set_wall_tile(app, center.with_offset(half_width, i));
     }
 }
 

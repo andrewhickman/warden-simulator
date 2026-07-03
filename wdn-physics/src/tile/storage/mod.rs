@@ -207,7 +207,7 @@ impl TileStorageMut<'_, '_> {
 
     fn add_adjacent_wall(&mut self, position: TilePosition) {
         for (adj, offset) in Adjacency::OFFSETS {
-            let neighbor_pos = position.with_offset(offset);
+            let neighbor_pos = position.with_offset(offset.x, offset.y);
 
             let neighbor_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
@@ -222,7 +222,7 @@ impl TileStorageMut<'_, '_> {
 
     fn remove_adjacent_wall(&mut self, position: TilePosition) {
         for (adj, offset) in Adjacency::OFFSETS {
-            let neighbor_pos = position.with_offset(offset);
+            let neighbor_pos = position.with_offset(offset.x, offset.y);
 
             let neighbor_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
@@ -237,7 +237,7 @@ impl TileStorageMut<'_, '_> {
 
     fn add_adjacent_door(&mut self, position: TilePosition) {
         for (adj, offset) in Adjacency::OFFSETS {
-            let neighbor_pos = position.with_offset(offset);
+            let neighbor_pos = position.with_offset(offset.x, offset.y);
 
             let neighbor_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
@@ -252,7 +252,7 @@ impl TileStorageMut<'_, '_> {
 
     fn remove_adjacent_door(&mut self, position: TilePosition) {
         for (adj, offset) in Adjacency::OFFSETS {
-            let neighbor_pos = position.with_offset(offset);
+            let neighbor_pos = position.with_offset(offset.x, offset.y);
 
             let neighbor_tile = self
                 .chunk_mut(neighbor_pos.chunk_position())
