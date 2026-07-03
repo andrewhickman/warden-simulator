@@ -20,6 +20,7 @@ use wdn_physics::tile::{
 
 use crate::door::Door;
 use crate::path::door::DoorRegions;
+use crate::path::find::{Path, PathParam, PathStep};
 use crate::path::flow::{FlowField, FlowFieldEntry};
 use crate::path::region::RegionTiles;
 use crate::path::section::TileChunkSections;
@@ -3309,6 +3310,498 @@ fn flow_speed_update() {
     );
 }
 
+#[test]
+fn path_different_layer() {
+    let (mut app, layer1) = make_app();
+    let layer2 = app.world_mut().spawn(Layer::default()).id();
+
+    let start = TilePosition::new(layer1, 5, 5);
+    let end = TilePosition::new(layer2, 10, 10);
+
+    clear_tile(&mut app, start);
+    clear_tile(&mut app, end);
+
+    update_regions(&mut app);
+
+    let path = find_path(&mut app, start, end);
+    assert!(path.is_none());
+}
+
+#[test]
+fn path_empty() {
+    let (mut app, layer) = make_app();
+
+    let start = TilePosition::new(layer, 5, 5);
+
+    clear_tile(&mut app, start);
+
+    update_regions(&mut app);
+
+    let path = find_path(&mut app, start, start).unwrap();
+    assert_eq!(path.cost(), 0);
+    assert!(path.steps().is_empty());
+}
+
+#[test]
+fn path_start_invalid() {
+    let (mut app, layer) = make_app();
+
+    let start = TilePosition::new(layer, 5, 5);
+    let goal = TilePosition::new(layer, 10, 10);
+
+    set_wall_tile(&mut app, start);
+
+    update_regions(&mut app);
+
+    let path = find_path(&mut app, start, goal);
+    assert!(path.is_none());
+}
+
+#[test]
+fn path_goal_invalid() {
+    let (mut app, layer) = make_app();
+
+    let start = TilePosition::new(layer, 5, 5);
+    let goal = TilePosition::new(layer, 10, 10);
+
+    set_wall_tile(&mut app, goal);
+
+    update_regions(&mut app);
+
+    let path = find_path(&mut app, start, goal);
+    assert!(path.is_none());
+}
+
+#[test]
+fn path_single_region() {
+    let (mut app, layer) = make_app();
+
+    let start = TilePosition::new(layer, 5, 5);
+    let goal = TilePosition::new(layer, 10, 10);
+
+    clear_tile(&mut app, start);
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 1);
+
+    let path = find_path(&mut app, start, goal).unwrap();
+    assert_eq!(path.cost(), 35);
+    assert_eq!(path.steps().len(), 1);
+
+    let tiles = app.world().get::<RegionTiles>(regions[0]).unwrap();
+    let start_index = tiles.get_tile_index(start.layer_offset()).unwrap();
+
+    match path.steps()[0] {
+        PathStep::RegionCostField {
+            region,
+            ref cost_field,
+        } => {
+            assert_eq!(region, regions[0]);
+            assert!(cost_field.contains(start_index));
+            assert_relative_eq!(
+                cost_field.flow_vector(start_index, &tiles[start_index]),
+                Dir2::NORTH_EAST,
+                epsilon = 0.01
+            );
+        }
+        _ => panic!("expected RegionCostField"),
+    }
+}
+
+#[test]
+fn path_cross_region1() {
+    let (mut app, layer) = make_app();
+    let goal = TilePosition::new(layer, 0, 0);
+    let start = goal.with_offset(IVec2::new(-5, 0));
+
+    set_square(&mut app, goal, 2);
+    set_door_tile(&mut app, goal.with_offset(IVec2::new(0, 2)));
+
+    update_regions(&mut app);
+
+    let path = find_path(&mut app, start, goal).unwrap();
+
+    let inside = tile_region(&mut app, goal).unwrap();
+    let outside = tile_region(&mut app, start).unwrap();
+
+    assert_ne!(inside, outside);
+
+    let inside_tiles = app.world().get::<RegionTiles>(inside).unwrap();
+    let outside_tiles = app.world().get::<RegionTiles>(outside).unwrap();
+
+    let start_index = outside_tiles.get_tile_index(start.layer_offset()).unwrap();
+    let door_index = inside_tiles
+        .get_tile_index(goal.with_offset(IVec2::new(0, 2)).layer_offset())
+        .unwrap();
+
+    assert_eq!(path.cost(), 49);
+    assert_eq!(path.steps().len(), 2);
+
+    match path.steps()[1] {
+        PathStep::DoorFlowField {
+            region,
+            flow_field,
+            goal: door_goal,
+        } => {
+            assert_eq!(region, outside);
+            assert_eq!(door_goal, goal.with_offset(IVec2::new(0, 2)));
+
+            let flow_field = app.world().get::<FlowField>(flow_field).unwrap();
+            assert_relative_eq!(
+                flow_field.get(start_index).unwrap(),
+                flow_entry(0.37139067, 0.9284767, 39)
+            );
+        }
+        _ => panic!("expected DoorFlowField"),
+    }
+
+    match path.steps()[0] {
+        PathStep::RegionCostField {
+            region,
+            ref cost_field,
+        } => {
+            assert_eq!(region, inside);
+            assert!(cost_field.contains(door_index));
+            assert_relative_eq!(
+                cost_field.flow_vector(door_index, &inside_tiles[door_index]),
+                Dir2::SOUTH,
+                epsilon = 0.01
+            );
+        }
+        _ => panic!("expected RegionCostField"),
+    }
+}
+
+#[test]
+fn path_cross_region2() {
+    let (mut app, layer) = make_app();
+    let center = TilePosition::new(layer, 0, 0);
+    let start = center.with_offset(IVec2::new(-5, 0));
+    let goal = center.with_offset(IVec2::new(3, -1));
+
+    set_square(&mut app, center, 2);
+    set_square(&mut app, center.with_offset(IVec2::new(3, 1)), 1);
+    set_square(&mut app, center.with_offset(IVec2::new(3, -1)), 1);
+    set_door_tile(&mut app, center.with_offset(IVec2::new(-2, 0)));
+    set_door_tile(&mut app, center.with_offset(IVec2::new(2, 1)));
+    set_door_tile(&mut app, center.with_offset(IVec2::new(2, -1)));
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 4);
+
+    let path = find_path(&mut app, start, goal).unwrap();
+
+    let goal_region = tile_region(&mut app, center.with_offset(IVec2::new(3, -1))).unwrap();
+    let mid_region = tile_region(&mut app, center).unwrap();
+    let outside_region = tile_region(&mut app, start).unwrap();
+
+    assert_ne!(outside_region, mid_region);
+    assert_ne!(mid_region, goal_region);
+    assert_ne!(goal_region, outside_region);
+
+    let goal_tiles = app.world().get::<RegionTiles>(goal_region).unwrap();
+    let mid_tiles = app.world().get::<RegionTiles>(mid_region).unwrap();
+    let outside_tiles = app.world().get::<RegionTiles>(outside_region).unwrap();
+
+    let start_index = outside_tiles.get_tile_index(start.layer_offset()).unwrap();
+    let mid_index = mid_tiles
+        .get_tile_index(center.with_offset(IVec2::new(-2, 0)).layer_offset())
+        .unwrap();
+    let goal_door_index = goal_tiles
+        .get_tile_index(center.with_offset(IVec2::new(2, -1)).layer_offset())
+        .unwrap();
+
+    assert_eq!(path.cost(), 42);
+    assert_eq!(path.steps().len(), 3);
+
+    match path.steps()[2] {
+        PathStep::DoorFlowField {
+            region,
+            flow_field,
+            goal: door_goal,
+        } => {
+            assert_eq!(region, outside_region);
+            assert_eq!(door_goal, center.with_offset(IVec2::new(-2, 0)));
+
+            let flow_field = app.world().get::<FlowField>(flow_field).unwrap();
+            assert_relative_eq!(
+                flow_field.get(start_index).unwrap(),
+                flow_entry(1.0, 0.0, 15)
+            );
+        }
+        _ => panic!("expected DoorFlowField"),
+    }
+
+    match path.steps()[1] {
+        PathStep::DoorFlowField {
+            region,
+            flow_field,
+            goal: door_goal,
+        } => {
+            assert_eq!(region, mid_region);
+            assert_eq!(door_goal, center.with_offset(IVec2::new(2, -1)));
+
+            let flow_field = app.world().get::<FlowField>(flow_field).unwrap();
+            assert_relative_eq!(flow_field.get(mid_index).unwrap(), flow_entry(1.0, 0.0, 22));
+        }
+        _ => panic!("expected DoorFlowField"),
+    }
+
+    match path.steps()[0] {
+        PathStep::RegionCostField {
+            region,
+            ref cost_field,
+        } => {
+            assert_eq!(region, goal_region);
+            assert!(cost_field.contains(goal_door_index));
+            assert_relative_eq!(
+                cost_field.flow_vector(goal_door_index, &goal_tiles[goal_door_index]),
+                Dir2::EAST,
+                epsilon = 0.01
+            );
+        }
+        _ => panic!("expected RegionCostField"),
+    }
+}
+
+#[test]
+fn path_single_region_cross_door() {
+    let (mut app, layer) = make_app();
+
+    let start = TilePosition::new(layer, 5, 5);
+    let goal = TilePosition::new(layer, 11, 5);
+
+    set_wall_tile(&mut app, TilePosition::new(layer, 8, 4));
+    set_door_tile(&mut app, TilePosition::new(layer, 8, 5));
+    set_wall_tile(&mut app, TilePosition::new(layer, 8, 6));
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 1);
+
+    let path = find_path(&mut app, start, goal).unwrap();
+
+    assert_eq!(path.cost(), 30);
+    assert_eq!(path.steps().len(), 2);
+
+    let tiles = app.world().get::<RegionTiles>(regions[0]).unwrap();
+    let start_index = tiles.get_tile_index(start.layer_offset()).unwrap();
+    let door_index = tiles
+        .get_tile_index(TilePosition::new(layer, 8, 5).layer_offset())
+        .unwrap();
+
+    match path.steps()[1] {
+        PathStep::DoorFlowField {
+            region,
+            flow_field,
+            goal: door_goal,
+        } => {
+            assert_eq!(region, regions[0]);
+            assert_eq!(door_goal, TilePosition::new(layer, 8, 5));
+
+            let flow_field = app.world().get::<FlowField>(flow_field).unwrap();
+            assert_relative_eq!(
+                flow_field.get(start_index).unwrap(),
+                flow_entry(1.0, 0.0, 15)
+            );
+        }
+        _ => panic!("expected DoorFlowField"),
+    }
+
+    match path.steps()[0] {
+        PathStep::RegionCostField {
+            region,
+            ref cost_field,
+        } => {
+            assert_eq!(region, regions[0]);
+            assert!(cost_field.contains(door_index));
+            assert_relative_eq!(
+                cost_field.flow_vector(door_index, &tiles[door_index]),
+                Dir2::EAST,
+                epsilon = 0.01
+            );
+        }
+        _ => panic!("expected RegionCostField"),
+    }
+}
+
+#[test]
+fn path_single_region_cross_region() {
+    let (mut app, layer) = make_app();
+
+    let center = TilePosition::new(layer, 0, 0);
+    let start = center.with_offset(IVec2::new(-5, 0));
+    let goal = center.with_offset(IVec2::new(5, 0));
+
+    set_square(&mut app, center, 2);
+    set_door_tile(&mut app, center.with_offset(IVec2::new(-2, 0)));
+    set_door_tile(&mut app, center.with_offset(IVec2::new(2, 0)));
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    let outside = tile_region(&mut app, start).unwrap();
+    let inside = tile_region(&mut app, center).unwrap();
+    assert_ne!(outside, inside);
+    assert_eq!(tile_region(&mut app, goal).unwrap(), outside);
+
+    let path = find_path(&mut app, start, goal).unwrap();
+
+    assert_eq!(path.cost(), 50);
+    assert_eq!(path.steps().len(), 3);
+
+    let outside_tiles = app.world().get::<RegionTiles>(outside).unwrap();
+    let inside_tiles = app.world().get::<RegionTiles>(inside).unwrap();
+
+    let start_index = outside_tiles.get_tile_index(start.layer_offset()).unwrap();
+    let door1_index = inside_tiles
+        .get_tile_index(center.with_offset(IVec2::new(-2, 0)).layer_offset())
+        .unwrap();
+    let door2_index = outside_tiles
+        .get_tile_index(center.with_offset(IVec2::new(2, 0)).layer_offset())
+        .unwrap();
+
+    match path.steps()[2] {
+        PathStep::DoorFlowField {
+            region,
+            flow_field,
+            goal: door_goal,
+        } => {
+            assert_eq!(region, outside);
+            assert_eq!(door_goal, center.with_offset(IVec2::new(-2, 0)));
+
+            let flow_field = app.world().get::<FlowField>(flow_field).unwrap();
+            assert_relative_eq!(
+                flow_field.get(start_index).unwrap(),
+                flow_entry(1.0, 0.0, 15)
+            );
+        }
+        _ => panic!("expected DoorFlowField"),
+    }
+
+    match path.steps()[1] {
+        PathStep::DoorFlowField {
+            region,
+            flow_field,
+            goal,
+        } => {
+            assert_eq!(region, inside);
+            assert_eq!(goal, center.with_offset(IVec2::new(2, 0)));
+
+            let flow_field = app.world().get::<FlowField>(flow_field).unwrap();
+            assert_relative_eq!(
+                flow_field.get(door1_index).unwrap(),
+                flow_entry(1.0, 0.0, 20)
+            );
+        }
+        _ => panic!("expected DoorFlowField"),
+    }
+
+    match path.steps()[0] {
+        PathStep::RegionCostField {
+            region,
+            ref cost_field,
+        } => {
+            assert_eq!(region, outside);
+            assert!(cost_field.contains(door2_index));
+            assert_relative_eq!(
+                cost_field.flow_vector(door2_index, &outside_tiles[door2_index]),
+                Dir2::EAST,
+                epsilon = 0.01
+            );
+        }
+        _ => panic!("expected RegionCostField"),
+    }
+}
+
+#[test]
+fn path_start_door() {
+    let (mut app, layer) = make_app();
+
+    let start = TilePosition::new(layer, 5, 5);
+    let goal = TilePosition::new(layer, 10, 10);
+
+    set_door_tile(&mut app, start);
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 1);
+
+    let path = find_path(&mut app, start, goal).unwrap();
+    assert_eq!(path.cost(), 38);
+    assert_eq!(path.steps().len(), 1);
+
+    let tiles = app.world().get::<RegionTiles>(regions[0]).unwrap();
+    let start_index = tiles.get_tile_index(start.layer_offset()).unwrap();
+
+    match path.steps()[0] {
+        PathStep::RegionCostField {
+            region,
+            ref cost_field,
+        } => {
+            assert_eq!(region, regions[0]);
+            assert!(cost_field.contains(start_index));
+            assert_relative_eq!(
+                cost_field.flow_vector(start_index, &tiles[start_index]),
+                Dir2::NORTH,
+                epsilon = 0.01
+            );
+        }
+        _ => panic!("expected RegionCostField"),
+    }
+}
+
+#[test]
+fn path_goal_door() {
+    let (mut app, layer) = make_app();
+
+    let start = TilePosition::new(layer, 5, 5);
+    let goal = TilePosition::new(layer, 10, 10);
+
+    set_square(&mut app, goal.with_offset(IVec2::new(0, 2)), 2);
+    set_door_tile(&mut app, goal);
+
+    update_regions(&mut app);
+
+    let regions = get_regions(&mut app);
+    assert_eq!(regions.len(), 2);
+
+    let outside = tile_region(&mut app, start).unwrap();
+
+    let path = find_path(&mut app, start, goal).unwrap();
+    assert_eq!(path.cost(), 38);
+    assert_eq!(path.steps().len(), 1);
+
+    let tiles = app.world().get::<RegionTiles>(outside).unwrap();
+    let start_index = tiles.get_tile_index(start.layer_offset()).unwrap();
+
+    match path.steps()[0] {
+        PathStep::DoorFlowField {
+            region,
+            flow_field,
+            goal: door_goal,
+        } => {
+            assert_eq!(region, outside);
+            assert_eq!(door_goal, goal);
+
+            let flow_field = app.world().get::<FlowField>(flow_field).unwrap();
+            assert_relative_eq!(
+                flow_field.get(start_index).unwrap(),
+                flow_entry(0.9284767, 0.37139067, 38)
+            );
+        }
+        _ => panic!("expected DoorFlowField"),
+    }
+}
+
 fn make_app() -> (App, Entity) {
     let mut app = App::new();
     app.add_plugins((TaskPoolPlugin::default(), TilePlugin, PathPlugin));
@@ -3469,6 +3962,12 @@ fn get_flow(app: &App, region: Entity, door: Entity, position: TilePosition) -> 
                 .get_tile_index(position.layer_offset())
                 .unwrap(),
         )
+        .unwrap()
+}
+
+fn find_path(app: &mut App, start: TilePosition, goal: TilePosition) -> Option<Path> {
+    app.world_mut()
+        .run_system_once(move |param: PathParam| param.find_path(start, goal).unwrap())
         .unwrap()
 }
 

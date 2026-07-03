@@ -33,7 +33,6 @@ pub enum PathStep {
     RegionCostField {
         region: Entity,
         cost_field: CostField,
-        current: Option<(TilePosition, Dir2)>,
     },
 }
 
@@ -187,25 +186,17 @@ impl PathParam<'_, '_> {
                         return Ok(Some(entry.dir()));
                     }
                 }
-                Some(PathStep::RegionCostField {
-                    cost_field,
-                    current,
-                    region,
-                }) => {
-                    if let Some((current_position, current_dir)) = current {
-                        if *current_position == position {
-                            return Ok(Some(*current_dir));
-                        }
-                    }
-
+                Some(PathStep::RegionCostField { cost_field, region }) => {
                     let region_tiles = self.regions.get(*region)?;
                     let position_index = region_tiles
                         .get_tile_index(position.layer_offset())
                         .ok_or("position not in region")?;
+                    if !cost_field.contains(position_index) {
+                        return Ok(None);
+                    }
 
                     let dir = cost_field.flow_vector(position_index, &region_tiles[position_index]);
 
-                    *current = Some((position, dir));
                     return Ok(Some(dir));
                 }
                 None => return Ok(None),
@@ -314,6 +305,10 @@ impl PathParam<'_, '_> {
             SearchNodeId::Door(door) => {
                 let door_regions = self.doors.get(door)?;
                 for door_region in door_regions.iter() {
+                    if door_region.dead_end() && !goal_id.in_region(door_region.region()) {
+                        continue;
+                    }
+
                     let region_tiles = self.regions.get(door_region.region())?;
                     let flow_field = self.flow_fields.get(door_region.flow_field())?;
 
@@ -384,11 +379,7 @@ impl PathParam<'_, '_> {
                     region,
                     start: _,
                     cost_field: Some(cost_field),
-                } => PathStep::RegionCostField {
-                    region,
-                    cost_field,
-                    current: None,
-                },
+                } => PathStep::RegionCostField { region, cost_field },
                 SearchEntryPath::CostField {
                     region,
                     start,
@@ -398,7 +389,6 @@ impl PathParam<'_, '_> {
                     cost_field: self
                         .generate_cost_field_path(region, start, entry.position)?
                         .0,
-                    current: None,
                 },
             };
 
@@ -421,6 +411,10 @@ impl Path {
 
     pub fn next(&self) -> Option<&PathStep> {
         self.steps.last()
+    }
+
+    pub fn steps(&self) -> &[PathStep] {
+        &self.steps
     }
 
     pub fn cost(&self) -> u32 {
