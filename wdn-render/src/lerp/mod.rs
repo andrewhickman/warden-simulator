@@ -7,7 +7,7 @@ use bevy_math::prelude::*;
 use bevy_time::prelude::*;
 use bevy_transform::prelude::*;
 
-use wdn_physics::{kinematics::Position, layer::Layer};
+use wdn_physics::kinematics::Position;
 
 use crate::RenderSystems;
 
@@ -92,8 +92,6 @@ pub fn interpolate_position(
 impl Plugin for InterpolatePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<FixedUpdateCount>();
-
-        app.register_required_components::<Layer, Transform>();
 
         app.add_systems(FixedLast, count_fixed_update);
         app.add_systems(Last, reset_fixed_update);

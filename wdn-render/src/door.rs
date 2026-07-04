@@ -20,7 +20,7 @@ use crate::{
         AssetHandles, DOOR_HORIZONTAL_RECT, DOOR_VERTICAL_RECT, SPRITE_SCALE_FACTOR_RECIP,
         sprite_size,
     },
-    layers::SPRITE_LAYER,
+    depth::SPRITE_DEPTH,
     lerp::{FixedUpdateCount, InterpolateState},
 };
 
@@ -40,7 +40,10 @@ enum DoorDirection {
 
 impl Plugin for DoorPlugin {
     fn build(&self, app: &mut App) {
-        app.configure_sets(Update, RenderSystems::RenderDoors);
+        app.configure_sets(
+            Update,
+            RenderSystems::RenderDoors.before(RenderSystems::RenderDamage),
+        );
 
         app.register_required_components::<Door, DoorSprite>();
 
@@ -101,7 +104,7 @@ pub fn update_doors(
                         sprite_rect.max.y - clipped_rect.max.y,
                     );
 
-                    transform.translation = clipped_rect.center().extend(SPRITE_LAYER);
+                    transform.translation = clipped_rect.center().extend(SPRITE_DEPTH);
                     sprite.rect = Some(Rect::from_corners(
                         offset * SPRITE_SCALE_FACTOR_RECIP,
                         (offset + size) * SPRITE_SCALE_FACTOR_RECIP,

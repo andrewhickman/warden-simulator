@@ -3320,7 +3320,9 @@ fn set_door_tile(app: &mut App, position: TilePosition) -> Entity {
             storage.set_material(position, TileMaterial::DOOR);
         })
         .unwrap();
-    app.world_mut().spawn((Door::default(), position)).id()
+    app.world_mut()
+        .spawn((Door::default(), position, ChildOf(position.layer())))
+        .id()
 }
 
 fn set_slow_tile(app: &mut App, position: TilePosition) {

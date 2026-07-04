@@ -14,7 +14,6 @@ use bevy_transform::prelude::*;
 
 use wdn_physics::{
     kinematics::Position,
-    layer::Layer,
     tile::{
         CHUNK_SIZE,
         material::TileKind,
@@ -27,7 +26,7 @@ use wdn_world::door::Door;
 use crate::{
     RenderSystems,
     assets::AssetHandles,
-    layers::{GROUND_LAYER, WALL_BASE_LAYER, WALL_TOP_LAYER},
+    depth::{GROUND_DEPTH, WALL_BASE_DEPTH, WALL_TOP_DEPTH},
     tile::material::{
         PackedTileData, TileChunkMaterial, TileChunkMaterialPlugin, make_tile_chunk_image,
     },
@@ -65,7 +64,6 @@ impl Plugin for TilePlugin {
 
         app.add_systems(Update, update_chunk.in_set(RenderSystems::RenderTiles));
 
-        app.register_required_components::<Layer, Visibility>();
         app.register_required_components::<TileChunk, TileChunkSprites>();
 
         app.add_plugins(TileChunkMaterialPlugin);
@@ -95,8 +93,8 @@ pub fn update_chunk(
                 let position = chunk.position();
                 *transform = chunk_transform(position);
 
-                sprites.base = param.spawn_chunk_material(id, GROUND_LAYER);
-                sprites.top = param.spawn_chunk_material(id, WALL_BASE_LAYER);
+                sprites.base = param.spawn_chunk_material(id, GROUND_DEPTH);
+                sprites.top = param.spawn_chunk_material(id, WALL_BASE_DEPTH);
             }
 
             param.update_chunk_material(sprites.base.id(), chunk, pack_ground_tile);
@@ -163,7 +161,7 @@ fn pack_wall_tile(_: TileChunkOffset, tile: TileData) -> PackedTileData {
     let depth = if tile.kind() == TileKind::Wall {
         0
     } else {
-        (WALL_TOP_LAYER - WALL_BASE_LAYER) as u16
+        (WALL_TOP_DEPTH - WALL_BASE_DEPTH) as u16
     };
 
     PackedTileData { index, depth }

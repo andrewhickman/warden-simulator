@@ -1,5 +1,5 @@
 use bevy::{
-    ecs::system::Commands,
+    ecs::{hierarchy::ChildOf, system::Commands},
     prelude::{Entity, Resource, Timer, TimerMode},
 };
 use rand::RngExt;
@@ -378,7 +378,7 @@ fn spawn_door_if_needed(
         commands.entity(entity).try_despawn();
     }
 
-    commands.spawn((Door::default(), position));
+    commands.spawn((Door::default(), position, ChildOf(position.layer())));
     true
 }
 

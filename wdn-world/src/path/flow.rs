@@ -97,7 +97,6 @@ pub fn update_flow_fields(
         .par_iter_many_unique_mut(added_flow_fields.iter())
         .for_each(|(parent, mut flow)| {
             let tiles = regions.get(parent.parent()).expect("invalid region");
-            flow.populate_cost(tiles);
             flow.populate_flow(tiles);
         });
 
@@ -201,7 +200,7 @@ impl FlowField {
         self.costs.len() - 1
     }
 
-    pub fn populate_cost(&mut self, tiles: &RegionTiles) {
+    pub fn populate_flow(&mut self, tiles: &RegionTiles) {
         self.costs.generate::<FlowPolicy>(
             &FlowPolicy,
             tiles,
@@ -209,9 +208,7 @@ impl FlowField {
             self.door_position.layer_offset(),
             self.door_adjacency,
         );
-    }
 
-    pub fn populate_flow(&mut self, tiles: &RegionTiles) {
         for (index, tile) in tiles.tiles() {
             let position = tile.position();
             if position == self.door_position.layer_offset() {

@@ -11,7 +11,7 @@ use bevy::{
 use wdn_physics::{
     PhysicsPlugin as WdnPhysicsPlugin,
     kinematics::Position,
-    layer::Layer,
+    layer::{Layer, LayerStack},
     tile::{
         index::TileIndex,
         material::{TileKind, TileMaterial},
@@ -22,6 +22,7 @@ use wdn_physics::{
 use wdn_render::{
     RenderPlugin as WdnRenderPlugin, RenderSystems,
     dev::{DevPlugin as WdnDevRenderPlugin, DevRenderSettings},
+    layer::LayerView,
 };
 use wdn_save::SavePlugin as WdnSavePlugin;
 use wdn_tasks::TasksPlugin as WdnTasksPlugin;
@@ -127,7 +128,11 @@ fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
             ..default()
         },
     ));
-    let layer = commands.spawn((Layer::default(),)).id();
+
+    let layer_stack = commands.spawn(LayerStack::default()).id();
+    let layer = commands
+        .spawn((Layer::default(), ChildOf(layer_stack)))
+        .id();
     commands.spawn((
         Player,
         Pawn::default(),
@@ -135,9 +140,15 @@ fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
         Position::new(Vec2::new(0.5, 0.5), Rot2::IDENTITY),
     ));
 
+    commands.insert_resource(LayerView::new(layer_stack, 0));
+
     storage.set_material(TilePosition::new(layer, 3, 0), TileMaterial::WALL);
     storage.set_material(TilePosition::new(layer, 3, 1), TileMaterial::DOOR);
-    commands.spawn((Door::default(), TilePosition::new(layer, 3, 1)));
+    commands.spawn((
+        Door::default(),
+        TilePosition::new(layer, 3, 1),
+        ChildOf(layer),
+    ));
     storage.set_material(TilePosition::new(layer, 3, 2), TileMaterial::WALL);
     storage.set_material(TilePosition::new(layer, 3, 3), TileMaterial::WALL);
     storage.set_material(TilePosition::new(layer, 4, 3), TileMaterial::WALL);

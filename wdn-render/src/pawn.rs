@@ -5,7 +5,7 @@ use bevy_sprite::{Anchor, prelude::*};
 use bevy_transform::prelude::*;
 use wdn_world::pawn::{Pawn, PawnProjectile};
 
-use crate::{assets::AssetHandles, layers::PAWN_LAYER, lerp::Interpolate};
+use crate::{assets::AssetHandles, depth::PAWN_DEPTH, lerp::Interpolate};
 
 pub struct PawnPlugin;
 
@@ -37,7 +37,7 @@ impl PawnSprite {
             ChildOf(context.entity),
             sprite,
             Anchor::BOTTOM_CENTER,
-            Transform::from_xyz(0.0, -Pawn::RADIUS, PAWN_LAYER),
+            Transform::from_xyz(0.0, -Pawn::RADIUS, PAWN_DEPTH),
         ));
     }
 }
@@ -51,6 +51,6 @@ impl PawnProjectileSprite {
             .get_mut::<Transform>(context.entity)
             .unwrap()
             .translation
-            .z = PAWN_LAYER;
+            .z = PAWN_DEPTH;
     }
 }
