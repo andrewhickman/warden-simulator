@@ -26,6 +26,7 @@ use crate::path::{
 pub struct Region {
     layer: Entity,
     sections: SmallVec<[(Entity, TileLayerOffset); 2]>,
+    outside: bool,
 }
 
 #[derive(Component, Debug, Default)]
@@ -104,6 +105,7 @@ pub fn update_regions(
         queue.push_back((chunk_id, section));
 
         let mut region_sections = SmallVec::new();
+        let mut region_outside = false;
 
         while let Some((current_chunk_id, current_section)) = queue.pop_front() {
             let (current_chunk, current_chunk_sections) = chunks.get(current_chunk_id)?;
@@ -127,6 +129,8 @@ pub fn update_regions(
                     if visited_sections.insert(neighbor_section) {
                         queue.push_back((neighbor_chunk_id, neighbor_section));
                     }
+                } else {
+                    region_outside = true;
                 }
 
                 Ok(())
@@ -138,6 +142,7 @@ pub fn update_regions(
                 Region {
                     layer: section.layer(),
                     sections: region_sections,
+                    outside: region_outside,
                 },
                 ChildOf(section.layer()),
             ))
@@ -269,6 +274,10 @@ impl Region {
         self.sections
             .iter()
             .map(|&(chunk_id, position)| (chunk_id, TilePosition::from((self.layer, position))))
+    }
+
+    pub fn outside(&self) -> bool {
+        self.outside
     }
 }
 

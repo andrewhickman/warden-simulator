@@ -40,6 +40,7 @@ fn region_empty() {
 
     assert_eq!(region_size(&mut app, regions[0]), 1024);
     assert_eq!(tile_region(&mut app, position), Some(regions[0]));
+    assert!(region_outside(&mut app, regions[0]));
 
     assert!(region_doors(&mut app, regions[0]).is_empty());
     assert!(get_flow_fields(&mut app).is_empty());
@@ -56,6 +57,7 @@ fn region_update() {
     let regions = get_regions(&mut app);
     assert_eq!(regions.len(), 1);
     assert_eq!(region_size(&mut app, regions[0]), 1024);
+    assert!(region_outside(&mut app, regions[0]));
     assert_eq!(tile_region(&mut app, center), Some(regions[0]));
     assert_eq!(tile_region(&mut app, center.north()), Some(regions[0]));
     assert_eq!(tile_region(&mut app, center.south()), Some(regions[0]));
@@ -69,6 +71,7 @@ fn region_update() {
     assert_eq!(new_regions.len(), 1);
     assert_ne!(new_regions[0], regions[0]);
     assert_eq!(region_size(&mut app, new_regions[0]), 1023);
+    assert!(region_outside(&mut app, new_regions[0]));
     assert_eq!(tile_region(&mut app, center), None);
     assert_eq!(tile_region(&mut app, center.north()), Some(new_regions[0]));
     assert_eq!(tile_region(&mut app, center.south()), Some(new_regions[0]));
@@ -98,6 +101,8 @@ fn region_update2() {
 
     assert_eq!(region_size(&mut app, inside), 24);
     assert_eq!(region_size(&mut app, outside), 975);
+    assert!(!region_outside(&mut app, inside));
+    assert!(region_outside(&mut app, outside));
 
     clear_tile(&mut app, center.with_offset(0, 0));
     update_regions(&mut app);
@@ -109,6 +114,12 @@ fn region_update2() {
     assert!(!new_regions.contains(&inside));
 
     let new_inside = tile_region(&mut app, center.with_offset(0, 0)).unwrap();
+
+    assert_eq!(region_size(&mut app, new_inside), 25);
+    assert_eq!(region_size(&mut app, outside), 975);
+    assert!(!region_outside(&mut app, new_inside));
+    assert!(region_outside(&mut app, outside));
+
     assert_eq!(
         tile_region(&mut app, center.with_offset(1, 1)),
         Some(new_inside)
@@ -269,6 +280,8 @@ fn region_room1() {
 
     assert_eq!(region_size(&mut app, inside), 9);
     assert_eq!(region_size(&mut app, outside), 4071);
+    assert!(!region_outside(&mut app, inside));
+    assert!(region_outside(&mut app, outside));
 
     assert_eq!(tile_region(&mut app, center.north()), Some(inside));
     assert_eq!(tile_region(&mut app, center.south()), Some(inside));
@@ -300,6 +313,8 @@ fn region_room2() {
 
     assert_eq!(region_size(&mut app, center_region), 1);
     assert_eq!(region_size(&mut app, outside), 1019);
+    assert!(!region_outside(&mut app, center_region));
+    assert!(region_outside(&mut app, outside));
 
     assert_eq!(tile_region(&mut app, center.north()), None);
     assert_eq!(tile_region(&mut app, center.south()), None);
@@ -333,6 +348,11 @@ fn region_room3() {
     assert!(regions.contains(&outside));
     assert_ne!(inside, outside);
 
+    assert_eq!(region_size(&mut app, inside), 19);
+    assert_eq!(region_size(&mut app, outside), 4033);
+    assert!(!region_outside(&mut app, inside));
+    assert!(region_outside(&mut app, outside));
+
     for x in -9i32..=9 {
         assert_eq!(tile_region(&mut app, start.with_offset(x, 0)), Some(inside));
     }
@@ -362,6 +382,13 @@ fn region_room4() {
     assert_ne!(outside, inside);
     assert_ne!(outside, middle);
     assert_ne!(inside, middle);
+
+    assert_eq!(region_size(&mut app, outside), 903);
+    assert_eq!(region_size(&mut app, middle), 56);
+    assert_eq!(region_size(&mut app, inside), 9);
+    assert!(region_outside(&mut app, outside));
+    assert!(!region_outside(&mut app, middle));
+    assert!(!region_outside(&mut app, inside));
 
     assert_eq!(
         tile_region(&mut app, center.with_offset(3, 0)),
@@ -409,12 +436,17 @@ fn region_room5() {
     let regions = get_regions(&mut app);
     assert_eq!(regions.len(), 2);
 
-    let maze_inside = tile_region(&mut app, origin.with_offset(1, 1)).unwrap();
+    let inside = tile_region(&mut app, origin.with_offset(1, 1)).unwrap();
     let outside = tile_region(&mut app, TilePosition::new(layer, 20, 20)).unwrap();
 
-    assert!(regions.contains(&maze_inside));
+    assert!(regions.contains(&inside));
     assert!(regions.contains(&outside));
-    assert_ne!(maze_inside, outside);
+    assert_ne!(inside, outside);
+
+    assert_eq!(region_size(&mut app, inside), 55);
+    assert_eq!(region_size(&mut app, outside), 3996);
+    assert!(region_outside(&mut app, outside));
+    assert!(!region_outside(&mut app, inside));
 
     let top_left = tile_region(&mut app, origin.with_offset(1, 1)).unwrap();
     let bottom_right = tile_region(&mut app, origin.with_offset(7, 7)).unwrap();
@@ -439,10 +471,17 @@ fn region_room6() {
     let regions = get_regions(&mut app);
     assert_eq!(regions.len(), 2);
 
+    let outside = tile_region(&mut app, TilePosition::new(layer, 50, 50)).unwrap();
     let left = tile_region(&mut app, center.with_offset(-1, 0)).unwrap();
     let right = tile_region(&mut app, center.with_offset(3, 0)).unwrap();
 
     assert_eq!(left, right);
+    assert_ne!(left, outside);
+
+    assert_eq!(region_size(&mut app, left), 73);
+    assert_eq!(region_size(&mut app, outside), 3975);
+    assert!(!region_outside(&mut app, left));
+    assert!(region_outside(&mut app, outside));
 }
 
 #[test]
@@ -462,10 +501,13 @@ fn region_room7() {
     let initial_regions = get_regions(&mut app);
     assert_eq!(initial_regions.len(), 1);
 
-    let inside = tile_region(&mut app, TilePosition::new(layer, 2, 3)).unwrap();
-    let outside = tile_region(&mut app, TilePosition::new(layer, 7, 3)).unwrap();
+    let inner = tile_region(&mut app, TilePosition::new(layer, 2, 3)).unwrap();
+    let outer = tile_region(&mut app, TilePosition::new(layer, 7, 3)).unwrap();
 
-    assert_eq!(inside, outside);
+    assert_eq!(inner, outer);
+
+    assert_eq!(region_size(&mut app, outer), 4077);
+    assert!(region_outside(&mut app, outer));
 }
 
 #[test]
@@ -487,6 +529,27 @@ fn region_room_many() {
 
     let regions = get_regions(&mut app);
     assert_eq!(regions.len(), 41);
+
+    let outside = tile_region(&mut app, TilePosition::new(layer, 10, 10)).unwrap();
+    assert_eq!(region_size(&mut app, outside), 3975);
+    assert!(region_outside(&mut app, outside));
+
+    let inside_regions = regions
+        .iter()
+        .filter(|&&region| region != outside)
+        .collect::<Vec<_>>();
+    assert_eq!(inside_regions.len(), 40);
+
+    assert!(
+        inside_regions
+            .iter()
+            .all(|&&region| region_size(&mut app, region) == 1)
+    );
+    assert!(
+        inside_regions
+            .iter()
+            .all(|&&region| !region_outside(&mut app, region))
+    );
 }
 
 #[test]
@@ -3333,6 +3396,10 @@ fn region_doors(app: &mut App, region: Entity) -> Vec<Entity> {
         .iter()
         .map(|door| door.door())
         .collect()
+}
+
+fn region_outside(app: &mut App, region: Entity) -> bool {
+    app.world().get::<Region>(region).unwrap().outside()
 }
 
 fn region_size(app: &mut App, region: Entity) -> usize {
