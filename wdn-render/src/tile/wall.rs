@@ -97,6 +97,8 @@ fn test_empty_sprite_offset() {
             "unexpected sprite index for walls={walls:?}"
         );
     }
+
+    assert_eq!(patterns.len(), 5);
 }
 
 #[test]
@@ -107,15 +109,16 @@ fn test_wall_sprite_offset() {
 
     for doors in Adjacency::values() {
         for walls in Adjacency::values() {
-            let mut normal_walls =
-                walls.difference(Adjacency::NORTH_WEST | Adjacency::NORTH | Adjacency::NORTH_EAST);
-            let mut normal_doors = doors.difference(
-                Adjacency::NORTH_WEST
-                    | Adjacency::NORTH
-                    | Adjacency::NORTH_EAST
+            let mut normal_walls = walls.intersection(
+                Adjacency::EAST
                     | Adjacency::SOUTH_EAST
-                    | Adjacency::SOUTH_WEST,
+                    | Adjacency::SOUTH
+                    | Adjacency::SOUTH_WEST
+                    | Adjacency::WEST,
             );
+
+            let mut normal_doors =
+                doors.intersection(Adjacency::SOUTH | Adjacency::EAST | Adjacency::WEST);
 
             if walls.contains(Adjacency::SOUTH) {
                 normal_doors.remove(Adjacency::SOUTH);
@@ -141,6 +144,8 @@ fn test_wall_sprite_offset() {
             );
         }
     }
+
+    assert_eq!(patterns.len(), 54);
 }
 
 #[test]
@@ -150,8 +155,8 @@ fn test_door_sprite_offset() {
     let mut patterns: HashMap<Adjacency, u16> = HashMap::new();
 
     for walls in Adjacency::values() {
-        let mut normal_walls = walls.difference(
-            Adjacency::NORTH_WEST | Adjacency::NORTH_EAST | Adjacency::WEST | Adjacency::EAST,
+        let mut normal_walls = walls.intersection(
+            Adjacency::SOUTH_EAST | Adjacency::SOUTH | Adjacency::SOUTH_WEST | Adjacency::NORTH,
         );
 
         if !normal_walls.contains(Adjacency::SOUTH) {
@@ -179,4 +184,6 @@ fn test_door_sprite_offset() {
             );
         }
     }
+
+    assert_eq!(patterns.len(), 9);
 }
