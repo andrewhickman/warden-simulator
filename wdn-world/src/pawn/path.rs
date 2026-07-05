@@ -53,24 +53,26 @@ pub fn follow_pawn_paths(
 
                 let desired_dir = loop {
                     match &mut pawn_path.state {
-                        PathState::Active(path) if paths.is_valid(path) => {
-                            match paths.path_dir(path, tile_position).unwrap() {
-                                Some(dir) => {
-                                    break dir;
-                                }
-                                None => {
-                                    warn!(
-                                        "Failed to get path direction at position {:?}",
-                                        tile_position
-                                    );
-                                    pawn_path.state = PathState::Pending;
-                                }
+                        PathState::Active(path) => match paths.path_dir(path, tile_position) {
+                            Err(err) => {
+                                warn!("path invalidated, recalculating: {}", err);
+                                pawn_path.state = PathState::Pending;
                             }
-                        }
+                            Ok(Some(dir)) => {
+                                break dir;
+                            }
+                            Ok(None) => {
+                                warn!(
+                                    "Failed to get path direction at position {:?}",
+                                    tile_position
+                                );
+                                pawn_path.state = PathState::Pending;
+                            }
+                        },
                         PathState::Finished | PathState::Failed => {
                             return;
                         }
-                        PathState::Active(_) | PathState::Pending => {
+                        PathState::Pending => {
                             match paths.find_path(tile_position, target).unwrap() {
                                 Some(new_path) => {
                                     pawn_path.state = PathState::Active(new_path);

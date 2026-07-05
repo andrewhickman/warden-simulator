@@ -153,16 +153,6 @@ impl PathParam<'_, '_> {
         Ok(None)
     }
 
-    pub fn is_valid(&self, path: &Path) -> bool {
-        match path.next() {
-            Some(PathStep::DoorFlowField { flow_field, .. }) => {
-                self.flow_fields.contains(*flow_field)
-            }
-            Some(PathStep::RegionCostField { region, .. }) => self.regions.contains(*region),
-            None => false,
-        }
-    }
-
     pub fn path_dir(&self, path: &mut Path, position: TilePosition) -> Result<Option<Dir2>> {
         loop {
             match path.steps.last_mut() {

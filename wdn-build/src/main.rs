@@ -11,7 +11,6 @@ fn main() {
 
     let input_images = vec!["assets/image/dirt.png", "assets/image/walls.png"];
 
-    // Load all images and convert to RGBA
     let mut images = Vec::new();
     let mut total_tiles = 0u32;
 

@@ -6,6 +6,8 @@ use bevy_ecs::{prelude::*, relationship::Relationship};
 use bevy_transform::components::Transform;
 use wdn_physics::layer::{Layer, LayerStack};
 
+use crate::depth::LAYER_HEIGHT;
+
 #[derive(Resource)]
 pub struct LayerView {
     pub stack: Entity,
@@ -40,7 +42,7 @@ pub fn on_add_layer(
     mut layers: Query<(&Layer, &mut Transform)>,
 ) -> Result {
     let (layer, mut transform) = layers.get_mut(trigger.entity)?;
-    transform.translation.z = layer.height() as f32;
+    transform.translation.z = layer.height() as f32 * LAYER_HEIGHT;
     Ok(())
 }
 
