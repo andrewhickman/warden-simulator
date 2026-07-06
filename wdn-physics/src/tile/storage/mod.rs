@@ -155,30 +155,21 @@ impl TileStorageMut<'_, '_> {
             *entity_material = material;
         });
 
-        match (prev_material.kind(), material.kind()) {
-            (TileKind::Empty, TileKind::Wall) => {
-                self.add_adjacent_wall(position);
-            }
-            (TileKind::Empty, TileKind::Door) => {
-                self.add_adjacent_door(position);
-            }
-            (TileKind::Wall, TileKind::Empty) => {
-                self.remove_adjacent_wall(position);
-            }
-            (TileKind::Wall, TileKind::Door) => {
-                self.remove_adjacent_wall(position);
-                self.add_adjacent_door(position);
-            }
-            (TileKind::Door, TileKind::Empty) => {
-                self.remove_adjacent_door(position);
-            }
-            (TileKind::Door, TileKind::Wall) => {
-                self.remove_adjacent_door(position);
-                self.add_adjacent_wall(position);
-            }
-            (TileKind::Empty, TileKind::Empty)
-            | (TileKind::Wall, TileKind::Wall)
-            | (TileKind::Door, TileKind::Door) => {}
+        for (neighbor_adjacency, offset) in Adjacency::OFFSETS {
+            let neighbor_pos = position.with_offset(offset.x, offset.y);
+
+            let neighbor_tile = self
+                .chunk_mut(neighbor_pos.chunk_position())
+                .get_mut(neighbor_pos.chunk_offset());
+            neighbor_tile.adjacency.update(
+                neighbor_adjacency,
+                prev_material.kind(),
+                material.kind(),
+            );
+
+            self.visit_entity_adjacencies(neighbor_pos, |adjacency| {
+                adjacency.update(neighbor_adjacency, prev_material.kind(), material.kind());
+            });
         }
     }
 
@@ -202,66 +193,6 @@ impl TileStorageMut<'_, '_> {
                 .chunks
                 .entry(position)
                 .or_insert_with(|| TileChunk::empty(position))
-        }
-    }
-
-    fn add_adjacent_wall(&mut self, position: TilePosition) {
-        for (adj, offset) in Adjacency::OFFSETS {
-            let neighbor_pos = position.with_offset(offset.x, offset.y);
-
-            let neighbor_tile = self
-                .chunk_mut(neighbor_pos.chunk_position())
-                .get_mut(neighbor_pos.chunk_offset());
-            neighbor_tile.adjacency.walls_mut().insert(adj);
-
-            self.visit_entity_adjacencies(neighbor_pos, |adjacency| {
-                adjacency.walls_mut().insert(adj);
-            });
-        }
-    }
-
-    fn remove_adjacent_wall(&mut self, position: TilePosition) {
-        for (adj, offset) in Adjacency::OFFSETS {
-            let neighbor_pos = position.with_offset(offset.x, offset.y);
-
-            let neighbor_tile = self
-                .chunk_mut(neighbor_pos.chunk_position())
-                .get_mut(neighbor_pos.chunk_offset());
-            neighbor_tile.adjacency.walls_mut().remove(adj);
-
-            self.visit_entity_adjacencies(neighbor_pos, |adjacency| {
-                adjacency.walls_mut().remove(adj);
-            });
-        }
-    }
-
-    fn add_adjacent_door(&mut self, position: TilePosition) {
-        for (adj, offset) in Adjacency::OFFSETS {
-            let neighbor_pos = position.with_offset(offset.x, offset.y);
-
-            let neighbor_tile = self
-                .chunk_mut(neighbor_pos.chunk_position())
-                .get_mut(neighbor_pos.chunk_offset());
-            neighbor_tile.adjacency.doors_mut().insert(adj);
-
-            self.visit_entity_adjacencies(neighbor_pos, |adjacency| {
-                adjacency.doors_mut().insert(adj);
-            });
-        }
-    }
-
-    fn remove_adjacent_door(&mut self, position: TilePosition) {
-        for (adj, offset) in Adjacency::OFFSETS {
-            let neighbor_pos = position.with_offset(offset.x, offset.y);
-
-            let neighbor_tile = self
-                .chunk_mut(neighbor_pos.chunk_position())
-                .get_mut(neighbor_pos.chunk_offset());
-            neighbor_tile.adjacency.doors_mut().remove(adj);
-
-            self.visit_entity_adjacencies(neighbor_pos, |adjacency| {
-                adjacency.doors_mut().remove(adj);
-            });
         }
     }
 
