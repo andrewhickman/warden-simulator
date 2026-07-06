@@ -33,6 +33,7 @@ pub struct TileCollider {
 
 #[derive(QueryData, Debug)]
 pub struct ColliderQuery {
+    id: Entity,
     collider: &'static Collider,
     transform: &'static GlobalPosition,
     velocity: Option<&'static GlobalVelocity>,
@@ -41,8 +42,8 @@ pub struct ColliderQuery {
 #[derive(QueryData, Debug)]
 #[query_data(derive(Clone, Copy, Debug))]
 pub struct TileColliderQuery {
+    id: Entity,
     collider: &'static TileCollider,
-    position: &'static TilePosition,
 }
 
 #[derive(Component, Clone, Debug, Default)]
@@ -72,10 +73,27 @@ pub enum CollisionTarget {
     },
 }
 
+static NEIGHBORS: [(IVec2, Adjacency); 9] = [
+    (IVec2::new(-1, 1), Adjacency::NORTH_WEST),
+    (IVec2::new(0, 1), Adjacency::NORTH),
+    (IVec2::new(1, 1), Adjacency::NORTH_EAST),
+    (IVec2::new(1, 0), Adjacency::EAST),
+    (IVec2::new(1, -1), Adjacency::SOUTH_EAST),
+    (IVec2::new(0, -1), Adjacency::SOUTH),
+    (IVec2::new(-1, -1), Adjacency::SOUTH_WEST),
+    (IVec2::new(-1, 0), Adjacency::WEST),
+    (IVec2::new(0, 0), Adjacency::NONE),
+];
+
+#[derive(Default)]
+struct TileColliderAdjacency<'w, 's> {
+    tiles: [Option<TileColliderQueryItem<'w, 's>>; 8],
+}
+
 pub fn resolve_collisions(
     index: Res<TileIndex>,
     storage: TileStorage,
-    mut colliders: Query<(Entity, ColliderQuery, &TilePosition, &mut Collisions)>,
+    mut colliders: Query<(ColliderQuery, &TilePosition, &mut Collisions)>,
     candidate_colliders: Query<ColliderQuery>,
     candidate_tiles: Query<TileColliderQuery>,
     time: Res<Time>,
@@ -85,19 +103,21 @@ pub fn resolve_collisions(
     colliders
         .par_iter_mut()
         .batching_strategy(BatchingStrategy::new().min_batch_size(16))
-        .for_each(|(collider_id, collider, &tile_position, mut collisions)| {
+        .for_each(|(collider, &tile_position, mut collisions)| {
             collisions.clear();
 
+            let mut tile_colliders = TileColliderAdjacency::default();
             let mut wall_adjacency = storage.get_wall_adjacency(tile_position);
 
-            for (neighbor, adjacency) in tile_neighborhood(tile_position) {
+            for (neighbor_index, &(neighbor_offset, adjacency)) in NEIGHBORS.iter().enumerate() {
+                let neighbor = tile_position.with_offset(neighbor_offset.x, neighbor_offset.y);
                 let index_entry = match index.get(neighbor) {
                     Some(entry) => entry,
                     None => continue,
                 };
 
                 for &candidate in index_entry.objects() {
-                    if candidate == collider_id {
+                    if candidate == collider.id {
                         continue;
                     }
 
@@ -105,24 +125,26 @@ pub fn resolve_collisions(
                         continue;
                     };
 
-                    collisions.check_collider(
-                        &collider,
-                        candidate,
-                        &candidate_collider,
-                        delta_secs,
-                    );
+                    collisions.check_collider(&collider, &candidate_collider, delta_secs);
                 }
 
-                if let Some(candidate) = index_entry.tile()
+                if let Some(tile_collider_slot) = tile_colliders.tiles.get_mut(neighbor_index)
+                    && let Some(candidate) = index_entry.tile()
                     && let Ok(candidate_tile) = candidate_tiles.get(candidate)
-                    && candidate_tile.collider.solid
                 {
                     wall_adjacency |= adjacency;
+                    *tile_collider_slot = Some(candidate_tile);
                 }
             }
 
             if wall_adjacency != Adjacency::NONE {
-                collisions.check_tile(&collider, &index, tile_position, wall_adjacency, delta_secs);
+                collisions.check_tile(
+                    &collider,
+                    &tile_colliders,
+                    tile_position,
+                    wall_adjacency,
+                    delta_secs,
+                );
             }
         });
 }
@@ -265,7 +287,6 @@ impl Collisions {
     fn check_collider(
         &mut self,
         collider: &ColliderQueryItem,
-        candidate_id: Entity,
         candidate: &ColliderQueryItem,
         threshold: f32,
     ) {
@@ -281,7 +302,7 @@ impl Collisions {
                 position,
                 normal: Dir2::new(position - target_position).unwrap_or(Dir2::X),
                 target: CollisionTarget::Collider {
-                    id: candidate_id,
+                    id: candidate.id,
                     position: target_position,
                 },
                 solid: collider.solid() && candidate.solid(),
@@ -293,18 +314,19 @@ impl Collisions {
     fn check_tile(
         &mut self,
         collider: &ColliderQueryItem,
-        index: &TileIndex,
+        candidates: &TileColliderAdjacency,
         tile_position: TilePosition,
         adjacency: Adjacency,
         delta_secs: f32,
     ) {
         if adjacency.contains(Adjacency::EAST) {
+            let candidate_position = tile_position.east();
             self.check_tile_edge(
                 collider,
-                index,
-                tile_position.east(),
+                candidates.east(),
+                candidate_position,
                 Dir2::NEG_X,
-                (tile_position.x() + 1) as f32 - collider.position().x,
+                candidate_position.x() as f32 - collider.position().x,
                 collider.velocity().x,
                 collider.radius(),
                 delta_secs,
@@ -312,12 +334,13 @@ impl Collisions {
         }
 
         if adjacency.contains(Adjacency::NORTH) {
+            let candidate_position = tile_position.north();
             self.check_tile_edge(
                 collider,
-                index,
-                tile_position.north(),
+                candidates.north(),
+                candidate_position,
                 Dir2::NEG_Y,
-                (tile_position.y() + 1) as f32 - collider.position().y,
+                candidate_position.y() as f32 - collider.position().y,
                 collider.velocity().y,
                 collider.radius(),
                 delta_secs,
@@ -325,10 +348,11 @@ impl Collisions {
         }
 
         if adjacency.contains(Adjacency::WEST) {
+            let candidate_position = tile_position.west();
             self.check_tile_edge(
                 collider,
-                index,
-                tile_position.west(),
+                candidates.west(),
+                candidate_position,
                 Dir2::X,
                 collider.position().x - tile_position.x() as f32,
                 -collider.velocity().x,
@@ -338,10 +362,11 @@ impl Collisions {
         }
 
         if adjacency.contains(Adjacency::SOUTH) {
+            let candidate_position = tile_position.south();
             self.check_tile_edge(
                 collider,
-                index,
-                tile_position.south(),
+                candidates.south(),
+                candidate_position,
                 Dir2::Y,
                 collider.position().y - tile_position.y() as f32,
                 -collider.velocity().y,
@@ -353,11 +378,12 @@ impl Collisions {
         if adjacency.contains(Adjacency::NORTH_EAST)
             && !adjacency.intersects(Adjacency::NORTH | Adjacency::EAST)
         {
+            let candidate_position = tile_position.north().east();
             self.check_tile_corner(
                 collider,
-                index,
-                tile_position.north().east(),
-                tile_position.position() + IVec2::ONE,
+                candidates.north_east(),
+                candidate_position,
+                candidate_position.position(),
                 delta_secs,
             );
         }
@@ -365,11 +391,12 @@ impl Collisions {
         if adjacency.contains(Adjacency::NORTH_WEST)
             && !adjacency.intersects(Adjacency::NORTH | Adjacency::WEST)
         {
+            let candidate_position = tile_position.north().west();
             self.check_tile_corner(
                 collider,
-                index,
-                tile_position.north().west(),
-                tile_position.position() + IVec2::Y,
+                candidates.north_west(),
+                candidate_position,
+                IVec2::new(tile_position.x(), candidate_position.y()),
                 delta_secs,
             );
         }
@@ -377,10 +404,11 @@ impl Collisions {
         if adjacency.contains(Adjacency::SOUTH_WEST)
             && !adjacency.intersects(Adjacency::SOUTH | Adjacency::WEST)
         {
+            let candidate_position = tile_position.south().west();
             self.check_tile_corner(
                 collider,
-                index,
-                tile_position.south().west(),
+                candidates.south_west(),
+                candidate_position,
                 tile_position.position(),
                 delta_secs,
             );
@@ -389,11 +417,12 @@ impl Collisions {
         if adjacency.contains(Adjacency::SOUTH_EAST)
             && !adjacency.intersects(Adjacency::SOUTH | Adjacency::EAST)
         {
+            let candidate_position = tile_position.south().east();
             self.check_tile_corner(
                 collider,
-                index,
-                tile_position.south().east(),
-                tile_position.position() + IVec2::X,
+                candidates.south_east(),
+                candidate_position,
+                IVec2::new(candidate_position.x(), tile_position.y()),
                 delta_secs,
             );
         }
@@ -402,7 +431,7 @@ impl Collisions {
     fn check_tile_edge(
         &mut self,
         collider: &ColliderQueryItem,
-        index: &TileIndex,
+        candidate: Option<&TileColliderQueryItem>,
         tile_position: TilePosition,
         normal: Dir2,
         delta_position_component: f32,
@@ -417,14 +446,19 @@ impl Collisions {
         ) && t < delta_secs
         {
             let position = collider.position_at(t);
+            let (id, solid) = match candidate {
+                Some(candidate) => (Some(candidate.id), collider.solid() && candidate.solid()),
+                None => (None, collider.solid()),
+            };
+
             let collision = Collision {
                 position,
                 normal,
                 target: CollisionTarget::Tile {
-                    id: index.get_tile(tile_position),
+                    id,
                     position: tile_position,
                 },
-                solid: collider.collider.solid,
+                solid,
             };
             self.insert(collision, t)
         }
@@ -433,7 +467,7 @@ impl Collisions {
     fn check_tile_corner(
         &mut self,
         collider: &ColliderQueryItem,
-        index: &TileIndex,
+        candidate: Option<&TileColliderQueryItem>,
         tile_position: TilePosition,
         corner_position: IVec2,
         delta_secs: f32,
@@ -446,14 +480,19 @@ impl Collisions {
         {
             let position = collider.position_at(t);
             let target_position = corner_position.as_vec2();
+            let (id, solid) = match candidate {
+                Some(candidate) => (Some(candidate.id), collider.solid() && candidate.solid()),
+                None => (None, collider.solid()),
+            };
+
             let collision = Collision {
                 position,
                 normal: Dir2::new(position - target_position).unwrap_or(Dir2::X),
                 target: CollisionTarget::Tile {
-                    id: index.get_tile(tile_position),
+                    id,
                     position: tile_position,
                 },
-                solid: collider.collider.solid,
+                solid,
             };
             self.insert(collision, t)
         }
@@ -489,6 +528,40 @@ impl CollisionTarget {
             ) => pos1 == pos2 && id1 == id2,
             _ => false,
         }
+    }
+}
+
+impl<'w, 's> TileColliderAdjacency<'w, 's> {
+    fn north_west(&self) -> Option<&TileColliderQueryItem<'w, 's>> {
+        self.tiles[0].as_ref()
+    }
+
+    fn north(&self) -> Option<&TileColliderQueryItem<'w, 's>> {
+        self.tiles[1].as_ref()
+    }
+
+    fn north_east(&self) -> Option<&TileColliderQueryItem<'w, 's>> {
+        self.tiles[2].as_ref()
+    }
+
+    fn east(&self) -> Option<&TileColliderQueryItem<'w, 's>> {
+        self.tiles[3].as_ref()
+    }
+
+    fn south_east(&self) -> Option<&TileColliderQueryItem<'w, 's>> {
+        self.tiles[4].as_ref()
+    }
+
+    fn south(&self) -> Option<&TileColliderQueryItem<'w, 's>> {
+        self.tiles[5].as_ref()
+    }
+
+    fn south_west(&self) -> Option<&TileColliderQueryItem<'w, 's>> {
+        self.tiles[6].as_ref()
+    }
+
+    fn west(&self) -> Option<&TileColliderQueryItem<'w, 's>> {
+        self.tiles[7].as_ref()
     }
 }
 
@@ -528,18 +601,4 @@ fn wall_collision(distance: f32, speed: f32, radius: f32) -> Option<f32> {
     }
 
     Some((distance - radius) / speed)
-}
-
-fn tile_neighborhood(position: TilePosition) -> [(TilePosition, Adjacency); 9] {
-    [
-        (position.north().west(), Adjacency::NORTH_WEST),
-        (position.north(), Adjacency::NORTH),
-        (position.north().east(), Adjacency::NORTH_EAST),
-        (position.east(), Adjacency::EAST),
-        (position.south().east(), Adjacency::SOUTH_EAST),
-        (position.south(), Adjacency::SOUTH),
-        (position.south().west(), Adjacency::SOUTH_WEST),
-        (position.west(), Adjacency::WEST),
-        (position, Adjacency::NONE),
-    ]
 }
