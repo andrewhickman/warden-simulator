@@ -70,11 +70,39 @@ impl Adjacency {
         (Adjacency::WEST, IVec2::new(1, 0)),
     ];
 
-    pub fn opposite(&self) -> Self {
-        Adjacency::from_bits_retain(self.bits().rotate_right(4))
+    pub fn flip_y(&self) -> Self {
+        Adjacency::from_bits_retain(self.bits().reverse_bits().rotate_right(1))
+    }
+
+    pub fn flip_x(&self) -> Self {
+        Adjacency::from_bits_retain(self.bits().reverse_bits().rotate_right(5))
     }
 
     pub fn values() -> impl Iterator<Item = Self> {
         (0..=255u8).map(Self::from_bits_retain)
     }
+}
+
+#[test]
+fn test_flip_x() {
+    assert_eq!(Adjacency::NORTH.flip_x(), Adjacency::NORTH);
+    assert_eq!(Adjacency::SOUTH.flip_x(), Adjacency::SOUTH);
+    assert_eq!(Adjacency::EAST.flip_x(), Adjacency::WEST);
+    assert_eq!(Adjacency::WEST.flip_x(), Adjacency::EAST);
+    assert_eq!(Adjacency::NORTH_EAST.flip_x(), Adjacency::NORTH_WEST);
+    assert_eq!(Adjacency::NORTH_WEST.flip_x(), Adjacency::NORTH_EAST);
+    assert_eq!(Adjacency::SOUTH_EAST.flip_x(), Adjacency::SOUTH_WEST);
+    assert_eq!(Adjacency::SOUTH_WEST.flip_x(), Adjacency::SOUTH_EAST);
+}
+
+#[test]
+fn test_flip_y() {
+    assert_eq!(Adjacency::EAST.flip_y(), Adjacency::EAST);
+    assert_eq!(Adjacency::WEST.flip_y(), Adjacency::WEST);
+    assert_eq!(Adjacency::NORTH.flip_y(), Adjacency::SOUTH);
+    assert_eq!(Adjacency::SOUTH.flip_y(), Adjacency::NORTH);
+    assert_eq!(Adjacency::NORTH_EAST.flip_y(), Adjacency::SOUTH_EAST);
+    assert_eq!(Adjacency::SOUTH_EAST.flip_y(), Adjacency::NORTH_EAST);
+    assert_eq!(Adjacency::NORTH_WEST.flip_y(), Adjacency::SOUTH_WEST);
+    assert_eq!(Adjacency::SOUTH_WEST.flip_y(), Adjacency::NORTH_WEST);
 }

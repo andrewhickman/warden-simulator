@@ -66,20 +66,20 @@ impl Material2d for TileChunkMaterial {
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]
 pub struct PackedTileData {
-    pub index: u16,
-    pub depth: u16,
+    index: u16,
+    depth: u16,
 }
 
 pub fn make_tile_chunk_image() -> Image {
     Image {
         data: Some(Vec::with_capacity(
-            CHUNK_SIZE_SQUARED * mem::size_of::<PackedTileData>(),
+            CHUNK_SIZE_SQUARED * 2 * mem::size_of::<PackedTileData>(),
         )),
         data_order: TextureDataOrder::default(),
         texture_descriptor: TextureDescriptor {
             size: Extent3d {
                 height: CHUNK_SIZE as u32,
-                width: CHUNK_SIZE as u32,
+                width: CHUNK_SIZE as u32 * 2,
                 depth_or_array_layers: 1,
             },
             dimension: TextureDimension::D2,
@@ -94,5 +94,31 @@ pub fn make_tile_chunk_image() -> Image {
         texture_view_descriptor: None,
         asset_usage: RenderAssetUsages::RENDER_WORLD | RenderAssetUsages::MAIN_WORLD,
         copy_on_resize: false,
+    }
+}
+
+impl PackedTileData {
+    pub const FLIP_X: u16 = 1 << 15;
+
+    pub fn new(index: u16, depth: u16, flip_x: bool) -> Self {
+        let index = if flip_x {
+            index | PackedTileData::FLIP_X
+        } else {
+            index
+        };
+
+        Self { index, depth }
+    }
+
+    pub fn index(&self) -> u16 {
+        self.index & !PackedTileData::FLIP_X
+    }
+
+    pub fn depth(&self) -> u16 {
+        self.depth
+    }
+
+    pub fn flip_x(&self) -> bool {
+        (self.index & PackedTileData::FLIP_X) != 0
     }
 }

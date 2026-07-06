@@ -35,7 +35,7 @@ use crate::{
 pub const SPRITE_CHUNK_SIZE: u16 = 16;
 
 pub const DIRT_OFFSET: u16 = 0;
-pub const WALL_OFFSET: u16 = DIRT_OFFSET + 256;
+pub const WALL_OFFSET: u16 = DIRT_OFFSET + 512;
 
 pub struct TilePlugin;
 
@@ -124,7 +124,7 @@ impl TileChunkSpriteParam<'_, '_> {
         &mut self,
         material: AssetId<TileChunkMaterial>,
         chunk: &TileChunk,
-        pack: impl Fn(TileChunkOffset, TileData) -> PackedTileData,
+        pack: impl Fn(TileChunkOffset, TileData) -> [PackedTileData; 2],
     ) {
         let Some(material) = self.materials.get_mut(material) else {
             error!("material asset not found for chunk {chunk:?}");
@@ -143,20 +143,30 @@ impl TileChunkSpriteParam<'_, '_> {
 
         data.clear();
         for (offset, tile) in chunk.tiles() {
-            let packed = pack(offset, tile);
-            data.extend_from_slice(bytemuck::bytes_of(&packed));
+            for packed in pack(offset, tile) {
+                let bytes = bytemuck::bytes_of(&packed);
+                data.extend_from_slice(bytes);
+            }
         }
     }
 }
 
-fn pack_ground_tile(offset: TileChunkOffset, _tile: TileData) -> PackedTileData {
-    let index = DIRT_OFFSET + dirt_sprite_offset(offset);
+fn pack_ground_tile(offset: TileChunkOffset, _tile: TileData) -> [PackedTileData; 2] {
+    let (left, right) = dirt_sprite_offsets(offset);
 
-    PackedTileData { index, depth: 0 }
+    [
+        PackedTileData::new(left, 0, false),
+        PackedTileData::new(right, 0, false),
+    ]
 }
 
-fn pack_wall_tile(_: TileChunkOffset, tile: TileData) -> PackedTileData {
-    let index = wall::sprite_offset(tile.kind(), tile.wall_adjacency(), tile.door_adjacency());
+fn pack_wall_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
+    let right = wall::sprite_offset(tile.kind(), tile.wall_adjacency(), tile.door_adjacency());
+    let left = wall::sprite_offset(
+        tile.kind(),
+        tile.wall_adjacency().flip_x(),
+        tile.door_adjacency().flip_x(),
+    );
 
     let depth = if tile.kind() == TileKind::Wall {
         0
@@ -164,7 +174,10 @@ fn pack_wall_tile(_: TileChunkOffset, tile: TileData) -> PackedTileData {
         (WALL_TOP_DEPTH - WALL_BASE_DEPTH) as u16
     };
 
-    PackedTileData { index, depth }
+    [
+        PackedTileData::new(left, depth, true),
+        PackedTileData::new(right, depth, false),
+    ]
 }
 
 fn chunk_transform(position: TileChunkPosition) -> Transform {
@@ -179,8 +192,15 @@ fn chunk_coord_transform(d: i16) -> f32 {
     d as f32 * CHUNK_SIZE as f32 + CHUNK_SIZE as f32 / 2.0
 }
 
-pub fn dirt_sprite_offset(position: TileChunkOffset) -> u16 {
-    DIRT_OFFSET
-        + (SPRITE_CHUNK_SIZE - 1 - position.y().rem_euclid(SPRITE_CHUNK_SIZE)) * SPRITE_CHUNK_SIZE
-        + position.x().rem_euclid(SPRITE_CHUNK_SIZE)
+pub fn dirt_sprite_offsets(position: TileChunkOffset) -> (u16, u16) {
+    let (x, y) = (position.x() * 2, position.y());
+
+    let y = SPRITE_CHUNK_SIZE - 1 - y.rem_euclid(SPRITE_CHUNK_SIZE);
+    let x1 = x.rem_euclid(SPRITE_CHUNK_SIZE * 2);
+    let x2 = (x + 1).rem_euclid(SPRITE_CHUNK_SIZE * 2);
+
+    (
+        DIRT_OFFSET + y * SPRITE_CHUNK_SIZE * 2 + x1,
+        DIRT_OFFSET + y * SPRITE_CHUNK_SIZE * 2 + x2,
+    )
 }
