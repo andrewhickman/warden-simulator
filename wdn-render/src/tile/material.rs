@@ -47,12 +47,18 @@ impl Material2d for TileChunkMaterial {
         _: &MeshVertexBufferLayoutRef,
         _: Material2dKey<Self>,
     ) -> Result<(), SpecializedMeshPipelineError> {
-        descriptor
+        let fragment_state = descriptor
             .fragment
             .as_mut()
-            .expect("no fragment shader for Mesh2d pipeline")
+            .expect("no fragment shader for Mesh2d pipeline");
+
+        fragment_state.shader_defs.push(ShaderDefVal::UInt(
+            "CHUNK_WIDTH".into(),
+            CHUNK_SIZE as u32 * 2,
+        ));
+        fragment_state
             .shader_defs
-            .push(ShaderDefVal::UInt("CHUNK_SIZE".into(), CHUNK_SIZE as u32));
+            .push(ShaderDefVal::UInt("CHUNK_HEIGHT".into(), CHUNK_SIZE as u32));
 
         descriptor
             .depth_stencil

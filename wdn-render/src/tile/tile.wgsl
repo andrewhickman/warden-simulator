@@ -15,14 +15,10 @@ struct FragmentOutput {
 
 @fragment
 fn fragment(in: VertexOutput) -> FragmentOutput {
-    let chunk_size = vec2<u32>(#{CHUNK_SIZE});
+    let chunk_size = vec2<u32>(#{CHUNK_WIDTH}, #{CHUNK_HEIGHT});
     let tile_uv = in.uv * vec2<f32>(chunk_size);
-    let half_tile_uv_x = tile_uv.x * 2.0;
-    var tile_coord = vec2<u32>(
-        clamp(u32(floor(half_tile_uv_x)), 0u, chunk_size.x * 2u - 1u),
-        clamp(u32(floor(tile_uv.y)), 0u, chunk_size.y - 1u),
-    );
-    var local_uv = vec2<f32>(half_tile_uv_x - floor(half_tile_uv_x), tile_uv.y - floor(tile_uv.y));
+    var tile_coord = clamp(vec2<u32>(floor(tile_uv)), vec2<u32>(0), chunk_size - 1u);
+    var local_uv = tile_uv - vec2<f32>(tile_coord);
 
     tile_coord.y = chunk_size.y - 1u - tile_coord.y;
 
