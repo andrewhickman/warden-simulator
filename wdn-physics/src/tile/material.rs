@@ -19,6 +19,7 @@ pub enum TileKind {
     Empty = 0b00,
     Wall = 0b01,
     Door = 0b10,
+    Stairs = 0b11,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -84,6 +85,7 @@ impl TileKind {
             0b00 => TileKind::Empty,
             0b01 => TileKind::Wall,
             0b10 => TileKind::Door,
+            0b11 => TileKind::Stairs,
             _ => panic!("invalid TileKind bits: {bits}"),
         }
     }
@@ -115,7 +117,12 @@ impl TileMoveSpeed {
 #[test]
 fn test_pack_tile_material() {
     for id in 0..10 {
-        for kind in [TileKind::Empty, TileKind::Wall, TileKind::Door] {
+        for kind in [
+            TileKind::Empty,
+            TileKind::Wall,
+            TileKind::Door,
+            TileKind::Stairs,
+        ] {
             for speed in [
                 TileMoveSpeed::Slow,
                 TileMoveSpeed::Medium,
