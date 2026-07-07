@@ -3555,7 +3555,7 @@ fn validate_regions(
                         }
                     }
                 }
-                TileKind::Empty => {
+                TileKind::Empty | TileKind::Stairs => {
                     let region = chunk_sections.region(offset).unwrap();
 
                     for neighbor in [

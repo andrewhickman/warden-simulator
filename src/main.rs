@@ -224,7 +224,7 @@ fn handle_tile_toggle(
             // Toggle tile material between Empty and Wall
             let current_material = tile_storage.get_kind(tile_pos);
             match current_material {
-                TileKind::Empty => {
+                TileKind::Empty | TileKind::Stairs => {
                     if mouse.just_pressed(MouseButton::Left) {
                         tile_storage.set_material(tile_pos, TileMaterial::WALL);
                     }

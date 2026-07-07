@@ -57,7 +57,7 @@ pub fn update_chunk_sections(
             for offset in TileChunkOffset::iter() {
                 let tile = chunk.get(offset);
 
-                if tile.kind() == TileKind::Empty {
+                if matches!(tile.kind(), TileKind::Empty | TileKind::Stairs) {
                     set.insert(offset, tile.door_adjacency(), tile.move_speed());
                 } else {
                     set.remove(offset);

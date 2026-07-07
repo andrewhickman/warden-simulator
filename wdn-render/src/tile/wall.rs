@@ -4,7 +4,7 @@ use crate::tile::WALL_OFFSET;
 
 pub fn sprite_offset(kind: TileKind, walls: Adjacency, doors: Adjacency) -> u16 {
     let offset = match kind {
-        TileKind::Empty => empty_sprite_offset(walls),
+        TileKind::Empty | TileKind::Stairs => empty_sprite_offset(walls),
         TileKind::Wall => wall_sprite_offset(walls, doors),
         TileKind::Door => door_sprite_offset(walls),
     };

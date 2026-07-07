@@ -34,6 +34,7 @@ pub struct RegionTiles {
     tiles: Vec<RegionTile>,
     tile_index: HashMap<TileLayerOffset, RegionTileIndex>,
     doors: Vec<RegionDoor>,
+    stairs: Vec<RegionStairs>,
 }
 
 pub type RegionTileIndex = u32;
@@ -57,6 +58,12 @@ pub struct RegionDoor {
     door: Entity,
     flow_field: Entity,
     adjacency: Adjacency,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct RegionStairs {
+    index: RegionTileIndex,
+    position: TileLayerOffset,
 }
 
 #[derive(Default, Resource)]
@@ -190,6 +197,10 @@ pub fn update_region_tiles(
                     if !door_adjacency.is_empty() {
                         region_tiles.insert_doors(position, index, door_adjacency);
                     }
+
+                    if tile.kind() == TileKind::Stairs {
+                        region_tiles.insert_stairs(position, index);
+                    }
                 }
             }
         });
@@ -291,6 +302,10 @@ impl RegionTiles {
 
     pub fn doors(&self) -> &[RegionDoor] {
         &self.doors
+    }
+
+    pub fn stairs(&self) -> &[RegionStairs] {
+        &self.stairs
     }
 
     pub fn get_tile_index(&self, offset: TileLayerOffset) -> Option<RegionTileIndex> {
@@ -429,6 +444,10 @@ impl RegionTiles {
             index
         })
     }
+
+    fn insert_stairs(&mut self, position: TileLayerOffset, index: RegionTileIndex) {
+        self.stairs.push(RegionStairs { index, position });
+    }
 }
 
 impl Index<RegionTileIndex> for RegionTiles {
@@ -512,6 +531,16 @@ impl RegionDoor {
 
     pub fn flow_field(&self) -> Entity {
         self.flow_field
+    }
+}
+
+impl RegionStairs {
+    pub fn index(&self) -> RegionTileIndex {
+        self.index
+    }
+
+    pub fn position(&self) -> TileLayerOffset {
+        self.position
     }
 }
 
