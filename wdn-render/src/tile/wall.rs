@@ -89,6 +89,10 @@ fn test_empty_sprite_offset() {
         }
 
         let offset = patterns.len() as u16;
+        if !patterns.contains_key(&normal) {
+            println!("{}: walls={:?}", offset + 1, walls);
+        }
+
         assert_eq!(
             empty_sprite_offset(walls),
             *patterns.entry(normal).or_insert(offset),
@@ -127,6 +131,10 @@ fn test_wall_sprite_offset() {
             }
 
             let offset = 3 + patterns.len() as u16;
+            if !patterns.contains_key(&(normal_walls, normal_doors)) {
+                println!("{}: walls={:?}, doors={:?}", offset + 1, walls, doors);
+            }
+
             assert_eq!(
                 wall_sprite_offset(walls, doors),
                 *patterns
@@ -168,6 +176,10 @@ fn test_door_sprite_offset() {
             );
         } else {
             let offset = 15 + patterns.len() as u16;
+            if !patterns.contains_key(&normal_walls) {
+                println!("{}: walls={:?}", offset + 1, walls);
+            }
+
             assert_eq!(
                 door_sprite_offset(walls),
                 *patterns.entry(normal_walls).or_insert(offset),

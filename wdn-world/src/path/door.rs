@@ -38,7 +38,7 @@ pub fn update_door_regions(
         });
 }
 
-pub fn on_remove_region_doors(
+pub fn on_remove_region(
     trigger: On<Remove, RegionTiles>,
     regions: Query<&RegionTiles>,
     mut doors: Query<&mut DoorRegions>,
@@ -46,9 +46,7 @@ pub fn on_remove_region_doors(
     let region = regions.get(trigger.entity)?;
     for region_door in region.doors() {
         if let Ok(mut door_regions) = doors.get_mut(region_door.door()) {
-            door_regions
-                .regions
-                .retain(|door_region| door_region.region() != trigger.entity);
+            door_regions.remove(trigger.entity);
         }
     }
 

@@ -14,10 +14,10 @@ debug = true
 
 [workspace]
 members = [
-    "wdn-build",
+    "wdn-build", "wdn-colorgen",
     "wdn-physics",
     "wdn-render",
-    "wdn-save",
+    "wdn-save", "wdn-spritegen",
     "wdn-tasks",
     "wdn-ui",
     "wdn-world"
