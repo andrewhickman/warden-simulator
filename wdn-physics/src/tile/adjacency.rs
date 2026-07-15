@@ -1,10 +1,12 @@
+use std::fmt;
+
 use bevy_ecs::prelude::*;
 use bevy_math::prelude::*;
 use bitflags::bitflags;
 
 use crate::tile::material::TileKind;
 
-#[derive(Debug, Default, Clone, Copy, Component, PartialEq, Eq)]
+#[derive(Default, Clone, Copy, Component, PartialEq, Eq)]
 pub struct TileAdjacency(Adjacency, Adjacency);
 
 bitflags! {
@@ -96,6 +98,16 @@ impl TileAdjacency {
                 self.1.remove(adjacency);
             }
         }
+    }
+}
+
+impl fmt::Debug for TileAdjacency {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("TileAdjacency")
+            .field("walls", &self.walls())
+            .field("doors", &self.doors())
+            .field("stairs", &self.stairs())
+            .finish()
     }
 }
 

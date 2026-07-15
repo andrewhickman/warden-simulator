@@ -35,7 +35,7 @@ pub struct TileCollider {
 pub struct ColliderQuery {
     id: Entity,
     collider: &'static Collider,
-    transform: &'static GlobalPosition,
+    position: &'static GlobalPosition,
     velocity: Option<&'static GlobalVelocity>,
 }
 
@@ -87,7 +87,7 @@ static NEIGHBORS: [(IVec2, Adjacency); 9] = [
 
 #[derive(Default)]
 struct TileColliderAdjacency<'w, 's> {
-    tiles: [Option<TileColliderQueryItem<'w, 's>>; 8],
+    tiles: [Option<TileColliderQueryItem<'w, 's>>; 9],
 }
 
 pub fn resolve_collisions(
@@ -128,17 +128,16 @@ pub fn resolve_collisions(
                     collisions.check_collider(&collider, &candidate_collider, delta_secs);
                 }
 
-                if let Some(tile_collider_slot) = tile_colliders.tiles.get_mut(neighbor_index)
-                    && let Some(candidate) = index_entry.tile()
+                if let Some(candidate) = index_entry.tile()
                     && let Ok(candidate_tile) = candidate_tiles.get(candidate)
                 {
                     wall_adjacency |= adjacency;
-                    *tile_collider_slot = Some(candidate_tile);
+                    tile_colliders.tiles[neighbor_index] = Some(candidate_tile);
                 }
             }
 
             if wall_adjacency != Adjacency::NONE {
-                collisions.check_tile(
+                collisions.check_tile_neighbors(
                     &collider,
                     &tile_colliders,
                     tile_position,
@@ -146,6 +145,8 @@ pub fn resolve_collisions(
                     delta_secs,
                 );
             }
+
+            collisions.check_tile_center(&collider, tile_colliders.center(), tile_position);
         });
 }
 
@@ -183,13 +184,13 @@ impl ColliderQueryItem<'_, '_> {
     }
 
     pub fn position(&self) -> Vec2 {
-        self.transform.position()
+        self.position.position()
     }
 
     pub fn position_at(&self, t: f32) -> Vec2 {
         match self.velocity {
-            Some(velocity) if t > 0.0 => self.transform.position() + velocity.linear() * t,
-            _ => self.transform.position(),
+            Some(velocity) if t > 0.0 => self.position.position() + velocity.linear() * t,
+            _ => self.position.position(),
         }
     }
 
@@ -311,7 +312,7 @@ impl Collisions {
         }
     }
 
-    fn check_tile(
+    fn check_tile_neighbors(
         &mut self,
         collider: &ColliderQueryItem,
         candidates: &TileColliderAdjacency,
@@ -426,6 +427,22 @@ impl Collisions {
                 delta_secs,
             );
         }
+
+        if let Some(center_candidate) = candidates.center() {
+            self.insert(
+                Collision {
+                    position: collider.position(),
+                    normal: Dir2::new(collider.position() - tile_position.center_position())
+                        .unwrap_or(Dir2::X),
+                    target: CollisionTarget::Tile {
+                        id: Some(center_candidate.id),
+                        position: tile_position,
+                    },
+                    solid: collider.solid() && center_candidate.solid(),
+                },
+                0.0,
+            );
+        }
     }
 
     fn check_tile_edge(
@@ -497,6 +514,29 @@ impl Collisions {
             self.insert(collision, t)
         }
     }
+
+    fn check_tile_center(
+        &mut self,
+        collider: &ColliderQueryItem,
+        candidate: Option<&TileColliderQueryItem>,
+        tile_position: TilePosition,
+    ) {
+        if let Some(candidate) = candidate {
+            self.insert(
+                Collision {
+                    position: collider.position(),
+                    normal: Dir2::new(collider.position() - tile_position.center_position())
+                        .unwrap_or(Dir2::X),
+                    target: CollisionTarget::Tile {
+                        id: Some(candidate.id),
+                        position: tile_position,
+                    },
+                    solid: collider.solid() && candidate.solid(),
+                },
+                0.0,
+            );
+        }
+    }
 }
 
 impl CollisionTarget {
@@ -562,6 +602,10 @@ impl<'w, 's> TileColliderAdjacency<'w, 's> {
 
     fn west(&self) -> Option<&TileColliderQueryItem<'w, 's>> {
         self.tiles[7].as_ref()
+    }
+
+    fn center(&self) -> Option<&TileColliderQueryItem<'w, 's>> {
+        self.tiles[8].as_ref()
     }
 }
 

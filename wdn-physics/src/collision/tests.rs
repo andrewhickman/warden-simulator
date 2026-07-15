@@ -2191,6 +2191,74 @@ fn collision_tile_collider_events() {
     }
 }
 
+#[test]
+fn collision_tile_collider_inside() {
+    let mut app = make_app();
+    let layer = spawn_layer(&mut app);
+
+    let tile_entity = spawn_tile_collider(&mut app, TilePosition::new(layer, 0, 0));
+
+    let entity = spawn_collider(
+        &mut app,
+        layer,
+        Vec2::new(0.5, 0.3),
+        Vec2::new(0.0, 0.0),
+        0.1,
+    );
+
+    app.update();
+
+    let collisions = app.world().get::<Collisions>(entity).unwrap();
+    assert_eq!(collisions.active().len(), 1);
+    assert!(collisions.next_time().is_none());
+    assert!(collisions.next_collision().is_none());
+    let collision = collisions.active().next().unwrap();
+    assert_relative_eq!(collision.position, Vec2::new(0.5, 0.3));
+    assert_eq!(collision.normal, Dir2::NEG_Y);
+    assert!(collision.solid);
+    match collision.target {
+        CollisionTarget::Tile { id, position } => {
+            assert_eq!(position, TilePosition::new(layer, 0, 0));
+            assert_eq!(id, Some(tile_entity));
+        }
+        _ => panic!("Expected tile collision"),
+    }
+}
+
+#[test]
+fn collision_non_solid_tile_collider_inside() {
+    let mut app = make_app();
+    let layer = spawn_layer(&mut app);
+
+    let tile_entity = spawn_non_solid_tile_collider(&mut app, TilePosition::new(layer, 0, 0));
+
+    let entity = spawn_collider(
+        &mut app,
+        layer,
+        Vec2::new(0.5, 0.3),
+        Vec2::new(0.0, 0.0),
+        0.1,
+    );
+
+    app.update();
+
+    let collisions = app.world().get::<Collisions>(entity).unwrap();
+    assert_eq!(collisions.active().len(), 1);
+    assert!(collisions.next_time().is_none());
+    assert!(collisions.next_collision().is_none());
+    let collision = collisions.active().next().unwrap();
+    assert_relative_eq!(collision.position, Vec2::new(0.5, 0.3));
+    assert_eq!(collision.normal, Dir2::NEG_Y);
+    assert!(!collision.solid);
+    match collision.target {
+        CollisionTarget::Tile { id, position } => {
+            assert_eq!(position, TilePosition::new(layer, 0, 0));
+            assert_eq!(id, Some(tile_entity));
+        }
+        _ => panic!("Expected tile collision"),
+    }
+}
+
 fn make_app() -> App {
     let mut app = App::new();
     app.add_plugins((
