@@ -1,0 +1,262 @@
+
+running 1 test
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(SOUTH_EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH_EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST | SOUTH), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(EAST | SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(EAST), stairs: Adjacency(SOUTH_EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH_EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(SOUTH_EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH_EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH), stairs: Adjacency(SOUTH_EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH_EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH), stairs: Adjacency(SOUTH_EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(SOUTH), stairs: Adjacency(EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST | SOUTH), stairs: Adjacency(EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(EAST | SOUTH_EAST) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST | SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST | SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(EAST), stairs: Adjacency(SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH_EAST), stairs: Adjacency(SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(SOUTH_EAST | SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(EAST | SOUTH) }
+material=Empty, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH_EAST | SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(SOUTH_EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH_EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST | SOUTH), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(EAST | SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(EAST), stairs: Adjacency(SOUTH_EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH_EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(SOUTH_EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH_EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH), stairs: Adjacency(SOUTH_EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH_EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH), stairs: Adjacency(SOUTH_EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(SOUTH), stairs: Adjacency(EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST | SOUTH), stairs: Adjacency(EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(EAST | SOUTH_EAST) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST | SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST | SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(EAST), stairs: Adjacency(SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH_EAST), stairs: Adjacency(SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(SOUTH_EAST | SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(EAST | SOUTH) }
+material=Wall, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH_EAST | SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(SOUTH_EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH_EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST | SOUTH), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(EAST | SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(EAST), stairs: Adjacency(SOUTH_EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH_EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(SOUTH_EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH_EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH), stairs: Adjacency(SOUTH_EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH_EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH), stairs: Adjacency(SOUTH_EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(SOUTH), stairs: Adjacency(EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST | SOUTH), stairs: Adjacency(EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(EAST | SOUTH_EAST) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST | SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST | SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(EAST), stairs: Adjacency(SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH_EAST), stairs: Adjacency(SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(SOUTH_EAST | SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(EAST | SOUTH) }
+material=Door, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH_EAST | SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(SOUTH_EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH_EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST | SOUTH), doors: Adjacency(EAST), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(EAST | SOUTH_EAST), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(EAST), stairs: Adjacency(SOUTH_EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST | SOUTH), doors: Adjacency(0x0), stairs: Adjacency(EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH_EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(SOUTH_EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST), doors: Adjacency(SOUTH), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH_EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH), stairs: Adjacency(SOUTH_EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH_EAST | SOUTH), stairs: Adjacency(0x0) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH), stairs: Adjacency(SOUTH_EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(SOUTH), stairs: Adjacency(EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST | SOUTH), stairs: Adjacency(EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH), stairs: Adjacency(EAST | SOUTH_EAST) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST | SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST | SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(EAST), doors: Adjacency(0x0), stairs: Adjacency(SOUTH_EAST | SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(EAST), stairs: Adjacency(SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST | SOUTH_EAST), stairs: Adjacency(SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(EAST), stairs: Adjacency(SOUTH_EAST | SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(SOUTH_EAST), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(SOUTH_EAST), stairs: Adjacency(EAST | SOUTH) }
+material=Stairs, adjacency=TileAdjacency { walls: Adjacency(0x0), doors: Adjacency(0x0), stairs: Adjacency(EAST | SOUTH_EAST | SOUTH) }
+test tile::wall::test_sprite_offset ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.00s
+

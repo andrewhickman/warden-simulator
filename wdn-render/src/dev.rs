@@ -80,8 +80,7 @@ pub fn draw_pawn_paths(
                         let dir = cost_field.flow_vector(tile_index, tile).as_vec2();
                         let color = Color::srgb(0.3, 0.95, 0.35);
 
-                        let center =
-                            Vec2::new(tile_pos.x() as f32 + 0.5, tile_pos.y() as f32 + 0.5);
+                        let center = tile_pos.center_position();
                         let end = center + dir * 0.4;
                         gizmos.arrow_2d(center, end, color);
                     }
@@ -98,7 +97,7 @@ pub fn draw_pawn_paths(
                     let region_tiles = regions.get(*region).unwrap();
                     let tile_pos = region_tiles[tile_index].position();
 
-                    let center = Vec2::new(tile_pos.x() as f32 + 0.5, tile_pos.y() as f32 + 0.5);
+                    let center = tile_pos.center_position();
                     let end = center + entry.dir().as_vec2() * 0.4;
                     gizmos.arrow_2d(center, end, Color::srgb(0.6, 0.3, 0.8));
                 }

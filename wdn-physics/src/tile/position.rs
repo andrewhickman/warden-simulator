@@ -99,6 +99,10 @@ impl TilePosition {
         self.position
     }
 
+    pub fn center_position(&self) -> Vec2 {
+        Vec2::new(self.x() as f32 + 0.5, self.y() as f32 + 0.5)
+    }
+
     pub fn x(&self) -> i32 {
         self.position.x
     }
@@ -223,6 +227,10 @@ impl TileLayerOffset {
 
     pub fn position(&self) -> IVec2 {
         self.position
+    }
+
+    pub fn center_position(&self) -> Vec2 {
+        Vec2::new(self.x() as f32 + 0.5, self.y() as f32 + 0.5)
     }
 
     pub fn with_offset(&self, x: i32, y: i32) -> Self {

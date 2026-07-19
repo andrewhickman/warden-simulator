@@ -72,6 +72,16 @@ impl fmt::Debug for TileMaterial {
 }
 
 impl TileKind {
+    pub fn iter() -> impl Iterator<Item = TileKind> {
+        [
+            TileKind::Empty,
+            TileKind::Wall,
+            TileKind::Door,
+            TileKind::Stairs,
+        ]
+        .into_iter()
+    }
+
     pub fn is_empty(&self) -> bool {
         matches!(self, TileKind::Empty)
     }

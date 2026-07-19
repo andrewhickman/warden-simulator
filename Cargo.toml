@@ -14,7 +14,7 @@ debug = true
 
 [workspace]
 members = [
-    "wdn-build", "wdn-colorgen",
+    "wdn-build", "wdn-colorgen", "wdn-enumerate",
     "wdn-physics",
     "wdn-render",
     "wdn-save", "wdn-spritegen",
