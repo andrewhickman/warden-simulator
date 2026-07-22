@@ -28,15 +28,15 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="px"
      showgrid="true"
-     inkscape:zoom="5.6568542"
-     inkscape:cx="106.68474"
-     inkscape:cy="102.4421"
+     inkscape:zoom="7.9999999"
+     inkscape:cx="360.25"
+     inkscape:cy="24.1875"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
-     inkscape:window-x="-8"
+     inkscape:window-x="1912"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g628"
+     inkscape:current-layer="svg1"
      inkscape:export-bgcolor="#00000000">
     <inkscape:grid
        id="grid1"
@@ -10259,4 +10259,18 @@
        x="202"
        y="264" />
   </g>
+  <rect
+     style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linejoin:round;stroke-opacity:1;paint-order:stroke fill markers"
+     id="rect3"
+     width="12"
+     height="8"
+     x="322"
+     y="0" />
+  <rect
+     style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linejoin:round;stroke-opacity:1;paint-order:stroke fill markers"
+     id="rect5"
+     width="28"
+     height="56"
+     x="334"
+     y="8" />
 </svg>

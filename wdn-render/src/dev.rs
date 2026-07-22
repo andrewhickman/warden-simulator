@@ -2,7 +2,6 @@ use bevy_app::prelude::*;
 use bevy_color::Color;
 use bevy_ecs::prelude::*;
 use bevy_gizmos::prelude::*;
-use bevy_math::Vec2;
 use wdn_physics::kinematics::Position;
 use wdn_world::path::find::PathStep;
 use wdn_world::path::flow::FlowField;
