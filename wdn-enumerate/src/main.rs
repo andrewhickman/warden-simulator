@@ -13,12 +13,29 @@ enum TileKind {
     StairW,
 }
 
-enum TileKind2 {
-    Wall(WallKind),
-    Door,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum Sprite {
+    Wall(WallSprite),
+    Empty(SouthDecoration),
+    DoorV(SouthDoorDecoration),
+    StairN {
+        east: StairEastDecoration,
+        south: SouthDecoration,
+    },
+    StairE {
+        south: SouthDecoration,
+    },
+    StairW {
+        south: SouthDecoration,
+    },
+    StairS {
+        east: StairEastDecoration,
+        south: SouthDecoration,
+    },
 }
 
-enum WallKind {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum WallSprite {
     Corner {
         east: EastWallDecoration,
         south: SouthWallDecoration,
@@ -33,20 +50,44 @@ enum WallKind {
     Full,
 }
 
-enum SouthWallDecoration {
-    Corner,
-    Horizontal,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum SouthDoorDecoration {
+    WallCorner,
+    WallHorizontal,
 }
 
-enum EastWallDecoration {
-    Door,
-    StairN,
-    SouthS,
-}
-
-enum SouthWallDecoration {
-    Door,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum StairEastDecoration {
+    Empty,
     Stair,
+    Wall,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum SouthDecoration {
+    Empty,
+    WallCorner,
+    WallHorizontal,
+    StairE,
+    StairN,
+    StairNWall,
+    StairSWall,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum EastWallDecoration {
+    Empty,
+    Door,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum SouthWallDecoration {
+    Empty,
+    Door,
+    StairE,
+    StairN,
+    StairNWall,
+    StairSWall,
 }
 
 macro_rules! stairs {
