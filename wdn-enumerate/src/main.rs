@@ -100,7 +100,7 @@ fn main() {
         }
     }
 
-    println!("Found {} unique wall sprites", variants.len());
+    // println!("Found {} unique wall sprites", variants.len());
 }
 
 impl TileKind {
@@ -137,11 +137,11 @@ fn tile_kind(
         (Door, Wall, stairs!(), Empty | Door | stairs!()) | (Door, Wall, Empty | Door, _) => {
             "Door_WallTopCorner_DoorSouth"
         }
-        (Wall, Empty | StairS, _, Empty) => "WallCorner",
+        (Wall, Empty, _, Empty) => "WallCorner",
         (Wall, Door, _, Empty) => "WallCorner_DoorSouth",
-        (Wall, Empty | StairS, _, Door) => "WallCorner_DoorEast",
+        (Wall, Empty, _, Door) => "WallCorner_DoorEast",
         (Wall, Door, _, Door) => "WallCorner_DoorEastSouth",
-        (Wall, Empty | StairS, _, Wall | stairs!()) => "WallHorizontal",
+        (Wall, Empty, _, Wall | stairs!()) => "WallHorizontal",
         (Wall, Door, _, Wall | stairs!()) => "WallHorizontal_DoorSouth",
         (Wall, Wall, Empty | Door, Empty) => "WallVertical",
         (Wall, Wall, Empty | Door, Wall | stairs!()) => "WallInverseCorner",
@@ -161,6 +161,20 @@ fn tile_kind(
         (Wall, StairN, StairN, Door) => "WallCorner_DoubleStairTopVerticalUpper_DoorEast",
         (Wall, StairN, StairN, Wall | stairs!()) => {
             "WallHorizontal_DoubleStairTopVerticalUpper_DoorEast"
+        }
+        // TODO empty?
+        (Wall, StairS, Empty | Door | ewn!(), Empty) => "WallCorner_StairTopVerticalLower",
+        (Wall, StairS, Empty | Door | ewn!(), Door) => "WallCorner_StairTopVerticalLower_DoorEast",
+        (Wall, StairS, Empty | Door | ewn!(), Wall | stairs!()) => {
+            "WallHorizontal_StairTopVerticalLower"
+        }
+        (Wall, StairS, Wall, Empty) => "WallHorizontal_StairTopVerticalLower_WallTop",
+        (Wall, StairS, Wall, Door) => "WallHorizontal_StairTopVerticalLower_WallTop_DoorEast",
+        (Wall, StairS, Wall, Wall | stairs!()) => "WallFull_StairTopVerticalLower",
+        (Wall, StairS, StairS, Empty) => "WallCorner_DoubleStairTopVerticalLower",
+        (Wall, StairS, StairS, Door) => "WallCorner_DoubleStairTopVerticalLower_DoorEast",
+        (Wall, StairS, StairS, Wall | stairs!()) => {
+            "WallHorizontal_DoubleStairTopVerticalLower_WallTop"
         }
         (Wall, StairE, Empty | Door | stairs!(), Empty) => "WallCorner_StairTopHorizontalUpper",
         (Wall, StairE, Empty | Door | stairs!(), Door) => {
@@ -182,9 +196,9 @@ fn tile_kind(
         (Wall, StairW, Wall, Empty) => "WallHorizontal_StairTopHorizontalLower_WallTop",
         (Wall, StairW, Wall, Door) => "WallHorizontal_StairTopHorizontalLower_WallTop_DoorEast",
         (Wall, StairW, Wall, Wall | stairs!()) => "WallFull_StairTopHorizontalLower",
-        (StairN, Empty | Door | StairS, _, Empty | Door | esw!()) => "StairVerticalLower",
-        (StairN, Empty | Door | StairS, _, Wall) => "StairVerticalLower_WallEast",
-        (StairN, Empty | Door | StairS, _, StairN) => "DoubleStairVerticalLower",
+        (StairN, Empty | Door, _, Empty | Door | esw!()) => "StairVerticalLower",
+        (StairN, Empty | Door, _, Wall) => "StairVerticalLower_WallEast",
+        (StairN, Empty | Door, _, StairN) => "DoubleStairVerticalLower",
         (StairN, Wall, Empty | Door, Empty | Door | esw!()) => "StairVerticalLower_WallTopCorner",
         (StairN, Wall, Empty | Door, Wall) => "StairVerticalLower_WallEastSouthCorner",
         (StairN, Wall, Empty | Door, StairN) => "DoubleStairVerticalLower_WallTopCorner",
@@ -212,6 +226,25 @@ fn tile_kind(
         }
         (StairN, StairN, StairN, Wall) => "StairVerticalLower_DoubleStairTopVerticalUpper_WallEast",
         (StairN, StairN, StairN, StairN) => "DoubleStairVerticalLower_DoubleStairTopVerticalUpper",
+        (StairN, StairS, Empty | Door | ewn!(), Empty | Door | esw!()) => {
+            "StairVerticalLower_StairTopVerticalLower"
+        }
+        (StairN, StairS, Empty | Door | ewn!(), Wall) => {
+            "StairVerticalLower_StairTopVerticalLower_WallEast"
+        }
+        (StairN, StairS, Empty | Door | ewn!(), StairN) => {
+            "DoubleStairVerticalLower_StairTopVerticalLower"
+        }
+        (StairN, StairS, Wall, Empty | Door | esw!()) => {
+            "StairVerticalLower_StairTopVerticalLower_WallTop"
+        }
+        (StairN, StairS, Wall, Wall) => "StairVerticalLower_StairTopVerticalLower_WallEastSouth",
+        (StairN, StairS, Wall, StairN) => "DoubleStairVerticalLower_StairTopVerticalLower_WallTop",
+        (StairN, StairS, StairS, Empty | Door | esw!()) => {
+            "StairVerticalLower_DoubleStairTopVerticalLower"
+        }
+        (StairN, StairS, StairS, Wall) => "StairVerticalLower_DoubleStairTopVerticalLower_WallEast",
+        (StairN, StairS, StairS, StairN) => "DoubleStairVerticalLower_DoubleStairTopVerticalLower",
         (StairN, StairE, Empty | Door | stairs!(), Empty | Door | esw!()) => {
             "StairVerticalLower_StairTopHorizontalUpper"
         }
@@ -244,9 +277,9 @@ fn tile_kind(
         (StairN, StairW, Wall, StairN) => {
             "DoubleStairVerticalLower_StairTopHorizontalLower_WallTop"
         }
-        (StairS, Empty | Door | StairS, _, Empty | Door | ewn!()) => "StairVerticalUpper",
-        (StairS, Empty | Door | StairS, _, Wall) => "StairVerticalUpper_WallEast",
-        (StairS, Empty | Door | StairS, _, StairS) => "DoubleStairVerticalUpper",
+        (StairS, Empty | Door, _, Empty | Door | ewn!()) => "StairVerticalUpper",
+        (StairS, Empty | Door, _, Wall) => "StairVerticalUpper_WallEast",
+        (StairS, Empty | Door, _, StairS) => "DoubleStairVerticalUpper",
         (StairS, Wall, Empty | Door, Empty | Door | ewn!()) => "StairVerticalUpper_WallTopCorner",
         (StairS, Wall, Empty | Door, Wall) => "StairVerticalUpper_WallEastSouthCorner",
         (StairS, Wall, Empty | Door, StairS) => "DoubleStairVerticalUpper_WallTopCorner",
@@ -274,6 +307,25 @@ fn tile_kind(
         }
         (StairS, StairN, StairN, Wall) => "StairVerticalUpper_DoubleStairTopVerticalUpper_WallEast",
         (StairS, StairN, StairN, StairS) => "DoubleStairVerticalUpper_DoubleStairTopVerticalUpper",
+        (StairS, StairS, Empty | Door | ewn!(), Empty | Door | ewn!()) => {
+            "StairVerticalUpper_StairTopVerticalLower"
+        }
+        (StairS, StairS, Empty | Door | ewn!(), Wall) => {
+            "StairVerticalUpper_StairTopVerticalLower_WallEast"
+        }
+        (StairS, StairS, Empty | Door | ewn!(), StairS) => {
+            "DoubleStairVerticalUpper_StairTopVerticalLower"
+        }
+        (StairS, StairS, Wall, Empty | Door | ewn!()) => {
+            "StairVerticalUpper_StairTopVerticalLower_WallTop"
+        }
+        (StairS, StairS, Wall, Wall) => "StairVerticalUpper_StairTopVerticalLower_WallEastSouth",
+        (StairS, StairS, Wall, StairS) => "DoubleStairVerticalUpper_StairTopVerticalLower_WallTop",
+        (StairS, StairS, StairS, Empty | Door | ewn!()) => {
+            "StairVerticalUpper_DoubleStairTopVerticalLower"
+        }
+        (StairS, StairS, StairS, Wall) => "StairVerticalUpper_DoubleStairTopVerticalLower_WallEast",
+        (StairS, StairS, StairS, StairS) => "DoubleStairVerticalUpper_DoubleStairTopVerticalLower",
         (StairS, StairE, Empty | Door | stairs!(), Empty | Door | ewn!()) => {
             "StairVerticalUpper_StairTopHorizontalUpper"
         }
@@ -306,12 +358,15 @@ fn tile_kind(
         (StairS, StairW, Wall, StairS) => {
             "DoubleStairVerticalUpper_StairTopHorizontalLower_WallTop"
         }
-        (StairE, Empty | Door | StairS, _, _) => "StairHorizontalUpper",
+        (StairE, Empty | Door, _, _) => "StairHorizontalUpper",
         (StairE, Wall, Empty | Door, _) => "StairHorizontalUpper_WallTopCorner",
         (StairE, Wall, Wall | stairs!(), _) => "StairHorizontalUpper_WallTopHorizontal",
         (StairE, StairN, Empty | Door | esw!(), _) => "StairHorizontalUpper_StairTopVerticalUpper",
         (StairE, StairN, Wall, _) => "StairHorizontalUpper_StairTopVerticalUpper_WallTop",
         (StairE, StairN, StairN, _) => "StairHorizontalUpper_DoubleStairTopVerticalUpper",
+        (StairE, StairS, Empty | Door | ewn!(), _) => "StairHorizontalUpper_StairTopVerticalLower",
+        (StairE, StairS, Wall, _) => "StairHorizontalUpper_StairTopVerticalLower_WallTop",
+        (StairE, StairS, StairS, _) => "StairHorizontalUpper_DoubleStairTopVerticalLower",
         (StairE, StairE, _, _) => "DoubleStairHorizontalUpper",
         (StairE, StairW, _, _) => "StairHorizontalUpper_StairTopHorizontalLower",
         (StairW, Empty | Door, _, _) => "StairHorizontalLower",
