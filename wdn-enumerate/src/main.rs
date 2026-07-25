@@ -227,7 +227,7 @@ fn main() {
     for tile in ordered {
         println!("    {},", tile);
 
-        if count == 14 {
+        if count == 15 {
             println!();
             count = 0;
         } else {
@@ -907,7 +907,7 @@ impl Display for Sprite {
             }
             Sprite::StairE { south, north } => write!(f, "StairE{south}{north}"),
             Sprite::StairW { south, north } => write!(f, "StairW{south}{north}"),
-            Sprite::StairWDouble { north } => write!(f, "StairWDouble{north}"),
+            Sprite::StairWDouble { north } => write!(f, "StairW_SouthStairW{north}"),
         }
     }
 }

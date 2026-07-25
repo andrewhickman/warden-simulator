@@ -24,12 +24,12 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="px"
      showgrid="true"
-     inkscape:zoom="2.0535659"
-     inkscape:cx="155.58303"
-     inkscape:cy="61.113209"
+     inkscape:zoom="2.9041807"
+     inkscape:cx="134.80566"
+     inkscape:cy="28.407323"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
-     inkscape:window-x="-8"
+     inkscape:window-x="1912"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1">
@@ -441,7 +441,7 @@
        y="0"><tspan
          x="0"
          y="20.497686"
-         id="tspan3">Architecture</tspan></text>
+         id="tspan1">Architecture</tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,2.0794883,50.998017)"
@@ -451,7 +451,7 @@
        y="0"><tspan
          x="0"
          y="20.497686"
-         id="tspan4">Objects
+         id="tspan2">Objects
 </tspan></text>
     <text
        xml:space="preserve"
@@ -462,7 +462,7 @@
        y="0"><tspan
          x="0"
          y="20.497686"
-         id="tspan5">Pawns</tspan></text>
+         id="tspan3">Pawns</tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,1.8507298,152.46574)"
@@ -472,7 +472,7 @@
        y="0"><tspan
          x="0"
          y="20.497686"
-         id="tspan6">UI</tspan></text>
+         id="tspan4">UI</tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,2.3841828,203.01495)"
@@ -482,7 +482,7 @@
        y="0"><tspan
          x="0"
          y="20.497686"
-         id="tspan7">Tints</tspan></text>
+         id="tspan5">Tints</tspan></text>
     <rect
        style="fill:#147681;fill-opacity:1;stroke-width:4.23333;stroke-linejoin:round;paint-order:stroke fill markers"
        id="rect6"
