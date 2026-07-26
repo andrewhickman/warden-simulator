@@ -7,6 +7,7 @@ use crate::{
     tile::{
         CHUNK_SIZE_SQUARED, Tile, TilePlugin,
         adjacency::TileAdjacency,
+        commands::TileCommandsExt,
         material::TileMaterial,
         position::{TileChunkOffset, TileChunkPosition, TilePosition},
         storage::{Adjacency, TileChunk, TileKind, TileMap, TileStorage, TileStorageMut},
@@ -1217,13 +1218,7 @@ fn tile_storage_nested_buffer() {
         .run_system_once(move |mut commands: Commands, mut storage: TileStorageMut| {
             storage.set_material(tile1, TileMaterial::WALL);
 
-            commands.queue(move |world: &mut World| {
-                world
-                    .run_system_once(move |mut storage: TileStorageMut| {
-                        storage.set_material(tile2, TileMaterial::WALL);
-                    })
-                    .unwrap()
-            });
+            commands.set_material(tile2, TileMaterial::WALL);
         })
         .unwrap();
 

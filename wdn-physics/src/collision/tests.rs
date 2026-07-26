@@ -2,7 +2,7 @@ use std::{cmp::Reverse, f32::consts::FRAC_1_SQRT_2, time::Duration};
 
 use approx::assert_relative_eq;
 use bevy_app::prelude::*;
-use bevy_ecs::{prelude::*, system::RunSystemOnce};
+use bevy_ecs::prelude::*;
 use bevy_math::{FloatOrd, prelude::*};
 use bevy_time::{TimePlugin, TimeUpdateStrategy, prelude::*};
 
@@ -10,7 +10,7 @@ use crate::{
     collision::{Collider, CollisionPlugin, CollisionTarget, Collisions, TileCollider},
     kinematics::{GlobalPosition, KinematicsPlugin, Position, Velocity},
     layer::Layer,
-    tile::{TilePlugin, material::TileMaterial, position::TilePosition, storage::TileStorageMut},
+    tile::{TilePlugin, commands::TileCommandsExt, material::TileMaterial, position::TilePosition},
 };
 
 #[test]
@@ -2339,11 +2339,7 @@ fn spawn_non_solid_tile_collider(app: &mut App, position: TilePosition) -> Entit
 }
 
 fn set_tile(app: &mut App, position: TilePosition) {
-    app.world_mut()
-        .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(position, TileMaterial::WALL);
-        })
-        .unwrap();
+    app.world_mut().set_material(position, TileMaterial::WALL);
 }
 
 fn update_collider(app: &mut App, id: Entity, position: Vec2, velocity: Vec2) {
@@ -2355,9 +2351,5 @@ fn update_collider(app: &mut App, id: Entity, position: Vec2, velocity: Vec2) {
 }
 
 fn clear_tile(app: &mut App, position: TilePosition) {
-    app.world_mut()
-        .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(position, TileMaterial::EMPTY);
-        })
-        .unwrap();
+    app.world_mut().set_material(position, TileMaterial::EMPTY);
 }

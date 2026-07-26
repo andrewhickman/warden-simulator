@@ -1,4 +1,5 @@
 pub mod adjacency;
+pub mod commands;
 pub mod index;
 pub mod material;
 pub mod position;

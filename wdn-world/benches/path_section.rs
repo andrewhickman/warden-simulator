@@ -1,14 +1,12 @@
 use bevy_app::{App, TaskPoolPlugin, Update};
-use bevy_ecs::{prelude::*, system::RunSystemOnce};
+use bevy_ecs::prelude::*;
 use criterion::{Criterion, criterion_group, criterion_main};
 use std::hint::black_box;
 use wdn_physics::{
     layer::Layer,
     tile::{
-        TilePlugin,
-        material::TileMaterial,
-        position::TilePosition,
-        storage::{TileMap, TileStorageMut},
+        TilePlugin, commands::TileCommandsExt, material::TileMaterial, position::TilePosition,
+        storage::TileMap,
     },
 };
 use wdn_world::path::section::{TileChunkSections, update_chunk_sections};
@@ -29,11 +27,7 @@ fn run_update_chunk_sections(app: &mut App) {
 }
 
 fn set_material(app: &mut App, position: TilePosition, material: TileMaterial) {
-    app.world_mut()
-        .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(position, material);
-        })
-        .expect("failed to set benchmark tile material");
+    app.world_mut().set_material(position, material);
 }
 
 fn bench_update_chunk_sections_after_tile_modify(c: &mut Criterion) {

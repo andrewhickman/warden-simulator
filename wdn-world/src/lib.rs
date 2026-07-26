@@ -2,6 +2,7 @@ pub mod combat;
 pub mod door;
 pub mod path;
 pub mod pawn;
+pub mod stair;
 
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;

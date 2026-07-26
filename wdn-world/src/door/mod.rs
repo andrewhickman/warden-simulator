@@ -7,16 +7,36 @@ use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use bevy_time::prelude::*;
 
-use wdn_physics::{PhysicsSystems, collision::TileCollider, tile::material::TileMaterial};
+use wdn_physics::{
+    PhysicsSystems,
+    collision::TileCollider,
+    tile::{
+        adjacency::{Adjacency, TileAdjacency},
+        commands::TileCommandsExt,
+        material::TileMaterial,
+        position::TilePosition,
+    },
+};
 
 use crate::{WorldSystems, path::door::DoorRegions};
 
 pub struct DoorPlugin;
 
 #[derive(Component, Clone, Copy, Debug, Default)]
-#[require(TileCollider, TileMaterial::DOOR, DoorRegions)]
+#[require(
+    DoorDirection::Horizontal,
+    TileCollider,
+    TileMaterial::DOOR,
+    DoorRegions
+)]
 pub struct Door {
     state: DoorState,
+}
+
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DoorDirection {
+    Horizontal,
+    Vertical,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -34,12 +54,32 @@ pub enum DoorState {
     },
 }
 
-pub fn update_doors(mut doors: Query<(&mut Door, &mut TileCollider)>, time: Res<Time>) {
-    doors.iter_mut().for_each(|(mut door, collider)| {
-        if !matches!(door.state, DoorState::Closed) {
-            door.tick(&time, collider);
-        }
-    });
+pub fn update_doors(
+    mut commands: Commands,
+    mut doors: Query<(
+        &TilePosition,
+        &mut Door,
+        &mut DoorDirection,
+        &TileMaterial,
+        Ref<TileAdjacency>,
+        &mut TileCollider,
+    )>,
+    time: Res<Time>,
+) {
+    doors.iter_mut().for_each(
+        |(position, mut door, mut direction, material, adjacency, collider)| {
+            if !matches!(door.state, DoorState::Closed) {
+                door.tick(&time, collider);
+            }
+
+            if adjacency.is_changed() {
+                let new_direction = DoorDirection::from_adjacency(adjacency.walls());
+                if direction.set_if_neq(new_direction) {
+                    commands.set_material(*position, material.with_id(new_direction.material_id()));
+                }
+            }
+        },
+    );
 }
 
 impl Plugin for DoorPlugin {
@@ -142,6 +182,37 @@ impl Door {
 
         if collider.solid() != self.is_closed() {
             collider.set_solid(self.is_closed());
+        }
+    }
+}
+
+impl DoorDirection {
+    fn from_adjacency(walls: Adjacency) -> Self {
+        if walls.contains(Adjacency::WEST | Adjacency::EAST) {
+            Self::Horizontal
+        } else if walls.contains(Adjacency::NORTH | Adjacency::SOUTH) {
+            Self::Vertical
+        } else if walls.intersects(Adjacency::WEST | Adjacency::EAST) {
+            Self::Horizontal
+        } else if walls.intersects(Adjacency::NORTH | Adjacency::SOUTH) {
+            Self::Vertical
+        } else {
+            Self::Horizontal
+        }
+    }
+
+    pub fn from_material_id(id: u16) -> Self {
+        match id & 0b1 {
+            0 => Self::Horizontal,
+            1 => Self::Vertical,
+            _ => unreachable!(),
+        }
+    }
+
+    fn material_id(&self) -> u16 {
+        match self {
+            DoorDirection::Horizontal => 0,
+            DoorDirection::Vertical => 1,
         }
     }
 }

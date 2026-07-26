@@ -53,6 +53,10 @@ impl TileMaterial {
     pub fn move_speed(&self) -> TileMoveSpeed {
         TileMoveSpeed::from_bits((self.0 >> 12) & 0b11)
     }
+
+    pub fn with_id(&self, id: u16) -> Self {
+        TileMaterial::new(self.kind(), self.move_speed(), id)
+    }
 }
 
 impl Default for TileMaterial {

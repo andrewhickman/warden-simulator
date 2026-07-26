@@ -4,6 +4,7 @@ use wdn_physics::tile::{
     position::{TileChunkOffset, TileChunkPosition, TilePosition},
     storage::{TileData, TileStorage},
 };
+use wdn_world::door::DoorDirection;
 
 const EMPTY: u16 = 0;
 const EMPTY_SOUTHWALLCORNER: u16 = 1;
@@ -190,7 +191,10 @@ fn get_tile_variant(storage: &TileStorage, position: TilePosition) -> TileVarian
     match data.kind() {
         TileKind::Empty => TileVariant::Empty,
         TileKind::Wall => TileVariant::Wall,
-        TileKind::Door => TileVariant::DoorH,
+        TileKind::Door => match DoorDirection::from_material_id(data.material().id()) {
+            DoorDirection::Horizontal => TileVariant::DoorH,
+            DoorDirection::Vertical => TileVariant::DoorV,
+        },
         TileKind::Stairs => TileVariant::StairN,
     }
 }

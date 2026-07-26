@@ -155,6 +155,10 @@ impl TileStorageMut<'_, '_> {
             *entity_material = material;
         });
 
+        if prev_material.kind() == material.kind() {
+            return;
+        }
+
         for (neighbor_adjacency, offset) in Adjacency::OFFSETS {
             let neighbor_pos = position.with_offset(offset.x, offset.y);
 

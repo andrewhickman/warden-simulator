@@ -8,6 +8,7 @@ use bevy_platform::collections::HashSet;
 use wdn_physics::layer::Layer;
 use wdn_physics::tile::CHUNK_SIZE;
 use wdn_physics::tile::adjacency::Adjacency;
+use wdn_physics::tile::commands::TileCommandsExt;
 use wdn_physics::tile::index::TileIndex;
 use wdn_physics::tile::material::TileMaterial;
 use wdn_physics::tile::storage::TileChunk;
@@ -3307,38 +3308,23 @@ fn make_app() -> (App, Entity) {
 }
 
 fn set_wall_tile(app: &mut App, position: TilePosition) {
-    app.world_mut()
-        .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(position, TileMaterial::WALL);
-        })
-        .unwrap();
+    app.world_mut().set_material(position, TileMaterial::WALL);
 }
 
 fn set_door_tile(app: &mut App, position: TilePosition) -> Entity {
-    app.world_mut()
-        .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(position, TileMaterial::DOOR);
-        })
-        .unwrap();
-    app.world_mut()
-        .spawn((Door::default(), position, ChildOf(position.layer())))
-        .id()
+    app.world_mut().spawn_tile(
+        position,
+        TileMaterial::DOOR,
+        (Door::default(), ChildOf(position.layer())),
+    )
 }
 
 fn set_slow_tile(app: &mut App, position: TilePosition) {
-    app.world_mut()
-        .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(position, TileMaterial::SLOW);
-        })
-        .unwrap();
+    app.world_mut().set_material(position, TileMaterial::SLOW);
 }
 
 fn set_fast_tile(app: &mut App, position: TilePosition) {
-    app.world_mut()
-        .run_system_once(move |mut storage: TileStorageMut| {
-            storage.set_material(position, TileMaterial::FAST);
-        })
-        .unwrap();
+    app.world_mut().set_material(position, TileMaterial::FAST);
 }
 
 fn clear_tile(app: &mut App, position: TilePosition) {
