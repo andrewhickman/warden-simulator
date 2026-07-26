@@ -26,14 +26,11 @@ enum Sprite {
         south: SouthDecoration,
     },
     StairE {
-        south: SouthDecoration,
+        south: HorizontalStairSouthDecoration,
     },
     StairW {
         north: NorthStairDecoration,
-        south: SouthDecoration,
-    },
-    StairWDouble {
-        north: NorthStairDecoration,
+        south: HorizontalStairSouthDecoration,
     },
     StairS {
         east: EastStairDecoration,
@@ -84,9 +81,25 @@ enum SouthDecoration {
     WallCorner,
     WallHorizontal,
     StairE,
+    StairW,
     StairN,
     StairNDouble,
     StairNWall,
+    StairSWall,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum HorizontalStairSouthDecoration {
+    Empty,
+    WallCorner,
+    WallHorizontal,
+    WallFull,
+    StairE,
+    StairW,
+    StairN,
+    StairNDouble,
+    StairNWall,
+    StairNWallFull,
     StairSWall,
 }
 
@@ -146,13 +159,18 @@ fn main() {
         for south in TileKind::values() {
             for south_east in TileKind::values() {
                 for east in TileKind::values() {
+                    // for south_west in TileKind::values() {
+                    //     for west in TileKind::values() {
                     for north in TileKind::values() {
-                        let tile = tile_sprite(center, south, south_east, east, north);
+                        let right = tile_sprite(center, south, south_east, east, north);
+                        // let left = tile_sprite(center, south, south_west, west, north);
 
-                        if variants.insert(tile) {
-                            ordered.push(tile);
+                        if variants.insert(right) {
+                            ordered.push(right);
                         }
                     }
+                    //     }
+                    // }
                 }
             }
         }
@@ -162,73 +180,70 @@ fn main() {
 
     println!("Found {} unique wall sprites", variants.len());
 
-    let all_sprites: HashSet<Sprite> = {
-        let mut set = HashSet::new();
-        for east in EastWallDecoration::values() {
-            for south in SouthWallDecoration::values() {
-                set.insert(Sprite::Wall(WallSprite::Corner { east, south }));
-            }
-        }
-        for south in SouthWallDecoration::values() {
-            set.insert(Sprite::Wall(WallSprite::Horizontal { south }));
-        }
-        for east in EastWallDecoration::values() {
-            for south_east in SouthEastWallDecoration::values() {
-                set.insert(Sprite::Wall(WallSprite::Vertical { east, south_east }));
-            }
-        }
-        set.insert(Sprite::Wall(WallSprite::InverseCorner));
-        set.insert(Sprite::Wall(WallSprite::Full));
-        for south in SouthDecoration::values() {
-            set.insert(Sprite::Empty(south));
-        }
-        for south in SouthDoorDecoration::values() {
-            set.insert(Sprite::DoorV(south));
-        }
-        for east in EastStairDecoration::values() {
-            for south in SouthDecoration::values() {
-                set.insert(Sprite::StairN { east, south });
-            }
-        }
-        for south in SouthDecoration::values() {
-            set.insert(Sprite::StairE { south });
-            for north in NorthStairDecoration::values() {
-                set.insert(Sprite::StairW { south, north });
-            }
-        }
-        for north in NorthStairDecoration::values() {
-            set.insert(Sprite::StairWDouble { north });
-        }
-        for east in EastStairDecoration::values() {
-            for south in SouthDecoration::values() {
-                set.insert(Sprite::StairS { east, south });
-            }
-        }
-        set
-    };
+    // let all_sprites: HashSet<Sprite> = {
+    //     let mut set = HashSet::new();
+    //     for east in EastWallDecoration::values() {
+    //         for south in SouthWallDecoration::values() {
+    //             set.insert(Sprite::Wall(WallSprite::Corner { east, south }));
+    //         }
+    //     }
+    //     for south in SouthWallDecoration::values() {
+    //         set.insert(Sprite::Wall(WallSprite::Horizontal { south }));
+    //     }
+    //     for east in EastWallDecoration::values() {
+    //         for south_east in SouthEastWallDecoration::values() {
+    //             set.insert(Sprite::Wall(WallSprite::Vertical { east, south_east }));
+    //         }
+    //     }
+    //     set.insert(Sprite::Wall(WallSprite::InverseCorner));
+    //     set.insert(Sprite::Wall(WallSprite::Full));
+    //     for south in SouthDecoration::values() {
+    //         set.insert(Sprite::Empty(south));
+    //     }
+    //     for south in SouthDoorDecoration::values() {
+    //         set.insert(Sprite::DoorV(south));
+    //     }
+    //     for east in EastStairDecoration::values() {
+    //         for south in SouthDecoration::values() {
+    //             set.insert(Sprite::StairN { east, south });
+    //         }
+    //     }
+    //     for south in HorizontalStairSouthDecoration::values() {
+    //         set.insert(Sprite::StairE { south });
+    //         for north in NorthStairDecoration::values() {
+    //             set.insert(Sprite::StairW { south, north });
+    //         }
+    //     }
+    //     for east in EastStairDecoration::values() {
+    //         for south in SouthDecoration::values() {
+    //             set.insert(Sprite::StairS { east, south });
+    //         }
+    //     }
+    //     set
+    // };
 
-    let mut unreached: Vec<Sprite> = all_sprites.difference(&variants).cloned().collect();
-    unreached.sort_by_key(|s| format!("{s:?}"));
-    println!("Unreached variants ({}):", unreached.len());
-    for sprite in &unreached {
-        println!("  {sprite:?}");
-    }
+    // let mut unreached: Vec<Sprite> = all_sprites.difference(&variants).cloned().collect();
+    // unreached.sort_by_key(|s| format!("{s:?}"));
+    // println!("Unreached variants ({}):", unreached.len());
+    // for sprite in &unreached {
+    //     println!("  {sprite:?}");
+    // }
 
-    let mut count = 0;
+    let mut count = 1;
     let mut row = 1;
 
     println!("Row {row}");
     for tile in ordered {
-        println!("{}", tile);
+        println!("{tile}");
 
-        if count == 15 {
+        if count == 16 {
             println!();
             row += 1;
             println!("Row {row}");
             count = 0;
         } else {
-            count += 1;
         }
+        count += 1;
     }
 }
 
@@ -277,16 +292,35 @@ impl SouthEastWallDecoration {
 }
 
 impl SouthDecoration {
-    fn values() -> [SouthDecoration; 8] {
+    fn values() -> [SouthDecoration; 9] {
         [
             SouthDecoration::Empty,
             SouthDecoration::WallCorner,
             SouthDecoration::WallHorizontal,
             SouthDecoration::StairE,
+            SouthDecoration::StairW,
             SouthDecoration::StairN,
             SouthDecoration::StairNDouble,
             SouthDecoration::StairNWall,
             SouthDecoration::StairSWall,
+        ]
+    }
+}
+
+impl HorizontalStairSouthDecoration {
+    fn values() -> [HorizontalStairSouthDecoration; 11] {
+        [
+            HorizontalStairSouthDecoration::Empty,
+            HorizontalStairSouthDecoration::WallCorner,
+            HorizontalStairSouthDecoration::WallHorizontal,
+            HorizontalStairSouthDecoration::WallFull,
+            HorizontalStairSouthDecoration::StairE,
+            HorizontalStairSouthDecoration::StairW,
+            HorizontalStairSouthDecoration::StairN,
+            HorizontalStairSouthDecoration::StairNDouble,
+            HorizontalStairSouthDecoration::StairNWall,
+            HorizontalStairSouthDecoration::StairNWallFull,
+            HorizontalStairSouthDecoration::StairSWall,
         ]
     }
 }
@@ -330,7 +364,7 @@ fn tile_sprite(
     use TileKind::*;
 
     match (center, south, south_east, east, north) {
-        (Empty | Door, Empty | Door | StairW, _, _, _)
+        (Empty | Door, Empty | Door, _, _, _)
         | (Empty | Door, StairS, Empty | Door | stairs!(), _, _) => {
             Sprite::Empty(SouthDecoration::Empty)
         }
@@ -343,6 +377,7 @@ fn tile_sprite(
         (Empty | Door, StairN, Wall, _, _) => Sprite::Empty(SouthDecoration::StairNWall),
         (Empty | Door, StairN, StairN, _, _) => Sprite::Empty(SouthDecoration::StairNDouble),
         (Empty | Door, StairE, _, _, _) => Sprite::Empty(SouthDecoration::StairE),
+        (Empty | Door, StairW, _, _, _) => Sprite::Empty(SouthDecoration::StairW),
         (Empty | Door, StairS, Wall, _, _) => Sprite::Empty(SouthDecoration::StairSWall),
         (Door, Wall, Wall, _, _) | (Door, Wall, stairs!(), Wall, _) => {
             Sprite::DoorV(SouthDoorDecoration::WallHorizontal)
@@ -356,13 +391,13 @@ fn tile_sprite(
                 south: SouthWallDecoration::Empty,
             })
         }
-        (Wall, Door, _, Empty, _) | (Wall, StairS, Empty | Door | stairs!(), Door, _) => {
+        (Wall, Empty, _, Door, _) | (Wall, StairS, Empty | Door | stairs!(), Door, _) => {
             Sprite::Wall(WallSprite::Corner {
                 east: EastWallDecoration::Door,
                 south: SouthWallDecoration::Empty,
             })
         }
-        (Wall, Empty, _, Door, _) => Sprite::Wall(WallSprite::Corner {
+        (Wall, Door, _, Empty, _) => Sprite::Wall(WallSprite::Corner {
             east: EastWallDecoration::Empty,
             south: SouthWallDecoration::Door,
         }),
@@ -473,17 +508,17 @@ fn tile_sprite(
         (Wall, StairW, Wall, Wall | stairs!(), _) => Sprite::Wall(WallSprite::Horizontal {
             south: SouthWallDecoration::StairW,
         }),
-        (StairN, Empty | Door | StairW, _, esw!(), _)
+        (StairN, Empty | Door, _, esw!(), _)
         | (StairN, StairS, Empty | Door | stairs!(), esw!(), _) => Sprite::StairN {
             east: EastStairDecoration::Empty,
             south: SouthDecoration::Empty,
         },
-        (StairN, Empty | Door | StairW, _, Wall, _)
+        (StairN, Empty | Door, _, Wall, _)
         | (StairN, StairS, Empty | Door | stairs!(), Wall, _) => Sprite::StairN {
             east: EastStairDecoration::Wall,
             south: SouthDecoration::Empty,
         },
-        (StairN, Empty | Door | StairW, _, StairN, _)
+        (StairN, Empty | Door, _, StairN, _)
         | (StairN, StairS, Empty | Door | stairs!(), StairN, _) => Sprite::StairN {
             east: EastStairDecoration::Stair,
             south: SouthDecoration::Empty,
@@ -564,25 +599,37 @@ fn tile_sprite(
             east: EastStairDecoration::Empty,
             south: SouthDecoration::StairE,
         },
+        (StairN, StairW, _, esw!(), _) => Sprite::StairN {
+            east: EastStairDecoration::Empty,
+            south: SouthDecoration::StairW,
+        },
         (StairN, StairE, _, Wall, _) => Sprite::StairN {
             east: EastStairDecoration::Wall,
             south: SouthDecoration::StairE,
+        },
+        (StairN, StairW, _, Wall, _) => Sprite::StairN {
+            east: EastStairDecoration::Wall,
+            south: SouthDecoration::StairW,
         },
         (StairN, StairE, _, StairN, _) => Sprite::StairN {
             east: EastStairDecoration::Stair,
             south: SouthDecoration::StairE,
         },
-        (StairS, Empty | Door | StairW, _, ewn!(), _)
+        (StairN, StairW, _, StairN, _) => Sprite::StairN {
+            east: EastStairDecoration::Stair,
+            south: SouthDecoration::StairW,
+        },
+        (StairS, Empty | Door, _, ewn!(), _)
         | (StairS, StairS, Empty | Door | stairs!(), ewn!(), _) => Sprite::StairS {
             east: EastStairDecoration::Empty,
             south: SouthDecoration::Empty,
         },
-        (StairS, Empty | Door | StairW, _, Wall, _)
+        (StairS, Empty | Door, _, Wall, _)
         | (StairS, StairS, Empty | Door | stairs!(), Wall, _) => Sprite::StairS {
             east: EastStairDecoration::Wall,
             south: SouthDecoration::Empty,
         },
-        (StairS, Empty | Door | StairW, _, StairS, _)
+        (StairS, Empty | Door, _, StairS, _)
         | (StairS, StairS, Empty | Door | stairs!(), StairS, _) => Sprite::StairS {
             east: EastStairDecoration::Stair,
             south: SouthDecoration::Empty,
@@ -663,146 +710,195 @@ fn tile_sprite(
             east: EastStairDecoration::Empty,
             south: SouthDecoration::StairE,
         },
+        (StairS, StairW, _, ewn!(), _) => Sprite::StairS {
+            east: EastStairDecoration::Empty,
+            south: SouthDecoration::StairW,
+        },
         (StairS, StairE, _, Wall, _) => Sprite::StairS {
             east: EastStairDecoration::Wall,
             south: SouthDecoration::StairE,
+        },
+        (StairS, StairW, _, Wall, _) => Sprite::StairS {
+            east: EastStairDecoration::Wall,
+            south: SouthDecoration::StairW,
         },
         (StairS, StairE, _, StairS, _) => Sprite::StairS {
             east: EastStairDecoration::Stair,
             south: SouthDecoration::StairE,
         },
-        (StairE, Empty | Door | StairW, _, _, _)
-        | (StairE, StairS, Empty | Door | stairs!(), _, _) => Sprite::StairE {
-            south: SouthDecoration::Empty,
+        (StairS, StairW, _, StairS, _) => Sprite::StairS {
+            east: EastStairDecoration::Stair,
+            south: SouthDecoration::StairW,
         },
+        (StairE, Empty | Door, _, _, _) | (StairE, StairS, Empty | Door | stairs!(), _, _) => {
+            Sprite::StairE {
+                south: HorizontalStairSouthDecoration::Empty,
+            }
+        }
         (StairE, Wall, Empty | Door, _, _) => Sprite::StairE {
-            south: SouthDecoration::WallCorner,
+            south: HorizontalStairSouthDecoration::WallCorner,
         },
-        (StairE, Wall, Wall | stairs!(), _, _) => Sprite::StairE {
-            south: SouthDecoration::WallHorizontal,
+        (StairE, Wall, Wall | stairs!(), Empty | Door | stairs!(), _) => Sprite::StairE {
+            south: HorizontalStairSouthDecoration::WallHorizontal,
+        },
+        (StairE, Wall, Wall | stairs!(), Wall, _) => Sprite::StairE {
+            south: HorizontalStairSouthDecoration::WallFull,
         },
         (StairE, StairN, esw!(), _, _) => Sprite::StairE {
-            south: SouthDecoration::StairN,
+            south: HorizontalStairSouthDecoration::StairN,
         },
-        (StairE, StairN, Wall, _, _) => Sprite::StairE {
-            south: SouthDecoration::StairNWall,
+        (StairE, StairN, Wall, Empty | Door | stairs!(), _) => Sprite::StairE {
+            south: HorizontalStairSouthDecoration::StairNWall,
+        },
+        (StairE, StairN, Wall, Wall, _) => Sprite::StairE {
+            south: HorizontalStairSouthDecoration::StairNWallFull,
         },
         (StairE, StairN, StairN, _, _) => Sprite::StairE {
-            south: SouthDecoration::StairNDouble,
+            south: HorizontalStairSouthDecoration::StairNDouble,
         },
         (StairE, StairS, Wall, _, _) => Sprite::StairE {
-            south: SouthDecoration::StairSWall,
+            south: HorizontalStairSouthDecoration::StairSWall,
         },
         (StairE, StairE, _, _, _) => Sprite::StairE {
-            south: SouthDecoration::StairE,
+            south: HorizontalStairSouthDecoration::StairE,
+        },
+        (StairE, StairW, _, _, _) => Sprite::StairE {
+            south: HorizontalStairSouthDecoration::StairW,
         },
         (StairW, Empty | Door, _, _, esn!())
         | (StairW, StairS, Empty | Door | stairs!(), _, esn!()) => Sprite::StairW {
             north: NorthStairDecoration::Empty,
-            south: SouthDecoration::Empty,
+            south: HorizontalStairSouthDecoration::Empty,
         },
         (StairW, Empty | Door, _, _, Wall)
         | (StairW, StairS, Empty | Door | stairs!(), _, Wall) => Sprite::StairW {
             north: NorthStairDecoration::Wall,
-            south: SouthDecoration::Empty,
+            south: HorizontalStairSouthDecoration::Empty,
         },
         (StairW, Empty | Door, _, _, StairW)
         | (StairW, StairS, Empty | Door | stairs!(), _, StairW) => Sprite::StairW {
             north: NorthStairDecoration::Stair,
-            south: SouthDecoration::Empty,
+            south: HorizontalStairSouthDecoration::Empty,
         },
         (StairW, Wall, Empty | Door, _, esn!()) => Sprite::StairW {
             north: NorthStairDecoration::Empty,
-            south: SouthDecoration::WallCorner,
+            south: HorizontalStairSouthDecoration::WallCorner,
         },
         (StairW, Wall, Empty | Door, _, Wall) => Sprite::StairW {
             north: NorthStairDecoration::Wall,
-            south: SouthDecoration::WallCorner,
+            south: HorizontalStairSouthDecoration::WallCorner,
         },
         (StairW, Wall, Empty | Door, _, StairW) => Sprite::StairW {
             north: NorthStairDecoration::Stair,
-            south: SouthDecoration::WallCorner,
+            south: HorizontalStairSouthDecoration::WallCorner,
         },
-        (StairW, Wall, Wall | stairs!(), _, esn!()) => Sprite::StairW {
+        (StairW, Wall, Wall | stairs!(), Empty | Door | stairs!(), esn!()) => Sprite::StairW {
             north: NorthStairDecoration::Empty,
-            south: SouthDecoration::WallHorizontal,
+            south: HorizontalStairSouthDecoration::WallHorizontal,
         },
-        (StairW, Wall, Wall | stairs!(), _, Wall) => Sprite::StairW {
+        (StairW, Wall, Wall | stairs!(), Wall, esn!()) => Sprite::StairW {
+            north: NorthStairDecoration::Empty,
+            south: HorizontalStairSouthDecoration::WallFull,
+        },
+        (StairW, Wall, Wall | stairs!(), Empty | Door | stairs!(), Wall) => Sprite::StairW {
             north: NorthStairDecoration::Wall,
-            south: SouthDecoration::WallHorizontal,
+            south: HorizontalStairSouthDecoration::WallHorizontal,
         },
-        (StairW, Wall, Wall | stairs!(), _, StairW) => Sprite::StairW {
+        (StairW, Wall, Wall | stairs!(), Wall, Wall) => Sprite::StairW {
+            north: NorthStairDecoration::Wall,
+            south: HorizontalStairSouthDecoration::WallFull,
+        },
+        (StairW, Wall, Wall | stairs!(), Empty | Door | stairs!(), StairW) => Sprite::StairW {
             north: NorthStairDecoration::Stair,
-            south: SouthDecoration::WallHorizontal,
+            south: HorizontalStairSouthDecoration::WallHorizontal,
+        },
+        (StairW, Wall, Wall | stairs!(), Wall, StairW) => Sprite::StairW {
+            north: NorthStairDecoration::Stair,
+            south: HorizontalStairSouthDecoration::WallFull,
         },
         (StairW, StairN, esw!(), _, esn!()) => Sprite::StairW {
             north: NorthStairDecoration::Empty,
-            south: SouthDecoration::StairN,
+            south: HorizontalStairSouthDecoration::StairN,
         },
         (StairW, StairN, esw!(), _, Wall) => Sprite::StairW {
             north: NorthStairDecoration::Wall,
-            south: SouthDecoration::StairN,
+            south: HorizontalStairSouthDecoration::StairN,
         },
         (StairW, StairN, esw!(), _, StairW) => Sprite::StairW {
             north: NorthStairDecoration::Stair,
-            south: SouthDecoration::StairN,
+            south: HorizontalStairSouthDecoration::StairN,
         },
-        (StairW, StairN, Wall, _, esn!()) => Sprite::StairW {
+        (StairW, StairN, Wall, Empty | Door | stairs!(), esn!()) => Sprite::StairW {
             north: NorthStairDecoration::Empty,
-            south: SouthDecoration::StairNWall,
+            south: HorizontalStairSouthDecoration::StairNWall,
         },
-        (StairW, StairN, Wall, _, Wall) => Sprite::StairW {
+        (StairW, StairN, Wall, Wall, esn!()) => Sprite::StairW {
+            north: NorthStairDecoration::Empty,
+            south: HorizontalStairSouthDecoration::StairNWallFull,
+        },
+        (StairW, StairN, Wall, Empty | Door | stairs!(), Wall) => Sprite::StairW {
             north: NorthStairDecoration::Wall,
-            south: SouthDecoration::StairNWall,
+            south: HorizontalStairSouthDecoration::StairNWall,
         },
-        (StairW, StairN, Wall, _, StairW) => Sprite::StairW {
+        (StairW, StairN, Wall, Wall, Wall) => Sprite::StairW {
+            north: NorthStairDecoration::Wall,
+            south: HorizontalStairSouthDecoration::StairNWallFull,
+        },
+        (StairW, StairN, Wall, Empty | Door | stairs!(), StairW) => Sprite::StairW {
             north: NorthStairDecoration::Stair,
-            south: SouthDecoration::StairNWall,
+            south: HorizontalStairSouthDecoration::StairNWall,
+        },
+        (StairW, StairN, Wall, Wall, StairW) => Sprite::StairW {
+            north: NorthStairDecoration::Stair,
+            south: HorizontalStairSouthDecoration::StairNWallFull,
         },
         (StairW, StairN, StairN, _, esn!()) => Sprite::StairW {
             north: NorthStairDecoration::Empty,
-            south: SouthDecoration::StairNDouble,
+            south: HorizontalStairSouthDecoration::StairNDouble,
         },
         (StairW, StairN, StairN, _, Wall) => Sprite::StairW {
             north: NorthStairDecoration::Wall,
-            south: SouthDecoration::StairNDouble,
+            south: HorizontalStairSouthDecoration::StairNDouble,
         },
         (StairW, StairN, StairN, _, StairW) => Sprite::StairW {
             north: NorthStairDecoration::Stair,
-            south: SouthDecoration::StairNDouble,
+            south: HorizontalStairSouthDecoration::StairNDouble,
         },
         (StairW, StairS, Wall, _, esn!()) => Sprite::StairW {
             north: NorthStairDecoration::Empty,
-            south: SouthDecoration::StairSWall,
+            south: HorizontalStairSouthDecoration::StairSWall,
         },
         (StairW, StairS, Wall, _, Wall) => Sprite::StairW {
             north: NorthStairDecoration::Wall,
-            south: SouthDecoration::StairSWall,
+            south: HorizontalStairSouthDecoration::StairSWall,
         },
         (StairW, StairS, Wall, _, StairW) => Sprite::StairW {
             north: NorthStairDecoration::Stair,
-            south: SouthDecoration::StairSWall,
+            south: HorizontalStairSouthDecoration::StairSWall,
         },
         (StairW, StairE, _, _, esn!()) => Sprite::StairW {
             north: NorthStairDecoration::Empty,
-            south: SouthDecoration::StairE,
+            south: HorizontalStairSouthDecoration::StairE,
         },
         (StairW, StairE, _, _, Wall) => Sprite::StairW {
             north: NorthStairDecoration::Wall,
-            south: SouthDecoration::StairE,
+            south: HorizontalStairSouthDecoration::StairE,
         },
         (StairW, StairE, _, _, StairW) => Sprite::StairW {
             north: NorthStairDecoration::Stair,
-            south: SouthDecoration::StairE,
+            south: HorizontalStairSouthDecoration::StairE,
         },
-        (StairW, StairW, _, _, esn!()) => Sprite::StairWDouble {
+        (StairW, StairW, _, _, esn!()) => Sprite::StairW {
             north: NorthStairDecoration::Empty,
+            south: HorizontalStairSouthDecoration::StairW,
         },
-        (StairW, StairW, _, _, Wall) => Sprite::StairWDouble {
+        (StairW, StairW, _, _, Wall) => Sprite::StairW {
             north: NorthStairDecoration::Wall,
+            south: HorizontalStairSouthDecoration::StairW,
         },
-        (StairW, StairW, _, _, StairW) => Sprite::StairWDouble {
+        (StairW, StairW, _, _, StairW) => Sprite::StairW {
             north: NorthStairDecoration::Stair,
+            south: HorizontalStairSouthDecoration::StairW,
         },
     }
 }
@@ -829,7 +925,6 @@ impl Display for Sprite {
             }
             Sprite::StairE { south } => write!(f, "StairE{south}"),
             Sprite::StairW { south, north } => write!(f, "StairW{south}{north}"),
-            Sprite::StairWDouble { north } => write!(f, "StairW_SouthStairW{north}"),
         }
     }
 }
@@ -874,10 +969,29 @@ impl Display for SouthDecoration {
             SouthDecoration::WallCorner => write!(f, "_SouthWallCorner"),
             SouthDecoration::WallHorizontal => write!(f, "_SouthWallHorizontal"),
             SouthDecoration::StairE => write!(f, "_SouthStairE"),
+            SouthDecoration::StairW => write!(f, "_SouthStairW"),
             SouthDecoration::StairN => write!(f, "_SouthStairN"),
             SouthDecoration::StairNDouble => write!(f, "_SouthStairNDouble"),
             SouthDecoration::StairNWall => write!(f, "_SouthStairNWall"),
             SouthDecoration::StairSWall => write!(f, "_SouthStairSWall"),
+        }
+    }
+}
+
+impl Display for HorizontalStairSouthDecoration {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            HorizontalStairSouthDecoration::Empty => Ok(()),
+            HorizontalStairSouthDecoration::WallCorner => write!(f, "_SouthWallCorner"),
+            HorizontalStairSouthDecoration::WallHorizontal => write!(f, "_SouthWallHorizontal"),
+            HorizontalStairSouthDecoration::WallFull => write!(f, "_SouthWallFull"),
+            HorizontalStairSouthDecoration::StairE => write!(f, "_SouthStairE"),
+            HorizontalStairSouthDecoration::StairW => write!(f, "_SouthStairW"),
+            HorizontalStairSouthDecoration::StairN => write!(f, "_SouthStairN"),
+            HorizontalStairSouthDecoration::StairNDouble => write!(f, "_SouthStairNDouble"),
+            HorizontalStairSouthDecoration::StairNWall => write!(f, "_SouthStairNWall"),
+            HorizontalStairSouthDecoration::StairNWallFull => write!(f, "_SouthStairNWallFull"),
+            HorizontalStairSouthDecoration::StairSWall => write!(f, "_SouthStairSWall"),
         }
     }
 }

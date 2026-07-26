@@ -18,7 +18,7 @@ use wdn_physics::{
         CHUNK_SIZE,
         material::TileKind,
         position::{TileChunkOffset, TileChunkPosition},
-        storage::{TileChunk, TileData},
+        storage::{TileChunk, TileData, TileStorage},
     },
 };
 use wdn_world::door::Door;
@@ -80,6 +80,7 @@ impl FromWorld for TileChunkMesh {
 }
 
 pub fn update_chunk(
+    storage: &TileStorage,
     mut param: TileChunkSpriteParam,
     mut chunks: Query<
         (Entity, &TileChunk, &mut Transform, &mut TileChunkSprites),
@@ -98,7 +99,9 @@ pub fn update_chunk(
             }
 
             param.update_chunk_material(sprites.base.id(), chunk, pack_ground_tile);
-            param.update_chunk_material(sprites.top.id(), chunk, pack_wall_tile);
+            param.update_chunk_material(sprites.top.id(), chunk, |offset, tile| {
+                pack_wall_tile(storage, offset, tile)
+            });
         });
 }
 
@@ -160,13 +163,12 @@ fn pack_ground_tile(offset: TileChunkOffset, _tile: TileData) -> [PackedTileData
     ]
 }
 
-fn pack_wall_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
-    let right = wall::sprite_offset(tile.kind(), tile.wall_adjacency(), tile.door_adjacency());
-    let left = wall::sprite_offset(
-        tile.kind(),
-        tile.wall_adjacency().flip_x(),
-        tile.door_adjacency().flip_x(),
-    );
+fn pack_wall_tile(
+    storage: &TileStorage,
+    offset: TileChunkOffset,
+    tile: TileData,
+) -> [PackedTileData; 2] {
+    let (left, right) = wall::sprite_offset(storage, offset, tile);
 
     let depth = if tile.kind() == TileKind::Wall {
         0
