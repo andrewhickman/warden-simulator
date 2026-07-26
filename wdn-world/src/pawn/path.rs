@@ -121,15 +121,13 @@ pub fn open_doors_on_collision(
                 continue;
             }
 
-            match collision.target {
-                CollisionTarget::Tile {
-                    id: Some(tile_id), ..
-                } => {
-                    if let Ok(mut door) = doors.get_mut(tile_id) {
-                        door.open();
-                    }
+            if let CollisionTarget::Tile {
+                id: Some(tile_id), ..
+            } = collision.target
+            {
+                if let Ok(mut door) = doors.get_mut(tile_id) {
+                    door.open();
                 }
-                _ => {}
             }
         }
     });

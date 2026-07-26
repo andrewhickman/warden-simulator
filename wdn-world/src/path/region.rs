@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, ops::Index, u32};
+use std::{collections::VecDeque, ops::Index};
 
 use bevy_ecs::{
     entity::{EntityHashSet, hash_set},

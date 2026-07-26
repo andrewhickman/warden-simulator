@@ -80,7 +80,7 @@ impl FromWorld for TileChunkMesh {
 }
 
 pub fn update_chunk(
-    storage: &TileStorage,
+    storage: TileStorage,
     mut param: TileChunkSpriteParam,
     mut chunks: Query<
         (Entity, &TileChunk, &mut Transform, &mut TileChunkSprites),
@@ -100,7 +100,7 @@ pub fn update_chunk(
 
             param.update_chunk_material(sprites.base.id(), chunk, pack_ground_tile);
             param.update_chunk_material(sprites.top.id(), chunk, |offset, tile| {
-                pack_wall_tile(storage, offset, tile)
+                pack_wall_tile(&storage, offset, tile)
             });
         });
 }
