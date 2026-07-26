@@ -1,5 +1,7 @@
+use tracing::info;
 use wdn_physics::tile::{
-    position::TileChunkOffset,
+    material::TileKind,
+    position::{TileChunkOffset, TileChunkPosition, TilePosition},
     storage::{TileData, TileStorage},
 };
 
@@ -151,12 +153,50 @@ const STAIRW_SOUTHSTAIRW: u16 = 136;
 const STAIRW_SOUTHSTAIRW_NORTHWALL: u16 = 137;
 const STAIRW_SOUTHSTAIRW_NORTHSTAIR: u16 = 138;
 
-pub fn sprite_offset(storage: &TileStorage, offset: TileChunkOffset, tile: TileData) -> (u16, u16) {
-    todo!()
+pub fn sprite_offset(
+    storage: &TileStorage,
+    position: TileChunkPosition,
+    offset: TileChunkOffset,
+    _tile: TileData,
+) -> (u16, u16) {
+    let position = TilePosition::from((position, offset));
+
+    let center = get_tile_variant(storage, position);
+    let south = get_tile_variant(storage, position.south());
+    let north = get_tile_variant(storage, position.north());
+    let east = get_tile_variant(storage, position.east());
+    let south_east = get_tile_variant(storage, position.south().east());
+    let west = get_tile_variant(storage, position.west());
+    let south_west = get_tile_variant(storage, position.south().west());
+
+    let right = tile_sprite(center, south, south_east, east, north);
+    let left = tile_sprite(center, south, south_west, west, north);
+
+    if center != TileVariant::Empty {
+        info!(
+            "center: {:?}, south: {:?}, south_east: {:?}, east: {:?}, north: {:?}, west: {:?}, south_west: {:?} => left: {}, right: {}",
+            center, south, south_east, east, north, west, south_west, left, right
+        );
+    }
+
+    (left, right)
+}
+
+fn get_tile_variant(storage: &TileStorage, position: TilePosition) -> TileVariant {
+    let Some(data) = storage.get(position) else {
+        return TileVariant::Empty;
+    };
+
+    match data.kind() {
+        TileKind::Empty => TileVariant::Empty,
+        TileKind::Wall => TileVariant::Wall,
+        TileKind::Door => TileVariant::DoorH,
+        TileKind::Stairs => TileVariant::StairN,
+    }
 }
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
-pub enum TileVariant {
+enum TileVariant {
     Empty,
     Wall,
     DoorH,
@@ -168,7 +208,7 @@ pub enum TileVariant {
 }
 
 #[deny(clippy::match_same_arms)]
-pub fn tile_sprite(
+fn tile_sprite(
     center: TileVariant,
     south: TileVariant,
     south_east: TileVariant,

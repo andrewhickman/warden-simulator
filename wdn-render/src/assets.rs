@@ -24,7 +24,8 @@ pub struct AssetsPlugin;
 
 #[derive(Debug, Resource)]
 pub struct AssetHandles {
-    tileset: Handle<Image>,
+    base_tileset: Handle<Image>,
+    wall_tileset: Handle<Image>,
     atlas: Handle<Image>,
     layout: Handle<TextureAtlasLayout>,
 }
@@ -38,16 +39,27 @@ impl Plugin for AssetsPlugin {
 impl AssetHandles {
     pub fn asset_ids(&self) -> impl Iterator<Item = UntypedAssetId> + '_ {
         let AssetHandles {
-            tileset,
+            base_tileset,
+            wall_tileset,
             atlas,
             layout,
         } = self;
 
-        [tileset.into(), atlas.into(), layout.into()].into_iter()
+        [
+            base_tileset.into(),
+            wall_tileset.into(),
+            atlas.into(),
+            layout.into(),
+        ]
+        .into_iter()
     }
 
-    pub fn tileset(&self) -> Handle<Image> {
-        self.tileset.clone()
+    pub fn base_tileset(&self) -> Handle<Image> {
+        self.base_tileset.clone()
+    }
+
+    pub fn wall_tileset(&self) -> Handle<Image> {
+        self.wall_tileset.clone()
     }
 
     pub fn atlas(&self) -> Handle<Image> {
@@ -121,10 +133,14 @@ pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
     assert_eq!(layout.add_texture(DOOR_VERTICAL_RECT), DOOR_VERTICAL_INDEX);
 
     commands.insert_resource(AssetHandles {
-        tileset: assets
+        base_tileset: assets
             .load_builder()
-            .with_settings(configure_tileset)
-            .load("image/tileset.png"),
+            .with_settings(configure_base_tileset)
+            .load("image/dirt.png"),
+        wall_tileset: assets
+            .load_builder()
+            .with_settings(configure_wall_tileset)
+            .load("image/walls.png"),
         atlas: assets
             .load_builder()
             .with_settings(configure_atlas)
@@ -133,9 +149,20 @@ pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
     });
 }
 
-fn configure_tileset(settings: &mut ImageLoaderSettings) {
+fn configure_base_tileset(settings: &mut ImageLoaderSettings) {
     settings.sampler = ImageSampler::linear();
-    settings.array_layout = Some(ImageArrayLayout::RowHeight { pixels: 64 });
+    settings.array_layout = Some(ImageArrayLayout::GridCount {
+        columns: 32,
+        rows: 16,
+    });
+}
+
+fn configure_wall_tileset(settings: &mut ImageLoaderSettings) {
+    settings.sampler = ImageSampler::linear();
+    settings.array_layout = Some(ImageArrayLayout::GridSize {
+        tile_width_pixels: 200,
+        tile_height_pixels: 400,
+    });
 }
 
 fn configure_atlas(settings: &mut ImageLoaderSettings) {

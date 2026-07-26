@@ -16,7 +16,6 @@ use wdn_physics::{
     kinematics::Position,
     tile::{
         CHUNK_SIZE,
-        material::TileKind,
         position::{TileChunkOffset, TileChunkPosition},
         storage::{TileChunk, TileData, TileStorage},
     },
@@ -26,16 +25,13 @@ use wdn_world::door::Door;
 use crate::{
     RenderSystems,
     assets::AssetHandles,
-    depth::{GROUND_DEPTH, WALL_BASE_DEPTH, WALL_TOP_DEPTH},
+    depth::{GROUND_DEPTH, WALL_BASE_DEPTH},
     tile::material::{
         PackedTileData, TileChunkMaterial, TileChunkMaterialPlugin, make_tile_chunk_image,
     },
 };
 
 pub const SPRITE_CHUNK_SIZE: u16 = 16;
-
-pub const DIRT_OFFSET: u16 = 0;
-pub const WALL_OFFSET: u16 = DIRT_OFFSET + 512;
 
 pub struct TilePlugin;
 
@@ -52,7 +48,6 @@ pub struct TileChunkSprites {
 #[derive(SystemParam)]
 pub struct TileChunkSpriteParam<'w, 's> {
     commands: Commands<'w, 's>,
-    assets: Res<'w, AssetHandles>,
     mesh: Res<'w, TileChunkMesh>,
     materials: ResMut<'w, Assets<TileChunkMaterial>>,
     images: ResMut<'w, Assets<Image>>,
@@ -82,6 +77,7 @@ impl FromWorld for TileChunkMesh {
 pub fn update_chunk(
     storage: TileStorage,
     mut param: TileChunkSpriteParam,
+    assets: Res<AssetHandles>,
     mut chunks: Query<
         (Entity, &TileChunk, &mut Transform, &mut TileChunkSprites),
         (Changed<TileChunk>, Without<Position>, Without<Door>),
@@ -90,28 +86,31 @@ pub fn update_chunk(
     chunks
         .iter_mut()
         .for_each(|(id, chunk, mut transform, mut sprites)| {
+            let position = chunk.position();
             if sprites.is_added() {
-                let position = chunk.position();
                 *transform = chunk_transform(position);
 
-                sprites.base = param.spawn_chunk_material(id, GROUND_DEPTH);
-                sprites.top = param.spawn_chunk_material(id, WALL_BASE_DEPTH);
+                sprites.base = param.spawn_chunk_material(id, assets.base_tileset(), GROUND_DEPTH);
+                sprites.top =
+                    param.spawn_chunk_material(id, assets.wall_tileset(), WALL_BASE_DEPTH);
             }
 
             param.update_chunk_material(sprites.base.id(), chunk, pack_ground_tile);
             param.update_chunk_material(sprites.top.id(), chunk, |offset, tile| {
-                pack_wall_tile(&storage, offset, tile)
+                pack_wall_tile(&storage, position, offset, tile)
             });
         });
 }
 
 impl TileChunkSpriteParam<'_, '_> {
-    fn spawn_chunk_material(&mut self, id: Entity, depth: f32) -> Handle<TileChunkMaterial> {
+    fn spawn_chunk_material(
+        &mut self,
+        id: Entity,
+        tileset: Handle<Image>,
+        depth: f32,
+    ) -> Handle<TileChunkMaterial> {
         let tile_data = self.images.add(make_tile_chunk_image());
-        let material = self.materials.add(TileChunkMaterial {
-            tileset: self.assets.tileset(),
-            tile_data,
-        });
+        let material = self.materials.add(TileChunkMaterial { tileset, tile_data });
 
         self.commands.spawn((
             ChildOf(id),
@@ -165,20 +164,15 @@ fn pack_ground_tile(offset: TileChunkOffset, _tile: TileData) -> [PackedTileData
 
 fn pack_wall_tile(
     storage: &TileStorage,
+    position: TileChunkPosition,
     offset: TileChunkOffset,
     tile: TileData,
 ) -> [PackedTileData; 2] {
-    let (left, right) = wall::sprite_offset(storage, offset, tile);
-
-    let depth = if tile.kind() == TileKind::Wall {
-        0
-    } else {
-        (WALL_TOP_DEPTH - WALL_BASE_DEPTH) as u16
-    };
+    let (left, right) = wall::sprite_offset(storage, position, offset, tile);
 
     [
-        PackedTileData::new(left, depth, true),
-        PackedTileData::new(right, depth, false),
+        PackedTileData::new(left, 0, true),
+        PackedTileData::new(right, 0, false),
     ]
 }
 
@@ -202,7 +196,7 @@ pub fn dirt_sprite_offsets(position: TileChunkOffset) -> (u16, u16) {
     let x2 = (x + 1).rem_euclid(SPRITE_CHUNK_SIZE * 2);
 
     (
-        DIRT_OFFSET + y * SPRITE_CHUNK_SIZE * 2 + x1,
-        DIRT_OFFSET + y * SPRITE_CHUNK_SIZE * 2 + x2,
+        y * SPRITE_CHUNK_SIZE * 2 + x1,
+        y * SPRITE_CHUNK_SIZE * 2 + x2,
     )
 }

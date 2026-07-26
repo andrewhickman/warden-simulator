@@ -14,8 +14,6 @@ debug = true
 
 [workspace]
 members = [
-    "wdn-build",
-    "wdn-enumerate",
     "wdn-physics",
     "wdn-render",
     "wdn-save",
