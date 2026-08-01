@@ -94,6 +94,9 @@ impl Plugin for DoorPlugin {
 }
 
 impl Door {
+    pub const HORIZONTAL_ID: u16 = 0;
+    pub const VERTICAL_ID: u16 = 1;
+
     const OPEN_SPEED: f32 = 1.0;
     const OPEN_DURATION: Duration = Duration::from_secs(3);
 
@@ -203,16 +206,16 @@ impl DoorDirection {
 
     pub fn from_material_id(id: u16) -> Self {
         match id & 0b1 {
-            0 => Self::Horizontal,
-            1 => Self::Vertical,
+            Door::HORIZONTAL_ID => Self::Horizontal,
+            Door::VERTICAL_ID => Self::Vertical,
             _ => unreachable!(),
         }
     }
 
-    fn material_id(&self) -> u16 {
+    const fn material_id(&self) -> u16 {
         match self {
-            DoorDirection::Horizontal => 0,
-            DoorDirection::Vertical => 1,
+            DoorDirection::Horizontal => Door::HORIZONTAL_ID,
+            DoorDirection::Vertical => Door::VERTICAL_ID,
         }
     }
 }

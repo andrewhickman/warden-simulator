@@ -4,7 +4,7 @@ use wdn_physics::tile::{
     position::{TileChunkOffset, TileChunkPosition, TilePosition},
     storage::{TileData, TileStorage},
 };
-use wdn_world::door::DoorDirection;
+use wdn_world::{door::DoorDirection, stair::Stair};
 
 const EMPTY: u16 = 0;
 const EMPTY_SOUTHWALLCORNER: u16 = 1;
@@ -171,7 +171,13 @@ pub fn sprite_offset(
     let south_west = get_tile_variant(storage, position.south().west());
 
     let right = tile_sprite(center, south, south_east, east, north);
-    let left = tile_sprite(center, south, south_west, west, north);
+    let left = tile_sprite(
+        center.flip_x(),
+        south.flip_x(),
+        south_west.flip_x(),
+        west.flip_x(),
+        north.flip_x(),
+    );
 
     if center != TileVariant::Empty {
         info!(
@@ -195,7 +201,12 @@ fn get_tile_variant(storage: &TileStorage, position: TilePosition) -> TileVarian
             DoorDirection::Horizontal => TileVariant::DoorH,
             DoorDirection::Vertical => TileVariant::DoorV,
         },
-        TileKind::Stairs => TileVariant::StairN,
+        TileKind::Stairs => match Stair::from_material_id(data.material().id()) {
+            Stair::North => TileVariant::StairN,
+            Stair::South => TileVariant::StairS,
+            Stair::East => TileVariant::StairE,
+            Stair::West => TileVariant::StairW,
+        },
     }
 }
 
@@ -644,6 +655,16 @@ fn tile_sprite(
         }
         (StairW, StairW, _, _, Wall) => STAIRW_SOUTHSTAIRW_NORTHWALL,
         (StairW, StairW, _, _, StairW) => STAIRW_SOUTHSTAIRW_NORTHSTAIR,
+    }
+}
+
+impl TileVariant {
+    pub fn flip_x(self) -> Self {
+        match self {
+            TileVariant::StairE => TileVariant::StairW,
+            TileVariant::StairW => TileVariant::StairE,
+            _ => self,
+        }
     }
 }
 

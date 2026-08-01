@@ -34,6 +34,7 @@ impl TileMaterial {
     pub const EMPTY: Self = TileMaterial::new(TileKind::Empty, TileMoveSpeed::Medium, 0);
     pub const WALL: Self = TileMaterial::new(TileKind::Wall, TileMoveSpeed::Medium, 0);
     pub const DOOR: Self = TileMaterial::new(TileKind::Door, TileMoveSpeed::Medium, 0);
+    pub const STAIR: Self = TileMaterial::new(TileKind::Stairs, TileMoveSpeed::Medium, 0);
     pub const SLOW: Self = TileMaterial::new(TileKind::Empty, TileMoveSpeed::Slow, 0);
     pub const FAST: Self = TileMaterial::new(TileKind::Empty, TileMoveSpeed::Fast, 0);
 
@@ -46,15 +47,20 @@ impl TileMaterial {
         self.0 & 0x0FFF
     }
 
-    pub fn kind(&self) -> TileKind {
+    pub const fn kind(&self) -> TileKind {
         TileKind::from_bits((self.0 >> 14) & 0b11)
     }
 
-    pub fn move_speed(&self) -> TileMoveSpeed {
+    pub const fn move_speed(&self) -> TileMoveSpeed {
         TileMoveSpeed::from_bits((self.0 >> 12) & 0b11)
     }
 
-    pub fn with_id(&self, id: u16) -> Self {
+    pub fn set_id(&mut self, id: u16) {
+        debug_assert!(id <= 0x0FFF);
+        self.0 = (self.0 & !0x0FFF) | (id & 0x0FFF);
+    }
+
+    pub const fn with_id(&self, id: u16) -> Self {
         TileMaterial::new(self.kind(), self.move_speed(), id)
     }
 }
@@ -94,13 +100,13 @@ impl TileKind {
         *self as u16
     }
 
-    pub fn from_bits(bits: u16) -> Self {
+    pub const fn from_bits(bits: u16) -> Self {
         match bits {
             0b00 => TileKind::Empty,
             0b01 => TileKind::Wall,
             0b10 => TileKind::Door,
             0b11 => TileKind::Stairs,
-            _ => panic!("invalid TileKind bits: {bits}"),
+            _ => panic!("invalid TileKind bits"),
         }
     }
 }
@@ -118,12 +124,12 @@ impl TileMoveSpeed {
         *self as u16
     }
 
-    pub fn from_bits(bits: u16) -> Self {
+    pub const fn from_bits(bits: u16) -> Self {
         match bits {
             0b00 => TileMoveSpeed::Medium,
             0b01 => TileMoveSpeed::Slow,
             0b10 => TileMoveSpeed::Fast,
-            _ => panic!("invalid TileMoveSpeed bits: {bits}"),
+            _ => panic!("invalid TileMoveSpeed bits"),
         }
     }
 }
