@@ -241,18 +241,10 @@ fn tile_sprite(
             _,
             _,
         ) => EMPTY,
-        (Empty | DoorH, Wall, Wall, _, _)
-        | (Empty | DoorH, Wall, StairN | StairE | StairS | StairW, Wall, _) => {
+        (Empty | DoorH, Wall, Wall | StairN | StairE | StairS | StairW, _, _) => {
             EMPTY_SOUTHWALLHORIZONTAL
         }
-        (
-            Empty | DoorH,
-            Wall,
-            StairN | StairE | StairS | StairW,
-            Empty | DoorH | DoorV | StairN | StairE | StairS | StairW,
-            _,
-        )
-        | (Empty | DoorH, Wall, Empty | DoorH | DoorV, _, _) => EMPTY_SOUTHWALLCORNER,
+        (Empty | DoorH, Wall, Empty | DoorH | DoorV, _, _) => EMPTY_SOUTHWALLCORNER,
         (Empty | DoorH | DoorV, StairN, Empty | DoorH | DoorV | StairE | StairS | StairW, _, _) => {
             EMPTY_SOUTHSTAIRN
         }
