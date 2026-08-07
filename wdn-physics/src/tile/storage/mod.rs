@@ -293,6 +293,15 @@ impl TileChunk {
         &self.tiles[offset.index()]
     }
 
+    pub fn set_material(&mut self, offset: TileChunkOffset, material: TileMaterial) {
+        debug_assert_eq!(
+            self.tiles[offset.index()].material.kind(),
+            material.kind(),
+            "cannot change tile kind in place"
+        );
+        self.tiles[offset.index()].material = material;
+    }
+
     fn get_mut(&mut self, offset: TileChunkOffset) -> &mut TileData {
         &mut self.tiles[offset.index()]
     }

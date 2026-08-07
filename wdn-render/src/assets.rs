@@ -24,7 +24,7 @@ pub struct AssetsPlugin;
 
 #[derive(Debug, Resource)]
 pub struct AssetHandles {
-    base_tileset: Handle<Image>,
+    ground_tileset: Handle<Image>,
     wall_tileset: Handle<Image>,
     atlas: Handle<Image>,
     layout: Handle<TextureAtlasLayout>,
@@ -39,14 +39,14 @@ impl Plugin for AssetsPlugin {
 impl AssetHandles {
     pub fn asset_ids(&self) -> impl Iterator<Item = UntypedAssetId> + '_ {
         let AssetHandles {
-            base_tileset,
+            ground_tileset,
             wall_tileset,
             atlas,
             layout,
         } = self;
 
         [
-            base_tileset.into(),
+            ground_tileset.into(),
             wall_tileset.into(),
             atlas.into(),
             layout.into(),
@@ -55,7 +55,7 @@ impl AssetHandles {
     }
 
     pub fn base_tileset(&self) -> Handle<Image> {
-        self.base_tileset.clone()
+        self.ground_tileset.clone()
     }
 
     pub fn wall_tileset(&self) -> Handle<Image> {
@@ -133,13 +133,13 @@ pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
     assert_eq!(layout.add_texture(DOOR_VERTICAL_RECT), DOOR_VERTICAL_INDEX);
 
     commands.insert_resource(AssetHandles {
-        base_tileset: assets
+        ground_tileset: assets
             .load_builder()
-            .with_settings(configure_base_tileset)
-            .load("image/dirt.png"),
+            .with_settings(configure_tileset)
+            .load("image/ground.png"),
         wall_tileset: assets
             .load_builder()
-            .with_settings(configure_wall_tileset)
+            .with_settings(configure_tileset)
             .load("image/walls.png"),
         atlas: assets
             .load_builder()
@@ -149,15 +149,7 @@ pub fn load(mut commands: Commands, assets: ResMut<AssetServer>) {
     });
 }
 
-fn configure_base_tileset(settings: &mut ImageLoaderSettings) {
-    settings.sampler = ImageSampler::linear();
-    settings.array_layout = Some(ImageArrayLayout::GridCount {
-        columns: 32,
-        rows: 16,
-    });
-}
-
-fn configure_wall_tileset(settings: &mut ImageLoaderSettings) {
+fn configure_tileset(settings: &mut ImageLoaderSettings) {
     settings.sampler = ImageSampler::linear();
     settings.array_layout = Some(ImageArrayLayout::GridSize {
         tile_width_pixels: 200,

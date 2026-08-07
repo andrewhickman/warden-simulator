@@ -2,7 +2,7 @@ use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
 use wdn_physics::{collision::TileCollider, tile::material::TileMaterial};
 
 #[derive(Component, Clone, Copy, Debug)]
-#[require(TileCollider, TileMaterial::STAIR)]
+#[require(TileCollider::new(false), TileMaterial::STAIR)]
 #[component(on_add = Stair::on_add)]
 pub enum Stair {
     North,
@@ -32,7 +32,7 @@ impl Stair {
     }
 
     pub fn from_material_id(id: u16) -> Self {
-        match id {
+        match id & 0x0003 {
             Self::NORTH_ID => Stair::North,
             Self::SOUTH_ID => Stair::South,
             Self::EAST_ID => Stair::East,

@@ -56,7 +56,7 @@ impl Plugin for PawnPlugin {
         app.configure_sets(
             FixedUpdate,
             WorldSystems::ApplyPawnActions
-                .after(WorldSystems::UpdateRegions)
+                .after(WorldSystems::UpdateFlowFields)
                 .before(WorldSystems::ApplyProjectiles)
                 .before(PhysicsSystems::Kinematics),
         );

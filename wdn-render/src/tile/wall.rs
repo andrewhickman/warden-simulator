@@ -1,4 +1,3 @@
-use tracing::info;
 use wdn_physics::tile::{
     material::TileKind,
     position::{TileChunkOffset, TileChunkPosition, TilePosition},
@@ -178,13 +177,6 @@ pub fn sprite_offset(
         west.flip_x(),
         north.flip_x(),
     );
-
-    if center != TileVariant::Empty {
-        info!(
-            "center: {:?}, south: {:?}, south_east: {:?}, east: {:?}, north: {:?}, west: {:?}, south_west: {:?} => left: {}, right: {}",
-            center, south, south_east, east, north, west, south_west, left, right
-        );
-    }
 
     (left, right)
 }

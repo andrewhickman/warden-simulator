@@ -16,11 +16,12 @@ use wdn_physics::{
     kinematics::Position,
     tile::{
         CHUNK_SIZE,
+        material::TileKind,
         position::{TileChunkOffset, TileChunkPosition},
         storage::{TileChunk, TileData, TileStorage},
     },
 };
-use wdn_world::door::Door;
+use wdn_world::{door::Door, ground::INSIDE_GROUND_ID};
 
 use crate::{
     RenderSystems,
@@ -153,12 +154,21 @@ impl TileChunkSpriteParam<'_, '_> {
     }
 }
 
-fn pack_ground_tile(offset: TileChunkOffset, _tile: TileData) -> [PackedTileData; 2] {
-    let (left, right) = dirt_sprite_offsets(offset);
+fn pack_ground_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
+    let offset = match tile.material().kind() {
+        TileKind::Empty | TileKind::Stairs => {
+            if tile.material().id() & INSIDE_GROUND_ID == 0 {
+                2
+            } else {
+                1
+            }
+        }
+        TileKind::Wall | TileKind::Door => 1,
+    };
 
     [
-        PackedTileData::new(left, 0, false),
-        PackedTileData::new(right, 0, false),
+        PackedTileData::new(offset, 0, false),
+        PackedTileData::new(offset, 0, false),
     ]
 }
 
@@ -186,17 +196,4 @@ fn chunk_transform(position: TileChunkPosition) -> Transform {
 
 fn chunk_coord_transform(d: i16) -> f32 {
     d as f32 * CHUNK_SIZE as f32 + CHUNK_SIZE as f32 / 2.0
-}
-
-pub fn dirt_sprite_offsets(position: TileChunkOffset) -> (u16, u16) {
-    let (x, y) = (position.x() * 2, position.y());
-
-    let y = SPRITE_CHUNK_SIZE - 1 - y.rem_euclid(SPRITE_CHUNK_SIZE);
-    let x1 = x.rem_euclid(SPRITE_CHUNK_SIZE * 2);
-    let x2 = (x + 1).rem_euclid(SPRITE_CHUNK_SIZE * 2);
-
-    (
-        y * SPRITE_CHUNK_SIZE * 2 + x1,
-        y * SPRITE_CHUNK_SIZE * 2 + x2,
-    )
 }

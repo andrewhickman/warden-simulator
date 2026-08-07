@@ -32,6 +32,11 @@ pub struct PathPlugin;
 
 impl Plugin for PathPlugin {
     fn build(&self, app: &mut App) {
+        app.configure_sets(
+            FixedUpdate,
+            WorldSystems::UpdateFlowFields.after(WorldSystems::UpdateRegions),
+        );
+
         app.register_required_components::<TileChunk, TileChunkSections>();
 
         app.init_resource::<TileChunkSectionChanges>()
@@ -43,22 +48,26 @@ impl Plugin for PathPlugin {
             (
                 update_chunk_sections,
                 update_regions.run_if(chunk_sections_changed),
-                (
-                    update_region_tiles,
-                    update_region_doors,
-                    (
-                        (update_flow_fields, clear_added_flow_fields)
-                            .chain()
-                            .run_if(flow_fields_added),
-                        (update_door_regions, clear_added_regions).chain(),
-                    ),
-                )
-                    .chain()
-                    .run_if(regions_added),
+                update_region_tiles.run_if(regions_added),
             )
                 .chain()
                 .in_set(WorldSystems::UpdateRegions),
         );
+        app.add_systems(
+            FixedUpdate,
+            (
+                update_region_doors,
+                (
+                    update_flow_fields.run_if(flow_fields_added),
+                    update_door_regions,
+                ),
+            )
+                .chain()
+                .run_if(regions_added)
+                .in_set(WorldSystems::UpdateFlowFields),
+        );
+
+        app.add_systems(FixedLast, (clear_added_flow_fields, clear_added_regions));
 
         app.world_mut()
             .add_observer(on_add_region)

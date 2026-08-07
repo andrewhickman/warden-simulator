@@ -71,7 +71,7 @@ pub fn main() {
         .init_resource::<RegionImageExported>()
         .add_systems(
             FixedUpdate,
-            export_regions_image_once.after(WorldSystems::UpdateRegions),
+            export_regions_image_once.after(WorldSystems::UpdateFlowFields),
         )
         .run();
 }
