@@ -3,8 +3,8 @@
 
 <svg
    width="800"
-   height="800"
-   viewBox="0 0 211.66666 211.66666"
+   height="400"
+   viewBox="0 0 211.66666 105.83333"
    version="1.1"
    id="svg1"
    inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
@@ -28,8 +28,8 @@
      inkscape:document-units="px"
      showgrid="true"
      inkscape:zoom="0.51339147"
-     inkscape:cx="469.42736"
-     inkscape:cy="419.75766"
+     inkscape:cx="31.165302"
+     inkscape:cy="363.27055"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
@@ -41,7 +41,7 @@
        units="px"
        originx="0"
        originy="0"
-       spacingx="105.83333"
+       spacingx="52.916665"
        spacingy="105.83333"
        empcolor="#3f3fff"
        empopacity="0.25098039"
@@ -60,25 +60,25 @@
     <rect
        style="fill:#404d55;fill-opacity:1;stroke-width:1.05833;stroke-linejoin:round;paint-order:stroke fill markers"
        id="rect1-4-5"
-       width="105.83333"
+       width="52.916676"
        height="105.83333"
-       x="105.83333"
-       y="105.83332"
+       x="158.74998"
+       y="0"
        inkscape:label="Roof" />
     <rect
        style="fill:#73797a;fill-opacity:1;stroke-width:1.05833;stroke-linejoin:round;paint-order:stroke fill markers"
        id="rect1-4"
-       width="105.83333"
-       height="105.83333"
-       x="0"
-       y="105.83333"
-       inkscape:label="Floor" />
-    <rect
-       style="fill:#4c382d;stroke-width:1.05833;stroke-linejoin:round;paint-order:stroke fill markers;fill-opacity:1"
-       id="rect1"
-       width="105.83333"
+       width="52.916664"
        height="105.83333"
        x="105.83333"
+       y="0"
+       inkscape:label="Floor" />
+    <rect
+       style="fill:#4c382d;fill-opacity:1;stroke-width:1.05833;stroke-linejoin:round;paint-order:stroke fill markers"
+       id="rect1"
+       width="52.91666"
+       height="105.83333"
+       x="52.916664"
        y="0"
        inkscape:label="Dirt" />
   </g>

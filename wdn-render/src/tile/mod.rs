@@ -26,7 +26,7 @@ use wdn_world::{door::Door, ground::INSIDE_GROUND_ID};
 use crate::{
     RenderSystems,
     assets::AssetHandles,
-    depth::{GROUND_DEPTH, WALL_BASE_DEPTH},
+    depth::{GROUND_DEPTH, WALL_BASE_DEPTH, WALL_TOP_DEPTH},
     tile::material::{
         PackedTileData, TileChunkMaterial, TileChunkMaterialPlugin, make_tile_chunk_image,
     },
@@ -76,7 +76,6 @@ impl FromWorld for TileChunkMesh {
 }
 
 pub fn update_chunk(
-    storage: TileStorage,
     mut param: TileChunkSpriteParam,
     assets: Res<AssetHandles>,
     mut chunks: Query<
@@ -97,9 +96,7 @@ pub fn update_chunk(
             }
 
             param.update_chunk_material(sprites.base.id(), chunk, pack_ground_tile);
-            param.update_chunk_material(sprites.top.id(), chunk, |offset, tile| {
-                pack_wall_tile(&storage, position, offset, tile)
-            });
+            param.update_chunk_material(sprites.top.id(), chunk, pack_wall_tile);
         });
 }
 
@@ -156,14 +153,8 @@ impl TileChunkSpriteParam<'_, '_> {
 
 fn pack_ground_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
     let offset = match tile.material().kind() {
-        TileKind::Empty | TileKind::Stairs => {
-            if tile.material().id() & INSIDE_GROUND_ID == 0 {
-                2
-            } else {
-                1
-            }
-        }
-        TileKind::Wall | TileKind::Door => 1,
+        TileKind::Empty | TileKind::Stairs if tile.material().id() & INSIDE_GROUND_ID == 0 => 1,
+        _ => 2,
     };
 
     [
@@ -172,17 +163,23 @@ fn pack_ground_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
     ]
 }
 
-fn pack_wall_tile(
-    storage: &TileStorage,
-    position: TileChunkPosition,
-    offset: TileChunkOffset,
-    tile: TileData,
-) -> [PackedTileData; 2] {
-    let (left, right) = wall::sprite_offset(storage, position, offset, tile);
+fn pack_wall_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
+    let right = wall::sprite_offset(tile.kind(), tile.wall_adjacency(), tile.door_adjacency());
+    let left = wall::sprite_offset(
+        tile.kind(),
+        tile.wall_adjacency().flip_x(),
+        tile.door_adjacency().flip_x(),
+    );
+
+    let depth = if tile.kind() == TileKind::Wall {
+        0
+    } else {
+        (WALL_TOP_DEPTH - WALL_BASE_DEPTH) as u16
+    };
 
     [
-        PackedTileData::new(left, 0, true),
-        PackedTileData::new(right, 0, false),
+        PackedTileData::new(left, depth, true),
+        PackedTileData::new(right, depth, false),
     ]
 }
 
