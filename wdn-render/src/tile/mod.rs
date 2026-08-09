@@ -18,7 +18,7 @@ use wdn_physics::{
         CHUNK_SIZE,
         material::TileKind,
         position::{TileChunkOffset, TileChunkPosition},
-        storage::{TileChunk, TileData, TileStorage},
+        storage::{TileChunk, TileData},
     },
 };
 use wdn_world::{door::Door, ground::INSIDE_GROUND_ID};
@@ -43,6 +43,7 @@ pub struct TileChunkMesh(Handle<Mesh>);
 #[require(Transform, Visibility)]
 pub struct TileChunkSprites {
     base: Handle<TileChunkMaterial>,
+    mid: Handle<TileChunkMaterial>,
     top: Handle<TileChunkMaterial>,
 }
 
@@ -91,12 +92,14 @@ pub fn update_chunk(
                 *transform = chunk_transform(position);
 
                 sprites.base = param.spawn_chunk_material(id, assets.base_tileset(), GROUND_DEPTH);
-                sprites.top =
+                sprites.mid =
                     param.spawn_chunk_material(id, assets.wall_tileset(), WALL_BASE_DEPTH);
+                sprites.top = param.spawn_chunk_material(id, assets.wall_tileset(), WALL_TOP_DEPTH);
             }
 
-            param.update_chunk_material(sprites.base.id(), chunk, pack_ground_tile);
-            param.update_chunk_material(sprites.top.id(), chunk, pack_wall_tile);
+            param.update_chunk_material(sprites.base.id(), chunk, pack_base_tile);
+            param.update_chunk_material(sprites.mid.id(), chunk, pack_mid_tile);
+            param.update_chunk_material(sprites.top.id(), chunk, pack_top_tile);
         });
 }
 
@@ -151,7 +154,7 @@ impl TileChunkSpriteParam<'_, '_> {
     }
 }
 
-fn pack_ground_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
+fn pack_base_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
     let offset = match tile.material().kind() {
         TileKind::Empty | TileKind::Stairs if tile.material().id() & INSIDE_GROUND_ID == 0 => 1,
         _ => 2,
@@ -163,23 +166,22 @@ fn pack_ground_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
     ]
 }
 
-fn pack_wall_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
-    let right = wall::sprite_offset(tile.kind(), tile.wall_adjacency(), tile.door_adjacency());
-    let left = wall::sprite_offset(
-        tile.kind(),
-        tile.wall_adjacency().flip_x(),
-        tile.door_adjacency().flip_x(),
-    );
-
-    let depth = if tile.kind() == TileKind::Wall {
-        0
-    } else {
-        (WALL_TOP_DEPTH - WALL_BASE_DEPTH) as u16
-    };
+fn pack_mid_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
+    let (left, right) =
+        wall::mid_offsets(tile.kind(), tile.wall_adjacency(), tile.door_adjacency());
 
     [
-        PackedTileData::new(left, depth, true),
-        PackedTileData::new(right, depth, false),
+        PackedTileData::new(left, 0, true),
+        PackedTileData::new(right, 0, false),
+    ]
+}
+
+fn pack_top_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
+    let (left, right) = wall::top_offset(tile.kind(), tile.wall_adjacency());
+
+    [
+        PackedTileData::new(left, 0, true),
+        PackedTileData::new(right, 0, false),
     ]
 }
 

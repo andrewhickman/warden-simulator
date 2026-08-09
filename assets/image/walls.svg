@@ -28,12 +28,12 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="px"
      showgrid="true"
-     inkscape:zoom="2"
-     inkscape:cx="913.5"
-     inkscape:cy="693.25"
+     inkscape:zoom="0.3535534"
+     inkscape:cx="687.30777"
+     inkscape:cy="-142.83557"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
-     inkscape:window-x="-8"
+     inkscape:window-x="1912"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1"
@@ -7237,52 +7237,25 @@
   </defs>
   <g
      inkscape:groupmode="layer"
-     id="layer1"
-     inkscape:label="Layer 1">
+     id="layer3"
+     inkscape:label="Top">
     <g
-       id="g3-8"
-       transform="translate(120,120)"
-       inkscape:label="Door19">
+       id="g3-8-33-7"
+       transform="translate(-680,120)"
+       inkscape:label="Door14">
       <path
-         id="rect1-2-0-4-5"
-         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         inkscape:label="Top"
-         d="m 1680,504 v 80 96 h 200 v -96 h -176 v -80 z"
-         sodipodi:nodetypes="cccccccc" />
-    </g>
-    <g
-       id="g3-8-33"
-       transform="translate(120,120)"
-       inkscape:label="Door18">
-      <path
-         id="rect1-2-0-4"
+         id="rect1-2-0-4-6"
          style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
          inkscape:label="Top"
          d="m 1480,504 v 80 96 h 200 v -96 h -176 v -80 z"
          sodipodi:nodetypes="cccccccc" />
     </g>
     <g
-       id="g3-8-3"
-       transform="translate(120,120)"
-       inkscape:label="Door17">
+       id="g3-8-1-5"
+       transform="translate(-480,120)"
+       inkscape:label="Door13">
       <path
-         id="rect1-2-0"
-         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         inkscape:label="Top"
-         d="m 1280,504 v 80 96 h 120 v -96 h -96 v -80 z"
-         sodipodi:nodetypes="cccccccc" />
-      <path
-         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         d="m 1400,584 80,96 h -80 z"
-         id="path265-4"
-         inkscape:label="Right" />
-    </g>
-    <g
-       id="g3-8-1"
-       transform="translate(120,120)"
-       inkscape:label="Door16">
-      <path
-         id="rect1-2"
+         id="rect1-2-1"
          style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
          inkscape:label="Top"
          d="m 200,224 v 80 96 h 120 v -96 h -96 v -80 z"
@@ -7291,161 +7264,16 @@
       <path
          style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          d="m 1200,584 80,96 h -80 z"
-         id="path265-7"
+         id="path265-7-7"
          inkscape:label="Right" />
     </g>
     <g
-       id="g3-8-80"
-       transform="translate(120,120)"
-       inkscape:label="Door15" />
-    <g
-       id="g3-8-33-8"
-       transform="translate(120,120)"
-       inkscape:label="Wall14">
-      <path
-         id="rect3-4-3"
-         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         d="m 680.00003,424 h 200.00003 l -3e-5,256 h -200 z"
-         sodipodi:nodetypes="ccccc"
-         inkscape:label="Front" />
-      <path
-         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         d="M 880.00003,680 V 280 h -80 v 144 z"
-         id="path20-41-6"
-         inkscape:label="Right" />
-      <path
-         id="rect3-9-1-5"
-         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         d="m 880,328 h -80 l 80,304 z"
-         sodipodi:nodetypes="cccc"
-         inkscape:label="Front" />
-      <path
-         id="rect20-6-1"
-         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         inkscape:label="Top"
-         d="m 680,280 v 224 h 24 v -80 h 96 v -96 h 80 v -48 z"
-         sodipodi:nodetypes="ccccccccc" />
-    </g>
-    <g
-       id="g3-8-3-8"
-       transform="translate(120,120)"
-       inkscape:label="Wall13">
-      <path
-         id="rect3-4-5"
-         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         d="M 480,424 H 680.00003 L 680,680 H 480 Z"
-         sodipodi:nodetypes="ccccc"
-         inkscape:label="Front" />
-      <path
-         id="rect20-6-3"
-         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         inkscape:label="Top"
-         d="m 480,280 v 224 h 24 V 424 H 680.00003 V 280 Z"
-         sodipodi:nodetypes="ccccccc" />
-    </g>
-    <g
-       id="g3-8-1-0"
-       transform="translate(120,120)"
+       id="g3-8-20-4"
+       transform="translate(-1080,520)"
        inkscape:label="Wall12">
-      <path
-         id="rect3-4"
-         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         d="M 280,424 H 480.00003 L 480,680 H 280 Z"
-         sodipodi:nodetypes="ccccc"
-         inkscape:label="Front" />
-      <path
-         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         d="M 480,680 V 280 h -80 v 144 z"
-         id="path20-41"
-         inkscape:label="Right" />
-      <path
-         id="rect20-6"
-         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         inkscape:label="Top"
-         d="m 280,280 v 224 h 24 v -80 h 96 V 280 Z"
-         sodipodi:nodetypes="ccccccc" />
-    </g>
-    <g
-       id="g3-8-0"
-       transform="translate(120,120)"
-       inkscape:label="Wall11">
-      <path
-         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         d="M 280,680 V 280 h -80 v 400 z"
-         id="path20-4-9-7"
-         inkscape:label="Right"
-         sodipodi:nodetypes="ccccc" />
-      <path
-         id="rect3-9-1-3-6"
-         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         d="m 280,328 h -80 l 80,304 z"
-         sodipodi:nodetypes="cccc"
-         inkscape:label="Front" />
-      <path
-         id="rect20-1-9-9"
-         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         inkscape:label="Top"
-         d="M 80,280 V 680 H 280 V 584 H 200 V 328 h 80 v -48 z"
-         sodipodi:nodetypes="ccccccccc" />
-    </g>
-    <g
-       id="g3-8-2"
-       transform="translate(120,120)"
-       inkscape:label="Wall10">
-      <path
-         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         d="M 80,680 V 280 H 0 v 400 z"
-         id="path20-4-9"
-         inkscape:label="Right"
-         sodipodi:nodetypes="ccccc" />
-      <path
-         id="rect3-9-1-3"
-         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         d="M 80,328 H 0 l 80,304 z"
-         sodipodi:nodetypes="cccc"
-         inkscape:label="Front" />
-      <path
-         id="rect20-1-9"
-         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         inkscape:label="Top"
-         d="M -120,280 V 680 H 0 V 328 h 80 v -48 z"
-         sodipodi:nodetypes="ccccccc" />
-    </g>
-    <g
-       id="g3-8-7"
-       transform="translate(120,120)"
-       inkscape:label="Wall9">
-      <path
-         id="rect3-9"
-         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         d="m 1680,24 h 200 v 256 h -200 z"
-         sodipodi:nodetypes="ccccc"
-         inkscape:label="Front" />
-      <path
-         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         d="m 1880,280 v -400 h -80 V 24 Z"
-         id="path20-4"
-         inkscape:label="Right" />
-      <path
-         id="rect3-9-1"
-         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         d="m 1880,-72 h -80 l 80,304 z"
-         sodipodi:nodetypes="cccc"
-         inkscape:label="Front" />
-      <path
-         id="rect20-1"
-         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         inkscape:label="Top"
-         d="M 1680,-120 V 24 h 120 v -96 h 80 v -48 z"
-         sodipodi:nodetypes="ccccccc" />
-    </g>
-    <g
-       id="g3-8-20"
-       transform="translate(120,120)"
-       inkscape:label="Wall8">
       <rect
          style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         id="rect20-8-6"
+         id="rect20-8-6-8"
          width="200"
          height="400"
          x="1480"
@@ -7453,114 +7281,9 @@
          inkscape:label="Top" />
     </g>
     <g
-       id="g3-8-6"
-       transform="translate(120,120)"
-       inkscape:label="Wall7">
-      <path
-         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         d="m 1480,280 v -400 h -80 v 400 z"
-         id="path20-1-9"
-         inkscape:label="Right"
-         sodipodi:nodetypes="ccccc" />
-      <path
-         id="rect20-8-1"
-         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         inkscape:label="Top"
-         d="m 1280,-120 v 400 h 200 v -96 h -80 v -304 z"
-         sodipodi:nodetypes="ccccccc" />
-    </g>
-    <g
-       id="g3-8-4"
-       transform="translate(120,120)"
-       inkscape:label="Wall6">
-      <path
-         id="rect3-5"
-         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         d="m 1200,24 h 80 v 256 h -80 z"
-         sodipodi:nodetypes="ccccc"
-         inkscape:label="Front" />
-      <path
-         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         d="M 1280,280 1200,24 v 256 z"
-         id="path20-9"
-         inkscape:label="Right"
-         sodipodi:nodetypes="cccc" />
-      <path
-         id="rect20-8-3"
-         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         inkscape:label="Top"
-         d="m 1080,-120 v 400 h 120 V 24 h 80 v -144 z"
-         sodipodi:nodetypes="ccccccc" />
-    </g>
-    <g
-       id="g3-8-8"
-       transform="translate(120,120)"
-       inkscape:label="Wall5">
-      <path
-         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         d="m 1080,280 v -400 h -80 v 400 z"
-         id="path20-1"
-         inkscape:label="Right"
-         sodipodi:nodetypes="ccccc" />
-      <rect
-         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         id="rect20-8"
-         width="120"
-         height="400"
-         x="880"
-         y="-120"
-         inkscape:label="Top" />
-    </g>
-    <g
-       id="g3-8-78"
-       transform="matrix(1.6666667,0,0,1,-906.66667,56)"
-       inkscape:label="Wall4"
-       style="stroke-width:0.774597">
-      <path
-         id="rect3-8"
-         style="fill:#76503f;stroke-width:3.09839;stroke-linejoin:round;paint-order:stroke fill markers"
-         d="m 1024,88 h 120 v 256 h -120 z"
-         sodipodi:nodetypes="ccccc"
-         inkscape:label="Front" />
-      <rect
-         style="fill:#333c43;fill-opacity:1;stroke-width:3.09839;stroke-linejoin:round;paint-order:stroke fill markers"
-         id="rect20-2"
-         width="120"
-         height="144"
-         x="1024"
-         y="-56"
-         inkscape:label="Top" />
-    </g>
-    <g
-       id="g3-8-10"
-       transform="translate(120,120)"
-       inkscape:label="Wall3">
-      <path
-         id="rect3"
-         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         d="M 480,24 H 680.00003 L 680,280 H 480 Z"
-         sodipodi:nodetypes="ccccc"
-         inkscape:label="Front" />
-      <path
-         style="fill:#5d4942;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
-         d="M 800,400 V 0 h -80 v 144 z"
-         id="path20"
-         transform="translate(-120,-120)"
-         inkscape:label="Right" />
-      <rect
-         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         id="rect20"
-         width="120"
-         height="144"
-         x="600"
-         y="0"
-         transform="translate(-120,-120)"
-         inkscape:label="Top" />
-    </g>
-    <g
        id="g3-8-65"
-       transform="translate(24,128)"
-       inkscape:label="Empty2">
+       transform="translate(-176,528)"
+       inkscape:label="Empty11">
       <path
          id="rect1-9"
          style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
@@ -7571,11 +7294,11 @@
     </g>
     <g
        id="g3-8-68"
-       transform="translate(120,120)"
-       inkscape:label="Empty1"
+       transform="translate(-80,520)"
+       inkscape:label="Empty10"
        style="fill:#333c43;fill-opacity:1">
       <path
-         style="fill:#5d4942;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          d="m 320,304 80,96 h -80 z"
          id="path265"
          transform="translate(-120,-120)"
@@ -7588,9 +7311,224 @@
          sodipodi:nodetypes="ccccc"
          inkscape:label="Top" />
     </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Mid">
+    <g
+       id="g3-8-33-8-8"
+       transform="translate(1120,-280)"
+       inkscape:label="Wall9">
+      <path
+         id="rect3-4-3-6"
+         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         d="m 680.00003,424 h 200.00003 l -3e-5,256 h -200 z"
+         sodipodi:nodetypes="ccccc"
+         inkscape:label="Front" />
+      <path
+         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 880.00003,680 V 280 h -80 v 144 z"
+         id="path20-41-6-0"
+         inkscape:label="Right" />
+      <path
+         id="rect3-9-1-5-2"
+         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         d="m 880,328 h -80 l 80,304 z"
+         sodipodi:nodetypes="cccc"
+         inkscape:label="Front" />
+      <path
+         id="rect20-6-1-4"
+         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="m 680,280 v 224 h 24 v -80 h 96 v -96 h 80 v -48 z"
+         sodipodi:nodetypes="ccccccccc" />
+    </g>
+    <g
+       id="g3-8-3-8-8"
+       transform="translate(1120,-280)"
+       inkscape:label="Wall8">
+      <path
+         id="rect3-4-5-6"
+         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         d="M 480,424 H 680.00003 L 680,680 H 480 Z"
+         sodipodi:nodetypes="ccccc"
+         inkscape:label="Front" />
+      <path
+         id="rect20-6-3-5"
+         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="m 480,280 v 224 h 24 V 424 H 680.00003 V 280 Z"
+         sodipodi:nodetypes="ccccccc" />
+    </g>
+    <g
+       id="g3-8-1-0-9"
+       transform="translate(1120,-280)"
+       inkscape:label="Wall7">
+      <path
+         id="rect3-4-31"
+         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         d="M 280,424 H 480.00003 L 480,680 H 280 Z"
+         sodipodi:nodetypes="ccccc"
+         inkscape:label="Front" />
+      <path
+         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 480,680 V 280 h -80 v 144 z"
+         id="path20-41-9"
+         inkscape:label="Right" />
+      <path
+         id="rect20-6-8"
+         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="m 280,280 v 224 h 24 v -80 h 96 V 280 Z"
+         sodipodi:nodetypes="ccccccc" />
+    </g>
+    <g
+       id="g3-8-2-1"
+       transform="translate(1320,-280)"
+       inkscape:label="Wall6">
+      <path
+         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 80,680 V 280 H 0 v 400 z"
+         id="path20-4-9-3"
+         inkscape:label="Right"
+         sodipodi:nodetypes="ccccc" />
+      <path
+         id="rect3-9-1-3-8"
+         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         d="M 80,328 H 0 l 80,304 z"
+         sodipodi:nodetypes="cccc"
+         inkscape:label="Front" />
+      <path
+         id="rect20-1-9-7"
+         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="M -120,280 V 680 H 0 V 328 h 80 v -48 z"
+         sodipodi:nodetypes="ccccccc" />
+    </g>
+    <g
+       id="g3-8-7-9"
+       transform="translate(-680,120)"
+       inkscape:label="Wall5">
+      <path
+         id="rect3-9-5"
+         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         d="m 1680,24 h 200 v 256 h -200 z"
+         sodipodi:nodetypes="ccccc"
+         inkscape:label="Front" />
+      <path
+         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 1880,280 v -400 h -80 V 24 Z"
+         id="path20-4-4"
+         inkscape:label="Right" />
+      <path
+         id="rect3-9-1-31"
+         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         d="m 1880,-72 h -80 l 80,304 z"
+         sodipodi:nodetypes="cccc"
+         inkscape:label="Front" />
+      <path
+         id="rect20-1-2"
+         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="M 1680,-120 V 24 h 120 v -96 h 80 v -48 z"
+         sodipodi:nodetypes="ccccccc" />
+    </g>
+    <g
+       id="g3-8-4-5"
+       transform="translate(-279.99997,120)"
+       inkscape:label="Wall4">
+      <path
+         id="rect3-5-7"
+         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         d="m 1200,24 h 80 v 256 h -80 z"
+         sodipodi:nodetypes="ccccc"
+         inkscape:label="Front" />
+      <path
+         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 1280,280 1200,24 v 256 z"
+         id="path20-9-6"
+         inkscape:label="Right"
+         sodipodi:nodetypes="cccc" />
+      <path
+         id="rect20-8-3-1"
+         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="m 1080,-120 v 400 h 120 V 24 h 80 v -144 z"
+         sodipodi:nodetypes="ccccccc" />
+    </g>
+    <g
+       id="g3-8-8-4"
+       transform="translate(-280,120)"
+       inkscape:label="Wall3">
+      <path
+         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 1080,280 v -400 h -80 v 400 z"
+         id="path20-1-2"
+         inkscape:label="Right"
+         sodipodi:nodetypes="ccccc" />
+      <rect
+         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         id="rect20-8-32"
+         width="120"
+         height="400"
+         x="880"
+         y="-120"
+         inkscape:label="Top" />
+    </g>
+    <g
+       id="g3-8-78-1"
+       transform="matrix(1.6666667,0,0,1,-1306.6667,56)"
+       inkscape:label="Wall2"
+       style="stroke-width:0.774597">
+      <path
+         id="rect3-8-1"
+         style="fill:#76503f;stroke-width:3.09839;stroke-linejoin:round;paint-order:stroke fill markers"
+         d="m 1024,88 h 120 v 256 h -120 z"
+         sodipodi:nodetypes="ccccc"
+         inkscape:label="Front" />
+      <rect
+         style="fill:#333c43;fill-opacity:1;stroke-width:3.09839;stroke-linejoin:round;paint-order:stroke fill markers"
+         id="rect20-2-5"
+         width="120"
+         height="144"
+         x="1024"
+         y="-56"
+         inkscape:label="Top" />
+    </g>
+    <g
+       id="g3-8-10-4"
+       transform="translate(-280,120)"
+       inkscape:label="Wall1">
+      <path
+         id="rect3-88"
+         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         d="M 480,24 H 680.00003 L 680,280 H 480 Z"
+         sodipodi:nodetypes="ccccc"
+         inkscape:label="Front" />
+      <path
+         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 800,400 V 0 h -80 v 144 z"
+         id="path20-2"
+         transform="translate(-120,-120)"
+         inkscape:label="Right" />
+      <rect
+         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         id="rect20-4"
+         width="120"
+         height="144"
+         x="600"
+         y="0"
+         transform="translate(-120,-120)"
+         inkscape:label="Top" />
+    </g>
     <g
        id="g3-8-9"
-       transform="translate(120,120)"
+       transform="translate(120,1320)"
        inkscape:label="Empty0" />
   </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="Old" />
 </svg>

@@ -137,7 +137,7 @@ fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
         Player,
         Pawn::default(),
         ChildOf(layer),
-        Position::new(Vec2::new(0.5, 0.5), Rot2::IDENTITY),
+        Position::new(Vec2::new(0.5, Pawn::RADIUS), Rot2::IDENTITY),
     ));
 
     commands.insert_resource(LayerView::new(layer_stack, 0));
