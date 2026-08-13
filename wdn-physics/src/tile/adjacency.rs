@@ -1,14 +1,13 @@
+use std::fmt;
+
 use bevy_ecs::prelude::*;
 use bevy_math::prelude::*;
 use bitflags::bitflags;
 
 use crate::tile::material::TileKind;
 
-#[derive(Debug, Default, Clone, Copy, Component, PartialEq, Eq)]
-pub struct TileAdjacency {
-    walls: Adjacency,
-    doors: Adjacency,
-}
+#[derive(Default, Clone, Copy, Component, PartialEq, Eq)]
+pub struct TileAdjacency(Adjacency, Adjacency);
 
 bitflags! {
     #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -26,29 +25,35 @@ bitflags! {
 }
 
 impl TileAdjacency {
-    pub const NONE: Self = Self {
-        walls: Adjacency::NONE,
-        doors: Adjacency::NONE,
-    };
-
-    pub fn new(walls: Adjacency, doors: Adjacency) -> Self {
-        Self { walls, doors }
-    }
+    pub const NONE: Self = Self(Adjacency::NONE, Adjacency::NONE);
 
     pub fn solid(&self) -> Adjacency {
-        self.walls | self.doors
+        self.0 ^ self.1
     }
 
     pub fn empty(&self) -> Adjacency {
-        self.solid().complement()
+        (self.0 | self.1).complement()
     }
 
     pub fn walls(&self) -> Adjacency {
-        self.walls
+        self.0 & !self.1
     }
 
     pub fn doors(&self) -> Adjacency {
-        self.doors
+        self.1 & !self.0
+    }
+
+    pub fn stairs(&self) -> Adjacency {
+        self.0 & self.1
+    }
+
+    pub fn get(&self, kind: TileKind) -> Adjacency {
+        match kind {
+            TileKind::Empty => self.empty(),
+            TileKind::Wall => self.walls(),
+            TileKind::Door => self.doors(),
+            TileKind::Stairs => self.stairs(),
+        }
     }
 
     pub fn update(
@@ -57,29 +62,52 @@ impl TileAdjacency {
         prev_material: TileKind,
         current_material: TileKind,
     ) {
-        match prev_material {
-            TileKind::Wall => debug_assert!(self.walls.contains(adjacency)),
-            TileKind::Door => debug_assert!(self.doors.contains(adjacency)),
-            TileKind::Empty | TileKind::Stairs => debug_assert!(!self.solid().contains(adjacency)),
-        }
+        debug_assert!(self.get(prev_material).contains(adjacency));
 
         match (prev_material, current_material) {
-            (TileKind::Empty | TileKind::Stairs, TileKind::Empty | TileKind::Stairs)
+            (TileKind::Empty, TileKind::Empty)
             | (TileKind::Wall, TileKind::Wall)
-            | (TileKind::Door, TileKind::Door) => {}
-            (TileKind::Empty | TileKind::Stairs, TileKind::Wall) => self.walls.insert(adjacency),
-            (TileKind::Wall, TileKind::Empty | TileKind::Stairs) => self.walls.remove(adjacency),
-            (TileKind::Empty | TileKind::Stairs, TileKind::Door) => self.doors.insert(adjacency),
-            (TileKind::Door, TileKind::Empty | TileKind::Stairs) => self.doors.remove(adjacency),
+            | (TileKind::Door, TileKind::Door)
+            | (TileKind::Stairs, TileKind::Stairs) => {}
+            (TileKind::Empty, TileKind::Wall) | (TileKind::Door, TileKind::Stairs) => {
+                self.0.insert(adjacency)
+            }
+            (TileKind::Empty, TileKind::Door) | (TileKind::Wall, TileKind::Stairs) => {
+                self.1.insert(adjacency)
+            }
+            (TileKind::Wall, TileKind::Empty) | (TileKind::Stairs, TileKind::Door) => {
+                self.0.remove(adjacency);
+            }
+            (TileKind::Door, TileKind::Empty) | (TileKind::Stairs, TileKind::Wall) => {
+                self.1.remove(adjacency);
+            }
+            (TileKind::Empty, TileKind::Stairs) => {
+                self.0.insert(adjacency);
+                self.1.insert(adjacency);
+            }
             (TileKind::Door, TileKind::Wall) => {
-                self.doors.remove(adjacency);
-                self.walls.insert(adjacency);
+                self.1.remove(adjacency);
+                self.0.insert(adjacency);
             }
             (TileKind::Wall, TileKind::Door) => {
-                self.walls.remove(adjacency);
-                self.doors.insert(adjacency);
+                self.0.remove(adjacency);
+                self.1.insert(adjacency);
+            }
+            (TileKind::Stairs, TileKind::Empty) => {
+                self.0.remove(adjacency);
+                self.1.remove(adjacency);
             }
         }
+    }
+}
+
+impl fmt::Debug for TileAdjacency {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("TileAdjacency")
+            .field("walls", &self.walls())
+            .field("doors", &self.doors())
+            .field("stairs", &self.stairs())
+            .finish()
     }
 }
 
@@ -130,4 +158,57 @@ fn test_flip_y() {
     assert_eq!(Adjacency::SOUTH_EAST.flip_y(), Adjacency::NORTH_EAST);
     assert_eq!(Adjacency::NORTH_WEST.flip_y(), Adjacency::SOUTH_WEST);
     assert_eq!(Adjacency::SOUTH_WEST.flip_y(), Adjacency::NORTH_WEST);
+}
+
+#[test]
+fn test_update() {
+    let mut adj = TileAdjacency::NONE;
+
+    adj.update(Adjacency::NORTH, TileKind::Empty, TileKind::Wall);
+    assert_eq!(adj.walls(), Adjacency::NORTH);
+    assert_eq!(adj.doors(), Adjacency::NONE);
+
+    adj.update(Adjacency::NORTH, TileKind::Wall, TileKind::Door);
+    assert_eq!(adj.walls(), Adjacency::NONE);
+    assert_eq!(adj.doors(), Adjacency::NORTH);
+
+    adj.update(Adjacency::NORTH, TileKind::Door, TileKind::Empty);
+    assert_eq!(adj.walls(), Adjacency::NONE);
+    assert_eq!(adj.doors(), Adjacency::NONE);
+
+    adj.update(Adjacency::EAST, TileKind::Empty, TileKind::Wall);
+    adj.update(Adjacency::SOUTH, TileKind::Empty, TileKind::Door);
+    assert_eq!(adj.walls(), Adjacency::EAST);
+    assert_eq!(adj.doors(), Adjacency::SOUTH);
+    assert_eq!(adj.solid(), Adjacency::EAST | Adjacency::SOUTH);
+
+    adj.update(Adjacency::EAST, TileKind::Wall, TileKind::Empty);
+    assert_eq!(adj.walls(), Adjacency::NONE);
+    assert_eq!(adj.doors(), Adjacency::SOUTH);
+
+    adj.update(Adjacency::WEST, TileKind::Empty, TileKind::Stairs);
+    assert_eq!(adj.stairs(), Adjacency::WEST);
+    assert_eq!(adj.walls(), Adjacency::NONE);
+    assert_eq!(adj.doors(), Adjacency::SOUTH);
+    assert_eq!(adj.solid(), Adjacency::SOUTH);
+
+    adj.update(Adjacency::WEST, TileKind::Stairs, TileKind::Wall);
+    assert_eq!(adj.stairs(), Adjacency::NONE);
+    assert_eq!(adj.walls(), Adjacency::WEST);
+
+    adj.update(Adjacency::WEST, TileKind::Wall, TileKind::Stairs);
+    assert_eq!(adj.walls(), Adjacency::NONE);
+    assert_eq!(adj.stairs(), Adjacency::WEST);
+
+    adj.update(Adjacency::WEST, TileKind::Stairs, TileKind::Door);
+    assert_eq!(adj.stairs(), Adjacency::NONE);
+    assert_eq!(adj.doors(), Adjacency::SOUTH | Adjacency::WEST);
+
+    adj.update(Adjacency::WEST, TileKind::Door, TileKind::Stairs);
+    assert_eq!(adj.doors(), Adjacency::SOUTH);
+    assert_eq!(adj.stairs(), Adjacency::WEST);
+
+    adj.update(Adjacency::WEST, TileKind::Stairs, TileKind::Empty);
+    assert_eq!(adj.stairs(), Adjacency::NONE);
+    assert_eq!(adj.doors(), Adjacency::SOUTH);
 }

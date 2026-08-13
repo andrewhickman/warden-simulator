@@ -110,3 +110,22 @@ fn door_top_offset(walls: Adjacency) -> u16 {
 //         }
 //     }
 // }
+
+#[test]
+fn stair_kinds() {
+    let mut patterns: std::collections::HashMap<Adjacency, u16> = std::collections::HashMap::new();
+
+    for walls in Adjacency::values() {
+        let normal_walls = walls.intersection(Adjacency::NORTH_EAST | Adjacency::NORTH);
+
+        let offset = patterns.len() as u16;
+        if patterns.insert(normal_walls, offset).is_none() {
+            println!("{offset}: {normal_walls:?}");
+        }
+        // assert_eq!(
+        //     empty_top_offset(walls),
+        //     *patterns.entry(normal_walls).or_insert(offset),
+        //     "unexpected sprite index for walls={walls:?}"
+        // );
+    }
+}

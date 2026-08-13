@@ -18,7 +18,7 @@ pub const DOOR_HORIZONTAL_INDEX: usize = 2;
 pub const DOOR_HORIZONTAL_RECT: URect = rect(16, 288, 400, 352);
 
 pub const DOOR_VERTICAL_INDEX: usize = 3;
-pub const DOOR_VERTICAL_RECT: URect = rect(432, 16, 64, 800);
+pub const DOOR_VERTICAL_RECT: URect = rect(432, 16, 48, 576);
 
 pub struct AssetsPlugin;
 

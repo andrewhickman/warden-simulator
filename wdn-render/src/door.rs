@@ -128,10 +128,9 @@ fn door_translation(direction: DoorDirection, tile: TilePosition, position: f32)
         DoorDirection::Horizontal => {
             Vec2::new(tile.x() as f32 + 0.5 - position, tile.y() as f32 + 0.56)
         }
-        DoorDirection::Vertical => Vec2::new(
-            tile.x() as f32 + 0.5,
-            tile.y() as f32 + f32::lerp(0.579, 1.85, position),
-        ),
+        DoorDirection::Vertical => {
+            Vec2::new(tile.x() as f32 + 0.5, tile.y() as f32 + 0.72 + position)
+        }
     }
 }
 
@@ -152,7 +151,7 @@ fn door_clip_rect(direction: DoorDirection, tile: TilePosition, walls: Adjacency
             tile.y() as f32,
             tile.x() as f32 + 1.0,
             if walls.contains(Adjacency::NORTH) {
-                tile.y() as f32 + 1.572
+                tile.y() as f32 + 1.44
             } else {
                 tile.y() as f32 + 2.0
             },
