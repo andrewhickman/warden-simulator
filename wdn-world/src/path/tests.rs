@@ -3362,6 +3362,7 @@ fn set_rect(app: &mut App, center: TilePosition, half_width: i32, half_height: i
 
 fn update_regions(app: &mut App) {
     app.world_mut().run_schedule(FixedUpdate);
+    app.world_mut().run_schedule(FixedLast);
 
     app.world_mut().run_system_once(validate_regions).unwrap();
 }
