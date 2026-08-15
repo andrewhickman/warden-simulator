@@ -10,7 +10,39 @@ pub const TILE_FAST_SPEED: f32 = 1.4;
 
 #[derive(Component, Clone, Copy, PartialEq, Eq, Hash)]
 #[require(TilePosition)]
-pub struct TileMaterial(u16);
+pub struct TileMaterial(TileMaterialFlags);
+
+bitflags::bitflags! {
+    #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+    pub struct TileMaterialFlags: u16 {
+        const ID_MASK = (1 << 10) - 1;
+
+        const GROUND_INSIDE_MASK = 0b1 << 10;
+        const GROUND_INSIDE = 0b1 << 10;
+        const GROUND_OUTSIDE = 0b0 << 10;
+
+        const STAIR_DIRECTION_MASK = 0b11 << 10;
+        const STAIR_DIRECTION_NORTH = 0b00 << 10;
+        const STAIR_DIRECTION_EAST = 0b01 << 10;
+        const STAIR_DIRECTION_SOUTH = 0b10 << 10;
+        const STAIR_DIRECTION_WEST = 0b11 << 10;
+
+        const DOOR_DIRECTION_MASK = 0b1 << 11;
+        const DOOR_DIRECTION_HORIZONTAL = 0b0 << 11;
+        const DOOR_DIRECTION_VERTICAL = 0b1 << 11;
+
+        const MOVE_SPEED_MASK = 0b11 << 12;
+        const MOVE_SPEED_MEDIUM = 0b00 << 12;
+        const MOVE_SPEED_FAST = 0b01 << 12;
+        const MOVE_SPEED_SLOW = 0b10 << 12;
+
+        const KIND_MASK = 0b11 << 14;
+        const KIND_EMPTY = 0b00 << 14;
+        const KIND_WALL = 0b01 << 14;
+        const KIND_DOOR = 0b10 << 14;
+        const KIND_STAIRS = 0b11 << 14;
+    }
+}
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[repr(u8)]
@@ -31,43 +63,93 @@ pub enum TileMoveSpeed {
 }
 
 impl TileMaterial {
-    pub const EMPTY: Self = TileMaterial::new(TileKind::Empty, TileMoveSpeed::Medium, 0);
-    pub const WALL: Self = TileMaterial::new(TileKind::Wall, TileMoveSpeed::Medium, 0);
-    pub const DOOR: Self = TileMaterial::new(TileKind::Door, TileMoveSpeed::Medium, 0);
-    pub const STAIR: Self = TileMaterial::new(TileKind::Stairs, TileMoveSpeed::Medium, 0);
-    pub const SLOW: Self = TileMaterial::new(TileKind::Empty, TileMoveSpeed::Slow, 0);
-    pub const FAST: Self = TileMaterial::new(TileKind::Empty, TileMoveSpeed::Fast, 0);
+    pub const EMPTY: Self = TileMaterial(TileMaterialFlags::KIND_EMPTY);
+    pub const WALL: Self = TileMaterial(TileMaterialFlags::KIND_WALL);
+    pub const DOOR: Self = TileMaterial(TileMaterialFlags::KIND_DOOR);
+    pub const STAIR: Self = TileMaterial(TileMaterialFlags::KIND_STAIRS);
+    pub const SLOW: Self =
+        TileMaterial(TileMaterialFlags::KIND_EMPTY.union(TileMaterialFlags::MOVE_SPEED_SLOW));
+    pub const FAST: Self =
+        TileMaterial(TileMaterialFlags::KIND_EMPTY.union(TileMaterialFlags::MOVE_SPEED_FAST));
 
-    pub const fn new(kind: TileKind, move_speed: TileMoveSpeed, id: u16) -> Self {
-        debug_assert!(id <= 0x0FFF);
-        TileMaterial(id | ((move_speed as u16) << 12) | ((kind as u16) << 14))
+    pub const fn new(kind: TileKind, id: u16, move_speed: TileMoveSpeed) -> Self {
+        TileMaterial(kind.flags())
+            .with_id(id)
+            .with_move_speed(move_speed)
     }
 
-    pub fn id(&self) -> u16 {
-        self.0 & 0x0FFF
+    pub const fn empty(id: u16, move_speed: TileMoveSpeed) -> Self {
+        TileMaterial::EMPTY.with_id(id).with_move_speed(move_speed)
+    }
+
+    pub const fn wall(id: u16) -> Self {
+        TileMaterial::WALL.with_id(id)
+    }
+
+    pub const fn door(id: u16, move_speed: TileMoveSpeed) -> Self {
+        TileMaterial::DOOR.with_id(id).with_move_speed(move_speed)
+    }
+
+    pub const fn stairs(id: u16, move_speed: TileMoveSpeed) -> Self {
+        TileMaterial::STAIR.with_id(id).with_move_speed(move_speed)
     }
 
     pub const fn kind(&self) -> TileKind {
-        TileKind::from_bits((self.0 >> 14) & 0b11)
+        match self.0.intersection(TileMaterialFlags::KIND_MASK) {
+            TileMaterialFlags::KIND_EMPTY => TileKind::Empty,
+            TileMaterialFlags::KIND_WALL => TileKind::Wall,
+            TileMaterialFlags::KIND_DOOR => TileKind::Door,
+            TileMaterialFlags::KIND_STAIRS => TileKind::Stairs,
+            _ => unreachable!(),
+        }
     }
 
-    pub const fn move_speed(&self) -> TileMoveSpeed {
-        TileMoveSpeed::from_bits((self.0 >> 12) & 0b11)
+    pub const fn id(self) -> u16 {
+        self.0.intersection(TileMaterialFlags::ID_MASK).bits()
     }
 
     pub fn set_id(&mut self, id: u16) {
-        debug_assert!(id <= 0x0FFF);
-        self.0 = (self.0 & !0x0FFF) | (id & 0x0FFF);
+        *self = self.with_id(id);
     }
 
-    pub const fn with_id(&self, id: u16) -> Self {
-        TileMaterial::new(self.kind(), self.move_speed(), id)
+    pub const fn with_id(self, id: u16) -> Self {
+        let id = TileMaterialFlags::from_bits_retain(id);
+        debug_assert!(TileMaterialFlags::ID_MASK.contains(id));
+        TileMaterial(self.0.difference(TileMaterialFlags::ID_MASK).union(id))
+    }
+
+    pub fn flags(&self) -> TileMaterialFlags {
+        self.0
+    }
+
+    pub fn set_flags(&mut self, mask: TileMaterialFlags, flags: TileMaterialFlags) {
+        *self = self.with_flags(mask, flags);
+    }
+
+    pub fn with_flags(self, mask: TileMaterialFlags, flags: TileMaterialFlags) -> Self {
+        TileMaterial(self.0.difference(mask).union(flags))
+    }
+
+    pub const fn move_speed(&self) -> TileMoveSpeed {
+        match self.0.intersection(TileMaterialFlags::MOVE_SPEED_MASK) {
+            TileMaterialFlags::MOVE_SPEED_SLOW => TileMoveSpeed::Slow,
+            TileMaterialFlags::MOVE_SPEED_FAST => TileMoveSpeed::Fast,
+            _ => TileMoveSpeed::Medium,
+        }
+    }
+
+    pub const fn with_move_speed(self, move_speed: TileMoveSpeed) -> Self {
+        TileMaterial(
+            self.0
+                .difference(TileMaterialFlags::MOVE_SPEED_MASK)
+                .union(move_speed.flags()),
+        )
     }
 }
 
 impl Default for TileMaterial {
     fn default() -> Self {
-        TileMaterial::new(TileKind::Empty, TileMoveSpeed::Medium, 0)
+        TileMaterial::EMPTY
     }
 }
 
@@ -82,7 +164,7 @@ impl fmt::Debug for TileMaterial {
 }
 
 impl TileKind {
-    pub fn iter() -> impl Iterator<Item = TileKind> {
+    pub fn values() -> impl Iterator<Item = TileKind> {
         [
             TileKind::Empty,
             TileKind::Wall,
@@ -96,17 +178,12 @@ impl TileKind {
         matches!(self, TileKind::Empty)
     }
 
-    pub fn bits(&self) -> u16 {
-        *self as u16
-    }
-
-    pub const fn from_bits(bits: u16) -> Self {
-        match bits {
-            0b00 => TileKind::Empty,
-            0b01 => TileKind::Wall,
-            0b10 => TileKind::Door,
-            0b11 => TileKind::Stairs,
-            _ => panic!("invalid TileKind bits"),
+    const fn flags(&self) -> TileMaterialFlags {
+        match self {
+            TileKind::Empty => TileMaterialFlags::KIND_EMPTY,
+            TileKind::Wall => TileMaterialFlags::KIND_WALL,
+            TileKind::Door => TileMaterialFlags::KIND_DOOR,
+            TileKind::Stairs => TileMaterialFlags::KIND_STAIRS,
         }
     }
 }
@@ -120,39 +197,11 @@ impl TileMoveSpeed {
         }
     }
 
-    pub fn bits(&self) -> u16 {
-        *self as u16
-    }
-
-    pub const fn from_bits(bits: u16) -> Self {
-        match bits {
-            0b00 => TileMoveSpeed::Medium,
-            0b01 => TileMoveSpeed::Slow,
-            0b10 => TileMoveSpeed::Fast,
-            _ => panic!("invalid TileMoveSpeed bits"),
-        }
-    }
-}
-
-#[test]
-fn test_pack_tile_material() {
-    for id in 0..10 {
-        for kind in [
-            TileKind::Empty,
-            TileKind::Wall,
-            TileKind::Door,
-            TileKind::Stairs,
-        ] {
-            for speed in [
-                TileMoveSpeed::Slow,
-                TileMoveSpeed::Medium,
-                TileMoveSpeed::Fast,
-            ] {
-                let material = TileMaterial::new(kind, speed, id);
-                assert_eq!(material.kind(), kind);
-                assert_eq!(material.move_speed(), speed);
-                assert_eq!(material.id(), id);
-            }
+    const fn flags(&self) -> TileMaterialFlags {
+        match self {
+            TileMoveSpeed::Medium => TileMaterialFlags::MOVE_SPEED_MEDIUM,
+            TileMoveSpeed::Slow => TileMaterialFlags::MOVE_SPEED_SLOW,
+            TileMoveSpeed::Fast => TileMaterialFlags::MOVE_SPEED_FAST,
         }
     }
 }

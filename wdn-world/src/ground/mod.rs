@@ -2,7 +2,10 @@ use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use wdn_physics::{
     PhysicsSystems,
-    tile::{material::TileKind, storage::TileChunk},
+    tile::{
+        material::{TileKind, TileMaterialFlags},
+        storage::TileChunk,
+    },
 };
 
 use crate::{
@@ -12,9 +15,6 @@ use crate::{
         section::TileChunkSections,
     },
 };
-
-pub const OUTSIDE_GROUND_ID: u16 = 0;
-pub const INSIDE_GROUND_ID: u16 = 4;
 
 pub struct GroundPlugin;
 
@@ -44,10 +44,10 @@ pub fn update_ground(
     added_regions: Res<AddedRegions>,
 ) {
     regions.iter_many(added_regions.iter()).for_each(|region| {
-        let ground_id = if region.outside() {
-            OUTSIDE_GROUND_ID
+        let ground_flags = if region.outside() {
+            TileMaterialFlags::GROUND_OUTSIDE
         } else {
-            INSIDE_GROUND_ID
+            TileMaterialFlags::GROUND_INSIDE
         };
 
         for (chunk_id, section_id) in region.sections() {
@@ -60,8 +60,11 @@ pub fn update_ground(
                     material.kind(),
                     TileKind::Empty | TileKind::Stairs
                 ));
-                if material.id() & INSIDE_GROUND_ID != ground_id {
-                    chunk.set_material(tile, material.with_id(material.id() ^ INSIDE_GROUND_ID));
+                if material.flags() & TileMaterialFlags::GROUND_INSIDE_MASK != ground_flags {
+                    chunk.set_material(
+                        tile,
+                        material.with_flags(TileMaterialFlags::GROUND_INSIDE_MASK, ground_flags),
+                    );
                 }
             }
         }

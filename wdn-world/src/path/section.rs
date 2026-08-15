@@ -341,7 +341,12 @@ impl TileChunkDisjointSetEntry {
     }
 
     fn move_speed(self) -> TileMoveSpeed {
-        TileMoveSpeed::from_bits((self.0 >> 14) & 0b11)
+        match (self.0 >> 14) & 0b11 {
+            0b00 => TileMoveSpeed::Medium,
+            0b01 => TileMoveSpeed::Slow,
+            0b10 => TileMoveSpeed::Fast,
+            _ => panic!("invalid move speed bits"),
+        }
     }
 
     fn invalid_sections(self, other: Self) -> impl Iterator<Item = TileChunkOffset> {

@@ -1,5 +1,8 @@
 use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
-use wdn_physics::{collision::TileCollider, tile::material::TileMaterial};
+use wdn_physics::{
+    collision::TileCollider,
+    tile::material::{TileMaterial, TileMaterialFlags},
+};
 
 #[derive(Component, Clone, Copy, Debug)]
 #[require(TileCollider::new(false), TileMaterial::STAIR)]
@@ -12,32 +15,22 @@ pub enum Stair {
 }
 
 impl Stair {
-    pub const NORTH: TileMaterial = TileMaterial::STAIR.with_id(Self::NORTH_ID);
-    pub const SOUTH: TileMaterial = TileMaterial::STAIR.with_id(Self::SOUTH_ID);
-    pub const EAST: TileMaterial = TileMaterial::STAIR.with_id(Self::EAST_ID);
-    pub const WEST: TileMaterial = TileMaterial::STAIR.with_id(Self::WEST_ID);
-
-    pub const NORTH_ID: u16 = 0;
-    pub const SOUTH_ID: u16 = 1;
-    pub const EAST_ID: u16 = 2;
-    pub const WEST_ID: u16 = 3;
-
-    pub fn to_material_id(&self) -> u16 {
+    pub fn flags(&self) -> TileMaterialFlags {
         match self {
-            Stair::North => Self::NORTH_ID,
-            Stair::South => Self::SOUTH_ID,
-            Stair::East => Self::EAST_ID,
-            Stair::West => Self::WEST_ID,
+            Stair::North => TileMaterialFlags::STAIR_DIRECTION_NORTH,
+            Stair::South => TileMaterialFlags::STAIR_DIRECTION_SOUTH,
+            Stair::East => TileMaterialFlags::STAIR_DIRECTION_EAST,
+            Stair::West => TileMaterialFlags::STAIR_DIRECTION_WEST,
         }
     }
 
-    pub fn from_material_id(id: u16) -> Self {
-        match id & 0x0003 {
-            Self::NORTH_ID => Stair::North,
-            Self::SOUTH_ID => Stair::South,
-            Self::EAST_ID => Stair::East,
-            Self::WEST_ID => Stair::West,
-            _ => panic!("invalid Stair id: {id}"),
+    pub fn from_flags(flags: TileMaterialFlags) -> Self {
+        match flags.intersection(TileMaterialFlags::STAIR_DIRECTION_MASK) {
+            TileMaterialFlags::STAIR_DIRECTION_NORTH => Stair::North,
+            TileMaterialFlags::STAIR_DIRECTION_SOUTH => Stair::South,
+            TileMaterialFlags::STAIR_DIRECTION_EAST => Stair::East,
+            TileMaterialFlags::STAIR_DIRECTION_WEST => Stair::West,
+            _ => unreachable!("invalid stair flags: {flags:?}"),
         }
     }
 
@@ -46,6 +39,6 @@ impl Stair {
         world
             .get_mut::<TileMaterial>(context.entity)
             .unwrap()
-            .set_id(stair.to_material_id());
+            .set_flags(TileMaterialFlags::STAIR_DIRECTION_MASK, stair.flags());
     }
 }

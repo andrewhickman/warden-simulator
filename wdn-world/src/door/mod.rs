@@ -13,7 +13,7 @@ use wdn_physics::{
     tile::{
         adjacency::{Adjacency, TileAdjacency},
         commands::TileCommandsExt,
-        material::TileMaterial,
+        material::{TileMaterial, TileMaterialFlags},
         position::TilePosition,
     },
 };
@@ -75,7 +75,13 @@ pub fn update_doors(
             if adjacency.is_changed() {
                 let new_direction = DoorDirection::from_adjacency(adjacency.walls());
                 if direction.set_if_neq(new_direction) {
-                    commands.set_material(*position, material.with_id(new_direction.material_id()));
+                    commands.set_material(
+                        *position,
+                        material.with_flags(
+                            TileMaterialFlags::DOOR_DIRECTION_MASK,
+                            new_direction.flags(),
+                        ),
+                    );
                 }
             }
         },
@@ -94,9 +100,6 @@ impl Plugin for DoorPlugin {
 }
 
 impl Door {
-    pub const HORIZONTAL_ID: u16 = 0;
-    pub const VERTICAL_ID: u16 = 1;
-
     const OPEN_SPEED: f32 = 1.0;
     const OPEN_DURATION: Duration = Duration::from_secs(3);
 
@@ -204,18 +207,18 @@ impl DoorDirection {
         }
     }
 
-    pub fn from_material_id(id: u16) -> Self {
-        match id & 0b1 {
-            Door::HORIZONTAL_ID => Self::Horizontal,
-            Door::VERTICAL_ID => Self::Vertical,
-            _ => unreachable!(),
+    pub fn from_flags(flags: TileMaterialFlags) -> Self {
+        match flags.intersection(TileMaterialFlags::DOOR_DIRECTION_MASK) {
+            TileMaterialFlags::DOOR_DIRECTION_HORIZONTAL => Self::Horizontal,
+            TileMaterialFlags::DOOR_DIRECTION_VERTICAL => Self::Vertical,
+            _ => unreachable!("invalid door flags: {flags:?}"),
         }
     }
 
-    const fn material_id(&self) -> u16 {
+    pub const fn flags(&self) -> TileMaterialFlags {
         match self {
-            DoorDirection::Horizontal => Door::HORIZONTAL_ID,
-            DoorDirection::Vertical => Door::VERTICAL_ID,
+            DoorDirection::Horizontal => TileMaterialFlags::DOOR_DIRECTION_HORIZONTAL,
+            DoorDirection::Vertical => TileMaterialFlags::DOOR_DIRECTION_VERTICAL,
         }
     }
 }

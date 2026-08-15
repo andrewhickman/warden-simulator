@@ -361,7 +361,7 @@ fn set_material_if_needed(
         }
     }
 
-    storage.set_material(position, TileMaterial::new(kind, TileMoveSpeed::Medium, 0));
+    storage.set_material(position, TileMaterial::new(kind, 0, TileMoveSpeed::Medium));
     true
 }
 
