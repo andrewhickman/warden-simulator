@@ -21,7 +21,7 @@ use wdn_physics::{
         storage::{TileChunk, TileData},
     },
 };
-use wdn_world::{door::Door, ground::INSIDE_GROUND_ID};
+use wdn_world::door::Door;
 
 use crate::{
     RenderSystems,
@@ -156,7 +156,7 @@ impl TileChunkSpriteParam<'_, '_> {
 
 fn pack_base_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
     let offset = match tile.material().kind() {
-        TileKind::Empty | TileKind::Stairs if tile.material().id() & INSIDE_GROUND_ID == 0 => 1,
+        TileKind::Empty | TileKind::Stairs => 1,
         _ => 2,
     };
 
