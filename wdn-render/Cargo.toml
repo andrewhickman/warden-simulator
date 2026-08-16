@@ -26,6 +26,7 @@ bevy_time = "0.19.0"
 bevy_transform = { version = "0.19.0", features = ["libm"] }
 bytemuck = "1.24.0"
 tracing = "0.1.44"
+wdn-enumerate = { version = "0.1.0", path = "../wdn-enumerate" }
 wdn-physics = { version = "0.1.0", path = "../wdn-physics" }
 wdn-tasks = { version = "0.1.0", path = "../wdn-tasks" }
 wdn-world = { version = "0.1.0", path = "../wdn-world" }

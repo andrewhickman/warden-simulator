@@ -17,8 +17,8 @@ use wdn_physics::{
     tile::{
         CHUNK_SIZE,
         material::TileKind,
-        position::{TileChunkOffset, TileChunkPosition},
-        storage::{TileChunk, TileData},
+        position::{TileChunkOffset, TileChunkPosition, TilePosition},
+        storage::{TileChunk, TileData, TileStorage},
     },
 };
 use wdn_world::door::Door;
@@ -77,6 +77,7 @@ impl FromWorld for TileChunkMesh {
 }
 
 pub fn update_chunk(
+    storage: TileStorage,
     mut param: TileChunkSpriteParam,
     assets: Res<AssetHandles>,
     mut chunks: Query<
@@ -98,8 +99,12 @@ pub fn update_chunk(
             }
 
             param.update_chunk_material(sprites.base.id(), chunk, pack_base_tile);
-            param.update_chunk_material(sprites.mid.id(), chunk, pack_mid_tile);
-            param.update_chunk_material(sprites.top.id(), chunk, pack_top_tile);
+            param.update_chunk_material(sprites.mid.id(), chunk, |offset, _| {
+                pack_mid_tile(&storage, chunk.position(), offset)
+            });
+            param.update_chunk_material(sprites.top.id(), chunk, |offset, _| {
+                pack_top_tile(&storage, chunk.position(), offset)
+            });
         });
 }
 
@@ -166,9 +171,12 @@ fn pack_base_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
     ]
 }
 
-fn pack_mid_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
-    let (left, right) =
-        wall::mid_offsets(tile.kind(), tile.wall_adjacency(), tile.door_adjacency());
+fn pack_mid_tile(
+    storage: &TileStorage,
+    chunk: TileChunkPosition,
+    offset: TileChunkOffset,
+) -> [PackedTileData; 2] {
+    let (left, right) = wall::mid_offsets(storage, TilePosition::from((chunk, offset)));
 
     [
         PackedTileData::new(left, 0, true),
@@ -176,8 +184,12 @@ fn pack_mid_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
     ]
 }
 
-fn pack_top_tile(_: TileChunkOffset, tile: TileData) -> [PackedTileData; 2] {
-    let (left, right) = wall::top_offset(tile.kind(), tile.wall_adjacency());
+fn pack_top_tile(
+    storage: &TileStorage,
+    chunk: TileChunkPosition,
+    offset: TileChunkOffset,
+) -> [PackedTileData; 2] {
+    let (left, right) = wall::top_offset(storage, TilePosition::from((chunk, offset)));
 
     [
         PackedTileData::new(left, 0, true),

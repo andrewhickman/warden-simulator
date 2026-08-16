@@ -13,6 +13,7 @@ use wdn_physics::{
     kinematics::Position,
     layer::{Layer, LayerStack},
     tile::{
+        commands::TileCommandsExt,
         index::TileIndex,
         material::{TileKind, TileMaterial},
         position::TilePosition,
@@ -144,11 +145,13 @@ fn spawn_pawn(mut commands: Commands, mut storage: TileStorageMut) {
 
     storage.set_material(TilePosition::new(layer, 3, 0), TileMaterial::WALL);
     storage.set_material(TilePosition::new(layer, 3, 1), TileMaterial::DOOR);
-    commands.spawn((
-        Door::default(),
+
+    commands.spawn_tile(
         TilePosition::new(layer, 3, 1),
-        ChildOf(layer),
-    ));
+        TileMaterial::DOOR,
+        (Door::default(), ChildOf(layer)),
+    );
+
     storage.set_material(TilePosition::new(layer, 3, 2), TileMaterial::WALL);
     storage.set_material(TilePosition::new(layer, 3, 3), TileMaterial::WALL);
     storage.set_material(TilePosition::new(layer, 4, 3), TileMaterial::WALL);

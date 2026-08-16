@@ -2,61 +2,7 @@
 
 use std::collections::HashSet;
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
-enum TileVariant {
-    Empty,
-    Wall,
-    DoorH,
-    DoorV,
-}
-
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
-struct Sprite {
-    mid: MidSprite,
-    top: TopSprite,
-}
-
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
-enum MidSprite {
-    Empty,
-    Corner {
-        east: EastDecoration,
-        south: SouthDecoration,
-    },
-    Horizontal {
-        south: SouthDecoration,
-    },
-    Vertical {
-        east: EastDecoration,
-    },
-    InverseCorner,
-    Full,
-}
-
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
-enum TopSprite {
-    Empty,
-    Horizontal { south: TopSouthDecoration },
-    Corner { south: TopSouthDecoration },
-}
-
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
-enum EastDecoration {
-    None,
-    Door,
-}
-
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
-enum SouthDecoration {
-    None,
-    Door,
-}
-
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
-enum TopSouthDecoration {
-    None,
-    Door,
-}
+use wdn_enumerate::*;
 
 fn main() {
     let mut tops = HashSet::<TopSprite>::new();
@@ -86,168 +32,33 @@ fn main() {
         }
     }
 
-    println!("Unique tops: {}", tops.len());
+    let mut mids = mids.into_iter().collect::<Vec<_>>();
+    mids.sort_unstable();
+
     println!("Unique mids: {}", mids.len());
+    for (i, mid) in mids.iter().enumerate() {
+        assert_eq!(mid.id(), i as u16);
+        println!("  {mid:?} => {}", i);
+    }
+
+    let mut tops = tops.into_iter().collect::<Vec<_>>();
+    tops.sort_unstable();
+
+    println!("Unique tops: {}", tops.len());
+    for (i, top) in tops.iter().enumerate() {
+        if matches!(
+            top,
+            TopSprite::Empty {
+                south_east: SouthEastTopDecoration::None
+            }
+        ) {
+            assert_eq!(top.id(), 0);
+        } else {
+            assert_eq!(top.id(), i as u16 + 15, "top: {top:?}, i: {i}");
+        }
+
+        println!("  {top:?} => {}", i + 15);
+    }
+
     println!("Unique sprites: {}", sprites.len());
-}
-
-impl TileVariant {
-    fn values() -> impl IntoIterator<Item = TileVariant> {
-        [
-            TileVariant::Empty,
-            TileVariant::Wall,
-            TileVariant::DoorH,
-            TileVariant::DoorV,
-        ]
-    }
-}
-
-impl MidSprite {
-    fn resolve(
-        center: TileVariant,
-        north: TileVariant,
-        north_east: TileVariant,
-        east: TileVariant,
-        south_east: TileVariant,
-        south: TileVariant,
-    ) -> Self {
-        match (center, north, north_east, east, south_east, south) {
-            (TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV, _, _, _, _, _) => {
-                MidSprite::Empty
-            }
-            (
-                TileVariant::Wall,
-                _,
-                _,
-                TileVariant::Empty | TileVariant::DoorV,
-                _,
-                TileVariant::Empty | TileVariant::DoorH,
-            ) => MidSprite::Corner {
-                east: EastDecoration::None,
-                south: SouthDecoration::None,
-            },
-            (
-                TileVariant::Wall,
-                _,
-                _,
-                TileVariant::Empty | TileVariant::DoorV,
-                _,
-                TileVariant::DoorV,
-            ) => MidSprite::Corner {
-                east: EastDecoration::None,
-                south: SouthDecoration::Door,
-            },
-            (
-                TileVariant::Wall,
-                _,
-                _,
-                TileVariant::DoorH,
-                _,
-                TileVariant::Empty | TileVariant::DoorH,
-            ) => MidSprite::Corner {
-                east: EastDecoration::Door,
-                south: SouthDecoration::None,
-            },
-            (TileVariant::Wall, _, _, TileVariant::DoorH, _, TileVariant::DoorV) => {
-                MidSprite::Corner {
-                    east: EastDecoration::Door,
-                    south: SouthDecoration::Door,
-                }
-            }
-            (
-                TileVariant::Wall,
-                _,
-                _,
-                TileVariant::Wall,
-                _,
-                TileVariant::Empty | TileVariant::DoorH,
-            ) => MidSprite::Horizontal {
-                south: SouthDecoration::None,
-            },
-            (TileVariant::Wall, _, _, TileVariant::Wall, _, TileVariant::DoorV) => {
-                MidSprite::Horizontal {
-                    south: SouthDecoration::Door,
-                }
-            }
-            (
-                TileVariant::Wall,
-                _,
-                _,
-                TileVariant::Empty | TileVariant::DoorV,
-                _,
-                TileVariant::Wall,
-            ) => MidSprite::Vertical {
-                east: EastDecoration::None,
-            },
-            (TileVariant::Wall, _, _, TileVariant::DoorH, _, TileVariant::Wall) => {
-                MidSprite::Vertical {
-                    east: EastDecoration::Door,
-                }
-            }
-            (
-                TileVariant::Wall,
-                _,
-                _,
-                TileVariant::Wall,
-                TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV,
-                TileVariant::Wall,
-            ) => MidSprite::Full,
-            (TileVariant::Wall, _, _, TileVariant::Wall, TileVariant::Wall, TileVariant::Wall) => {
-                MidSprite::InverseCorner
-            }
-        }
-    }
-}
-
-impl TopSprite {
-    fn resolve(
-        center: TileVariant,
-        north: TileVariant,
-        north_east: TileVariant,
-        east: TileVariant,
-        south_east: TileVariant,
-        south: TileVariant,
-    ) -> Self {
-        match (center, north, north_east, east, south_east, south) {
-            (TileVariant::Wall, _, _, _, _, _)
-            | (_, _, _, _, _, TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV) => {
-                TopSprite::Empty
-            }
-            (
-                TileVariant::Empty | TileVariant::DoorH,
-                _,
-                _,
-                _,
-                TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV,
-                TileVariant::Wall,
-            ) => TopSprite::Corner {
-                south: TopSouthDecoration::None,
-            },
-            (
-                TileVariant::DoorV,
-                _,
-                _,
-                _,
-                TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV,
-                TileVariant::Wall,
-            ) => TopSprite::Corner {
-                south: TopSouthDecoration::Door,
-            },
-            (
-                TileVariant::Empty | TileVariant::DoorH,
-                _,
-                _,
-                _,
-                TileVariant::Wall,
-                TileVariant::Wall,
-            ) => TopSprite::Horizontal {
-                south: TopSouthDecoration::None,
-            },
-            (TileVariant::DoorV, _, _, _, TileVariant::Wall, TileVariant::Wall) => {
-                TopSprite::Horizontal {
-                    south: TopSouthDecoration::Door,
-                }
-            }
-        }
-    }
 }
