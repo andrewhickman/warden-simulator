@@ -61,9 +61,9 @@ fn get_tile_variant(storage: &TileStorage, tile: TilePosition) -> TileVariant {
                 .flags()
                 .contains(TileMaterialFlags::DOOR_DIRECTION_VERTICAL)
             {
-                TileVariant::DoorH
-            } else {
                 TileVariant::DoorV
+            } else {
+                TileVariant::DoorH
             }
         }
         TileKind::Stairs => TileVariant::StairN,

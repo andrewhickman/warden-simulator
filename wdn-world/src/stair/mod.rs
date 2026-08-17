@@ -1,7 +1,11 @@
 use bevy_ecs::{lifecycle::HookContext, prelude::*, world::DeferredWorld};
 use wdn_physics::{
     collision::TileCollider,
-    tile::material::{TileMaterial, TileMaterialFlags},
+    tile::{
+        commands::TileCommandsExt,
+        material::{TileMaterial, TileMaterialFlags},
+        position::TilePosition,
+    },
 };
 
 #[derive(Component, Clone, Copy, Debug)]
@@ -36,9 +40,10 @@ impl Stair {
 
     fn on_add(mut world: DeferredWorld, context: HookContext) {
         let stair = *world.get::<Stair>(context.entity).unwrap();
-        world
-            .get_mut::<TileMaterial>(context.entity)
-            .unwrap()
-            .set_flags(TileMaterialFlags::STAIR_DIRECTION_MASK, stair.flags());
+        let position = *world.get::<TilePosition>(context.entity).unwrap();
+        world.commands().set_material(
+            position,
+            TileMaterial::STAIR.with_flags(TileMaterialFlags::STAIR_DIRECTION_MASK, stair.flags()),
+        );
     }
 }

@@ -74,7 +74,7 @@ pub fn update_doors(
 
             if adjacency.is_changed() {
                 let new_direction = DoorDirection::from_adjacency(adjacency.walls());
-                if direction.set_if_neq(new_direction) {
+                if direction.set_if_neq(new_direction) || direction.is_added() {
                     commands.set_material(
                         *position,
                         material.with_flags(

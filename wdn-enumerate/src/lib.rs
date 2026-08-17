@@ -46,6 +46,8 @@ pub enum TopSprite {
     Horizontal {
         deco: TopDecoration,
     },
+    StairN,
+    StairNFull,
 }
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug, PartialOrd, Ord)]
@@ -204,11 +206,11 @@ impl MidSprite {
                 TileVariant::StairN,
                 _,
                 _,
-                _,
-                _,
                 TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV,
+                _,
+                _,
             ) => MidSprite::StairN,
-            (TileVariant::StairN, _, _, _, _, TileVariant::Wall | TileVariant::StairN) => {
+            (TileVariant::StairN, _, _, TileVariant::Wall | TileVariant::StairN, _, _) => {
                 MidSprite::StairNFull
             }
         }
@@ -269,33 +271,29 @@ impl MidSprite {
 impl TopSprite {
     pub fn resolve(
         center: TileVariant,
-        north: TileVariant,
-        north_east: TileVariant,
+        _: TileVariant,
+        _: TileVariant,
         east: TileVariant,
         south_east: TileVariant,
         south: TileVariant,
     ) -> Self {
-        match (center, north, north_east, east, south_east, south) {
+        match (center, east, south_east, south) {
             (
                 TileVariant::Wall,
                 _,
-                _,
-                _,
-                TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV | TileVariant::StairN,
-                _,
+                TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV,
+                TileVariant::Empty | TileVariant::Wall | TileVariant::DoorH | TileVariant::DoorV,
             )
-            | (_, _, _, _, _, TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV) => {
+            | (_, _, _, TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV) => {
                 TopSprite::Empty {
                     south_east: SouthEastTopDecoration::None,
                 }
             }
-            (_, _, _, _, _, TileVariant::StairN) => TopSprite::Empty {
+            (TileVariant::Wall, _, TileVariant::StairN, TileVariant::Wall) => TopSprite::Empty {
                 south_east: SouthEastTopDecoration::StairN,
             },
             (
                 TileVariant::Empty | TileVariant::DoorH | TileVariant::StairN,
-                _,
-                _,
                 _,
                 TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV,
                 TileVariant::Wall,
@@ -305,8 +303,6 @@ impl TopSprite {
             },
             (
                 TileVariant::Empty | TileVariant::DoorH | TileVariant::StairN,
-                _,
-                _,
                 _,
                 TileVariant::StairN,
                 TileVariant::Wall,
@@ -317,34 +313,37 @@ impl TopSprite {
             (
                 TileVariant::DoorV,
                 _,
-                _,
-                _,
                 TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV,
                 TileVariant::Wall,
             ) => TopSprite::Corner {
                 deco: TopDecoration::Door,
                 south_east: SouthEastTopDecoration::None,
             },
-            (TileVariant::DoorV, _, _, _, TileVariant::StairN, TileVariant::Wall) => {
-                TopSprite::Corner {
-                    deco: TopDecoration::Door,
-                    south_east: SouthEastTopDecoration::StairN,
-                }
-            }
+            (TileVariant::DoorV, _, TileVariant::StairN, TileVariant::Wall) => TopSprite::Corner {
+                deco: TopDecoration::Door,
+                south_east: SouthEastTopDecoration::StairN,
+            },
             (
                 TileVariant::Wall | TileVariant::Empty | TileVariant::DoorH | TileVariant::StairN,
-                _,
-                _,
                 _,
                 TileVariant::Wall,
                 TileVariant::Wall,
             ) => TopSprite::Horizontal {
                 deco: TopDecoration::None,
             },
-            (TileVariant::DoorV, _, _, _, TileVariant::Wall, TileVariant::Wall) => {
+            (TileVariant::DoorV, _, TileVariant::Wall, TileVariant::Wall) => {
                 TopSprite::Horizontal {
                     deco: TopDecoration::Door,
                 }
+            }
+            (
+                _,
+                _,
+                TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV,
+                TileVariant::StairN,
+            ) => TopSprite::StairN,
+            (_, _, TileVariant::StairN | TileVariant::Wall, TileVariant::StairN) => {
+                TopSprite::StairNFull
             }
         }
     }
@@ -381,6 +380,8 @@ impl TopSprite {
             Horizontal {
                 deco: TopDecoration::Door,
             } => 22,
+            StairN => 23,
+            StairNFull => 24,
         }
     }
 }
@@ -429,6 +430,8 @@ impl fmt::Display for TopSprite {
             TopSprite::Corner { deco, south_east } => {
                 write!(f, "Corner{deco}{south_east}")
             }
+            TopSprite::StairN => write!(f, "StairN"),
+            TopSprite::StairNFull => write!(f, "StairNFull"),
         }
     }
 }
