@@ -277,6 +277,75 @@ impl MidSprite {
             }
         }
     }
+
+    /// Simplified, behaviorally-equivalent version of [`MidSprite::resolve`].
+    ///
+    /// `north` and `north_east` are unused, matching the original implementation.
+    pub fn resolve_simple(
+        center: TileVariant,
+        _north: TileVariant,
+        _north_east: TileVariant,
+        east: TileVariant,
+        south_east: TileVariant,
+        south: TileVariant,
+    ) -> Self {
+        match center {
+            TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV => MidSprite::Empty,
+            TileVariant::Wall => {
+                let east_open = east != TileVariant::Wall;
+                let south_open = south != TileVariant::Wall;
+                match (east_open, south_open) {
+                    (true, true) => MidSprite::Corner {
+                        east: EastDecoration::from_open_tile(east),
+                        south: SouthDecoration::from_open_tile(south),
+                    },
+                    (false, true) => MidSprite::Horizontal {
+                        south: SouthDecoration::from_open_tile(south),
+                    },
+                    (true, false) => MidSprite::Vertical {
+                        east: EastDecoration::from_open_tile(east),
+                    },
+                    // south_east only distinguishes the two fully-walled cases
+                    (false, false) if south_east == TileVariant::Wall => MidSprite::Full,
+                    (false, false) => MidSprite::InverseCorner,
+                }
+            }
+            TileVariant::StairN => match east {
+                TileVariant::Wall | TileVariant::StairN => MidSprite::StairNFull,
+                _ => MidSprite::StairN,
+            },
+            TileVariant::StairS => match east {
+                TileVariant::Wall | TileVariant::StairS => MidSprite::StairSFull,
+                _ => MidSprite::StairS,
+            },
+        }
+    }
+}
+
+impl EastDecoration {
+    /// Maps a non-`Wall` tile to the decoration drawn on the east edge.
+    fn from_open_tile(tile: TileVariant) -> Self {
+        match tile {
+            TileVariant::Empty | TileVariant::DoorV => EastDecoration::None,
+            TileVariant::DoorH => EastDecoration::Door,
+            TileVariant::StairN => EastDecoration::StairN,
+            TileVariant::StairS => EastDecoration::StairS,
+            TileVariant::Wall => unreachable!("east tile is known to be non-Wall"),
+        }
+    }
+}
+
+impl SouthDecoration {
+    /// Maps a non-`Wall` tile to the decoration drawn on the south edge.
+    fn from_open_tile(tile: TileVariant) -> Self {
+        match tile {
+            TileVariant::Empty | TileVariant::DoorH | TileVariant::StairN | TileVariant::StairS => {
+                SouthDecoration::None
+            }
+            TileVariant::DoorV => SouthDecoration::Door,
+            TileVariant::Wall => unreachable!("south tile is known to be non-Wall"),
+        }
+    }
 }
 
 impl TopSprite {
@@ -369,6 +438,60 @@ impl TopSprite {
             }
         }
     }
+
+    /// Simplified, behaviorally-equivalent version of [`TopSprite::resolve`].
+    ///
+    /// `north`, `north_east` and `east` are unused, matching the original implementation.
+    pub fn resolve_simple(
+        center: TileVariant,
+        _north: TileVariant,
+        _north_east: TileVariant,
+        _east: TileVariant,
+        south_east: TileVariant,
+        south: TileVariant,
+    ) -> Self {
+        match south {
+            TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV | TileVariant::StairS => {
+                TopSprite::Empty {
+                    south_east: SouthEastTopDecoration::None,
+                }
+            }
+            TileVariant::StairN => match south_east {
+                TileVariant::StairN | TileVariant::Wall => TopSprite::StairNFull,
+                _ => TopSprite::StairN,
+            },
+            TileVariant::Wall if south_east == TileVariant::Wall => TopSprite::Horizontal {
+                deco: TopDecoration::from_center(center),
+            },
+            TileVariant::Wall if center == TileVariant::Wall => TopSprite::Empty {
+                south_east: SouthEastTopDecoration::from_open_tile(south_east),
+            },
+            TileVariant::Wall => TopSprite::Corner {
+                deco: TopDecoration::from_center(center),
+                south_east: SouthEastTopDecoration::from_open_tile(south_east),
+            },
+        }
+    }
+}
+
+impl TopDecoration {
+    /// Maps the tile at the sprite's center to the decoration drawn on the top edge.
+    fn from_center(center: TileVariant) -> Self {
+        match center {
+            TileVariant::DoorV => TopDecoration::Door,
+            _ => TopDecoration::None,
+        }
+    }
+}
+
+impl SouthEastTopDecoration {
+    /// Maps a non-`Wall` south-east tile to the corner decoration drawn there.
+    fn from_open_tile(tile: TileVariant) -> Self {
+        match tile {
+            TileVariant::StairN => SouthEastTopDecoration::StairN,
+            _ => SouthEastTopDecoration::None,
+        }
+    }
 }
 
 impl fmt::Display for MidSprite {
@@ -438,6 +561,65 @@ impl fmt::Display for SouthEastTopDecoration {
         match self {
             SouthEastTopDecoration::None => write!(f, ""),
             SouthEastTopDecoration::StairN => write!(f, "_SouthEastStairN"),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn mid_sprite_resolve_simple_matches_resolve() {
+        let variants: Vec<TileVariant> = TileVariant::values().into_iter().collect();
+        for &center in &variants {
+            for &north in &variants {
+                for &north_east in &variants {
+                    for &east in &variants {
+                        for &south_east in &variants {
+                            for &south in &variants {
+                                let expected = MidSprite::resolve(
+                                    center, north, north_east, east, south_east, south,
+                                );
+                                let actual = MidSprite::resolve_simple(
+                                    center, north, north_east, east, south_east, south,
+                                );
+                                assert_eq!(
+                                    expected, actual,
+                                    "mismatch for center={center:?} north={north:?} north_east={north_east:?} east={east:?} south_east={south_east:?} south={south:?}"
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn top_sprite_resolve_simple_matches_resolve() {
+        let variants: Vec<TileVariant> = TileVariant::values().into_iter().collect();
+        for &center in &variants {
+            for &north in &variants {
+                for &north_east in &variants {
+                    for &east in &variants {
+                        for &south_east in &variants {
+                            for &south in &variants {
+                                let expected = TopSprite::resolve(
+                                    center, north, north_east, east, south_east, south,
+                                );
+                                let actual = TopSprite::resolve_simple(
+                                    center, north, north_east, east, south_east, south,
+                                );
+                                assert_eq!(
+                                    expected, actual,
+                                    "mismatch for center={center:?} north={north:?} north_east={north_east:?} east={east:?} south_east={south_east:?} south={south:?}"
+                                );
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
