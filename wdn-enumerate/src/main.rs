@@ -38,7 +38,7 @@ fn main() {
     println!("Unique mids: {}", mids.len());
     for (i, mid) in mids.iter().enumerate() {
         assert_eq!(mid.id(), i as u16);
-        println!("  {mid:?} => {}", i);
+        println!("  {mid} => {}", i);
     }
 
     let mut tops = tops.into_iter().collect::<Vec<_>>();
@@ -54,11 +54,23 @@ fn main() {
         ) {
             assert_eq!(top.id(), 0);
         } else {
-            assert_eq!(top.id(), i as u16 + 15, "top: {top:?}, i: {i}");
+            assert_eq!(
+                top.id(),
+                i as u16 + mids.len() as u16 - 1,
+                "top: {top:?}, i: {i}"
+            );
         }
 
-        println!("  {top:?} => {}", i + 15);
+        println!("  {top} => {}", i + mids.len() - 1);
     }
 
     println!("Unique sprites: {}", sprites.len());
+
+    println!(
+        "sprites with bleed risk: {}",
+        sprites.iter().filter(|s| s.bleeds()).count()
+    );
+    for sprite in sprites.iter().filter(|s| s.bleeds()) {
+        println!("  {sprite:?}");
+    }
 }
