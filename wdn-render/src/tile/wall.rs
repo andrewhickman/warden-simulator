@@ -57,15 +57,24 @@ fn get_tile_variant(storage: &TileStorage, tile: TilePosition) -> TileVariant {
         TileKind::Empty => TileVariant::Empty,
         TileKind::Wall => TileVariant::Wall,
         TileKind::Door => {
-            if material
+            match material
                 .flags()
-                .contains(TileMaterialFlags::DOOR_DIRECTION_VERTICAL)
+                .intersection(TileMaterialFlags::DOOR_DIRECTION_MASK)
             {
-                TileVariant::DoorV
-            } else {
-                TileVariant::DoorH
+                TileMaterialFlags::DOOR_DIRECTION_HORIZONTAL => TileVariant::DoorH,
+                TileMaterialFlags::DOOR_DIRECTION_VERTICAL => TileVariant::DoorV,
+                _ => unreachable!("Invalid door direction for tile at {tile:?}"),
             }
         }
-        TileKind::Stairs => TileVariant::StairN,
+        TileKind::Stairs => match material
+            .flags()
+            .intersection(TileMaterialFlags::STAIR_DIRECTION_MASK)
+        {
+            TileMaterialFlags::STAIR_DIRECTION_NORTH => TileVariant::StairN,
+            TileMaterialFlags::STAIR_DIRECTION_SOUTH => TileVariant::StairS,
+            TileMaterialFlags::STAIR_DIRECTION_EAST => TileVariant::StairN,
+            TileMaterialFlags::STAIR_DIRECTION_WEST => TileVariant::StairN,
+            _ => unreachable!("Invalid stair direction for tile at {tile:?}"),
+        },
     }
 }
