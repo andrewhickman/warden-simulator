@@ -221,18 +221,25 @@ fn update_tile_placement_mode(
     mut mode: ResMut<TilePlacementMode>,
 ) {
     if keys.just_pressed(KeyCode::Digit1) {
+        info!("Tile placement mode: Clear");
         *mode = TilePlacementMode::Clear;
     } else if keys.just_pressed(KeyCode::Digit2) {
+        info!("Tile placement mode: Wall");
         *mode = TilePlacementMode::Wall;
     } else if keys.just_pressed(KeyCode::Digit3) {
+        info!("Tile placement mode: Door");
         *mode = TilePlacementMode::Door;
     } else if keys.just_pressed(KeyCode::Digit4) {
+        info!("Tile placement mode: StairN");
         *mode = TilePlacementMode::StairN;
     } else if keys.just_pressed(KeyCode::Digit5) {
+        info!("Tile placement mode: StairS");
         *mode = TilePlacementMode::StairS;
     } else if keys.just_pressed(KeyCode::Digit6) {
+        info!("Tile placement mode: StairE");
         *mode = TilePlacementMode::StairE;
     } else if keys.just_pressed(KeyCode::Digit7) {
+        info!("Tile placement mode: StairW");
         *mode = TilePlacementMode::StairW;
     }
 }

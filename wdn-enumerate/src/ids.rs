@@ -1,6 +1,30 @@
 use super::*;
 
+impl TileVariant {
+    pub fn flip(&self) -> Self {
+        use TileVariant::*;
+
+        match self {
+            StairE => StairW,
+            StairW => StairE,
+            _ => *self,
+        }
+    }
+}
+
 impl MidSprite {
+    pub fn flip(&self) -> Self {
+        use MidSprite::*;
+
+        match self {
+            StairE => StairW,
+            StairEFull => StairWFull,
+            StairW => StairE,
+            StairWFull => StairEFull,
+            _ => *self,
+        }
+    }
+
     pub fn id(&self) -> u16 {
         use MidSprite::*;
 
@@ -15,58 +39,106 @@ impl MidSprite {
                 south: SouthDecoration::Door,
             } => 2,
             Corner {
-                east: EastDecoration::Door,
-                south: SouthDecoration::None,
+                east: EastDecoration::None,
+                south: SouthDecoration::StairN,
             } => 3,
             Corner {
                 east: EastDecoration::Door,
-                south: SouthDecoration::Door,
+                south: SouthDecoration::None,
             } => 4,
             Corner {
-                east: EastDecoration::StairN,
-                south: SouthDecoration::None,
+                east: EastDecoration::Door,
+                south: SouthDecoration::Door,
             } => 5,
             Corner {
-                east: EastDecoration::StairN,
-                south: SouthDecoration::Door,
+                east: EastDecoration::Door,
+                south: SouthDecoration::StairN,
             } => 6,
             Corner {
-                east: EastDecoration::StairS,
+                east: EastDecoration::StairN,
                 south: SouthDecoration::None,
             } => 7,
             Corner {
-                east: EastDecoration::StairS,
+                east: EastDecoration::StairN,
                 south: SouthDecoration::Door,
             } => 8,
+            Corner {
+                east: EastDecoration::StairN,
+                south: SouthDecoration::StairN,
+            } => 9,
+            Corner {
+                east: EastDecoration::StairS,
+                south: SouthDecoration::None,
+            } => 10,
+            Corner {
+                east: EastDecoration::StairS,
+                south: SouthDecoration::Door,
+            } => 11,
+            Corner {
+                east: EastDecoration::StairS,
+                south: SouthDecoration::StairN,
+            } => 12,
+            Corner {
+                east: EastDecoration::StairW,
+                south: SouthDecoration::None,
+            } => 13,
+            Corner {
+                east: EastDecoration::StairW,
+                south: SouthDecoration::Door,
+            } => 14,
+            Corner {
+                east: EastDecoration::StairW,
+                south: SouthDecoration::StairN,
+            } => 15,
             Horizontal {
                 south: SouthDecoration::None,
-            } => 9,
+            } => 16,
             Horizontal {
                 south: SouthDecoration::Door,
-            } => 10,
+            } => 17,
+            Horizontal {
+                south: SouthDecoration::StairN,
+            } => 18,
             Vertical {
                 east: EastDecoration::None,
-            } => 11,
+            } => 19,
             Vertical {
                 east: EastDecoration::Door,
-            } => 12,
+            } => 20,
             Vertical {
                 east: EastDecoration::StairN,
-            } => 13,
+            } => 21,
             Vertical {
                 east: EastDecoration::StairS,
-            } => 14,
-            InverseCorner => 15,
-            Full => 16,
-            StairN => 17,
-            StairNFull => 18,
-            StairS => 19,
-            StairSFull => 20,
+            } => 22,
+            Vertical {
+                east: EastDecoration::StairW,
+            } => 23,
+            InverseCorner => 24,
+            Full => 25,
+            StairN => 26,
+            StairNFull => 27,
+            StairS => 28,
+            StairSFull => 29,
+            StairE => 30,
+            StairEFull => 31,
+            StairW => 32,
+            StairWFull => 33,
         }
     }
 }
 
 impl TopSprite {
+    pub fn flip(&self) -> Self {
+        use TopSprite::*;
+
+        match self {
+            StairE => StairW,
+            StairW => StairE,
+            _ => *self,
+        }
+    }
+
     pub fn id(&self) -> u16 {
         use TopSprite::*;
 
@@ -76,31 +148,33 @@ impl TopSprite {
             } => 0,
             Empty {
                 south_east: SouthEastTopDecoration::StairN,
-            } => 21,
+            } => 34,
             Corner {
                 south_east: SouthEastTopDecoration::None,
                 deco: TopDecoration::None,
-            } => 22,
+            } => 35,
             Corner {
                 south_east: SouthEastTopDecoration::None,
                 deco: TopDecoration::Door,
-            } => 23,
+            } => 36,
             Corner {
                 south_east: SouthEastTopDecoration::StairN,
                 deco: TopDecoration::None,
-            } => 24,
+            } => 37,
             Corner {
                 south_east: SouthEastTopDecoration::StairN,
                 deco: TopDecoration::Door,
-            } => 25,
+            } => 38,
             Horizontal {
                 deco: TopDecoration::None,
-            } => 26,
+            } => 39,
             Horizontal {
                 deco: TopDecoration::Door,
-            } => 27,
-            StairN => 28,
-            StairNFull => 29,
+            } => 40,
+            StairN => 41,
+            StairNFull => 42,
+            StairE => 43,
+            StairW => 44,
         }
     }
 }
