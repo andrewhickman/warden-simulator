@@ -13,18 +13,6 @@ impl TileVariant {
 }
 
 impl MidSprite {
-    pub fn flip(&self) -> Self {
-        use MidSprite::*;
-
-        match self {
-            StairE => StairW,
-            StairEFull => StairWFull,
-            StairW => StairE,
-            StairWFull => StairEFull,
-            _ => *self,
-        }
-    }
-
     pub fn id(&self) -> u16 {
         use MidSprite::*;
 
@@ -78,18 +66,6 @@ impl MidSprite {
                 east: EastDecoration::StairS,
                 south: SouthDecoration::StairN,
             } => 12,
-            Corner {
-                east: EastDecoration::StairW,
-                south: SouthDecoration::None,
-            } => 13,
-            Corner {
-                east: EastDecoration::StairW,
-                south: SouthDecoration::Door,
-            } => 14,
-            Corner {
-                east: EastDecoration::StairW,
-                south: SouthDecoration::StairN,
-            } => 15,
             Horizontal {
                 south: SouthDecoration::None,
             } => 16,
@@ -111,9 +87,6 @@ impl MidSprite {
             Vertical {
                 east: EastDecoration::StairS,
             } => 22,
-            Vertical {
-                east: EastDecoration::StairW,
-            } => 23,
             InverseCorner => 24,
             Full => 25,
             StairN => 26,
@@ -149,32 +122,43 @@ impl TopSprite {
             Empty {
                 south_east: SouthEastTopDecoration::StairN,
             } => 34,
-            Corner {
-                south_east: SouthEastTopDecoration::None,
-                deco: TopDecoration::None,
+            Empty {
+                south_east: SouthEastTopDecoration::StairW,
             } => 35,
             Corner {
                 south_east: SouthEastTopDecoration::None,
-                deco: TopDecoration::Door,
+                deco: TopDecoration::None,
             } => 36,
             Corner {
-                south_east: SouthEastTopDecoration::StairN,
-                deco: TopDecoration::None,
+                south_east: SouthEastTopDecoration::None,
+                deco: TopDecoration::Door,
             } => 37,
             Corner {
                 south_east: SouthEastTopDecoration::StairN,
-                deco: TopDecoration::Door,
+                deco: TopDecoration::None,
             } => 38,
+            Corner {
+                south_east: SouthEastTopDecoration::StairN,
+                deco: TopDecoration::Door,
+            } => 39,
+            Corner {
+                south_east: SouthEastTopDecoration::StairW,
+                deco: TopDecoration::None,
+            } => 40,
+            Corner {
+                south_east: SouthEastTopDecoration::StairW,
+                deco: TopDecoration::Door,
+            } => 41,
             Horizontal {
                 deco: TopDecoration::None,
-            } => 39,
+            } => 42,
             Horizontal {
                 deco: TopDecoration::Door,
-            } => 40,
-            StairN => 41,
-            StairNFull => 42,
-            StairE => 43,
-            StairW => 44,
+            } => 43,
+            StairN => 44,
+            StairNFull => 45,
+            StairE => 46,
+            StairW => 47,
         }
     }
 }

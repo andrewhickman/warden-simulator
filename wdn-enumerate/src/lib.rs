@@ -69,7 +69,6 @@ pub enum EastDecoration {
     Door,
     StairN,
     StairS,
-    StairW,
 }
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug, PartialOrd, Ord)]
@@ -89,6 +88,7 @@ pub enum TopDecoration {
 pub enum SouthEastTopDecoration {
     None,
     StairN,
+    StairW,
 }
 
 impl TileVariant {
@@ -136,7 +136,7 @@ impl MidSprite {
         match center {
             TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV => MidSprite::Empty,
             TileVariant::Wall => {
-                let east_open = east != TileVariant::Wall;
+                let east_open = !matches!(east, TileVariant::Wall | TileVariant::StairW);
                 let south_open = south != TileVariant::Wall;
                 match (east_open, south_open) {
                     (true, true) => MidSprite::Corner {
@@ -149,7 +149,6 @@ impl MidSprite {
                     (true, false) => MidSprite::Vertical {
                         east: EastDecoration::from_open_tile(east),
                     },
-                    // south_east only distinguishes the two fully-walled cases
                     (false, false) if south_east == TileVariant::Wall => MidSprite::Full,
                     (false, false) => MidSprite::InverseCorner,
                 }
@@ -182,8 +181,7 @@ impl EastDecoration {
             TileVariant::DoorH => EastDecoration::Door,
             TileVariant::StairN => EastDecoration::StairN,
             TileVariant::StairS => EastDecoration::StairS,
-            TileVariant::StairW => EastDecoration::StairW,
-            TileVariant::Wall => {
+            TileVariant::Wall | TileVariant::StairW => {
                 unreachable!("east tile is known to be non-Wall")
             }
         }
@@ -256,6 +254,7 @@ impl SouthEastTopDecoration {
     fn from_open_tile(tile: TileVariant) -> Self {
         match tile {
             TileVariant::StairN => SouthEastTopDecoration::StairN,
+            TileVariant::StairW => SouthEastTopDecoration::StairW,
             _ => SouthEastTopDecoration::None,
         }
     }
@@ -291,7 +290,6 @@ impl fmt::Display for EastDecoration {
             EastDecoration::Door => write!(f, "_EastDoor"),
             EastDecoration::StairN => write!(f, "_EastStairN"),
             EastDecoration::StairS => write!(f, "_EastStairS"),
-            EastDecoration::StairW => write!(f, "_EastStairW"),
         }
     }
 }
@@ -336,6 +334,7 @@ impl fmt::Display for SouthEastTopDecoration {
         match self {
             SouthEastTopDecoration::None => write!(f, ""),
             SouthEastTopDecoration::StairN => write!(f, "_SouthEastStairN"),
+            SouthEastTopDecoration::StairW => write!(f, "_SouthEastStairW"),
         }
     }
 }

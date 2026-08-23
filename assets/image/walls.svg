@@ -28,15 +28,15 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="px"
      showgrid="true"
-     inkscape:zoom="1.0854089"
-     inkscape:cx="398.928"
-     inkscape:cy="843.46092"
+     inkscape:zoom="7.9549512"
+     inkscape:cx="3029.1826"
+     inkscape:cy="1186.3681"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
-     inkscape:window-x="1912"
+     inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer3"
      inkscape:export-bgcolor="#00000000">
     <inkscape:grid
        id="grid1"
@@ -7242,7 +7242,7 @@
     <g
        id="g7"
        inkscape:label="StairW"
-       transform="matrix(-1,0,0,1,3400,2000)">
+       transform="matrix(-1,0,0,1,4000,2000)">
       <path
          id="rect7"
          style="fill:#73797a;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
@@ -7253,7 +7253,7 @@
     <g
        id="g7-0"
        inkscape:label="StairE"
-       transform="translate(1200,2000)">
+       transform="translate(1800,2000)">
       <path
          id="rect7-1"
          style="fill:#73797a;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
@@ -7264,7 +7264,7 @@
     <g
        id="g5-5-4-1-8"
        inkscape:label="StairNFull"
-       transform="translate(-400,800)"
+       transform="translate(200,800)"
        style="stroke-width:1">
       <path
          id="rect2-3-1-8-7-9"
@@ -7288,7 +7288,7 @@
     <g
        id="g5-5-4-1"
        inkscape:label="StairN"
-       transform="translate(-600,800)"
+       transform="translate(0,800)"
        style="stroke-width:1">
       <path
          id="rect2-3-1-8-7"
@@ -7311,7 +7311,7 @@
     </g>
     <g
        id="g3-8-33-7"
-       transform="translate(120,520)"
+       transform="translate(720,520)"
        inkscape:label="Horizontal_Door">
       <path
          id="rect1-2-0-4-6"
@@ -7322,7 +7322,7 @@
     </g>
     <g
        id="g3-8-65"
-       transform="translate(344,1216)"
+       transform="translate(944,1216)"
        inkscape:label="Horizontal">
       <path
          id="rect1-9"
@@ -7332,9 +7332,34 @@
          inkscape:label="Top" />
     </g>
     <g
+       id="g3-8-1-5-6"
+       transform="translate(720,520)"
+       inkscape:label="Corner_Door_SouthEastStairW">
+      <path
+         id="rect1-2-1-1"
+         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="m 320,144 v 160 h -96 v -80 h -24 v 80 96 H 400 V 144 Z"
+         transform="translate(880,280)"
+         sodipodi:nodetypes="cccccccccc" />
+    </g>
+    <g
+       id="g3-8-68-5-4"
+       transform="translate(1520,920)"
+       inkscape:label="Corner_SouthEastStairW"
+       style="fill:#333c43;fill-opacity:1">
+      <path
+         id="rect1-1-8"
+         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="M 320,144 V 304 H 200 v 96 H 400 V 144 Z"
+         transform="translate(-120,-120)"
+         sodipodi:nodetypes="ccccccc" />
+    </g>
+    <g
        id="g3-8-1-5-1"
-       transform="translate(120,520)"
-       inkscape:label="Corner_Door">
+       transform="translate(320,520)"
+       inkscape:label="Corner_Door_SouthEastStairN">
       <path
          id="rect1-2-1-8"
          style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
@@ -7361,7 +7386,7 @@
     </g>
     <g
        id="g3-8-68"
-       transform="translate(920,920)"
+       transform="translate(1120,920)"
        inkscape:label="Corner_SouthEastStairN"
        style="fill:#333c43;fill-opacity:1">
       <path
@@ -7393,7 +7418,7 @@
     </g>
     <g
        id="g3-8-1-5"
-       transform="translate(-280,520)"
+       transform="translate(-80,520)"
        inkscape:label="Corner_Door">
       <path
          id="rect1-2-1"
@@ -7410,7 +7435,7 @@
     </g>
     <g
        id="g3-8-68-5"
-       transform="translate(520,920)"
+       transform="translate(720,920)"
        inkscape:label="Corner"
        style="fill:#333c43;fill-opacity:1">
       <path
@@ -7426,6 +7451,18 @@
          sodipodi:nodetypes="ccccc"
          inkscape:label="Top"
          transform="translate(-120,-120)" />
+    </g>
+    <g
+       id="g2"
+       inkscape:label="Empty_SouthEastStairW">
+      <rect
+         style="fill:#333c43;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers;fill-opacity:1"
+         id="rect2"
+         width="80"
+         height="256"
+         x="720"
+         y="944"
+         inkscape:label="Top" />
     </g>
     <g
        id="g5-5-4"
@@ -7614,15 +7651,27 @@
          sodipodi:nodetypes="ccccccc" />
     </g>
     <g
-       id="g3-8-20-4-7"
-       transform="translate(-80,520)"
+       id="g3-8-4-5-2"
+       transform="translate(320,520)"
        inkscape:label="Vertical_EastStairW">
       <path
-         id="rect20-8-6-8-8"
-         style="fill:#333c43;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         id="rect3-5-7-3"
+         style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         d="m 1200,24 h 80 v 256 h -80 z"
+         sodipodi:nodetypes="ccccc"
+         inkscape:label="Front" />
+      <path
+         style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 1280,280 1200,24 v 256 z"
+         id="path20-9-6-3"
+         inkscape:label="Right"
+         sodipodi:nodetypes="cccc" />
+      <path
+         id="rect20-8-3-1-4"
+         style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
          inkscape:label="Top"
-         d="m 1480,-120 h 200 v 400 h -200 z"
-         sodipodi:nodetypes="ccccc" />
+         d="m 1080,-120 v 400 h 120 V 24 h 80 v -144 z"
+         sodipodi:nodetypes="ccccccc" />
     </g>
     <g
        id="g3-8-8-4-7-2"

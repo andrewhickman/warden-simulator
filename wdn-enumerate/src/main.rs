@@ -61,7 +61,7 @@ fn main() {
         //     );
         // }
 
-        println!("  {top} => {}", i + mids.len() - 1);
+        println!("  {top:?} => {},", i + mids.len() - 1);
     }
 
     println!("Unique sprites: {}", sprites.len());

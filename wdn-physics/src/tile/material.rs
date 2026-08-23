@@ -15,11 +15,11 @@ pub struct TileMaterial(TileMaterialFlags);
 bitflags::bitflags! {
     #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
     pub struct TileMaterialFlags: u16 {
-        const ID_MASK = (1 << 10) - 1;
+        const ID_MASK = (1 << 9) - 1;
 
-        const GROUND_INSIDE_MASK = 0b1 << 10;
-        const GROUND_INSIDE = 0b1 << 10;
-        const GROUND_OUTSIDE = 0b0 << 10;
+        const GROUND_INSIDE_MASK = 0b1 << 9;
+        const GROUND_INSIDE = 0b1 << 9;
+        const GROUND_OUTSIDE = 0b0 << 9;
 
         const STAIR_DIRECTION_MASK = 0b11 << 10;
         const STAIR_DIRECTION_NORTH = 0b00 << 10;
