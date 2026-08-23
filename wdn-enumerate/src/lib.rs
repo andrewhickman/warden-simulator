@@ -219,7 +219,11 @@ impl TopSprite {
         match south {
             TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV | TileVariant::StairS => {
                 TopSprite::Empty {
-                    south_east: SouthEastTopDecoration::None,
+                    south_east: SouthEastTopDecoration::from_open_tile(
+                        south_east,
+                        TileVariant::Empty,
+                        east,
+                    ),
                 }
             }
             TileVariant::StairN => match south_east {
@@ -230,11 +234,19 @@ impl TopSprite {
                 deco: TopDecoration::from_center(center),
             },
             TileVariant::Wall if center == TileVariant::Wall => TopSprite::Empty {
-                south_east: SouthEastTopDecoration::from_open_tile(south_east, east),
+                south_east: SouthEastTopDecoration::from_open_tile(
+                    south_east,
+                    TileVariant::Wall,
+                    east,
+                ),
             },
             TileVariant::Wall => TopSprite::Corner {
                 deco: TopDecoration::from_center(center),
-                south_east: SouthEastTopDecoration::from_open_tile(south_east, east),
+                south_east: SouthEastTopDecoration::from_open_tile(
+                    south_east,
+                    TileVariant::Wall,
+                    east,
+                ),
             },
             TileVariant::StairE => match center {
                 TileVariant::StairE | TileVariant::Wall => TopSprite::StairEFull,
@@ -260,9 +272,12 @@ impl TopDecoration {
 
 impl SouthEastTopDecoration {
     /// Maps a non-`Wall` south-east tile to the corner decoration drawn there.
-    fn from_open_tile(tile: TileVariant, north: TileVariant) -> Self {
+    fn from_open_tile(tile: TileVariant, west: TileVariant, north: TileVariant) -> Self {
         match tile {
-            TileVariant::StairN => SouthEastTopDecoration::StairN,
+            TileVariant::StairN => match west {
+                TileVariant::StairN | TileVariant::Wall => SouthEastTopDecoration::StairN,
+                _ => SouthEastTopDecoration::None,
+            },
             TileVariant::StairW => match north {
                 TileVariant::StairW | TileVariant::Wall => SouthEastTopDecoration::StairWFull,
                 _ => SouthEastTopDecoration::StairW,

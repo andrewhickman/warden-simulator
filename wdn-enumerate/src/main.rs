@@ -46,20 +46,20 @@ fn main() {
 
     println!("Unique tops: {}", tops.len());
     for (i, top) in tops.iter().enumerate() {
-        //     if matches!(
-        //         top,
-        //         TopSprite::Empty {
-        //             south_east: SouthEastTopDecoration::None
-        //         }
-        //     ) {
-        //         assert_eq!(top.id(), 0);
-        //     } else {
-        //         assert_eq!(
-        //             top.id(),
-        //             i as u16 + mids.len() as u16 - 1,
-        //             "top: {top:?}, i: {i}"
-        //         );
-        //     }
+        if matches!(
+            top,
+            TopSprite::Empty {
+                south_east: SouthEastTopDecoration::None
+            }
+        ) {
+            assert_eq!(top.id(), 0);
+        } else {
+            assert_eq!(
+                top.id(),
+                i as u16 + mids.len() as u16 - 1,
+                "top: {top:?}, i: {i}"
+            );
+        }
 
         println!("  {top:?} => {},", i + mids.len() - 1);
     }

@@ -16,8 +16,8 @@ pub fn mid_offsets(storage: &TileStorage, tile: TilePosition) -> (u16, u16) {
     );
     let right = MidSprite::resolve(
         get_tile_variant(storage, tile),
-        get_tile_variant(storage, tile.north().east()),
         get_tile_variant(storage, tile.north()),
+        get_tile_variant(storage, tile.north().east()),
         get_tile_variant(storage, tile.east()),
         get_tile_variant(storage, tile.south().east()),
         get_tile_variant(storage, tile.south()),
@@ -37,8 +37,8 @@ pub fn top_offset(storage: &TileStorage, tile: TilePosition) -> (u16, u16) {
     );
     let right = TopSprite::resolve(
         get_tile_variant(storage, tile),
-        get_tile_variant(storage, tile.north().east()),
         get_tile_variant(storage, tile.north()),
+        get_tile_variant(storage, tile.north().east()),
         get_tile_variant(storage, tile.east()),
         get_tile_variant(storage, tile.south().east()),
         get_tile_variant(storage, tile.south()),
