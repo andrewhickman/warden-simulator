@@ -68,35 +68,35 @@ impl MidSprite {
             } => 12,
             Horizontal {
                 south: SouthDecoration::None,
-            } => 16,
+            } => 13,
             Horizontal {
                 south: SouthDecoration::Door,
-            } => 17,
+            } => 14,
             Horizontal {
                 south: SouthDecoration::StairN,
-            } => 18,
+            } => 15,
             Vertical {
                 east: EastDecoration::None,
-            } => 19,
+            } => 16,
             Vertical {
                 east: EastDecoration::Door,
-            } => 20,
+            } => 17,
             Vertical {
                 east: EastDecoration::StairN,
-            } => 21,
+            } => 18,
             Vertical {
                 east: EastDecoration::StairS,
-            } => 22,
-            InverseCorner => 24,
-            Full => 25,
-            StairN => 26,
-            StairNFull => 27,
-            StairS => 28,
-            StairSFull => 29,
-            StairE => 30,
-            StairEFull => 31,
-            StairW => 32,
-            StairWFull => 33,
+            } => 19,
+            InverseCorner => 20,
+            Full => 21,
+            StairN => 22,
+            StairNFull => 23,
+            StairS => 24,
+            StairSFull => 25,
+            StairE => 26,
+            StairEFull => 27,
+            StairW => 28,
+            StairWFull => 29,
         }
     }
 }
@@ -121,44 +121,57 @@ impl TopSprite {
             } => 0,
             Empty {
                 south_east: SouthEastTopDecoration::StairN,
-            } => 34,
+            } => 30,
             Empty {
                 south_east: SouthEastTopDecoration::StairW,
+            } => 31,
+            Empty {
+                south_east: SouthEastTopDecoration::StairWFull,
+            } => 32,
+            Corner {
+                south_east: SouthEastTopDecoration::None,
+                deco: TopDecoration::None,
+            } => 33,
+            Corner {
+                south_east: SouthEastTopDecoration::None,
+                deco: TopDecoration::Door,
+            } => 34,
+            Corner {
+                south_east: SouthEastTopDecoration::StairN,
+                deco: TopDecoration::None,
             } => 35,
             Corner {
-                south_east: SouthEastTopDecoration::None,
-                deco: TopDecoration::None,
+                south_east: SouthEastTopDecoration::StairN,
+                deco: TopDecoration::Door,
             } => 36,
             Corner {
-                south_east: SouthEastTopDecoration::None,
-                deco: TopDecoration::Door,
+                south_east: SouthEastTopDecoration::StairW,
+                deco: TopDecoration::None,
             } => 37,
             Corner {
-                south_east: SouthEastTopDecoration::StairN,
-                deco: TopDecoration::None,
+                south_east: SouthEastTopDecoration::StairW,
+                deco: TopDecoration::Door,
             } => 38,
             Corner {
-                south_east: SouthEastTopDecoration::StairN,
-                deco: TopDecoration::Door,
+                south_east: SouthEastTopDecoration::StairWFull,
+                deco: TopDecoration::None,
             } => 39,
             Corner {
-                south_east: SouthEastTopDecoration::StairW,
-                deco: TopDecoration::None,
-            } => 40,
-            Corner {
-                south_east: SouthEastTopDecoration::StairW,
+                south_east: SouthEastTopDecoration::StairWFull,
                 deco: TopDecoration::Door,
+            } => 40,
+            Horizontal {
+                deco: TopDecoration::None,
             } => 41,
             Horizontal {
-                deco: TopDecoration::None,
-            } => 42,
-            Horizontal {
                 deco: TopDecoration::Door,
-            } => 43,
-            StairN => 44,
-            StairNFull => 45,
-            StairE => 46,
+            } => 42,
+            StairN => 43,
+            StairNFull => 44,
+            StairE => 45,
+            StairEFull => 46,
             StairW => 47,
+            StairWFull => 48,
         }
     }
 }
