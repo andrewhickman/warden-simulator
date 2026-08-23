@@ -60,7 +60,9 @@ pub enum TopSprite {
     StairN,
     StairNFull,
     StairE,
+    StairEFull,
     StairW,
+    StairWFull,
 }
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug, PartialOrd, Ord)]
