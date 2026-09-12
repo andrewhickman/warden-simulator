@@ -48,10 +48,10 @@ pub enum MidSprite {
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug, PartialOrd, Ord)]
 pub enum TopSprite {
     Empty {
-        south_east: SouthEastTopDecoration,
+        east: EastTopDecoration,
     },
     Corner {
-        south_east: SouthEastTopDecoration,
+        east: EastTopDecoration,
         deco: TopDecoration,
     },
     Horizontal {
@@ -87,11 +87,13 @@ pub enum TopDecoration {
 }
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug, PartialOrd, Ord)]
-pub enum SouthEastTopDecoration {
+pub enum EastTopDecoration {
     None,
-    StairN,
-    StairW,
-    StairWFull,
+    EastStairW,
+    EastStairWFull,
+    SouthEastStairN,
+    SouthEastStairW,
+    SouthEastStairWFull,
 }
 
 impl TileVariant {
@@ -121,7 +123,7 @@ impl Sprite {
         ) && !matches!(
             self.top,
             TopSprite::Empty {
-                south_east: SouthEastTopDecoration::None
+                east: EastTopDecoration::None
             }
         )
     }
@@ -165,11 +167,11 @@ impl MidSprite {
                 _ => MidSprite::StairS,
             },
             TileVariant::StairE => match south {
-                TileVariant::Wall | TileVariant::StairS => MidSprite::StairEFull,
+                TileVariant::Wall | TileVariant::StairE => MidSprite::StairEFull,
                 _ => MidSprite::StairE,
             },
             TileVariant::StairW => match south {
-                TileVariant::Wall | TileVariant::StairS => MidSprite::StairWFull,
+                TileVariant::Wall | TileVariant::StairW => MidSprite::StairWFull,
                 _ => MidSprite::StairW,
             },
         }
@@ -219,34 +221,24 @@ impl TopSprite {
         match south {
             TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV | TileVariant::StairS => {
                 TopSprite::Empty {
-                    south_east: SouthEastTopDecoration::from_open_tile(
-                        south_east,
-                        TileVariant::Empty,
-                        east,
-                    ),
+                    east: EastTopDecoration::from_open_tile(south_east, TileVariant::Empty, east),
                 }
             }
             TileVariant::StairN => match south_east {
                 TileVariant::StairN | TileVariant::Wall => TopSprite::StairNFull,
                 _ => TopSprite::StairN,
             },
-            TileVariant::Wall if south_east == TileVariant::Wall => TopSprite::Horizontal {
-                deco: TopDecoration::from_center(center),
-            },
+            TileVariant::Wall if south_east == TileVariant::Wall && east != TileVariant::StairW => {
+                TopSprite::Horizontal {
+                    deco: TopDecoration::from_center(center),
+                }
+            }
             TileVariant::Wall if center == TileVariant::Wall => TopSprite::Empty {
-                south_east: SouthEastTopDecoration::from_open_tile(
-                    south_east,
-                    TileVariant::Wall,
-                    east,
-                ),
+                east: EastTopDecoration::from_open_tile(south_east, TileVariant::Wall, east),
             },
             TileVariant::Wall => TopSprite::Corner {
                 deco: TopDecoration::from_center(center),
-                south_east: SouthEastTopDecoration::from_open_tile(
-                    south_east,
-                    TileVariant::Wall,
-                    east,
-                ),
+                east: EastTopDecoration::from_open_tile(south_east, TileVariant::Wall, east),
             },
             TileVariant::StairE => match center {
                 TileVariant::StairE | TileVariant::Wall => TopSprite::StairEFull,
@@ -270,19 +262,25 @@ impl TopDecoration {
     }
 }
 
-impl SouthEastTopDecoration {
+impl EastTopDecoration {
     /// Maps a non-`Wall` south-east tile to the corner decoration drawn there.
-    fn from_open_tile(tile: TileVariant, west: TileVariant, north: TileVariant) -> Self {
-        match tile {
-            TileVariant::StairN => match west {
-                TileVariant::StairN | TileVariant::Wall => SouthEastTopDecoration::StairN,
-                _ => SouthEastTopDecoration::None,
+    fn from_open_tile(south_east: TileVariant, south: TileVariant, east: TileVariant) -> Self {
+        match south_east {
+            TileVariant::StairN => match south {
+                TileVariant::StairN | TileVariant::Wall => EastTopDecoration::SouthEastStairN,
+                _ => EastTopDecoration::None,
             },
-            TileVariant::StairW => match north {
-                TileVariant::StairW | TileVariant::Wall => SouthEastTopDecoration::StairWFull,
-                _ => SouthEastTopDecoration::StairW,
+            TileVariant::StairW => match east {
+                TileVariant::StairW | TileVariant::Wall => EastTopDecoration::SouthEastStairWFull,
+                _ => EastTopDecoration::SouthEastStairW,
             },
-            _ => SouthEastTopDecoration::None,
+            _ => match east {
+                TileVariant::StairW => match south_east {
+                    TileVariant::StairW | TileVariant::Wall => EastTopDecoration::EastStairWFull,
+                    _ => EastTopDecoration::EastStairW,
+                },
+                _ => EastTopDecoration::None,
+            },
         }
     }
 }
@@ -334,9 +332,12 @@ impl fmt::Display for SouthDecoration {
 impl fmt::Display for TopSprite {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            TopSprite::Empty { south_east } => write!(f, "Empty{south_east}"),
+            TopSprite::Empty { east: south_east } => write!(f, "Empty{south_east}"),
             TopSprite::Horizontal { deco } => write!(f, "Horizontal{deco}"),
-            TopSprite::Corner { deco, south_east } => {
+            TopSprite::Corner {
+                deco,
+                east: south_east,
+            } => {
                 write!(f, "Corner{deco}{south_east}")
             }
             TopSprite::StairN => write!(f, "StairN"),
@@ -358,13 +359,15 @@ impl fmt::Display for TopDecoration {
     }
 }
 
-impl fmt::Display for SouthEastTopDecoration {
+impl fmt::Display for EastTopDecoration {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            SouthEastTopDecoration::None => write!(f, ""),
-            SouthEastTopDecoration::StairN => write!(f, "_SouthEastStairN"),
-            SouthEastTopDecoration::StairW => write!(f, "_SouthEastStairW"),
-            SouthEastTopDecoration::StairWFull => write!(f, "_SouthEastStairWFull"),
+            EastTopDecoration::None => write!(f, ""),
+            EastTopDecoration::EastStairW => write!(f, "_EastStairW"),
+            EastTopDecoration::EastStairWFull => write!(f, "_EastStairWFull"),
+            EastTopDecoration::SouthEastStairN => write!(f, "_SouthEastStairN"),
+            EastTopDecoration::SouthEastStairW => write!(f, "_SouthEastStairW"),
+            EastTopDecoration::SouthEastStairWFull => write!(f, "_SouthEastStairWFull"),
         }
     }
 }

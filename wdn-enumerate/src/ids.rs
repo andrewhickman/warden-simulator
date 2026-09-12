@@ -117,61 +117,83 @@ impl TopSprite {
 
         match self {
             Empty {
-                south_east: SouthEastTopDecoration::None,
+                east: EastTopDecoration::None,
             } => 0,
             Empty {
-                south_east: SouthEastTopDecoration::StairN,
+                east: EastTopDecoration::EastStairW,
             } => 30,
             Empty {
-                south_east: SouthEastTopDecoration::StairW,
+                east: EastTopDecoration::EastStairWFull,
             } => 31,
             Empty {
-                south_east: SouthEastTopDecoration::StairWFull,
+                east: EastTopDecoration::SouthEastStairN,
             } => 32,
-            Corner {
-                south_east: SouthEastTopDecoration::None,
-                deco: TopDecoration::None,
+            Empty {
+                east: EastTopDecoration::SouthEastStairW,
             } => 33,
-            Corner {
-                south_east: SouthEastTopDecoration::None,
-                deco: TopDecoration::Door,
+            Empty {
+                east: EastTopDecoration::SouthEastStairWFull,
             } => 34,
             Corner {
-                south_east: SouthEastTopDecoration::StairN,
+                east: EastTopDecoration::None,
                 deco: TopDecoration::None,
             } => 35,
             Corner {
-                south_east: SouthEastTopDecoration::StairN,
+                east: EastTopDecoration::None,
                 deco: TopDecoration::Door,
             } => 36,
             Corner {
-                south_east: SouthEastTopDecoration::StairW,
+                east: EastTopDecoration::EastStairW,
                 deco: TopDecoration::None,
             } => 37,
             Corner {
-                south_east: SouthEastTopDecoration::StairW,
+                east: EastTopDecoration::EastStairW,
                 deco: TopDecoration::Door,
             } => 38,
             Corner {
-                south_east: SouthEastTopDecoration::StairWFull,
+                east: EastTopDecoration::EastStairWFull,
                 deco: TopDecoration::None,
             } => 39,
             Corner {
-                south_east: SouthEastTopDecoration::StairWFull,
+                east: EastTopDecoration::EastStairWFull,
                 deco: TopDecoration::Door,
             } => 40,
-            Horizontal {
+            Corner {
+                east: EastTopDecoration::SouthEastStairN,
                 deco: TopDecoration::None,
             } => 41,
-            Horizontal {
+            Corner {
+                east: EastTopDecoration::SouthEastStairN,
                 deco: TopDecoration::Door,
             } => 42,
-            StairN => 43,
-            StairNFull => 44,
-            StairE => 45,
-            StairEFull => 46,
-            StairW => 47,
-            StairWFull => 48,
+            Corner {
+                east: EastTopDecoration::SouthEastStairW,
+                deco: TopDecoration::None,
+            } => 43,
+            Corner {
+                east: EastTopDecoration::SouthEastStairW,
+                deco: TopDecoration::Door,
+            } => 44,
+            Corner {
+                east: EastTopDecoration::SouthEastStairWFull,
+                deco: TopDecoration::None,
+            } => 45,
+            Corner {
+                east: EastTopDecoration::SouthEastStairWFull,
+                deco: TopDecoration::Door,
+            } => 46,
+            Horizontal {
+                deco: TopDecoration::None,
+            } => 47,
+            Horizontal {
+                deco: TopDecoration::Door,
+            } => 48,
+            StairN => 49,
+            StairNFull => 50,
+            StairE => 51,
+            StairEFull => 52,
+            StairW => 53,
+            StairWFull => 54,
         }
     }
 }

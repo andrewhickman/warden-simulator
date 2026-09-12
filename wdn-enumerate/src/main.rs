@@ -38,7 +38,7 @@ fn main() {
     println!("Unique mids: {}", mids.len());
     for (i, mid) in mids.iter().enumerate() {
         assert_eq!(mid.id(), i as u16);
-        println!("  {mid:?} => {}", i);
+        println!("  {mid} => {}", i);
     }
 
     let mut tops = tops.into_iter().collect::<Vec<_>>();
@@ -49,19 +49,19 @@ fn main() {
         if matches!(
             top,
             TopSprite::Empty {
-                south_east: SouthEastTopDecoration::None
+                east: EastTopDecoration::None
             }
         ) {
             assert_eq!(top.id(), 0);
+            println!("  {top} => 0,");
         } else {
             assert_eq!(
                 top.id(),
                 i as u16 + mids.len() as u16 - 1,
-                "top: {top:?}, i: {i}"
+                "top: {top}, i: {i}"
             );
+            println!("  {top} => {},", i + mids.len() - 1);
         }
-
-        println!("  {top:?} => {},", i + mids.len() - 1);
     }
 
     println!("Unique sprites: {}", sprites.len());
