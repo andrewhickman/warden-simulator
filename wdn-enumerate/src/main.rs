@@ -42,17 +42,19 @@ fn main() {
     println!("{:?} unique base sprites", unique_base_sprites.len());
     println!("{:?} unique top sprites", unique_top_sprites.len());
 
-    spritesheet::generate_base_spritesheet(
+    spritesheet::generate_spritesheet(
         &ordered_base_sprites,
         Path::new("assets/image/wall_base_parts.svg"),
-        Path::new("assets/image/wall_base_spritesheet.svg"),
-    )
-    .expect("failed to generate wall base spritesheet");
-
-    spritesheet::generate_top_spritesheet(
         &ordered_top_sprites,
         Path::new("assets/image/wall_top_parts.svg"),
-        Path::new("assets/image/wall_top_spritesheet.svg"),
+        Path::new("assets/image/wall_spritesheet.svg"),
     )
-    .expect("failed to generate wall top spritesheet");
+    .expect("failed to generate wall spritesheet");
+
+    spritesheet::generate_sprite_ids(
+        &ordered_base_sprites,
+        &ordered_top_sprites,
+        Path::new("wdn-enumerate/src/sprite_id.rs"),
+    )
+    .expect("failed to generate sprite ids");
 }

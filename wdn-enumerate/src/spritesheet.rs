@@ -1,10 +1,7 @@
-use std::collections::HashMap;
-use std::fmt::Debug;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 
-use resvg::tiny_skia::{Pixmap, Transform};
-use resvg::usvg::{Options, Tree};
 use wdn_enumerate::{
     BaseSprite, BaseSpriteCenter, BaseSpriteEast, BaseSpriteSouth, TopSprite, TopSpriteCenter,
     TopSpriteEast, TopSpriteSouth, TopSpriteSouthEast,
@@ -15,84 +12,178 @@ const TILE_HEIGHT: u32 = 400;
 const SPRITES_PER_ROW: u32 = 16;
 const INKSCAPE_NS: &str = "http://www.inkscape.org/namespaces/inkscape";
 
-/// Renders `sprites` into a spritesheet SVG by layering the center/south/east parts
-/// copied from `parts_path`, and writes the result to `output_path`.
-pub fn generate_base_spritesheet(
-    sprites: &[BaseSprite],
-    parts_path: &Path,
+/// Normalizes and deduplicates `base_sprites` and `top_sprites`, then renders them into a
+/// single spritesheet SVG (base tiles first, followed by top tiles) by layering the parts
+/// copied from `base_parts_path`/`top_parts_path`, writing the result to `output_path`.
+pub fn generate_spritesheet(
+    base_sprites: &[BaseSprite],
+    base_parts_path: &Path,
+    top_sprites: &[TopSprite],
+    top_parts_path: &Path,
     output_path: &Path,
 ) -> std::io::Result<()> {
-    generate_spritesheet(
-        sprites,
-        parts_path,
-        output_path,
-        |sprite| {
-            vec![
+    let base_parts = extract_labeled_parts(&fs::read_to_string(base_parts_path)?);
+    let top_parts = extract_labeled_parts(&fs::read_to_string(top_parts_path)?);
+
+    let base_tiles = normalized_unique(base_sprites, BaseSprite::normalize);
+    let mut top_tiles = normalized_unique(top_sprites, TopSprite::normalize);
+    // The empty top sprite duplicates the empty base sprite already first in the sheet.
+    if top_tiles.first() == Some(&TopSprite::EMPTY) {
+        top_tiles.remove(0);
+    }
+
+    let mut tiles: Vec<(String, Vec<String>)> = base_tiles
+        .iter()
+        .map(|&sprite| {
+            let labels = [
                 center_label(sprite.center),
                 south_label(sprite.south),
                 east_label(sprite.east),
-            ]
-        },
-        BaseSprite::normalize,
-    )
+            ];
+            (
+                format!("{sprite:?}"),
+                resolve_layers(&labels, &base_parts, base_parts_path),
+            )
+        })
+        .collect();
+    tiles.extend(top_tiles.iter().map(|&sprite| {
+        let labels = [
+            center_top_label(sprite.center),
+            south_top_label(sprite.south),
+            south_east_top_label(sprite.south_east),
+            east_top_label(sprite.east),
+        ];
+        (
+            format!("{sprite:?}"),
+            resolve_layers(&labels, &top_parts, top_parts_path),
+        )
+    }));
+
+    write_spritesheet(&tiles, output_path)
 }
 
-/// Renders `sprites` into a spritesheet SVG by layering the center/south/south-east/east
-/// parts copied from `parts_path`, and writes the result to `output_path`.
-pub fn generate_top_spritesheet(
-    sprites: &[TopSprite],
-    parts_path: &Path,
+/// Generates `impl BaseSprite::id`/`impl TopSprite::id` methods that return each sprite's
+/// tile offset into the spritesheet written by [`generate_spritesheet`], writing the
+/// generated source to `output_path`.
+pub fn generate_sprite_ids(
+    base_sprites: &[BaseSprite],
+    top_sprites: &[TopSprite],
     output_path: &Path,
 ) -> std::io::Result<()> {
-    generate_spritesheet(
-        sprites,
-        parts_path,
-        output_path,
-        |sprite| {
-            vec![
-                center_top_label(sprite.center),
-                south_top_label(sprite.south),
-                south_east_top_label(sprite.south_east),
-                east_top_label(sprite.east),
-            ]
-        },
-        TopSprite::normalize,
-    )
+    let base_tiles = normalized_unique(base_sprites, BaseSprite::normalize);
+    let mut top_tiles = normalized_unique(top_sprites, TopSprite::normalize);
+    let empty_top_removed = top_tiles.first() == Some(&TopSprite::EMPTY);
+    if empty_top_removed {
+        top_tiles.remove(0);
+    }
+
+    let empty_base_id = base_tiles
+        .iter()
+        .position(|&sprite| sprite == BaseSprite::EMPTY)
+        .expect("wall_spritesheet.svg always includes the empty base sprite");
+
+    let mut base_arms = String::new();
+    for (id, &sprite) in base_tiles.iter().enumerate() {
+        base_arms.push_str(&format!(
+            "            {} => {id},\n",
+            base_sprite_pattern(sprite)
+        ));
+    }
+
+    let mut top_arms = String::new();
+    if empty_top_removed {
+        top_arms.push_str(&format!(
+            "            {} => {empty_base_id},\n",
+            top_sprite_pattern(TopSprite::EMPTY)
+        ));
+    }
+    for (offset, &sprite) in top_tiles.iter().enumerate() {
+        let id = base_tiles.len() + offset;
+        top_arms.push_str(&format!(
+            "            {} => {id},\n",
+            top_sprite_pattern(sprite)
+        ));
+    }
+
+    let mut code = String::new();
+    code.push_str("// Generated by `cargo run -p wdn-enumerate`. Do not edit by hand.\n\n");
+    code.push_str("use crate::{\n");
+    code.push_str("    BaseSprite, BaseSpriteCenter, BaseSpriteEast, BaseSpriteSouth, TopSprite, TopSpriteCenter,\n");
+    code.push_str("    TopSpriteEast, TopSpriteSouth, TopSpriteSouthEast,\n");
+    code.push_str("};\n\n");
+    code.push_str("impl BaseSprite {\n");
+    code.push_str("    /// The tile offset of this sprite into `wall_spritesheet.svg`.\n");
+    code.push_str("    pub fn id(&self) -> u16 {\n");
+    code.push_str("        match self.normalize() {\n");
+    code.push_str(&base_arms);
+    code.push_str("            _ => unreachable!(\"normalize() produced a sprite with no assigned id: {self:?}\"),\n");
+    code.push_str("        }\n    }\n}\n\n");
+    code.push_str("impl TopSprite {\n");
+    code.push_str("    /// The tile offset of this sprite into `wall_spritesheet.svg`.\n");
+    code.push_str("    pub fn id(&self) -> u16 {\n");
+    code.push_str("        match self.normalize() {\n");
+    code.push_str(&top_arms);
+    code.push_str("            _ => unreachable!(\"normalize() produced a sprite with no assigned id: {self:?}\"),\n");
+    code.push_str("        }\n    }\n}\n");
+
+    fs::write(output_path, code)
 }
 
-fn generate_spritesheet<T: Debug + Copy + Eq + std::hash::Hash>(
+/// Normalizes `sprites`, keeping only the first occurrence of each distinct value.
+fn normalized_unique<T: Copy + Eq + std::hash::Hash>(
     sprites: &[T],
-    parts_path: &Path,
-    output_path: &Path,
-    layer_labels: impl Fn(T) -> Vec<&'static str>,
     normalize: impl Fn(T) -> T,
-) -> std::io::Result<()> {
-    let parts_svg = fs::read_to_string(parts_path)?;
-    let parts = extract_labeled_parts(&parts_svg);
+) -> Vec<T> {
+    let mut seen = HashSet::new();
+    sprites
+        .iter()
+        .copied()
+        .map(normalize)
+        .filter(|sprite| seen.insert(*sprite))
+        .collect()
+}
 
+/// Looks up each of `labels` in `parts`, cloning the matching SVG fragments.
+fn resolve_layers(
+    labels: &[&str],
+    parts: &HashMap<String, String>,
+    parts_path: &Path,
+) -> Vec<String> {
+    labels
+        .iter()
+        .map(|label| {
+            parts
+                .get(*label)
+                .unwrap_or_else(|| panic!("missing part `{label}` in {}", parts_path.display()))
+                .clone()
+        })
+        .collect()
+}
+
+/// Lays `tiles` out in a grid and writes the resulting spritesheet SVG to `output_path`.
+fn write_spritesheet(tiles: &[(String, Vec<String>)], output_path: &Path) -> std::io::Result<()> {
     let columns = SPRITES_PER_ROW;
-    let rows = (sprites.len() as u32).div_ceil(columns);
+    let rows = (tiles.len() as u32).div_ceil(columns);
     let sheet_width = columns * TILE_WIDTH;
     let sheet_height = rows * TILE_HEIGHT;
 
-    let mut body = String::new();
-    for (index, sprite) in sprites.iter().enumerate() {
+    let mut groups = Vec::with_capacity(tiles.len());
+    for (index, (name, layers)) in tiles.iter().enumerate() {
         let x = (index as u32 % columns) * TILE_WIDTH;
         let y = (index as u32 / columns) * TILE_HEIGHT;
-        let name = escape_xml_attribute(&format!("{sprite:?}"));
+        let name = escape_xml_attribute(name);
 
-        body.push_str(&format!(
-            "  <g inkscape:label=\"{name}\" transform=\"translate({x},{y})\">\n"
-        ));
-        for label in layer_labels(*sprite) {
-            let part = parts
-                .get(label)
-                .unwrap_or_else(|| panic!("missing part `{label}` in {}", parts_path.display()));
-            body.push_str(part);
-            body.push('\n');
+        let mut group =
+            format!("  <g inkscape:label=\"{name}\" transform=\"translate({x},{y})\">\n");
+        for layer in layers {
+            group.push_str(layer);
+            group.push('\n');
         }
-        body.push_str("  </g>\n");
+        group.push_str("  </g>\n");
+        groups.push(group);
     }
+    // Reverse the tiles' document order; each keeps its original grid position.
+    let body: String = groups.into_iter().rev().collect();
 
     let svg = format!(
         "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n\
@@ -101,91 +192,110 @@ fn generate_spritesheet<T: Debug + Copy + Eq + std::hash::Hash>(
          xmlns:sodipodi=\"http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd\">\n{body}</svg>\n"
     );
 
-    fs::write(output_path, &svg)?;
-
-    let pixmap = render_to_pixmap(&svg);
-    pixmap
-        .save_png(output_path.with_extension("png"))
-        .expect("failed to save spritesheet png");
-    report_visual_duplicates(&pixmap, sprites, columns, normalize);
-
-    Ok(())
+    fs::write(output_path, svg)
 }
 
-fn render_to_pixmap(svg: &str) -> Pixmap {
-    let tree = Tree::from_str(svg, &Options::default()).expect("failed to parse generated svg");
-    let size = tree.size().to_int_size();
-    let mut pixmap = Pixmap::new(size.width(), size.height()).expect("invalid pixmap size");
-    resvg::render(&tree, Transform::identity(), &mut pixmap.as_mut());
-    pixmap
+/// Renders `sprite` as a `BaseSprite { .. }` struct pattern using the actual Rust variant
+/// names, for use as a `match` arm in generated code.
+fn base_sprite_pattern(sprite: BaseSprite) -> String {
+    format!(
+        "BaseSprite {{ center: BaseSpriteCenter::{}, south: BaseSpriteSouth::{}, east: BaseSpriteEast::{} }}",
+        base_center_ident(sprite.center),
+        base_south_ident(sprite.south),
+        base_east_ident(sprite.east),
+    )
 }
 
-/// Groups sprite tiles by their rendered pixels, printing any group sharing an identical
-/// image, and cross-checks `normalize` against those groups: every sprite within a group
-/// must normalize to the same value, and no two sprites with different pixels may normalize
-/// to the same value.
-fn report_visual_duplicates<T: Debug + Copy + Eq + std::hash::Hash>(
-    pixmap: &Pixmap,
-    sprites: &[T],
-    columns: u32,
-    normalize: impl Fn(T) -> T,
-) {
-    let stride = pixmap.width() as usize * 4;
-    let mut tiles_by_pixels: HashMap<Vec<u8>, Vec<T>> = HashMap::new();
-    let mut pixels_by_normalized: HashMap<T, (T, Vec<u8>)> = HashMap::new();
+/// Renders `sprite` as a `TopSprite { .. }` struct pattern using the actual Rust variant
+/// names, for use as a `match` arm in generated code.
+fn top_sprite_pattern(sprite: TopSprite) -> String {
+    format!(
+        "TopSprite {{ center: TopSpriteCenter::{}, south: TopSpriteSouth::{}, south_east: TopSpriteSouthEast::{}, east: TopSpriteEast::{} }}",
+        top_center_ident(sprite.center),
+        top_south_ident(sprite.south),
+        top_south_east_ident(sprite.south_east),
+        top_east_ident(sprite.east),
+    )
+}
 
-    for (index, sprite) in sprites.iter().copied().enumerate() {
-        let tile_x = (index as u32 % columns) as usize * TILE_WIDTH as usize * 4;
-        let tile_y = (index as u32 / columns) as usize * TILE_HEIGHT as usize;
-
-        let mut pixels = Vec::with_capacity(TILE_WIDTH as usize * TILE_HEIGHT as usize * 4);
-        for row in 0..TILE_HEIGHT as usize {
-            let start = (tile_y + row) * stride + tile_x;
-            pixels.extend_from_slice(&pixmap.data()[start..start + TILE_WIDTH as usize * 4]);
-        }
-
-        match pixels_by_normalized.entry(normalize(sprite)) {
-            std::collections::hash_map::Entry::Occupied(entry) => {
-                let (first_sprite, first_pixels) = entry.get();
-                assert_eq!(
-                    first_pixels, &pixels,
-                    "normalize() merged visually distinct sprites {first_sprite:?} and {sprite:?}"
-                );
-            }
-            std::collections::hash_map::Entry::Vacant(entry) => {
-                entry.insert((sprite, pixels.clone()));
-            }
-        }
-
-        tiles_by_pixels.entry(pixels).or_default().push(sprite);
+fn base_center_ident(center: BaseSpriteCenter) -> &'static str {
+    match center {
+        BaseSpriteCenter::None => "None",
+        BaseSpriteCenter::WallCorner => "WallCorner",
+        BaseSpriteCenter::WallVertical => "WallVertical",
+        BaseSpriteCenter::WallHorizontal => "WallHorizontal",
+        BaseSpriteCenter::WallInverseCorner => "WallInverseCorner",
+        BaseSpriteCenter::WallFull => "WallFull",
+        BaseSpriteCenter::StairN => "StairN",
+        BaseSpriteCenter::StairNFull => "StairNFull",
+        BaseSpriteCenter::StairS => "StairS",
+        BaseSpriteCenter::StairSFull => "StairSFull",
+        BaseSpriteCenter::StairE => "StairE",
+        BaseSpriteCenter::StairEFull => "StairEFull",
+        BaseSpriteCenter::StairW => "StairW",
+        BaseSpriteCenter::StairWFull => "StairWFull",
     }
+}
 
-    let mut duplicate_count = 0;
-    for group in tiles_by_pixels.values() {
-        if group.len() > 1 {
-            println!(
-                "visually identical sprites: {}",
-                group
-                    .iter()
-                    .map(|sprite| format!("{sprite:?}"))
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            );
-            duplicate_count += group.len();
-
-            let canonical = normalize(group[0]);
-            for sprite in &group[1..] {
-                assert_eq!(
-                    normalize(*sprite),
-                    canonical,
-                    "normalize() does not collapse visually identical sprites {:?} and {sprite:?}",
-                    group[0]
-                );
-            }
-        }
+fn base_south_ident(south: BaseSpriteSouth) -> &'static str {
+    match south {
+        BaseSpriteSouth::None => "None",
+        BaseSpriteSouth::Door => "Door",
     }
+}
 
-    println!("{duplicate_count} visually identical sprites");
+fn base_east_ident(east: BaseSpriteEast) -> &'static str {
+    match east {
+        BaseSpriteEast::None => "None",
+        BaseSpriteEast::Door => "Door",
+        BaseSpriteEast::StairN => "StairN",
+        BaseSpriteEast::StairS => "StairS",
+    }
+}
+
+fn top_center_ident(center: TopSpriteCenter) -> &'static str {
+    match center {
+        TopSpriteCenter::None => "None",
+        TopSpriteCenter::WallCorner => "WallCorner",
+        TopSpriteCenter::WallVertical => "WallVertical",
+        TopSpriteCenter::WallHorizontal => "WallHorizontal",
+        TopSpriteCenter::WallInverseCorner => "WallInverseCorner",
+        TopSpriteCenter::WallFull => "WallFull",
+        TopSpriteCenter::Door => "Door",
+    }
+}
+
+fn top_south_ident(south: TopSpriteSouth) -> &'static str {
+    match south {
+        TopSpriteSouth::None => "None",
+        TopSpriteSouth::Door => "Door",
+        TopSpriteSouth::WallCorner => "WallCorner",
+        TopSpriteSouth::WallHorizontal => "WallHorizontal",
+        TopSpriteSouth::StairN => "StairN",
+        TopSpriteSouth::StairNFull => "StairNFull",
+        TopSpriteSouth::StairE => "StairE",
+        TopSpriteSouth::StairEFull => "StairEFull",
+        TopSpriteSouth::StairW => "StairW",
+        TopSpriteSouth::StairWFull => "StairWFull",
+    }
+}
+
+fn top_south_east_ident(south_east: TopSpriteSouthEast) -> &'static str {
+    match south_east {
+        TopSpriteSouthEast::None => "None",
+        TopSpriteSouthEast::StairN => "StairN",
+        TopSpriteSouthEast::StairW => "StairW",
+        TopSpriteSouthEast::StairWFull => "StairWFull",
+    }
+}
+
+fn top_east_ident(east: TopSpriteEast) -> &'static str {
+    match east {
+        TopSpriteEast::None => "None",
+        TopSpriteEast::Door => "Door",
+        TopSpriteEast::StairW => "StairW",
+        TopSpriteEast::StairWFull => "StairWFull",
+    }
 }
 
 fn center_label(center: BaseSpriteCenter) -> &'static str {

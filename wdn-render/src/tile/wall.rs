@@ -6,7 +6,7 @@ use wdn_physics::tile::{
 };
 
 pub fn mid_offsets(storage: &TileStorage, tile: TilePosition) -> (u16, u16) {
-    let left = MidSprite::resolve(
+    let left = BaseSprite::resolve(
         get_tile_variant(storage, tile).flip(),
         get_tile_variant(storage, tile.north()).flip(),
         get_tile_variant(storage, tile.north().west()).flip(),
@@ -14,7 +14,12 @@ pub fn mid_offsets(storage: &TileStorage, tile: TilePosition) -> (u16, u16) {
         get_tile_variant(storage, tile.south().west()).flip(),
         get_tile_variant(storage, tile.south()).flip(),
     );
-    let right = MidSprite::resolve(
+
+    if left != BaseSprite::EMPTY {
+        println!("left base: {left:?}");
+    }
+
+    let right = BaseSprite::resolve(
         get_tile_variant(storage, tile),
         get_tile_variant(storage, tile.north()),
         get_tile_variant(storage, tile.north().east()),
@@ -35,6 +40,11 @@ pub fn top_offset(storage: &TileStorage, tile: TilePosition) -> (u16, u16) {
         get_tile_variant(storage, tile.south().west()).flip(),
         get_tile_variant(storage, tile.south()).flip(),
     );
+
+    if left != TopSprite::EMPTY {
+        println!("left top: {left:?}");
+    }
+
     let right = TopSprite::resolve(
         get_tile_variant(storage, tile),
         get_tile_variant(storage, tile.north()),
@@ -56,16 +66,7 @@ fn get_tile_variant(storage: &TileStorage, tile: TilePosition) -> TileVariant {
     match material.kind() {
         TileKind::Empty => TileVariant::Empty,
         TileKind::Wall => TileVariant::Wall,
-        TileKind::Door => {
-            match material
-                .flags()
-                .intersection(TileMaterialFlags::DOOR_DIRECTION_MASK)
-            {
-                TileMaterialFlags::DOOR_DIRECTION_HORIZONTAL => TileVariant::DoorH,
-                TileMaterialFlags::DOOR_DIRECTION_VERTICAL => TileVariant::DoorV,
-                _ => unreachable!("Invalid door direction for tile at {tile:?}"),
-            }
-        }
+        TileKind::Door => TileVariant::Door,
         TileKind::Stairs => match material
             .flags()
             .intersection(TileMaterialFlags::STAIR_DIRECTION_MASK)

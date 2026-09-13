@@ -2,6 +2,8 @@ use std::fmt;
 
 use crate::Model::DoorVerticalNorth;
 
+mod sprite_id;
+
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
 pub enum TileVariant {
     Empty,
@@ -244,8 +246,8 @@ impl Model {
             Model::StairSFull => BaseSpriteCenter::StairSFull,
             Model::StairE | Model::StairENorth => BaseSpriteCenter::StairE,
             Model::StairESouth | Model::StairENorthSouth => BaseSpriteCenter::StairEFull,
-            Model::StairW | Model::StairWSouth => BaseSpriteCenter::StairW,
-            Model::StairWNorth | Model::StairWNorthSouth => BaseSpriteCenter::StairWFull,
+            Model::StairW | Model::StairWNorth => BaseSpriteCenter::StairW,
+            Model::StairWSouth | Model::StairWNorthSouth => BaseSpriteCenter::StairWFull,
         }
     }
 
@@ -307,7 +309,7 @@ impl Model {
             Model::StairS | Model::StairSFull => TopSpriteSouth::None,
             Model::StairE | Model::StairESouth => TopSpriteSouth::StairE,
             Model::StairENorth | Model::StairENorthSouth => TopSpriteSouth::StairEFull,
-            Model::StairW | Model::StairWSouth => TopSpriteSouth::StairWFull,
+            Model::StairW | Model::StairWSouth => TopSpriteSouth::StairW,
             Model::StairWNorth | Model::StairWNorthSouth => TopSpriteSouth::StairWFull,
         }
     }
@@ -447,13 +449,15 @@ pub fn resolve_sprites(
             center: center_model.center_base_sprite(),
             south: south_model.north_base_sprite(),
             east: east_model.east_base_sprite(),
-        },
+        }
+        .normalize(),
         TopSprite {
             center: center_model.center_top_sprite(),
             south: south_model.north_top_sprite(),
             south_east: south_east_model.north_east_top_sprite(),
             east: east_model.east_top_sprite(),
-        },
+        }
+        .normalize(),
     )
 }
 
@@ -568,8 +572,25 @@ impl fmt::Debug for TopSpriteEast {
 }
 
 impl BaseSprite {
-    /// Maps a sprite to its canonical, visually-deduplicated form. Generated from the
-    /// `visually identical sprites` groups reported by `spritesheet::report_visual_duplicates`.
+    /// The sprite with no walls, doors, or stairs.
+    pub const EMPTY: Self = Self {
+        center: BaseSpriteCenter::None,
+        south: BaseSpriteSouth::None,
+        east: BaseSpriteEast::None,
+    };
+
+    pub fn resolve(
+        center: TileVariant,
+        north: TileVariant,
+        north_east: TileVariant,
+        east: TileVariant,
+        south_east: TileVariant,
+        south: TileVariant,
+    ) -> Self {
+        resolve_sprites(center, north, north_east, east, south_east, south).0
+    }
+
+    /// Maps a sprite to its canonical, visually-deduplicated form.
     pub fn normalize(self) -> Self {
         match self {
             // The full stair-top already spans the tile, covering where the matching east stair edge would be.
@@ -592,8 +613,26 @@ impl BaseSprite {
 }
 
 impl TopSprite {
-    /// Maps a sprite to its canonical, visually-deduplicated form. Generated from the
-    /// `visually identical sprites` groups reported by `spritesheet::report_visual_duplicates`.
+    /// The sprite with no walls, doors, or stairs.
+    pub const EMPTY: Self = Self {
+        center: TopSpriteCenter::None,
+        south: TopSpriteSouth::None,
+        south_east: TopSpriteSouthEast::None,
+        east: TopSpriteEast::None,
+    };
+
+    pub fn resolve(
+        center: TileVariant,
+        north: TileVariant,
+        north_east: TileVariant,
+        east: TileVariant,
+        south_east: TileVariant,
+        south: TileVariant,
+    ) -> Self {
+        resolve_sprites(center, north, north_east, east, south_east, south).1
+    }
+
+    /// Maps a sprite to its canonical, visually-deduplicated form.
     pub fn normalize(self) -> Self {
         match self {
             // The full stair-top already occupies the area the plain stair + south-east sliver covers.
