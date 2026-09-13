@@ -22,13 +22,19 @@ pub fn generate_base_spritesheet(
     parts_path: &Path,
     output_path: &Path,
 ) -> std::io::Result<()> {
-    generate_spritesheet(sprites, parts_path, output_path, |sprite| {
-        vec![
-            center_label(sprite.center),
-            south_label(sprite.south),
-            east_label(sprite.east),
-        ]
-    })
+    generate_spritesheet(
+        sprites,
+        parts_path,
+        output_path,
+        |sprite| {
+            vec![
+                center_label(sprite.center),
+                south_label(sprite.south),
+                east_label(sprite.east),
+            ]
+        },
+        BaseSprite::normalize,
+    )
 }
 
 /// Renders `sprites` into a spritesheet SVG by layering the center/south/south-east/east
@@ -38,21 +44,28 @@ pub fn generate_top_spritesheet(
     parts_path: &Path,
     output_path: &Path,
 ) -> std::io::Result<()> {
-    generate_spritesheet(sprites, parts_path, output_path, |sprite| {
-        vec![
-            center_top_label(sprite.center),
-            south_top_label(sprite.south),
-            south_east_top_label(sprite.south_east),
-            east_top_label(sprite.east),
-        ]
-    })
+    generate_spritesheet(
+        sprites,
+        parts_path,
+        output_path,
+        |sprite| {
+            vec![
+                center_top_label(sprite.center),
+                south_top_label(sprite.south),
+                south_east_top_label(sprite.south_east),
+                east_top_label(sprite.east),
+            ]
+        },
+        TopSprite::normalize,
+    )
 }
 
-fn generate_spritesheet<T: Debug + Copy>(
+fn generate_spritesheet<T: Debug + Copy + Eq + std::hash::Hash>(
     sprites: &[T],
     parts_path: &Path,
     output_path: &Path,
     layer_labels: impl Fn(T) -> Vec<&'static str>,
+    normalize: impl Fn(T) -> T,
 ) -> std::io::Result<()> {
     let parts_svg = fs::read_to_string(parts_path)?;
     let parts = extract_labeled_parts(&parts_svg);
@@ -94,7 +107,7 @@ fn generate_spritesheet<T: Debug + Copy>(
     pixmap
         .save_png(output_path.with_extension("png"))
         .expect("failed to save spritesheet png");
-    report_visual_duplicates(&pixmap, sprites, columns);
+    report_visual_duplicates(&pixmap, sprites, columns, normalize);
 
     Ok(())
 }
@@ -107,13 +120,21 @@ fn render_to_pixmap(svg: &str) -> Pixmap {
     pixmap
 }
 
-/// Groups sprite tiles by their rendered pixels and prints any group sharing an
-/// identical image, which would indicate visually redundant sprite variants.
-fn report_visual_duplicates<T: Debug>(pixmap: &Pixmap, sprites: &[T], columns: u32) {
+/// Groups sprite tiles by their rendered pixels, printing any group sharing an identical
+/// image, and cross-checks `normalize` against those groups: every sprite within a group
+/// must normalize to the same value, and no two sprites with different pixels may normalize
+/// to the same value.
+fn report_visual_duplicates<T: Debug + Copy + Eq + std::hash::Hash>(
+    pixmap: &Pixmap,
+    sprites: &[T],
+    columns: u32,
+    normalize: impl Fn(T) -> T,
+) {
     let stride = pixmap.width() as usize * 4;
-    let mut tiles_by_pixels: HashMap<Vec<u8>, Vec<String>> = HashMap::new();
+    let mut tiles_by_pixels: HashMap<Vec<u8>, Vec<T>> = HashMap::new();
+    let mut pixels_by_normalized: HashMap<T, (T, Vec<u8>)> = HashMap::new();
 
-    for (index, sprite) in sprites.iter().enumerate() {
+    for (index, sprite) in sprites.iter().copied().enumerate() {
         let tile_x = (index as u32 % columns) as usize * TILE_WIDTH as usize * 4;
         let tile_y = (index as u32 / columns) as usize * TILE_HEIGHT as usize;
 
@@ -123,17 +144,44 @@ fn report_visual_duplicates<T: Debug>(pixmap: &Pixmap, sprites: &[T], columns: u
             pixels.extend_from_slice(&pixmap.data()[start..start + TILE_WIDTH as usize * 4]);
         }
 
-        tiles_by_pixels
-            .entry(pixels)
-            .or_default()
-            .push(format!("{sprite:?}"));
+        match pixels_by_normalized.entry(normalize(sprite)) {
+            std::collections::hash_map::Entry::Occupied(entry) => {
+                let (first_sprite, first_pixels) = entry.get();
+                assert_eq!(
+                    first_pixels, &pixels,
+                    "normalize() merged visually distinct sprites {first_sprite:?} and {sprite:?}"
+                );
+            }
+            std::collections::hash_map::Entry::Vacant(entry) => {
+                entry.insert((sprite, pixels.clone()));
+            }
+        }
+
+        tiles_by_pixels.entry(pixels).or_default().push(sprite);
     }
 
     let mut duplicate_count = 0;
-    for names in tiles_by_pixels.values() {
-        if names.len() > 1 {
-            println!("visually identical sprites: {}", names.join(", "));
-            duplicate_count += names.len();
+    for group in tiles_by_pixels.values() {
+        if group.len() > 1 {
+            println!(
+                "visually identical sprites: {}",
+                group
+                    .iter()
+                    .map(|sprite| format!("{sprite:?}"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            );
+            duplicate_count += group.len();
+
+            let canonical = normalize(group[0]);
+            for sprite in &group[1..] {
+                assert_eq!(
+                    normalize(*sprite),
+                    canonical,
+                    "normalize() does not collapse visually identical sprites {:?} and {sprite:?}",
+                    group[0]
+                );
+            }
         }
     }
 
