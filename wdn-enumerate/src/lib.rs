@@ -1,13 +1,10 @@
-mod ids;
-
-use std::fmt;
+use crate::Model::DoorVerticalNorth;
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
 pub enum TileVariant {
     Empty,
     Wall,
-    DoorH,
-    DoorV,
+    Door,
     StairN,
     StairS,
     StairE,
@@ -15,26 +12,53 @@ pub enum TileVariant {
 }
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
-pub struct Sprite {
-    pub mid: MidSprite,
-    pub top: TopSprite,
+pub enum Model {
+    Empty,
+    Wall { north: WallModel, south: WallModel },
+    DoorHorizontal,
+    DoorHorizontalFull,
+    DoorVertical,
+    DoorVerticalNorth,
+    DoorVerticalSouth,
+    DoorVerticalNorthSouth,
+    StairN,
+    StairNFull,
+    StairS,
+    StairSFull,
+    StairE,
+    StairENorth,
+    StairESouth,
+    StairENorthSouth,
+    StairW,
+    StairWNorth,
+    StairWSouth,
+    StairWNorthSouth,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug, PartialOrd, Ord)]
-pub enum MidSprite {
-    Empty,
-    Corner {
-        east: EastDecoration,
-        south: SouthDecoration,
-    },
-    Horizontal {
-        south: SouthDecoration,
-    },
-    Vertical {
-        east: EastDecoration,
-    },
+#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+pub enum WallModel {
+    Corner,
+    Vertical,
+    Horizontal,
     InverseCorner,
     Full,
+}
+
+#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+pub struct BaseSprite {
+    center: BaseSpriteCenter,
+    south: BaseSpriteSouth,
+    east: BaseSpriteEast,
+}
+
+#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+pub enum BaseSpriteCenter {
+    None,
+    WallCorner,
+    WallVertical,
+    WallHorizontal,
+    WallInverseCorner,
+    WallFull,
     StairN,
     StairNFull,
     StairS,
@@ -45,18 +69,45 @@ pub enum MidSprite {
     StairWFull,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug, PartialOrd, Ord)]
-pub enum TopSprite {
-    Empty {
-        east: EastTopDecoration,
-    },
-    Corner {
-        east: EastTopDecoration,
-        deco: TopDecoration,
-    },
-    Horizontal {
-        deco: TopDecoration,
-    },
+#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+pub enum BaseSpriteSouth {
+    None,
+    Door,
+}
+
+#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+pub enum BaseSpriteEast {
+    None,
+    Door,
+    StairN,
+    StairS,
+}
+
+#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+pub struct TopSprite {
+    center: TopSpriteCenter,
+    south: TopSpriteSouth,
+    south_east: TopSpriteSouthEast,
+    east: TopSpriteEast,
+}
+
+#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+pub enum TopSpriteCenter {
+    None,
+    WallCorner,
+    WallVertical,
+    WallHorizontal,
+    WallInverseCorner,
+    WallFull,
+    Door,
+}
+
+#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+pub enum TopSpriteSouth {
+    None,
+    Door,
+    WallCorner,
+    WallHorizontal,
     StairN,
     StairNFull,
     StairE,
@@ -65,309 +116,341 @@ pub enum TopSprite {
     StairWFull,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug, PartialOrd, Ord)]
-pub enum EastDecoration {
+#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+pub enum TopSpriteEast {
     None,
     Door,
+    StairW,
+    StairWFull,
+}
+
+#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+pub enum TopSpriteSouthEast {
+    None,
     StairN,
-    StairS,
-}
-
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug, PartialOrd, Ord)]
-pub enum SouthDecoration {
-    None,
-    Door,
-    StairN,
-}
-
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug, PartialOrd, Ord)]
-pub enum TopDecoration {
-    None,
-    Door,
-}
-
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug, PartialOrd, Ord)]
-pub enum EastTopDecoration {
-    None,
-    EastStairW,
-    EastStairWFull,
-    SouthEastStairN,
-    SouthEastStairW,
-    SouthEastStairWFull,
+    StairW,
+    StairWFull,
 }
 
 impl TileVariant {
-    pub fn values() -> impl IntoIterator<Item = TileVariant> {
+    pub fn values() -> [TileVariant; 7] {
         [
             TileVariant::Empty,
             TileVariant::Wall,
-            TileVariant::DoorH,
-            TileVariant::DoorV,
+            TileVariant::Door,
             TileVariant::StairN,
             TileVariant::StairS,
             TileVariant::StairE,
             TileVariant::StairW,
         ]
     }
-}
 
-impl Sprite {
-    pub fn bleeds(&self) -> bool {
-        matches!(
-            self.mid,
-            MidSprite::Corner { .. }
-                | MidSprite::Horizontal { .. }
-                | MidSprite::Vertical { .. }
-                | MidSprite::InverseCorner
-                | MidSprite::Full
-        ) && !matches!(
-            self.top,
-            TopSprite::Empty {
-                east: EastTopDecoration::None
-            }
-        )
+    pub fn flip(&self) -> Self {
+        use TileVariant::*;
+
+        match self {
+            StairE => StairW,
+            StairW => StairE,
+            _ => *self,
+        }
     }
 }
 
-impl MidSprite {
+impl Model {
     pub fn resolve(
         center: TileVariant,
-        _north: TileVariant,
-        _north_east: TileVariant,
+        north: TileVariant,
+        north_east: TileVariant,
         east: TileVariant,
         south_east: TileVariant,
         south: TileVariant,
-    ) -> Self {
+    ) -> Model {
         match center {
-            TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV => MidSprite::Empty,
-            TileVariant::Wall => {
-                let east_open = !matches!(east, TileVariant::Wall | TileVariant::StairW);
-                let south_open = south != TileVariant::Wall;
-                match (east_open, south_open) {
-                    (true, true) => MidSprite::Corner {
-                        east: EastDecoration::from_open_tile(east),
-                        south: SouthDecoration::from_open_tile(south),
-                    },
-                    (false, true) => MidSprite::Horizontal {
-                        south: SouthDecoration::from_open_tile(south),
-                    },
-                    (true, false) => MidSprite::Vertical {
-                        east: EastDecoration::from_open_tile(east),
-                    },
-                    (false, false) if south_east == TileVariant::Wall => MidSprite::Full,
-                    (false, false) => MidSprite::InverseCorner,
+            TileVariant::Empty => Model::Empty,
+            TileVariant::Wall => Model::Wall {
+                north: WallModel::resolve(
+                    matches!(north, TileVariant::Wall | TileVariant::StairS),
+                    matches!(east, TileVariant::Wall | TileVariant::StairW),
+                    matches!(north_east, TileVariant::Wall),
+                ),
+                south: WallModel::resolve(
+                    matches!(south, TileVariant::Wall | TileVariant::StairN),
+                    matches!(east, TileVariant::Wall | TileVariant::StairW),
+                    matches!(south_east, TileVariant::Wall),
+                ),
+            },
+            TileVariant::Door => {
+                if east == TileVariant::Wall {
+                    Model::DoorHorizontalFull
+                } else {
+                    match (north, south) {
+                        (TileVariant::Wall, TileVariant::Wall) => Model::DoorVerticalNorthSouth,
+                        (TileVariant::Wall, _) => Model::DoorVerticalNorth,
+                        (_, TileVariant::Wall) => Model::DoorVerticalSouth,
+                        (_, _) => Model::DoorVertical,
+                    }
                 }
             }
             TileVariant::StairN => match east {
-                TileVariant::Wall | TileVariant::StairN => MidSprite::StairNFull,
-                _ => MidSprite::StairN,
+                TileVariant::Wall | TileVariant::StairN => Model::StairNFull,
+                _ => Model::StairN,
             },
             TileVariant::StairS => match east {
-                TileVariant::Wall | TileVariant::StairS => MidSprite::StairSFull,
-                _ => MidSprite::StairS,
+                TileVariant::Wall | TileVariant::StairS => Model::StairSFull,
+                _ => Model::StairS,
             },
-            TileVariant::StairE => match south {
-                TileVariant::Wall | TileVariant::StairE => MidSprite::StairEFull,
-                _ => MidSprite::StairE,
+            TileVariant::StairE => match (north, south) {
+                (
+                    TileVariant::Wall | TileVariant::StairE,
+                    TileVariant::Wall | TileVariant::StairE,
+                ) => Model::StairENorthSouth,
+                (TileVariant::Wall | TileVariant::StairE, _) => Model::StairENorth,
+                (_, TileVariant::Wall | TileVariant::StairE) => Model::StairESouth,
+                (_, _) => Model::StairE,
             },
-            TileVariant::StairW => match south {
-                TileVariant::Wall | TileVariant::StairW => MidSprite::StairWFull,
-                _ => MidSprite::StairW,
+            TileVariant::StairW => match (north, south) {
+                (
+                    TileVariant::Wall | TileVariant::StairW,
+                    TileVariant::Wall | TileVariant::StairW,
+                ) => Model::StairWNorthSouth,
+                (TileVariant::Wall | TileVariant::StairW, _) => Model::StairWNorth,
+                (_, TileVariant::Wall | TileVariant::StairW) => Model::StairWSouth,
+                (_, _) => Model::StairW,
             },
         }
     }
-}
 
-impl EastDecoration {
-    /// Maps a non-`Wall` tile to the decoration drawn on the east edge.
-    fn from_open_tile(tile: TileVariant) -> Self {
-        match tile {
-            TileVariant::Empty | TileVariant::DoorV | TileVariant::StairE => EastDecoration::None,
-            TileVariant::DoorH => EastDecoration::Door,
-            TileVariant::StairN => EastDecoration::StairN,
-            TileVariant::StairS => EastDecoration::StairS,
-            TileVariant::Wall | TileVariant::StairW => {
-                unreachable!("east tile is known to be non-Wall")
+    pub fn center_base_sprite(&self) -> BaseSpriteCenter {
+        match self {
+            Model::Empty
+            | Model::DoorHorizontal
+            | Model::DoorHorizontalFull
+            | Model::DoorVertical
+            | Model::DoorVerticalNorth
+            | Model::DoorVerticalSouth
+            | Model::DoorVerticalNorthSouth => BaseSpriteCenter::None,
+            Model::Wall { north: _, south } => match south {
+                WallModel::Corner => BaseSpriteCenter::WallCorner,
+                WallModel::Vertical => BaseSpriteCenter::WallVertical,
+                WallModel::Horizontal => BaseSpriteCenter::WallHorizontal,
+                WallModel::InverseCorner => BaseSpriteCenter::WallInverseCorner,
+                WallModel::Full => BaseSpriteCenter::WallFull,
+            },
+            Model::StairN => BaseSpriteCenter::StairN,
+            Model::StairNFull => BaseSpriteCenter::StairNFull,
+            Model::StairS => BaseSpriteCenter::StairS,
+            Model::StairSFull => BaseSpriteCenter::StairSFull,
+            Model::StairE | Model::StairENorth => BaseSpriteCenter::StairE,
+            Model::StairESouth | Model::StairENorthSouth => BaseSpriteCenter::StairEFull,
+            Model::StairW | Model::StairWSouth => BaseSpriteCenter::StairW,
+            Model::StairWNorth | Model::StairWNorthSouth => BaseSpriteCenter::StairWFull,
+        }
+    }
+
+    pub fn center_top_sprite(&self) -> TopSpriteCenter {
+        match self {
+            Model::Empty => TopSpriteCenter::None,
+            Model::Wall { north: _, south } => match south {
+                WallModel::Corner => TopSpriteCenter::WallCorner,
+                WallModel::Vertical => TopSpriteCenter::WallVertical,
+                WallModel::Horizontal => TopSpriteCenter::WallHorizontal,
+                WallModel::InverseCorner => TopSpriteCenter::WallInverseCorner,
+                WallModel::Full => TopSpriteCenter::WallFull,
+            },
+            Model::DoorHorizontal
+            | Model::DoorHorizontalFull
+            | Model::DoorVertical
+            | DoorVerticalNorth => TopSpriteCenter::None,
+            Model::DoorVerticalSouth | Model::DoorVerticalNorthSouth => TopSpriteCenter::Door,
+            Model::StairN
+            | Model::StairNFull
+            | Model::StairS
+            | Model::StairSFull
+            | Model::StairE
+            | Model::StairENorth
+            | Model::StairESouth
+            | Model::StairENorthSouth
+            | Model::StairW
+            | Model::StairWNorth
+            | Model::StairWSouth
+            | Model::StairWNorthSouth => TopSpriteCenter::None,
+        }
+    }
+
+    pub fn north_base_sprite(&self) -> BaseSpriteSouth {
+        match self {
+            Model::DoorVerticalNorth | Model::DoorVerticalNorthSouth => BaseSpriteSouth::Door,
+            _ => BaseSpriteSouth::None,
+        }
+    }
+
+    pub fn north_top_sprite(&self) -> TopSpriteSouth {
+        match self {
+            Model::Empty => TopSpriteSouth::None,
+            Model::Wall {
+                north: WallModel::Corner | WallModel::Vertical,
+                south: _,
+            } => TopSpriteSouth::WallCorner,
+            Model::Wall {
+                north: WallModel::Horizontal | WallModel::InverseCorner | WallModel::Full,
+                south: _,
+            } => TopSpriteSouth::WallHorizontal,
+            Model::DoorHorizontal
+            | Model::DoorHorizontalFull
+            | Model::DoorVertical
+            | Model::DoorVerticalSouth => TopSpriteSouth::None,
+            Model::DoorVerticalNorth | Model::DoorVerticalNorthSouth => TopSpriteSouth::Door,
+            Model::StairN => TopSpriteSouth::StairN,
+            Model::StairNFull => TopSpriteSouth::StairNFull,
+            Model::StairS | Model::StairSFull => TopSpriteSouth::None,
+            Model::StairE | Model::StairESouth => TopSpriteSouth::StairE,
+            Model::StairENorth | Model::StairENorthSouth => TopSpriteSouth::StairEFull,
+            Model::StairW | Model::StairWSouth => TopSpriteSouth::StairWFull,
+            Model::StairWNorth | Model::StairWNorthSouth => TopSpriteSouth::StairWFull,
+        }
+    }
+
+    pub fn east_base_sprite(&self) -> BaseSpriteEast {
+        match self {
+            Model::Empty => BaseSpriteEast::None,
+            Model::Wall { .. } => BaseSpriteEast::None,
+            Model::DoorHorizontal
+            | Model::DoorVertical
+            | Model::DoorVerticalNorth
+            | Model::DoorVerticalSouth
+            | Model::DoorVerticalNorthSouth => BaseSpriteEast::None,
+            Model::DoorHorizontalFull => BaseSpriteEast::Door,
+            Model::StairN | Model::StairS => BaseSpriteEast::None,
+            Model::StairNFull => BaseSpriteEast::StairN,
+            Model::StairSFull => BaseSpriteEast::StairS,
+            Model::StairE
+            | Model::StairENorth
+            | Model::StairESouth
+            | Model::StairENorthSouth
+            | Model::StairW
+            | Model::StairWNorth
+            | Model::StairWSouth
+            | Model::StairWNorthSouth => BaseSpriteEast::None,
+        }
+    }
+
+    pub fn east_top_sprite(&self) -> TopSpriteEast {
+        match self {
+            Model::Empty => TopSpriteEast::None,
+            Model::Wall { .. } => TopSpriteEast::None,
+            Model::DoorHorizontal
+            | Model::DoorVertical
+            | Model::DoorVerticalNorth
+            | Model::DoorVerticalSouth
+            | Model::DoorVerticalNorthSouth => TopSpriteEast::None,
+            Model::DoorHorizontalFull => TopSpriteEast::Door,
+            Model::StairN | Model::StairS => TopSpriteEast::None,
+            Model::StairNFull
+            | Model::StairSFull
+            | Model::StairE
+            | Model::StairENorth
+            | Model::StairESouth
+            | Model::StairENorthSouth => TopSpriteEast::None,
+            Model::StairW | Model::StairWNorth => TopSpriteEast::StairW,
+            Model::StairWSouth | Model::StairWNorthSouth => TopSpriteEast::StairWFull,
+        }
+    }
+
+    pub fn north_east_top_sprite(&self) -> TopSpriteSouthEast {
+        match self {
+            Model::Empty => TopSpriteSouthEast::None,
+            Model::Wall { .. } => TopSpriteSouthEast::None,
+            Model::DoorHorizontal
+            | Model::DoorVertical
+            | Model::DoorVerticalNorth
+            | Model::DoorVerticalSouth
+            | Model::DoorVerticalNorthSouth
+            | Model::DoorHorizontalFull => TopSpriteSouthEast::None,
+            Model::StairN | Model::StairS | Model::StairSFull => TopSpriteSouthEast::None,
+            Model::StairNFull => TopSpriteSouthEast::StairN,
+            Model::StairE | Model::StairENorth | Model::StairESouth | Model::StairENorthSouth => {
+                TopSpriteSouthEast::None
             }
+            Model::StairW | Model::StairWSouth => TopSpriteSouthEast::StairW,
+            Model::StairWNorth | Model::StairWNorthSouth => TopSpriteSouthEast::StairWFull,
         }
     }
-}
 
-impl SouthDecoration {
-    /// Maps a non-`Wall` tile to the decoration drawn on the south edge.
-    fn from_open_tile(tile: TileVariant) -> Self {
-        match tile {
-            TileVariant::Empty
-            | TileVariant::DoorH
-            | TileVariant::StairS
-            | TileVariant::StairE
-            | TileVariant::StairW => SouthDecoration::None,
-            TileVariant::DoorV => SouthDecoration::Door,
-            TileVariant::StairN => SouthDecoration::StairN,
-            TileVariant::Wall => unreachable!("south tile is known to be non-Wall"),
-        }
-    }
-}
-
-impl TopSprite {
-    pub fn resolve(
-        center: TileVariant,
-        _north: TileVariant,
-        _north_east: TileVariant,
-        east: TileVariant,
-        south_east: TileVariant,
-        south: TileVariant,
-    ) -> Self {
-        match south {
-            TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV | TileVariant::StairS => {
-                TopSprite::Empty {
-                    east: EastTopDecoration::from_open_tile(south_east, TileVariant::Empty, east),
-                }
-            }
-            TileVariant::StairN => match south_east {
-                TileVariant::StairN | TileVariant::Wall => TopSprite::StairNFull,
-                _ => TopSprite::StairN,
-            },
-            TileVariant::Wall if south_east == TileVariant::Wall && east != TileVariant::StairW => {
-                TopSprite::Horizontal {
-                    deco: TopDecoration::from_center(center),
-                }
-            }
-            TileVariant::Wall if center == TileVariant::Wall => TopSprite::Empty {
-                east: EastTopDecoration::from_open_tile(south_east, TileVariant::Wall, east),
-            },
-            TileVariant::Wall => TopSprite::Corner {
-                deco: TopDecoration::from_center(center),
-                east: EastTopDecoration::from_open_tile(south_east, TileVariant::Wall, east),
-            },
-            TileVariant::StairE => match center {
-                TileVariant::StairE | TileVariant::Wall => TopSprite::StairEFull,
-                _ => TopSprite::StairE,
-            },
-            TileVariant::StairW => match center {
-                TileVariant::StairW | TileVariant::Wall => TopSprite::StairWFull,
-                _ => TopSprite::StairW,
-            },
-        }
-    }
-}
-
-impl TopDecoration {
-    /// Maps the tile at the sprite's center to the decoration drawn on the top edge.
-    fn from_center(center: TileVariant) -> Self {
-        match center {
-            TileVariant::DoorV => TopDecoration::Door,
-            _ => TopDecoration::None,
-        }
-    }
-}
-
-impl EastTopDecoration {
-    /// Maps a non-`Wall` south-east tile to the corner decoration drawn there.
-    fn from_open_tile(south_east: TileVariant, south: TileVariant, east: TileVariant) -> Self {
-        match south_east {
-            TileVariant::StairN => match south {
-                TileVariant::StairN | TileVariant::Wall => EastTopDecoration::SouthEastStairN,
-                _ => EastTopDecoration::None,
-            },
-            TileVariant::StairW => match east {
-                TileVariant::StairW | TileVariant::Wall => EastTopDecoration::SouthEastStairWFull,
-                _ => EastTopDecoration::SouthEastStairW,
-            },
-            _ => match east {
-                TileVariant::StairW => match south_east {
-                    TileVariant::StairW | TileVariant::Wall => EastTopDecoration::EastStairWFull,
-                    _ => EastTopDecoration::EastStairW,
-                },
-                _ => EastTopDecoration::None,
-            },
-        }
-    }
-}
-
-impl fmt::Display for MidSprite {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    pub fn flip(&self) -> Model {
         match self {
-            MidSprite::Empty => write!(f, "Empty"),
-            MidSprite::Corner { east, south } => {
-                write!(f, "Corner{east}{south}")
-            }
-            MidSprite::Horizontal { south } => write!(f, "Horizontal{south}"),
-            MidSprite::Vertical { east } => write!(f, "Vertical{east}"),
-            MidSprite::InverseCorner => write!(f, "InverseCorner"),
-            MidSprite::Full => write!(f, "Full"),
-            MidSprite::StairN => write!(f, "StairN"),
-            MidSprite::StairNFull => write!(f, "StairNFull"),
-            MidSprite::StairS => write!(f, "StairS"),
-            MidSprite::StairSFull => write!(f, "StairSFull"),
-            MidSprite::StairE => write!(f, "StairE"),
-            MidSprite::StairEFull => write!(f, "StairEFull"),
-            MidSprite::StairW => write!(f, "StairW"),
-            MidSprite::StairWFull => write!(f, "StairWFull"),
+            Model::StairE => Model::StairW,
+            Model::StairENorth => Model::StairWNorth,
+            Model::StairESouth => Model::StairWSouth,
+            Model::StairENorthSouth => Model::StairWNorthSouth,
+            Model::StairW => Model::StairE,
+            Model::StairWNorth => Model::StairENorth,
+            Model::StairWSouth => Model::StairESouth,
+            Model::StairWNorthSouth => Model::StairENorthSouth,
+            _ => *self,
         }
     }
 }
 
-impl fmt::Display for EastDecoration {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            EastDecoration::None => write!(f, ""),
-            EastDecoration::Door => write!(f, "_EastDoor"),
-            EastDecoration::StairN => write!(f, "_EastStairN"),
-            EastDecoration::StairS => write!(f, "_EastStairS"),
+impl WallModel {
+    fn resolve(south: bool, east: bool, south_east: bool) -> WallModel {
+        match (south, east, south_east) {
+            (false, false, _) => WallModel::Corner,
+            (false, true, _) => WallModel::Horizontal,
+            (true, false, _) => WallModel::Vertical,
+            (true, true, false) => WallModel::InverseCorner,
+            (true, true, true) => WallModel::Full,
         }
     }
 }
 
-impl fmt::Display for SouthDecoration {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            SouthDecoration::None => write!(f, ""),
-            SouthDecoration::Door => write!(f, "_SouthDoor"),
-            SouthDecoration::StairN => write!(f, "_SouthStairN"),
-        }
-    }
-}
+pub fn resolve_sprites(
+    center: TileVariant,
+    north: TileVariant,
+    north_east: TileVariant,
+    east: TileVariant,
+    south_east: TileVariant,
+    south: TileVariant,
+) -> (BaseSprite, TopSprite) {
+    let center_model = Model::resolve(center, north, north_east, east, south_east, south);
 
-impl fmt::Display for TopSprite {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            TopSprite::Empty { east: south_east } => write!(f, "Empty{south_east}"),
-            TopSprite::Horizontal { deco } => write!(f, "Horizontal{deco}"),
-            TopSprite::Corner {
-                deco,
-                east: south_east,
-            } => {
-                write!(f, "Corner{deco}{south_east}")
-            }
-            TopSprite::StairN => write!(f, "StairN"),
-            TopSprite::StairNFull => write!(f, "StairNFull"),
-            TopSprite::StairE => write!(f, "StairE"),
-            TopSprite::StairEFull => write!(f, "StairEFull"),
-            TopSprite::StairW => write!(f, "StairW"),
-            TopSprite::StairWFull => write!(f, "StairWFull"),
-        }
-    }
-}
+    let east_model = Model::resolve(
+        east.flip(),
+        north_east.flip(),
+        north.flip(),
+        center.flip(),
+        south.flip(),
+        south_east.flip(),
+    )
+    .flip();
+    let south_east_model = Model::resolve(
+        south_east.flip(),
+        east.flip(),
+        center.flip(),
+        south.flip(),
+        TileVariant::Empty,
+        TileVariant::Empty,
+    )
+    .flip();
+    let south_model = Model::resolve(
+        south,
+        center,
+        east,
+        south_east,
+        TileVariant::Empty,
+        TileVariant::Empty,
+    );
 
-impl fmt::Display for TopDecoration {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            TopDecoration::None => write!(f, ""),
-            TopDecoration::Door => write!(f, "_Door"),
-        }
-    }
-}
-
-impl fmt::Display for EastTopDecoration {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            EastTopDecoration::None => write!(f, ""),
-            EastTopDecoration::EastStairW => write!(f, "_EastStairW"),
-            EastTopDecoration::EastStairWFull => write!(f, "_EastStairWFull"),
-            EastTopDecoration::SouthEastStairN => write!(f, "_SouthEastStairN"),
-            EastTopDecoration::SouthEastStairW => write!(f, "_SouthEastStairW"),
-            EastTopDecoration::SouthEastStairWFull => write!(f, "_SouthEastStairWFull"),
-        }
-    }
+    (
+        BaseSprite {
+            center: center_model.center_base_sprite(),
+            south: south_model.north_base_sprite(),
+            east: east_model.east_base_sprite(),
+        },
+        TopSprite {
+            center: center_model.center_top_sprite(),
+            south: south_model.north_top_sprite(),
+            south_east: south_east_model.north_east_top_sprite(),
+            east: east_model.east_top_sprite(),
+        },
+    )
 }

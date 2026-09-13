@@ -2,12 +2,11 @@
 
 use std::collections::HashSet;
 
-use wdn_enumerate::*;
+use wdn_enumerate::{TileVariant, resolve_sprites};
 
 fn main() {
-    let mut tops = HashSet::<TopSprite>::new();
-    let mut mids = HashSet::<MidSprite>::new();
-    let mut sprites = HashSet::<Sprite>::new();
+    let mut unique_base_sprites = HashSet::new();
+    let mut unique_top_sprites = HashSet::new();
 
     for center in TileVariant::values() {
         for north in TileVariant::values() {
@@ -15,16 +14,18 @@ fn main() {
                 for east in TileVariant::values() {
                     for south_east in TileVariant::values() {
                         for south in TileVariant::values() {
-                            let mid = MidSprite::resolve(
-                                center, north, north_east, east, south_east, south,
-                            );
-                            let top = TopSprite::resolve(
-                                center, north, north_east, east, south_east, south,
-                            );
-
-                            tops.insert(top);
-                            mids.insert(mid);
-                            sprites.insert(Sprite { mid, top });
+                            let (base, top) =
+                                resolve_sprites(center, north, north_east, east, south_east, south);
+                            if unique_base_sprites.insert(base) {
+                                // println!("{:?}", base);
+                            }
+                            if unique_top_sprites.insert(top) {
+                                println!(
+                                    "center: {:?}, north: {:?}, north_east: {:?}, east: {:?}, south_east: {:?}, south: {:?}",
+                                    center, north, north_east, east, south_east, south
+                                );
+                                println!("{:?}", top);
+                            }
                         }
                     }
                 }
@@ -32,45 +33,6 @@ fn main() {
         }
     }
 
-    let mut mids = mids.into_iter().collect::<Vec<_>>();
-    mids.sort_unstable();
-
-    println!("Unique mids: {}", mids.len());
-    for (i, mid) in mids.iter().enumerate() {
-        assert_eq!(mid.id(), i as u16);
-        println!("  {mid} => {}", i);
-    }
-
-    let mut tops = tops.into_iter().collect::<Vec<_>>();
-    tops.sort_unstable();
-
-    println!("Unique tops: {}", tops.len());
-    for (i, top) in tops.iter().enumerate() {
-        if matches!(
-            top,
-            TopSprite::Empty {
-                east: EastTopDecoration::None
-            }
-        ) {
-            assert_eq!(top.id(), 0);
-            println!("  {top} => 0,");
-        } else {
-            assert_eq!(
-                top.id(),
-                i as u16 + mids.len() as u16 - 1,
-                "top: {top}, i: {i}"
-            );
-            println!("  {top} => {},", i + mids.len() - 1);
-        }
-    }
-
-    println!("Unique sprites: {}", sprites.len());
-
-    println!(
-        "sprites with bleed risk: {}",
-        sprites.iter().filter(|s| s.bleeds()).count()
-    );
-    for sprite in sprites.iter().filter(|s| s.bleeds()) {
-        println!("  {sprite:?}");
-    }
+    println!("{:?} unique base sprites", unique_base_sprites.len());
+    println!("{:?} unique top sprites", unique_top_sprites.len());
 }
