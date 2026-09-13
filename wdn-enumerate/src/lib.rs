@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::Model::DoorVerticalNorth;
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
@@ -44,14 +46,14 @@ pub enum WallModel {
     Full,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub struct BaseSprite {
-    center: BaseSpriteCenter,
-    south: BaseSpriteSouth,
-    east: BaseSpriteEast,
+    pub center: BaseSpriteCenter,
+    pub south: BaseSpriteSouth,
+    pub east: BaseSpriteEast,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub enum BaseSpriteCenter {
     None,
     WallCorner,
@@ -69,13 +71,13 @@ pub enum BaseSpriteCenter {
     StairWFull,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub enum BaseSpriteSouth {
     None,
     Door,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub enum BaseSpriteEast {
     None,
     Door,
@@ -83,15 +85,15 @@ pub enum BaseSpriteEast {
     StairS,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub struct TopSprite {
-    center: TopSpriteCenter,
-    south: TopSpriteSouth,
-    south_east: TopSpriteSouthEast,
-    east: TopSpriteEast,
+    pub center: TopSpriteCenter,
+    pub south: TopSpriteSouth,
+    pub south_east: TopSpriteSouthEast,
+    pub east: TopSpriteEast,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub enum TopSpriteCenter {
     None,
     WallCorner,
@@ -102,7 +104,7 @@ pub enum TopSpriteCenter {
     Door,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub enum TopSpriteSouth {
     None,
     Door,
@@ -116,7 +118,7 @@ pub enum TopSpriteSouth {
     StairWFull,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub enum TopSpriteEast {
     None,
     Door,
@@ -124,7 +126,7 @@ pub enum TopSpriteEast {
     StairWFull,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub enum TopSpriteSouthEast {
     None,
     StairN,
@@ -453,4 +455,114 @@ pub fn resolve_sprites(
             east: east_model.east_top_sprite(),
         },
     )
+}
+
+impl fmt::Debug for BaseSprite {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}{:?}{:?}", self.center, self.east, self.south)
+    }
+}
+
+impl fmt::Debug for BaseSpriteCenter {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BaseSpriteCenter::None => write!(f, "Empty"),
+            BaseSpriteCenter::WallCorner => write!(f, "WallCorner"),
+            BaseSpriteCenter::WallVertical => write!(f, "WallVertical"),
+            BaseSpriteCenter::WallHorizontal => write!(f, "WallHorizontal"),
+            BaseSpriteCenter::WallInverseCorner => write!(f, "WallInverseCorner"),
+            BaseSpriteCenter::WallFull => write!(f, "WallFull"),
+            BaseSpriteCenter::StairN => write!(f, "StairN"),
+            BaseSpriteCenter::StairNFull => write!(f, "StairNFull"),
+            BaseSpriteCenter::StairS => write!(f, "StairS"),
+            BaseSpriteCenter::StairSFull => write!(f, "StairSFull"),
+            BaseSpriteCenter::StairE => write!(f, "StairE"),
+            BaseSpriteCenter::StairEFull => write!(f, "StairEFull"),
+            BaseSpriteCenter::StairW => write!(f, "StairW"),
+            BaseSpriteCenter::StairWFull => write!(f, "StairWFull"),
+        }
+    }
+}
+
+impl fmt::Debug for BaseSpriteEast {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::None => Ok(()),
+            Self::Door => write!(f, "_EastDoor"),
+            Self::StairN => write!(f, "_EastStairN"),
+            Self::StairS => write!(f, "_EastStairS"),
+        }
+    }
+}
+
+impl fmt::Debug for BaseSpriteSouth {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::None => Ok(()),
+            Self::Door => write!(f, "_SouthDoor"),
+        }
+    }
+}
+
+impl fmt::Debug for TopSprite {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{:?}{:?}{:?}{:?}",
+            self.center, self.south, self.south_east, self.east
+        )
+    }
+}
+
+impl fmt::Debug for TopSpriteCenter {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::None => write!(f, "Empty"),
+            Self::WallCorner => write!(f, "WallCorner"),
+            Self::WallVertical => write!(f, "WallVertical"),
+            Self::WallHorizontal => write!(f, "WallHorizontal"),
+            Self::WallInverseCorner => write!(f, "WallInverseCorner"),
+            Self::WallFull => write!(f, "WallFull"),
+            Self::Door => write!(f, "Door"),
+        }
+    }
+}
+
+impl fmt::Debug for TopSpriteSouth {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::None => Ok(()),
+            Self::Door => write!(f, "_SouthDoor"),
+            Self::WallCorner => write!(f, "_SouthWallCorner"),
+            Self::WallHorizontal => write!(f, "_SouthWallHorizontal"),
+            Self::StairN => write!(f, "_SouthStairN"),
+            Self::StairNFull => write!(f, "_SouthStairNFull"),
+            Self::StairE => write!(f, "_SouthStairE"),
+            Self::StairEFull => write!(f, "_SouthStairEFull"),
+            Self::StairW => write!(f, "_SouthStairW"),
+            Self::StairWFull => write!(f, "_SouthStairWFull"),
+        }
+    }
+}
+
+impl fmt::Debug for TopSpriteSouthEast {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::None => Ok(()),
+            Self::StairN => write!(f, "_SouthEastStairN"),
+            Self::StairW => write!(f, "_SouthEastStairW"),
+            Self::StairWFull => write!(f, "_SouthEastStairWFull"),
+        }
+    }
+}
+
+impl fmt::Debug for TopSpriteEast {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::None => Ok(()),
+            Self::Door => write!(f, "_EastDoor"),
+            Self::StairW => write!(f, "_EastStairW"),
+            Self::StairWFull => write!(f, "_EastStairWFull"),
+        }
+    }
 }
