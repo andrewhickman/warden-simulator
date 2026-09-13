@@ -572,16 +572,13 @@ impl BaseSprite {
     /// `visually identical sprites` groups reported by `spritesheet::report_visual_duplicates`.
     pub fn normalize(self) -> Self {
         match self {
-            // The full stair-top already spans the tile, covering where the east stair edge would be.
+            // The full stair-top already spans the tile, covering where the matching east stair edge would be.
             Self {
                 center: BaseSpriteCenter::StairNFull,
                 east: BaseSpriteEast::StairN,
                 ..
-            } => Self {
-                east: BaseSpriteEast::None,
-                ..self
-            },
-            Self {
+            }
+            | Self {
                 center: BaseSpriteCenter::StairSFull,
                 east: BaseSpriteEast::StairS,
                 ..
@@ -599,66 +596,6 @@ impl TopSprite {
     /// `visually identical sprites` groups reported by `spritesheet::report_visual_duplicates`.
     pub fn normalize(self) -> Self {
         match self {
-            // The wall's top plate already spans across the east edge, covering the stair sliver.
-            Self {
-                center: TopSpriteCenter::WallInverseCorner,
-                south: TopSpriteSouth::StairN,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::StairW,
-            } => Self {
-                east: TopSpriteEast::None,
-                ..self
-            },
-            // The south-east and east StairWFull slivers occupy the exact same pixels.
-            Self {
-                center: TopSpriteCenter::WallHorizontal,
-                south: TopSpriteSouth::StairEFull,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::StairWFull,
-            } => Self {
-                south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::None,
-                ..self
-            },
-            Self {
-                center: TopSpriteCenter::WallHorizontal,
-                south: TopSpriteSouth::StairEFull,
-                south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::StairWFull,
-            } => Self {
-                east: TopSpriteEast::None,
-                ..self
-            },
-            // The full north stair-top already spans the corner where the south-east sliver would sit.
-            Self {
-                center: TopSpriteCenter::WallVertical,
-                south: TopSpriteSouth::StairNFull,
-                south_east: TopSpriteSouthEast::StairN,
-                east: TopSpriteEast::Door,
-            } => Self {
-                south_east: TopSpriteSouthEast::None,
-                ..self
-            },
-            // The south-east and east StairWFull slivers occupy the exact same pixels.
-            Self {
-                center: TopSpriteCenter::None,
-                south: TopSpriteSouth::None,
-                south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::StairWFull,
-            } => Self {
-                south_east: TopSpriteSouthEast::None,
-                ..self
-            },
-            // The full north stair-top already spans the corner where the south-east sliver would sit.
-            Self {
-                center: TopSpriteCenter::WallVertical,
-                south: TopSpriteSouth::StairNFull,
-                south_east: TopSpriteSouthEast::StairN,
-                east: TopSpriteEast::None,
-            } => Self {
-                south_east: TopSpriteSouthEast::None,
-                ..self
-            },
             // The full stair-top already occupies the area the plain stair + south-east sliver covers.
             Self {
                 center: TopSpriteCenter::None,
@@ -671,78 +608,8 @@ impl TopSprite {
                 south_east: TopSpriteSouthEast::None,
                 east: TopSpriteEast::StairWFull,
             },
-            // The south-east and east StairWFull slivers occupy the exact same pixels.
-            Self {
-                center: TopSpriteCenter::None,
-                south: TopSpriteSouth::WallHorizontal,
-                south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::StairWFull,
-            } => Self {
-                south_east: TopSpriteSouthEast::None,
-                ..self
-            },
-            // The south wall already spans across the south-east corner, covering the stair sliver.
-            Self {
-                center: TopSpriteCenter::WallVertical,
-                south: TopSpriteSouth::WallHorizontal,
-                south_east: TopSpriteSouthEast::StairW,
-                east: TopSpriteEast::None,
-            } => Self {
-                south_east: TopSpriteSouthEast::None,
-                ..self
-            },
-            // The wall's top plate already spans across the east edge, covering the stair sliver.
-            Self {
-                center: TopSpriteCenter::WallHorizontal,
-                south: TopSpriteSouth::None,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::StairW,
-            } => Self {
-                east: TopSpriteEast::None,
-                ..self
-            },
-            // The south-east and east StairWFull slivers occupy the exact same pixels.
-            Self {
-                center: TopSpriteCenter::Door,
-                south: TopSpriteSouth::WallHorizontal,
-                south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::StairWFull,
-            } => Self {
-                south_east: TopSpriteSouthEast::None,
-                ..self
-            },
-            // The south-east and east StairWFull slivers occupy the exact same pixels.
-            Self {
-                center: TopSpriteCenter::WallHorizontal,
-                south: TopSpriteSouth::StairWFull,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::StairWFull,
-            } => Self {
-                south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::None,
-                ..self
-            },
-            Self {
-                center: TopSpriteCenter::WallHorizontal,
-                south: TopSpriteSouth::StairWFull,
-                south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::StairWFull,
-            } => Self {
-                east: TopSpriteEast::None,
-                ..self
-            },
-            // The south-east and east StairWFull slivers occupy the exact same pixels.
-            Self {
-                center: TopSpriteCenter::None,
-                south: TopSpriteSouth::StairWFull,
-                south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::StairWFull,
-            } => Self {
-                south_east: TopSpriteSouthEast::None,
-                ..self
-            },
             // The wall's inverse-corner notch is exactly filled in by the south-east stair sliver,
-            // rendering identically to the full wall top; the east stair sliver is then hidden too.
+            // rendering identically to the full wall top.
             Self {
                 center: TopSpriteCenter::WallFull,
                 south: TopSpriteSouth::StairNFull,
@@ -754,134 +621,142 @@ impl TopSprite {
                 south_east: TopSpriteSouthEast::StairWFull,
                 east: TopSpriteEast::None,
             },
+            // As above; an added east stair sliver is then hidden by the wall top plate too.
             Self {
+                center: TopSpriteCenter::WallInverseCorner,
+                south: TopSpriteSouth::WallHorizontal,
+                south_east: TopSpriteSouthEast::StairWFull,
+                east: TopSpriteEast::None | TopSpriteEast::StairWFull,
+            } => Self {
+                center: TopSpriteCenter::WallFull,
+                south: TopSpriteSouth::WallHorizontal,
+                south_east: TopSpriteSouthEast::None,
+                east: TopSpriteEast::None,
+            },
+            Self {
+                center: TopSpriteCenter::WallInverseCorner,
+                south: TopSpriteSouth::StairNFull,
+                south_east: TopSpriteSouthEast::StairN,
+                east: TopSpriteEast::None | TopSpriteEast::StairW,
+            } => Self {
+                center: TopSpriteCenter::WallFull,
+                south: TopSpriteSouth::StairNFull,
+                south_east: TopSpriteSouthEast::None,
+                east: TopSpriteEast::None,
+            },
+            // The wall's top plate already spans across the east edge, hiding the stair sliver.
+            Self {
+                center: TopSpriteCenter::WallInverseCorner,
+                south: TopSpriteSouth::StairN,
+                south_east: TopSpriteSouthEast::None,
+                east: TopSpriteEast::StairW,
+            }
+            | Self {
+                center: TopSpriteCenter::WallHorizontal,
+                south: TopSpriteSouth::StairEFull,
+                south_east: TopSpriteSouthEast::StairWFull,
+                east: TopSpriteEast::StairWFull,
+            }
+            | Self {
+                center: TopSpriteCenter::WallHorizontal,
+                south: TopSpriteSouth::None,
+                south_east: TopSpriteSouthEast::None,
+                east: TopSpriteEast::StairW,
+            }
+            | Self {
+                center: TopSpriteCenter::WallHorizontal,
+                south: TopSpriteSouth::StairWFull,
+                south_east: TopSpriteSouthEast::StairWFull,
+                east: TopSpriteEast::StairWFull,
+            }
+            | Self {
                 center: TopSpriteCenter::WallInverseCorner,
                 south: TopSpriteSouth::StairN,
                 south_east: TopSpriteSouthEast::StairWFull,
                 east: TopSpriteEast::StairWFull,
-            } => Self {
-                east: TopSpriteEast::None,
-                ..self
-            },
-            // The wall's inverse-corner notch is exactly filled in by the south-east stair sliver,
-            // rendering identically to the full wall top.
-            Self {
-                center: TopSpriteCenter::WallInverseCorner,
-                south: TopSpriteSouth::WallHorizontal,
-                south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::None,
-            } => Self {
-                center: TopSpriteCenter::WallFull,
-                south: TopSpriteSouth::WallHorizontal,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None,
-            },
-            // The south wall already spans across the east edge, covering the stair sliver.
-            Self {
+            }
+            | Self {
                 center: TopSpriteCenter::WallFull,
                 south: TopSpriteSouth::WallHorizontal,
                 south_east: TopSpriteSouthEast::None,
                 east: TopSpriteEast::StairWFull,
-            } => Self {
-                east: TopSpriteEast::None,
-                ..self
-            },
-            Self {
-                center: TopSpriteCenter::WallInverseCorner,
-                south: TopSpriteSouth::WallHorizontal,
-                south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::StairWFull,
-            } => Self {
-                center: TopSpriteCenter::WallFull,
-                south: TopSpriteSouth::WallHorizontal,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None,
-            },
-            // The south-east and east StairWFull slivers occupy the exact same pixels.
-            Self {
-                center: TopSpriteCenter::None,
-                south: TopSpriteSouth::StairEFull,
-                south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::StairWFull,
-            } => Self {
-                south_east: TopSpriteSouthEast::None,
-                ..self
-            },
-            Self {
-                center: TopSpriteCenter::None,
-                south: TopSpriteSouth::StairE,
-                south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::StairWFull,
-            } => Self {
-                south_east: TopSpriteSouthEast::None,
-                ..self
-            },
-            // The wall's top plate already spans across the east edge, covering the stair sliver.
-            Self {
+            }
+            | Self {
                 center: TopSpriteCenter::WallHorizontal,
                 south: TopSpriteSouth::StairWFull,
                 south_east: TopSpriteSouthEast::None,
                 east: TopSpriteEast::StairW,
-            } => Self {
-                east: TopSpriteEast::None,
-                ..self
-            },
-            // The south wall already spans across the south-east corner, covering the stair sliver.
-            Self {
-                center: TopSpriteCenter::None,
-                south: TopSpriteSouth::WallHorizontal,
-                south_east: TopSpriteSouthEast::StairW,
-                east: TopSpriteEast::None,
-            } => Self {
-                south_east: TopSpriteSouthEast::None,
-                ..self
-            },
-            Self {
-                center: TopSpriteCenter::WallVertical,
-                south: TopSpriteSouth::WallHorizontal,
-                south_east: TopSpriteSouthEast::StairW,
-                east: TopSpriteEast::Door,
-            } => Self {
-                south_east: TopSpriteSouthEast::None,
-                ..self
-            },
-            // The wall's inverse-corner notch is exactly filled in by the south-east stair sliver,
-            // rendering identically to the full wall top.
-            Self {
-                center: TopSpriteCenter::WallInverseCorner,
-                south: TopSpriteSouth::StairNFull,
-                south_east: TopSpriteSouthEast::StairN,
-                east: TopSpriteEast::None,
-            } => Self {
-                center: TopSpriteCenter::WallFull,
-                south: TopSpriteSouth::StairNFull,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None,
-            },
-            // As above, plus the wall top plate hides the added east stair sliver.
-            Self {
-                center: TopSpriteCenter::WallInverseCorner,
-                south: TopSpriteSouth::StairNFull,
-                south_east: TopSpriteSouthEast::StairN,
-                east: TopSpriteEast::StairW,
-            } => Self {
-                center: TopSpriteCenter::WallFull,
-                south: TopSpriteSouth::StairNFull,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None,
-            },
-            // The wall's top plate already spans across the east edge, covering the stair sliver.
-            Self {
+            }
+            | Self {
                 center: TopSpriteCenter::WallHorizontal,
                 south: TopSpriteSouth::StairEFull,
                 south_east: TopSpriteSouthEast::None,
                 east: TopSpriteEast::StairW,
+            }
+            | Self {
+                center: TopSpriteCenter::WallInverseCorner,
+                south: TopSpriteSouth::WallCorner,
+                south_east: TopSpriteSouthEast::None | TopSpriteSouthEast::StairN,
+                east: TopSpriteEast::StairW,
+            }
+            | Self {
+                center: TopSpriteCenter::WallHorizontal,
+                south: TopSpriteSouth::None,
+                south_east: TopSpriteSouthEast::StairWFull,
+                east: TopSpriteEast::StairWFull,
+            }
+            | Self {
+                center: TopSpriteCenter::WallHorizontal,
+                south: TopSpriteSouth::Door,
+                south_east: TopSpriteSouthEast::None,
+                east: TopSpriteEast::StairW,
+            }
+            | Self {
+                center: TopSpriteCenter::WallHorizontal,
+                south: TopSpriteSouth::Door,
+                south_east: TopSpriteSouthEast::StairWFull,
+                east: TopSpriteEast::StairWFull,
             } => Self {
                 east: TopSpriteEast::None,
                 ..self
             },
-            // The full north stair-top already spans the corner where the south-east sliver would sit.
+            // The wall/stair-top already spans the south or south-east edge, hiding the stair sliver.
             Self {
+                center: TopSpriteCenter::WallVertical,
+                south: TopSpriteSouth::StairNFull,
+                south_east: TopSpriteSouthEast::StairN,
+                east: TopSpriteEast::Door | TopSpriteEast::None,
+            }
+            | Self {
+                center: TopSpriteCenter::WallVertical,
+                south: TopSpriteSouth::WallHorizontal,
+                south_east: TopSpriteSouthEast::StairW,
+                east: TopSpriteEast::None | TopSpriteEast::Door,
+            }
+            | Self {
+                center: TopSpriteCenter::None,
+                south:
+                    TopSpriteSouth::None
+                    | TopSpriteSouth::WallHorizontal
+                    | TopSpriteSouth::StairWFull
+                    | TopSpriteSouth::StairEFull
+                    | TopSpriteSouth::StairE,
+                south_east: TopSpriteSouthEast::StairWFull,
+                east: TopSpriteEast::StairWFull,
+            }
+            | Self {
+                center: TopSpriteCenter::None | TopSpriteCenter::Door,
+                south: TopSpriteSouth::WallHorizontal,
+                south_east: TopSpriteSouthEast::StairW,
+                east: TopSpriteEast::None,
+            }
+            | Self {
+                center: TopSpriteCenter::Door,
+                south: TopSpriteSouth::WallHorizontal,
+                south_east: TopSpriteSouthEast::StairWFull,
+                east: TopSpriteEast::StairWFull,
+            }
+            | Self {
                 center: TopSpriteCenter::None,
                 south: TopSpriteSouth::StairNFull,
                 south_east: TopSpriteSouthEast::StairN,
@@ -890,73 +765,15 @@ impl TopSprite {
                 south_east: TopSpriteSouthEast::None,
                 ..self
             },
-            // The wall's top plate already spans across the east edge, covering the stair sliver.
-            Self {
-                center: TopSpriteCenter::WallInverseCorner,
-                south: TopSpriteSouth::WallCorner,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::StairW,
-            } => Self {
-                east: TopSpriteEast::None,
-                ..self
-            },
-            // The south wall already spans across the south-east corner, covering the stair sliver.
-            Self {
-                center: TopSpriteCenter::Door,
-                south: TopSpriteSouth::WallHorizontal,
-                south_east: TopSpriteSouthEast::StairW,
-                east: TopSpriteEast::None,
-            } => Self {
-                south_east: TopSpriteSouthEast::None,
-                ..self
-            },
-            // The wall's top plate already spans across the east edge, covering the stair sliver.
-            Self {
-                center: TopSpriteCenter::WallInverseCorner,
-                south: TopSpriteSouth::WallCorner,
-                south_east: TopSpriteSouthEast::StairN,
-                east: TopSpriteEast::StairW,
-            } => Self {
-                east: TopSpriteEast::None,
-                ..self
-            },
             // The south-east and east StairWFull slivers occupy the exact same pixels.
             Self {
                 center: TopSpriteCenter::WallHorizontal,
-                south: TopSpriteSouth::None,
+                south:
+                    TopSpriteSouth::StairEFull | TopSpriteSouth::StairWFull | TopSpriteSouth::None,
                 south_east: TopSpriteSouthEast::None,
                 east: TopSpriteEast::StairWFull,
             } => Self {
                 south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::None,
-                ..self
-            },
-            Self {
-                center: TopSpriteCenter::WallHorizontal,
-                south: TopSpriteSouth::None,
-                south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::StairWFull,
-            } => Self {
-                east: TopSpriteEast::None,
-                ..self
-            },
-            // The wall's top plate already spans across the east edge, covering the stair sliver.
-            Self {
-                center: TopSpriteCenter::WallHorizontal,
-                south: TopSpriteSouth::Door,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::StairW,
-            } => Self {
-                east: TopSpriteEast::None,
-                ..self
-            },
-            // The south-east and east StairWFull slivers occupy the exact same pixels.
-            Self {
-                center: TopSpriteCenter::WallHorizontal,
-                south: TopSpriteSouth::Door,
-                south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::StairWFull,
-            } => Self {
                 east: TopSpriteEast::None,
                 ..self
             },
