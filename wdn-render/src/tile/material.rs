@@ -59,12 +59,6 @@ impl Material2d for TileChunkMaterial {
         fragment_state
             .shader_defs
             .push(ShaderDefVal::UInt("CHUNK_HEIGHT".into(), CHUNK_SIZE as u32));
-
-        descriptor
-            .depth_stencil
-            .as_mut()
-            .expect("no depth stencil for Mesh2d pipeline")
-            .depth_write_enabled = Some(true);
         Ok(())
     }
 }
