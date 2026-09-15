@@ -73,11 +73,6 @@ fn main() {
                     }
 
                     // if unique_base_sprites.insert(base) {
-                    //     println!(
-                    //         "center: {:?}, north: {:?}, north_east: {:?}, east: {:?}, south_east: {:?}, south: {:?}",
-                    //         center, north, north_east, east, south_east, south
-                    //     );
-                    //     println!("sprite: {:?}", base);
                     //     ordered_base_sprites.push(base);
                     // }
                     // if unique_top_sprites.insert(top) {

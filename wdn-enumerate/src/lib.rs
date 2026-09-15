@@ -104,6 +104,8 @@ pub enum TopSpriteCenter {
     WallInverseCorner,
     WallFull,
     Door,
+    StairS,
+    StairSFull,
 }
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy)]
@@ -268,8 +270,6 @@ impl Model {
             Model::DoorVerticalSouth | Model::DoorVerticalNorthSouth => TopSpriteCenter::Door,
             Model::StairN
             | Model::StairNFull
-            | Model::StairS
-            | Model::StairSFull
             | Model::StairE
             | Model::StairENorth
             | Model::StairESouth
@@ -278,6 +278,8 @@ impl Model {
             | Model::StairWNorth
             | Model::StairWSouth
             | Model::StairWNorthSouth => TopSpriteCenter::None,
+            Model::StairS => TopSpriteCenter::StairS,
+            Model::StairSFull => TopSpriteCenter::StairSFull,
         }
     }
 
@@ -528,6 +530,8 @@ impl fmt::Debug for TopSpriteCenter {
             Self::WallInverseCorner => write!(f, "WallInverseCorner"),
             Self::WallFull => write!(f, "WallFull"),
             Self::Door => write!(f, "Door"),
+            Self::StairS => write!(f, "StairS"),
+            Self::StairSFull => write!(f, "StairSFull"),
         }
     }
 }
@@ -814,6 +818,139 @@ impl TopSprite {
             } => Self {
                 south_east: TopSpriteSouthEast::StairWFull,
                 east: TopSpriteEast::None,
+                ..self
+            },
+            // The center stair-top is drawn first and is hidden by the north stair silhouette
+            // spanning the same strip, so it's indistinguishable from an empty center.
+            Self {
+                center: TopSpriteCenter::StairS,
+                south: TopSpriteSouth::StairN,
+                south_east: TopSpriteSouthEast::None,
+                east: TopSpriteEast::None,
+            }
+            | Self {
+                center: TopSpriteCenter::StairS,
+                south: TopSpriteSouth::StairN,
+                south_east: TopSpriteSouthEast::StairW,
+                east: TopSpriteEast::None,
+            }
+            | Self {
+                center: TopSpriteCenter::StairSFull,
+                south: TopSpriteSouth::StairN,
+                south_east: TopSpriteSouthEast::StairWFull,
+                east: TopSpriteEast::None,
+            }
+            | Self {
+                center: TopSpriteCenter::StairS,
+                south: TopSpriteSouth::StairNFull,
+                south_east: TopSpriteSouthEast::StairN,
+                east: TopSpriteEast::StairW,
+            }
+            | Self {
+                center: TopSpriteCenter::StairS,
+                south: TopSpriteSouth::StairN,
+                south_east: TopSpriteSouthEast::None,
+                east: TopSpriteEast::StairW,
+            }
+            | Self {
+                center: TopSpriteCenter::StairS,
+                south: TopSpriteSouth::StairNFull,
+                south_east: TopSpriteSouthEast::None,
+                east: TopSpriteEast::None,
+            }
+            | Self {
+                center: TopSpriteCenter::StairSFull,
+                south: TopSpriteSouth::StairNFull,
+                south_east: TopSpriteSouthEast::None,
+                east: TopSpriteEast::None,
+            }
+            | Self {
+                center: TopSpriteCenter::StairS,
+                south: TopSpriteSouth::StairNFull,
+                south_east: TopSpriteSouthEast::None,
+                east: TopSpriteEast::StairWFull,
+            } => Self {
+                center: TopSpriteCenter::None,
+                ..self
+            },
+            // As above; the north stair-top is only partial here, so it must also be upgraded to
+            // full, which in turn absorbs the south-east sliver.
+            Self {
+                center: TopSpriteCenter::StairS | TopSpriteCenter::StairSFull,
+                south: TopSpriteSouth::StairNFull,
+                south_east: TopSpriteSouthEast::StairN,
+                east: TopSpriteEast::None,
+            } => Self {
+                center: TopSpriteCenter::None,
+                south_east: TopSpriteSouthEast::None,
+                ..self
+            },
+            Self {
+                center: TopSpriteCenter::StairS,
+                south: TopSpriteSouth::StairN,
+                south_east: TopSpriteSouthEast::StairWFull,
+                east: TopSpriteEast::StairWFull,
+            } => Self {
+                center: TopSpriteCenter::None,
+                south: TopSpriteSouth::StairNFull,
+                south_east: TopSpriteSouthEast::None,
+                east: TopSpriteEast::StairWFull,
+            },
+            // The south-east and east StairWFull slivers occupy the exact same pixels, or the
+            // south wall already spans across the south-east corner.
+            Self {
+                center: TopSpriteCenter::StairS,
+                south: TopSpriteSouth::StairW,
+                south_east: TopSpriteSouthEast::StairWFull,
+                east: TopSpriteEast::StairWFull,
+            }
+            | Self {
+                center: TopSpriteCenter::None,
+                south: TopSpriteSouth::StairW,
+                south_east: TopSpriteSouthEast::StairWFull,
+                east: TopSpriteEast::StairWFull,
+            }
+            | Self {
+                center: TopSpriteCenter::StairS,
+                south: TopSpriteSouth::None,
+                south_east: TopSpriteSouthEast::StairWFull,
+                east: TopSpriteEast::StairWFull,
+            }
+            | Self {
+                center: TopSpriteCenter::StairS,
+                south: TopSpriteSouth::WallHorizontal,
+                south_east: TopSpriteSouthEast::StairWFull,
+                east: TopSpriteEast::StairWFull,
+            }
+            | Self {
+                center: TopSpriteCenter::StairS,
+                south: TopSpriteSouth::StairE,
+                south_east: TopSpriteSouthEast::StairWFull,
+                east: TopSpriteEast::StairWFull,
+            }
+            | Self {
+                center: TopSpriteCenter::StairSFull,
+                south: TopSpriteSouth::WallHorizontal,
+                south_east: TopSpriteSouthEast::StairW,
+                east: TopSpriteEast::None,
+            }
+            | Self {
+                center: TopSpriteCenter::StairS,
+                south: TopSpriteSouth::WallHorizontal,
+                south_east: TopSpriteSouthEast::StairW,
+                east: TopSpriteEast::None,
+            } => Self {
+                south_east: TopSpriteSouthEast::None,
+                ..self
+            },
+            // The wall's full top plate already spans the tile, hiding the south wall strip.
+            Self {
+                center: TopSpriteCenter::WallFull,
+                south: TopSpriteSouth::WallHorizontal,
+                south_east: TopSpriteSouthEast::None,
+                east: TopSpriteEast::None,
+            } => Self {
+                south: TopSpriteSouth::None,
                 ..self
             },
             _ => self,

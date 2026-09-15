@@ -2,6 +2,8 @@ use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 
+use resvg::tiny_skia::{Pixmap, Transform};
+use resvg::usvg::{Options, Tree};
 use wdn_enumerate::{
     BaseSprite, BaseSpriteCenter, BaseSpriteEast, BaseSpriteSouth, TopSprite, TopSpriteCenter,
     TopSpriteEast, TopSpriteSouth, TopSpriteSouthEast,
@@ -59,7 +61,19 @@ pub fn generate_spritesheet(
         )
     }));
 
-    write_spritesheet(&tiles, output_path)
+    let svg = build_svg(&tiles);
+    fs::write(output_path, &svg)?;
+
+    let pixmap = render_to_pixmap(&svg);
+    pixmap
+        .save_png(output_path.with_extension("png"))
+        .expect("failed to save spritesheet png");
+    // Base and top tiles are unrelated sprite kinds, so check each for duplicates separately;
+    // a coincidental pixel match between the two isn't a missing `normalize()` rule.
+    report_visual_duplicates(&pixmap, &tiles[..base_tiles.len()], 0);
+    report_visual_duplicates(&pixmap, &tiles[base_tiles.len()..], base_tiles.len());
+
+    Ok(())
 }
 
 /// Generates `impl BaseSprite::id`/`impl TopSprite::id` methods that return each sprite's
@@ -160,8 +174,8 @@ fn resolve_layers(
         .collect()
 }
 
-/// Lays `tiles` out in a grid and writes the resulting spritesheet SVG to `output_path`.
-fn write_spritesheet(tiles: &[(String, Vec<String>)], output_path: &Path) -> std::io::Result<()> {
+/// Lays `tiles` out in a grid, returning the resulting spritesheet SVG source.
+fn build_svg(tiles: &[(String, Vec<String>)]) -> String {
     let columns = SPRITES_PER_ROW;
     let rows = (tiles.len() as u32).div_ceil(columns);
     let sheet_width = columns * TILE_WIDTH;
@@ -185,14 +199,53 @@ fn write_spritesheet(tiles: &[(String, Vec<String>)], output_path: &Path) -> std
     // Reverse the tiles' document order; each keeps its original grid position.
     let body: String = groups.into_iter().rev().collect();
 
-    let svg = format!(
+    format!(
         "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n\
          <svg width=\"{sheet_width}\" height=\"{sheet_height}\" viewBox=\"0 0 {sheet_width} {sheet_height}\" \
          xmlns=\"http://www.w3.org/2000/svg\" xmlns:inkscape=\"{INKSCAPE_NS}\" \
          xmlns:sodipodi=\"http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd\">\n{body}</svg>\n"
-    );
+    )
+}
 
-    fs::write(output_path, svg)
+fn render_to_pixmap(svg: &str) -> Pixmap {
+    let tree = Tree::from_str(svg, &Options::default()).expect("failed to parse generated svg");
+    let size = tree.size().to_int_size();
+    let mut pixmap = Pixmap::new(size.width(), size.height()).expect("invalid pixmap size");
+    resvg::render(&tree, Transform::identity(), &mut pixmap.as_mut());
+    pixmap
+}
+
+/// Groups `tiles` by their rendered pixels (as laid out by [`build_svg`], starting at grid
+/// index `first_index`) and prints any group sharing an identical image, which would
+/// indicate a missing `normalize()` rule.
+fn report_visual_duplicates(pixmap: &Pixmap, tiles: &[(String, Vec<String>)], first_index: usize) {
+    let columns = SPRITES_PER_ROW;
+    let stride = pixmap.width() as usize * 4;
+    let mut tiles_by_pixels: HashMap<Vec<u8>, Vec<&str>> = HashMap::new();
+
+    for (offset, (name, _)) in tiles.iter().enumerate() {
+        let index = (first_index + offset) as u32;
+        let tile_x = (index % columns) as usize * TILE_WIDTH as usize * 4;
+        let tile_y = (index / columns) as usize * TILE_HEIGHT as usize;
+
+        let mut pixels = Vec::with_capacity(TILE_WIDTH as usize * TILE_HEIGHT as usize * 4);
+        for row in 0..TILE_HEIGHT as usize {
+            let start = (tile_y + row) * stride + tile_x;
+            pixels.extend_from_slice(&pixmap.data()[start..start + TILE_WIDTH as usize * 4]);
+        }
+
+        tiles_by_pixels.entry(pixels).or_default().push(name);
+    }
+
+    let mut duplicate_count = 0;
+    for group in tiles_by_pixels.values() {
+        if group.len() > 1 {
+            println!("visually identical sprites: {}", group.join(", "));
+            duplicate_count += group.len();
+        }
+    }
+
+    println!("{duplicate_count} visually identical sprites");
 }
 
 /// Renders `sprite` as a `BaseSprite { .. }` struct pattern using the actual Rust variant
@@ -262,6 +315,8 @@ fn top_center_ident(center: TopSpriteCenter) -> &'static str {
         TopSpriteCenter::WallInverseCorner => "WallInverseCorner",
         TopSpriteCenter::WallFull => "WallFull",
         TopSpriteCenter::Door => "Door",
+        TopSpriteCenter::StairS => "StairS",
+        TopSpriteCenter::StairSFull => "StairSFull",
     }
 }
 
@@ -341,7 +396,9 @@ fn center_top_label(center: TopSpriteCenter) -> &'static str {
         TopSpriteCenter::WallHorizontal => "CenterWallHorizontal",
         TopSpriteCenter::WallInverseCorner => "CenterWallInverseCorner",
         TopSpriteCenter::WallFull => "CenterWallFull",
-        TopSpriteCenter::Door => "Corner_Door",
+        TopSpriteCenter::Door => "CenterDoor",
+        TopSpriteCenter::StairS => "CenterStairS",
+        TopSpriteCenter::StairSFull => "CenterStairSFull",
     }
 }
 
