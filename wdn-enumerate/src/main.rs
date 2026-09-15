@@ -11,9 +11,9 @@ mod spritesheet;
 
 fn main() {
     let mut unique_base_sprites = HashSet::new();
-    // let mut ordered_base_sprites = Vec::new();
+    let mut ordered_base_sprites = Vec::new();
     let mut unique_top_sprites = HashSet::new();
-    // let mut ordered_top_sprites = Vec::new();
+    let mut ordered_top_sprites = Vec::new();
 
     let mut base_csv = BufWriter::new(File::create("base.csv").expect("failed to create base.csv"));
     let mut top_csv = BufWriter::new(File::create("top.csv").expect("failed to create top.csv"));
@@ -64,41 +64,35 @@ fn main() {
                     )
                     .unwrap();
 
-                    if unique_base_sprites.insert(base.clone()) {
+                    if unique_base_sprites.insert(base) {
                         writeln!(base_consts, "const {}: u16 = {};", basestr, base.id()).unwrap();
+                        ordered_base_sprites.push(base);
                     }
-
-                    if unique_top_sprites.insert(top.clone()) {
+                    if unique_top_sprites.insert(top) {
                         writeln!(top_consts, "const {}: u16 = {};", topstr, top.id()).unwrap();
+                        ordered_top_sprites.push(top);
                     }
-
-                    // if unique_base_sprites.insert(base) {
-                    //     ordered_base_sprites.push(base);
-                    // }
-                    // if unique_top_sprites.insert(top) {
-                    //     ordered_top_sprites.push(top);
-                    // }
                 }
             }
         }
     }
 
-    // println!("{:?} unique base sprites", unique_base_sprites.len());
-    // println!("{:?} unique top sprites", unique_top_sprites.len());
+    println!("{:?} unique base sprites", unique_base_sprites.len());
+    println!("{:?} unique top sprites", unique_top_sprites.len());
 
-    // spritesheet::generate_spritesheet(
-    //     &ordered_base_sprites,
-    //     Path::new("assets/image/wall_base_parts.svg"),
-    //     &ordered_top_sprites,
-    //     Path::new("assets/image/wall_top_parts.svg"),
-    //     Path::new("assets/image/wall_spritesheet.svg"),
-    // )
-    // .expect("failed to generate wall spritesheet");
+    spritesheet::generate_spritesheet(
+        &ordered_base_sprites,
+        Path::new("assets/image/wall_base_parts.svg"),
+        &ordered_top_sprites,
+        Path::new("assets/image/wall_top_parts.svg"),
+        Path::new("assets/image/wall_spritesheet.svg"),
+    )
+    .expect("failed to generate wall spritesheet");
 
-    // spritesheet::generate_sprite_ids(
-    //     &ordered_base_sprites,
-    //     &ordered_top_sprites,
-    //     Path::new("wdn-enumerate/src/sprite_id.rs"),
-    // )
-    // .expect("failed to generate sprite ids");
+    spritesheet::generate_sprite_ids(
+        &ordered_base_sprites,
+        &ordered_top_sprites,
+        Path::new("wdn-enumerate/src/sprite_id.rs"),
+    )
+    .expect("failed to generate sprite ids");
 }

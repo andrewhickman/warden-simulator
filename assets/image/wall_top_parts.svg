@@ -29,14 +29,14 @@
      inkscape:document-units="px"
      showgrid="true"
      inkscape:zoom="1.4142136"
-     inkscape:cx="-80.256618"
-     inkscape:cy="188.44395"
+     inkscape:cx="-126.21856"
+     inkscape:cy="148.84597"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g455"
+     inkscape:current-layer="g467"
      inkscape:export-bgcolor="#00000000"
      showguides="true">
     <inkscape:grid
@@ -7303,6 +7303,19 @@
      id="layer2-6"
      inkscape:label="East"
      style="display:inline">
+    <g
+       inkscape:label="EastStairSFull"
+       transform="translate(-32,-56)"
+       id="g467"
+       style="display:none">
+      <path
+         d="m 999.99996,104 v 80 H 1080 v -80 z"
+         style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         id="path1-6-9-2-5-6-6-1"
+         inkscape:label="Top"
+         sodipodi:nodetypes="ccccc"
+         transform="translate(-848,176)" />
+    </g>
     <g
        id="g2-4"
        inkscape:label="EastStairWFull"

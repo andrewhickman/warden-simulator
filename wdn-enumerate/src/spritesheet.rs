@@ -350,6 +350,7 @@ fn top_east_ident(east: TopSpriteEast) -> &'static str {
         TopSpriteEast::Door => "Door",
         TopSpriteEast::StairW => "StairW",
         TopSpriteEast::StairWFull => "StairWFull",
+        TopSpriteEast::StairSFull => "StairSFull",
     }
 }
 
@@ -432,6 +433,7 @@ fn east_top_label(east: TopSpriteEast) -> &'static str {
         TopSpriteEast::Door => "EastDoor",
         TopSpriteEast::StairW => "EastStairW",
         TopSpriteEast::StairWFull => "EastStairWFull",
+        TopSpriteEast::StairSFull => "EastStairSFull",
     }
 }
 

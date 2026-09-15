@@ -102,55 +102,72 @@ const TOP_WALLCORNER_SOUTHDOOR_SOUTHEASTSTAIRW_EASTDOOR: u16 = 91;
 const TOP_WALLVERTICAL_SOUTHSTAIRN_SOUTHEASTSTAIRW_EASTDOOR: u16 = 92;
 const TOP_WALLCORNER_SOUTHSTAIREFULL_SOUTHEASTSTAIRW_EASTDOOR: u16 = 93;
 const TOP_WALLCORNER_SOUTHSTAIRWFULL_SOUTHEASTSTAIRW_EASTDOOR: u16 = 94;
-const TOP_DOOR_SOUTHWALLCORNER: u16 = 95;
-const TOP_DOOR_SOUTHWALLHORIZONTAL: u16 = 96;
-const TOP_DOOR_SOUTHWALLCORNER_SOUTHEASTSTAIRN: u16 = 97;
-const TOP_DOOR_SOUTHWALLCORNER_EASTSTAIRW: u16 = 98;
-const TOP_DOOR_SOUTHWALLHORIZONTAL_EASTSTAIRWFULL: u16 = 99;
-const TOP_DOOR_SOUTHWALLCORNER_SOUTHEASTSTAIRN_EASTSTAIRW: u16 = 100;
-const TOP_STAIRS: u16 = 101;
-const TOP_STAIRS_SOUTHWALLCORNER: u16 = 102;
-const TOP_STAIRS_SOUTHSTAIRE: u16 = 103;
-const TOP_STAIRS_SOUTHSTAIRW: u16 = 104;
-const TOP_STAIRS_SOUTHWALLHORIZONTAL: u16 = 105;
-const TOP_STAIRS_SOUTHWALLCORNER_SOUTHEASTSTAIRN: u16 = 106;
-const TOP_STAIRS_SOUTHEASTSTAIRW: u16 = 107;
-const TOP_STAIRS_SOUTHSTAIRE_SOUTHEASTSTAIRW: u16 = 108;
-const TOP_STAIRS_SOUTHSTAIRW_SOUTHEASTSTAIRW: u16 = 109;
-const TOP_STAIRSFULL: u16 = 110;
-const TOP_STAIRSFULL_SOUTHWALLCORNER: u16 = 111;
-const TOP_STAIRSFULL_SOUTHSTAIRN: u16 = 112;
-const TOP_STAIRSFULL_SOUTHSTAIRE: u16 = 113;
-const TOP_STAIRSFULL_SOUTHSTAIRW: u16 = 114;
-const TOP_STAIRSFULL_SOUTHWALLHORIZONTAL: u16 = 115;
-const TOP_STAIRSFULL_SOUTHWALLCORNER_SOUTHEASTSTAIRN: u16 = 116;
-const TOP_STAIRSFULL_SOUTHEASTSTAIRWFULL: u16 = 117;
-const TOP_STAIRSFULL_SOUTHWALLHORIZONTAL_SOUTHEASTSTAIRWFULL: u16 = 118;
-const TOP_STAIRSFULL_SOUTHSTAIRE_SOUTHEASTSTAIRWFULL: u16 = 119;
-const TOP_STAIRSFULL_SOUTHSTAIRW_SOUTHEASTSTAIRWFULL: u16 = 120;
-const TOP_STAIRSFULL_SOUTHEASTSTAIRW: u16 = 121;
-const TOP_STAIRSFULL_SOUTHSTAIRN_SOUTHEASTSTAIRW: u16 = 122;
-const TOP_STAIRSFULL_SOUTHSTAIRE_SOUTHEASTSTAIRW: u16 = 123;
-const TOP_STAIRSFULL_SOUTHSTAIRW_SOUTHEASTSTAIRW: u16 = 124;
-const TOP_STAIRS_EASTSTAIRW: u16 = 125;
-const TOP_STAIRS_SOUTHWALLCORNER_EASTSTAIRW: u16 = 126;
-const TOP_STAIRS_SOUTHSTAIRE_EASTSTAIRW: u16 = 127;
-const TOP_STAIRS_SOUTHSTAIRW_EASTSTAIRW: u16 = 128;
-const TOP_STAIRS_EASTSTAIRWFULL: u16 = 129;
-const TOP_STAIRS_SOUTHWALLHORIZONTAL_EASTSTAIRWFULL: u16 = 130;
-const TOP_STAIRS_SOUTHSTAIRE_EASTSTAIRWFULL: u16 = 131;
-const TOP_STAIRS_SOUTHSTAIRW_EASTSTAIRWFULL: u16 = 132;
-const TOP_STAIRS_SOUTHWALLCORNER_SOUTHEASTSTAIRN_EASTSTAIRW: u16 = 133;
-const TOP_EMPTY_SOUTHSTAIREFULL: u16 = 134;
-const TOP_EMPTY_SOUTHSTAIREFULL_SOUTHEASTSTAIRW: u16 = 135;
-const TOP_EMPTY_SOUTHSTAIREFULL_SOUTHEASTSTAIRWFULL: u16 = 136;
-const TOP_EMPTY_SOUTHSTAIREFULL_EASTSTAIRW: u16 = 137;
-const TOP_EMPTY_SOUTHSTAIREFULL_EASTSTAIRWFULL: u16 = 138;
-const TOP_EMPTY_SOUTHSTAIRWFULL: u16 = 139;
-const TOP_EMPTY_SOUTHSTAIRWFULL_SOUTHEASTSTAIRW: u16 = 140;
-const TOP_EMPTY_SOUTHSTAIRWFULL_SOUTHEASTSTAIRWFULL: u16 = 141;
-const TOP_EMPTY_SOUTHSTAIRWFULL_EASTSTAIRW: u16 = 142;
-const TOP_EMPTY_SOUTHSTAIRWFULL_EASTSTAIRWFULL: u16 = 143;
+const TOP_WALLCORNER_EASTSTAIRSFULL: u16 = 95;
+const TOP_WALLVERTICAL_SOUTHWALLCORNER_EASTSTAIRSFULL: u16 = 96;
+const TOP_WALLCORNER_SOUTHDOOR_EASTSTAIRSFULL: u16 = 97;
+const TOP_WALLVERTICAL_SOUTHSTAIRN_EASTSTAIRSFULL: u16 = 98;
+const TOP_WALLCORNER_SOUTHSTAIREFULL_EASTSTAIRSFULL: u16 = 99;
+const TOP_WALLCORNER_SOUTHSTAIRWFULL_EASTSTAIRSFULL: u16 = 100;
+const TOP_WALLVERTICAL_SOUTHWALLHORIZONTAL_EASTSTAIRSFULL: u16 = 101;
+const TOP_WALLVERTICAL_SOUTHSTAIRNFULL_EASTSTAIRSFULL: u16 = 102;
+const TOP_WALLVERTICAL_SOUTHWALLCORNER_SOUTHEASTSTAIRN_EASTSTAIRSFULL: u16 = 103;
+const TOP_WALLCORNER_SOUTHEASTSTAIRW_EASTSTAIRSFULL: u16 = 104;
+const TOP_WALLCORNER_SOUTHDOOR_SOUTHEASTSTAIRW_EASTSTAIRSFULL: u16 = 105;
+const TOP_WALLVERTICAL_SOUTHSTAIRN_SOUTHEASTSTAIRW_EASTSTAIRSFULL: u16 = 106;
+const TOP_WALLCORNER_SOUTHSTAIREFULL_SOUTHEASTSTAIRW_EASTSTAIRSFULL: u16 = 107;
+const TOP_WALLCORNER_SOUTHSTAIRWFULL_SOUTHEASTSTAIRW_EASTSTAIRSFULL: u16 = 108;
+const TOP_DOOR_SOUTHWALLCORNER: u16 = 109;
+const TOP_DOOR_SOUTHWALLHORIZONTAL: u16 = 110;
+const TOP_DOOR_SOUTHWALLCORNER_SOUTHEASTSTAIRN: u16 = 111;
+const TOP_DOOR_SOUTHWALLCORNER_EASTSTAIRW: u16 = 112;
+const TOP_DOOR_SOUTHWALLHORIZONTAL_EASTSTAIRWFULL: u16 = 113;
+const TOP_DOOR_SOUTHWALLCORNER_SOUTHEASTSTAIRN_EASTSTAIRW: u16 = 114;
+const TOP_STAIRS: u16 = 115;
+const TOP_STAIRS_SOUTHWALLCORNER: u16 = 116;
+const TOP_STAIRS_SOUTHSTAIRE: u16 = 117;
+const TOP_STAIRS_SOUTHSTAIRW: u16 = 118;
+const TOP_STAIRS_SOUTHWALLHORIZONTAL: u16 = 119;
+const TOP_STAIRS_SOUTHWALLCORNER_SOUTHEASTSTAIRN: u16 = 120;
+const TOP_STAIRS_SOUTHEASTSTAIRW: u16 = 121;
+const TOP_STAIRS_SOUTHSTAIRE_SOUTHEASTSTAIRW: u16 = 122;
+const TOP_STAIRS_SOUTHSTAIRW_SOUTHEASTSTAIRW: u16 = 123;
+const TOP_STAIRSFULL: u16 = 124;
+const TOP_STAIRSFULL_SOUTHWALLCORNER: u16 = 125;
+const TOP_STAIRSFULL_SOUTHSTAIRN: u16 = 126;
+const TOP_STAIRSFULL_SOUTHSTAIRE: u16 = 127;
+const TOP_STAIRSFULL_SOUTHSTAIRW: u16 = 128;
+const TOP_STAIRSFULL_SOUTHWALLHORIZONTAL: u16 = 129;
+const TOP_STAIRSFULL_SOUTHWALLCORNER_SOUTHEASTSTAIRN: u16 = 130;
+const TOP_STAIRSFULL_SOUTHEASTSTAIRWFULL: u16 = 131;
+const TOP_STAIRSFULL_SOUTHWALLHORIZONTAL_SOUTHEASTSTAIRWFULL: u16 = 132;
+const TOP_STAIRSFULL_SOUTHSTAIRE_SOUTHEASTSTAIRWFULL: u16 = 133;
+const TOP_STAIRSFULL_SOUTHSTAIRW_SOUTHEASTSTAIRWFULL: u16 = 134;
+const TOP_STAIRSFULL_SOUTHSTAIRN_EASTSTAIRSFULL: u16 = 135;
+const TOP_STAIRSFULL_SOUTHSTAIRNFULL_EASTSTAIRSFULL: u16 = 136;
+const TOP_STAIRSFULL_SOUTHWALLCORNER_SOUTHEASTSTAIRN_EASTSTAIRSFULL: u16 = 137;
+const TOP_STAIRSFULL_SOUTHEASTSTAIRW_EASTSTAIRSFULL: u16 = 138;
+const TOP_STAIRSFULL_SOUTHSTAIRN_SOUTHEASTSTAIRW_EASTSTAIRSFULL: u16 = 139;
+const TOP_STAIRSFULL_SOUTHSTAIRE_SOUTHEASTSTAIRW_EASTSTAIRSFULL: u16 = 140;
+const TOP_STAIRSFULL_SOUTHSTAIRW_SOUTHEASTSTAIRW_EASTSTAIRSFULL: u16 = 141;
+const TOP_STAIRS_EASTSTAIRW: u16 = 142;
+const TOP_STAIRS_SOUTHWALLCORNER_EASTSTAIRW: u16 = 143;
+const TOP_STAIRS_SOUTHSTAIRE_EASTSTAIRW: u16 = 144;
+const TOP_STAIRS_SOUTHSTAIRW_EASTSTAIRW: u16 = 145;
+const TOP_STAIRS_EASTSTAIRWFULL: u16 = 146;
+const TOP_STAIRS_SOUTHWALLHORIZONTAL_EASTSTAIRWFULL: u16 = 147;
+const TOP_STAIRS_SOUTHSTAIRE_EASTSTAIRWFULL: u16 = 148;
+const TOP_STAIRS_SOUTHSTAIRW_EASTSTAIRWFULL: u16 = 149;
+const TOP_STAIRS_SOUTHWALLCORNER_SOUTHEASTSTAIRN_EASTSTAIRW: u16 = 150;
+const TOP_EMPTY_SOUTHSTAIREFULL: u16 = 151;
+const TOP_EMPTY_SOUTHSTAIREFULL_SOUTHEASTSTAIRW: u16 = 152;
+const TOP_EMPTY_SOUTHSTAIREFULL_SOUTHEASTSTAIRWFULL: u16 = 153;
+const TOP_EMPTY_SOUTHSTAIREFULL_EASTSTAIRW: u16 = 154;
+const TOP_EMPTY_SOUTHSTAIREFULL_EASTSTAIRWFULL: u16 = 155;
+const TOP_EMPTY_SOUTHSTAIRWFULL: u16 = 156;
+const TOP_EMPTY_SOUTHSTAIRWFULL_SOUTHEASTSTAIRW: u16 = 157;
+const TOP_EMPTY_SOUTHSTAIRWFULL_SOUTHEASTSTAIRWFULL: u16 = 158;
+const TOP_EMPTY_SOUTHSTAIRWFULL_EASTSTAIRW: u16 = 159;
+const TOP_EMPTY_SOUTHSTAIRWFULL_EASTSTAIRWFULL: u16 = 160;
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
 enum TileVariant {
@@ -305,7 +322,7 @@ fn resolve_top(
             Door | Empty | StairE | StairN | StairS | Wall,
             Door | Empty | StairE | StairN | StairS | Wall,
             Door | Empty | StairS,
-        ) => TOP_EMPTY,
+        ) => EMPTY,
         (
             Empty | StairE | StairN | StairW,
             Door | Empty | StairE | StairN | StairS,
@@ -350,10 +367,13 @@ fn resolve_top(
         }
         (
             Door | Empty | StairE | StairN | StairS | StairW,
-            Door | Empty | StairE | StairN | StairS | Wall,
+            Door | Empty | StairE | StairN | Wall,
             StairN | Wall,
             StairN,
-        ) => TOP_EMPTY_SOUTHSTAIRNFULL,
+        )
+        | (Door | Empty | StairE | StairN | StairW, StairS, StairN | Wall, StairN) => {
+            TOP_EMPTY_SOUTHSTAIRNFULL
+        }
         (
             Empty | StairE | StairN | StairW,
             Door | Empty | StairE | StairN | StairS,
@@ -455,54 +475,42 @@ fn resolve_top(
         }
         (
             Wall,
-            Empty | StairE | StairN | StairS,
+            Empty | StairE | StairN,
             Door | Empty | StairE | StairN | StairS | Wall,
             Empty | StairS,
         )
-        | (Wall, Empty | StairE | StairN | StairS, Wall, Door) => TOP_WALLCORNER,
-        (Wall, Empty | StairE | StairN | StairS, Door | Empty | StairE | StairS, Wall) => {
+        | (Wall, Empty | StairE | StairN, Wall, Door) => TOP_WALLCORNER,
+        (Wall, Empty | StairE | StairN, Door | Empty | StairE | StairS, Wall) => {
             TOP_WALLVERTICAL_SOUTHWALLCORNER
         }
-        (Wall, Empty | StairE | StairN | StairS, Door | Empty | StairE | StairN | StairS, Door) => {
+        (Wall, Empty | StairE | StairN, Door | Empty | StairE | StairN | StairS, Door) => {
             TOP_WALLCORNER_SOUTHDOOR
         }
-        (Wall, Empty | StairE | StairN | StairS, Door | Empty | StairE | StairS, StairN) => {
+        (Wall, Empty | StairE | StairN, Door | Empty | StairE | StairS, StairN) => {
             TOP_WALLVERTICAL_SOUTHSTAIRN
         }
-        (
-            Wall,
-            Empty | StairE | StairN | StairS,
-            Door | Empty | StairE | StairN | StairS | Wall,
-            StairE,
-        ) => TOP_WALLCORNER_SOUTHSTAIREFULL,
-        (
-            Wall,
-            Empty | StairE | StairN | StairS,
-            Door | Empty | StairE | StairN | StairS | Wall,
-            StairW,
-        ) => TOP_WALLCORNER_SOUTHSTAIRWFULL,
-        (Wall, Empty | StairE | StairN | StairS, StairW | Wall, Wall) => {
+        (Wall, Empty | StairE | StairN, Door | Empty | StairE | StairN | StairS | Wall, StairE) => {
+            TOP_WALLCORNER_SOUTHSTAIREFULL
+        }
+        (Wall, Empty | StairE | StairN, Door | Empty | StairE | StairN | StairS | Wall, StairW) => {
+            TOP_WALLCORNER_SOUTHSTAIRWFULL
+        }
+        (Wall, Empty | StairE | StairN, StairW | Wall, Wall) => {
             TOP_WALLVERTICAL_SOUTHWALLHORIZONTAL
         }
-        (Wall, Empty | StairE | StairN | StairS, StairN | Wall, StairN) => {
-            TOP_WALLVERTICAL_SOUTHSTAIRNFULL
-        }
-        (Wall, Empty | StairE | StairN | StairS, StairN, Wall) => {
+        (Wall, Empty | StairE | StairN, StairN | Wall, StairN) => TOP_WALLVERTICAL_SOUTHSTAIRNFULL,
+        (Wall, Empty | StairE | StairN, StairN, Wall) => {
             TOP_WALLVERTICAL_SOUTHWALLCORNER_SOUTHEASTSTAIRN
         }
-        (Wall, Empty | StairE | StairN | StairS, StairW, Empty | StairS) => {
-            TOP_WALLCORNER_SOUTHEASTSTAIRW
-        }
-        (Wall, Empty | StairE | StairN | StairS, StairW, Door) => {
-            TOP_WALLCORNER_SOUTHDOOR_SOUTHEASTSTAIRW
-        }
-        (Wall, Empty | StairE | StairN | StairS, StairW, StairN) => {
+        (Wall, Empty | StairE | StairN, StairW, Empty | StairS) => TOP_WALLCORNER_SOUTHEASTSTAIRW,
+        (Wall, Empty | StairE | StairN, StairW, Door) => TOP_WALLCORNER_SOUTHDOOR_SOUTHEASTSTAIRW,
+        (Wall, Empty | StairE | StairN, StairW, StairN) => {
             TOP_WALLVERTICAL_SOUTHSTAIRN_SOUTHEASTSTAIRW
         }
-        (Wall, Empty | StairE | StairN | StairS, StairW, StairE) => {
+        (Wall, Empty | StairE | StairN, StairW, StairE) => {
             TOP_WALLCORNER_SOUTHSTAIREFULL_SOUTHEASTSTAIRW
         }
-        (Wall, Empty | StairE | StairN | StairS, StairW, StairW) => {
+        (Wall, Empty | StairE | StairN, StairW, StairW) => {
             TOP_WALLCORNER_SOUTHSTAIRWFULL_SOUTHEASTSTAIRW
         }
         (Wall, StairW | Wall, Door | Empty | StairE | StairN | StairS, Empty | StairS)
@@ -567,6 +575,39 @@ fn resolve_top(
         (Wall, Door, StairW, StairN) => TOP_WALLVERTICAL_SOUTHSTAIRN_SOUTHEASTSTAIRW_EASTDOOR,
         (Wall, Door, StairW, StairE) => TOP_WALLCORNER_SOUTHSTAIREFULL_SOUTHEASTSTAIRW_EASTDOOR,
         (Wall, Door, StairW, StairW) => TOP_WALLCORNER_SOUTHSTAIRWFULL_SOUTHEASTSTAIRW_EASTDOOR,
+        (Wall, StairS, Door | Empty | StairE | StairN | StairS | Wall, Empty | StairS)
+        | (Wall, StairS, Wall, Door) => TOP_WALLCORNER_EASTSTAIRSFULL,
+        (Wall, StairS, Door | Empty | StairE | StairS, Wall) => {
+            TOP_WALLVERTICAL_SOUTHWALLCORNER_EASTSTAIRSFULL
+        }
+        (Wall, StairS, Door | Empty | StairE | StairN | StairS, Door) => {
+            TOP_WALLCORNER_SOUTHDOOR_EASTSTAIRSFULL
+        }
+        (Wall, StairS, Door | Empty | StairE | StairS, StairN) => {
+            TOP_WALLVERTICAL_SOUTHSTAIRN_EASTSTAIRSFULL
+        }
+        (Wall, StairS, Door | Empty | StairE | StairN | StairS | Wall, StairE) => {
+            TOP_WALLCORNER_SOUTHSTAIREFULL_EASTSTAIRSFULL
+        }
+        (Wall, StairS, Door | Empty | StairE | StairN | StairS | Wall, StairW) => {
+            TOP_WALLCORNER_SOUTHSTAIRWFULL_EASTSTAIRSFULL
+        }
+        (Wall, StairS, StairW | Wall, Wall) => TOP_WALLVERTICAL_SOUTHWALLHORIZONTAL_EASTSTAIRSFULL,
+        (Wall, StairS, StairN | Wall, StairN) => TOP_WALLVERTICAL_SOUTHSTAIRNFULL_EASTSTAIRSFULL,
+        (Wall, StairS, StairN, Wall) => {
+            TOP_WALLVERTICAL_SOUTHWALLCORNER_SOUTHEASTSTAIRN_EASTSTAIRSFULL
+        }
+        (Wall, StairS, StairW, Empty | StairS) => TOP_WALLCORNER_SOUTHEASTSTAIRW_EASTSTAIRSFULL,
+        (Wall, StairS, StairW, Door) => TOP_WALLCORNER_SOUTHDOOR_SOUTHEASTSTAIRW_EASTSTAIRSFULL,
+        (Wall, StairS, StairW, StairN) => {
+            TOP_WALLVERTICAL_SOUTHSTAIRN_SOUTHEASTSTAIRW_EASTSTAIRSFULL
+        }
+        (Wall, StairS, StairW, StairE) => {
+            TOP_WALLCORNER_SOUTHSTAIREFULL_SOUTHEASTSTAIRW_EASTSTAIRSFULL
+        }
+        (Wall, StairS, StairW, StairW) => {
+            TOP_WALLCORNER_SOUTHSTAIRWFULL_SOUTHEASTSTAIRW_EASTSTAIRSFULL
+        }
         (Door, Door | Empty | StairE | StairN | StairS, Door | Empty | StairE | StairS, Wall) => {
             TOP_DOOR_SOUTHWALLCORNER
         }
@@ -624,9 +665,7 @@ fn resolve_top(
         (StairS, StairS | Wall, Door | Empty | StairE | StairS, Wall) => {
             TOP_STAIRSFULL_SOUTHWALLCORNER
         }
-        (StairS, StairS | Wall, Door | Empty | StairE | StairS, StairN) => {
-            TOP_STAIRSFULL_SOUTHSTAIRN
-        }
+        (StairS, Wall, Door | Empty | StairE | StairS, StairN) => TOP_STAIRSFULL_SOUTHSTAIRN,
         (StairS, StairS | Wall, Door | Empty | StairE | StairN | StairS | Wall, StairE) => {
             TOP_STAIRSFULL_SOUTHSTAIRE
         }
@@ -636,15 +675,30 @@ fn resolve_top(
         (StairS, StairS | Wall, Wall, Wall) | (StairS, StairS, StairW, Wall) => {
             TOP_STAIRSFULL_SOUTHWALLHORIZONTAL
         }
-        (StairS, StairS | Wall, StairN, Wall) => TOP_STAIRSFULL_SOUTHWALLCORNER_SOUTHEASTSTAIRN,
+        (StairS, Wall, StairN, Wall) => TOP_STAIRSFULL_SOUTHWALLCORNER_SOUTHEASTSTAIRN,
         (StairS, Wall, StairW, Door | Empty | StairS) => TOP_STAIRSFULL_SOUTHEASTSTAIRWFULL,
         (StairS, Wall, StairW, Wall) => TOP_STAIRSFULL_SOUTHWALLHORIZONTAL_SOUTHEASTSTAIRWFULL,
         (StairS, Wall, StairW, StairE) => TOP_STAIRSFULL_SOUTHSTAIRE_SOUTHEASTSTAIRWFULL,
         (StairS, Wall, StairW, StairW) => TOP_STAIRSFULL_SOUTHSTAIRW_SOUTHEASTSTAIRWFULL,
-        (StairS, StairS, StairW, Door | Empty | StairS) => TOP_STAIRSFULL_SOUTHEASTSTAIRW,
-        (StairS, StairS, StairW, StairN) => TOP_STAIRSFULL_SOUTHSTAIRN_SOUTHEASTSTAIRW,
-        (StairS, StairS, StairW, StairE) => TOP_STAIRSFULL_SOUTHSTAIRE_SOUTHEASTSTAIRW,
-        (StairS, StairS, StairW, StairW) => TOP_STAIRSFULL_SOUTHSTAIRW_SOUTHEASTSTAIRW,
+        (StairS, StairS, Door | Empty | StairE | StairS, StairN) => {
+            TOP_STAIRSFULL_SOUTHSTAIRN_EASTSTAIRSFULL
+        }
+        (StairS, StairS, StairN | Wall, StairN) => TOP_STAIRSFULL_SOUTHSTAIRNFULL_EASTSTAIRSFULL,
+        (StairS, StairS, StairN, Wall) => {
+            TOP_STAIRSFULL_SOUTHWALLCORNER_SOUTHEASTSTAIRN_EASTSTAIRSFULL
+        }
+        (StairS, StairS, StairW, Door | Empty | StairS) => {
+            TOP_STAIRSFULL_SOUTHEASTSTAIRW_EASTSTAIRSFULL
+        }
+        (StairS, StairS, StairW, StairN) => {
+            TOP_STAIRSFULL_SOUTHSTAIRN_SOUTHEASTSTAIRW_EASTSTAIRSFULL
+        }
+        (StairS, StairS, StairW, StairE) => {
+            TOP_STAIRSFULL_SOUTHSTAIRE_SOUTHEASTSTAIRW_EASTSTAIRSFULL
+        }
+        (StairS, StairS, StairW, StairW) => {
+            TOP_STAIRSFULL_SOUTHSTAIRW_SOUTHEASTSTAIRW_EASTSTAIRSFULL
+        }
         (StairS, StairW, Door | Empty | StairE | StairN | StairS, Door | Empty | StairS) => {
             TOP_STAIRS_EASTSTAIRW
         }
