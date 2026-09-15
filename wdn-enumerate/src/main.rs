@@ -7,6 +7,7 @@ use std::{collections::HashSet, io::BufWriter};
 
 use wdn_enumerate::{TileVariant, resolve_sprites};
 
+mod contiguity;
 mod spritesheet;
 
 fn main() {
@@ -14,6 +15,7 @@ fn main() {
     let mut ordered_base_sprites = Vec::new();
     let mut unique_top_sprites = HashSet::new();
     let mut ordered_top_sprites = Vec::new();
+    let mut unique_pairs = HashSet::new();
 
     let mut base_csv = BufWriter::new(File::create("base.csv").expect("failed to create base.csv"));
     let mut top_csv = BufWriter::new(File::create("top.csv").expect("failed to create top.csv"));
@@ -38,6 +40,7 @@ fn main() {
                         south_east,
                         south,
                     );
+                    let simplified_top = top.simplify();
 
                     for north in TileVariant::values() {
                         for north_east in TileVariant::values() {
@@ -49,7 +52,7 @@ fn main() {
                     }
 
                     let basestr = format!("BASE_{:?}", base).to_uppercase();
-                    let topstr = format!("TOP_{:?}", top).to_uppercase();
+                    let topstr = format!("TOP_{:?}", simplified_top).to_uppercase();
                     writeln!(
                         top_csv,
                         "{},{:?},{:?},{:?},{:?}",
@@ -64,13 +67,24 @@ fn main() {
                     )
                     .unwrap();
 
+                    // Contiguity analysis needs the pre-simplify (normalize-only) top sprite
+                    // paired with its base, so that regenerating `simplify()` never analyzes
+                    // its own prior output (which would make each run a moving target).
+                    unique_pairs.insert((base, top));
+
                     if unique_base_sprites.insert(base) {
                         writeln!(base_consts, "const {}: u16 = {};", basestr, base.id()).unwrap();
                         ordered_base_sprites.push(base);
                     }
-                    if unique_top_sprites.insert(top) {
-                        writeln!(top_consts, "const {}: u16 = {};", topstr, top.id()).unwrap();
-                        ordered_top_sprites.push(top);
+                    if unique_top_sprites.insert(simplified_top) {
+                        writeln!(
+                            top_consts,
+                            "const {}: u16 = {};",
+                            topstr,
+                            simplified_top.id()
+                        )
+                        .unwrap();
+                        ordered_top_sprites.push(simplified_top);
                     }
                 }
             }
@@ -95,4 +109,19 @@ fn main() {
         Path::new("wdn-enumerate/src/sprite_id.rs"),
     )
     .expect("failed to generate sprite ids");
+
+    contiguity::report_redundant_top_fields(
+        &unique_pairs,
+        Path::new("assets/image/wall_base_parts.svg"),
+        Path::new("assets/image/wall_top_parts.svg"),
+    )
+    .expect("failed to check top sprite contiguity");
+
+    contiguity::generate_simplify(
+        &unique_pairs,
+        Path::new("assets/image/wall_base_parts.svg"),
+        Path::new("assets/image/wall_top_parts.svg"),
+        Path::new("wdn-enumerate/src/topsprite_simplify.rs"),
+    )
+    .expect("failed to generate TopSprite::simplify");
 }

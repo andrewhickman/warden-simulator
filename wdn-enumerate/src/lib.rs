@@ -3,6 +3,7 @@ use std::fmt;
 use crate::Model::DoorVerticalNorth;
 
 mod sprite_id;
+mod topsprite_simplify;
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
 pub enum TileVariant {
@@ -666,7 +667,8 @@ impl TopSprite {
                 south_east: TopSpriteSouthEast::StairWFull,
                 east: TopSpriteEast::None,
             },
-            // As above; an added east stair sliver is then hidden by the wall top plate too.
+            // As above; an added east stair sliver is then hidden by the wall top plate too, and
+            // the wall's own full top plate then hides the south wall strip in turn.
             Self {
                 center: TopSpriteCenter::WallInverseCorner,
                 south: TopSpriteSouth::WallHorizontal,
@@ -674,7 +676,7 @@ impl TopSprite {
                 east: TopSpriteEast::None | TopSpriteEast::StairWFull,
             } => Self {
                 center: TopSpriteCenter::WallFull,
-                south: TopSpriteSouth::WallHorizontal,
+                south: TopSpriteSouth::None,
                 south_east: TopSpriteSouthEast::None,
                 east: TopSpriteEast::None,
             },
@@ -718,12 +720,6 @@ impl TopSprite {
                 center: TopSpriteCenter::WallInverseCorner,
                 south: TopSpriteSouth::StairN,
                 south_east: TopSpriteSouthEast::StairWFull,
-                east: TopSpriteEast::StairWFull,
-            }
-            | Self {
-                center: TopSpriteCenter::WallFull,
-                south: TopSpriteSouth::WallHorizontal,
-                south_east: TopSpriteSouthEast::None,
                 east: TopSpriteEast::StairWFull,
             }
             | Self {
@@ -978,17 +974,134 @@ impl TopSprite {
                 south_east: TopSpriteSouthEast::None,
                 ..self
             },
-            // The wall's full top plate already spans the tile, hiding the south wall strip.
+            // The wall's full top plate already spans the tile, hiding the south wall strip
+            // (and, if present, an east stair sliver the wall top plate would hide too).
             Self {
                 center: TopSpriteCenter::WallFull,
                 south: TopSpriteSouth::WallHorizontal,
                 south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None,
+                east: TopSpriteEast::None | TopSpriteEast::StairWFull,
             } => Self {
                 south: TopSpriteSouth::None,
+                east: TopSpriteEast::None,
                 ..self
             },
             _ => self,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const BASE_CENTERS: [BaseSpriteCenter; 14] = [
+        BaseSpriteCenter::None,
+        BaseSpriteCenter::WallCorner,
+        BaseSpriteCenter::WallVertical,
+        BaseSpriteCenter::WallHorizontal,
+        BaseSpriteCenter::WallInverseCorner,
+        BaseSpriteCenter::WallFull,
+        BaseSpriteCenter::StairN,
+        BaseSpriteCenter::StairNFull,
+        BaseSpriteCenter::StairS,
+        BaseSpriteCenter::StairSFull,
+        BaseSpriteCenter::StairE,
+        BaseSpriteCenter::StairEFull,
+        BaseSpriteCenter::StairW,
+        BaseSpriteCenter::StairWFull,
+    ];
+    const BASE_SOUTHS: [BaseSpriteSouth; 2] = [BaseSpriteSouth::None, BaseSpriteSouth::Door];
+    const BASE_EASTS: [BaseSpriteEast; 4] = [
+        BaseSpriteEast::None,
+        BaseSpriteEast::Door,
+        BaseSpriteEast::StairN,
+        BaseSpriteEast::StairS,
+    ];
+
+    const TOP_CENTERS: [TopSpriteCenter; 9] = [
+        TopSpriteCenter::None,
+        TopSpriteCenter::WallCorner,
+        TopSpriteCenter::WallVertical,
+        TopSpriteCenter::WallHorizontal,
+        TopSpriteCenter::WallInverseCorner,
+        TopSpriteCenter::WallFull,
+        TopSpriteCenter::Door,
+        TopSpriteCenter::StairS,
+        TopSpriteCenter::StairSFull,
+    ];
+    const TOP_SOUTHS: [TopSpriteSouth; 10] = [
+        TopSpriteSouth::None,
+        TopSpriteSouth::Door,
+        TopSpriteSouth::WallCorner,
+        TopSpriteSouth::WallHorizontal,
+        TopSpriteSouth::StairN,
+        TopSpriteSouth::StairNFull,
+        TopSpriteSouth::StairE,
+        TopSpriteSouth::StairEFull,
+        TopSpriteSouth::StairW,
+        TopSpriteSouth::StairWFull,
+    ];
+    const TOP_SOUTH_EASTS: [TopSpriteSouthEast; 4] = [
+        TopSpriteSouthEast::None,
+        TopSpriteSouthEast::StairN,
+        TopSpriteSouthEast::StairW,
+        TopSpriteSouthEast::StairWFull,
+    ];
+    const TOP_EASTS: [TopSpriteEast; 5] = [
+        TopSpriteEast::None,
+        TopSpriteEast::Door,
+        TopSpriteEast::StairSFull,
+        TopSpriteEast::StairW,
+        TopSpriteEast::StairWFull,
+    ];
+
+    /// `normalize()` must reach its fixed point in a single match, i.e. re-normalizing an
+    /// already-normalized sprite must be a no-op, for every possible sprite.
+    #[test]
+    fn base_sprite_normalize_is_a_fixed_point_in_one_step() {
+        for &center in &BASE_CENTERS {
+            for &south in &BASE_SOUTHS {
+                for &east in &BASE_EASTS {
+                    let sprite = BaseSprite {
+                        center,
+                        south,
+                        east,
+                    };
+                    let normalized = sprite.normalize();
+                    assert_eq!(
+                        normalized.normalize(),
+                        normalized,
+                        "normalize() is not a fixed point for {sprite:?} -> {normalized:?}"
+                    );
+                }
+            }
+        }
+    }
+
+    /// `normalize()` must reach its fixed point in a single match, i.e. re-normalizing an
+    /// already-normalized sprite must be a no-op, for every possible sprite.
+    #[test]
+    fn top_sprite_normalize_is_a_fixed_point_in_one_step() {
+        for &center in &TOP_CENTERS {
+            for &south in &TOP_SOUTHS {
+                for &south_east in &TOP_SOUTH_EASTS {
+                    for &east in &TOP_EASTS {
+                        let sprite = TopSprite {
+                            center,
+                            south,
+                            south_east,
+                            east,
+                        };
+                        let normalized = sprite.normalize();
+                        assert_eq!(
+                            normalized.normalize(),
+                            normalized,
+                            "normalize() is not a fixed point for {sprite:?} -> {normalized:?}"
+                        );
+                    }
+                }
+            }
         }
     }
 }

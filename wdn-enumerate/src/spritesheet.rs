@@ -9,8 +9,8 @@ use wdn_enumerate::{
     TopSpriteEast, TopSpriteSouth, TopSpriteSouthEast,
 };
 
-const TILE_WIDTH: u32 = 200;
-const TILE_HEIGHT: u32 = 400;
+pub(crate) const TILE_WIDTH: u32 = 200;
+pub(crate) const TILE_HEIGHT: u32 = 400;
 const SPRITES_PER_ROW: u32 = 16;
 const INKSCAPE_NS: &str = "http://www.inkscape.org/namespaces/inkscape";
 
@@ -158,7 +158,7 @@ fn normalized_unique<T: Copy + Eq + std::hash::Hash>(
 }
 
 /// Looks up each of `labels` in `parts`, cloning the matching SVG fragments.
-fn resolve_layers(
+pub(crate) fn resolve_layers(
     labels: &[&str],
     parts: &HashMap<String, String>,
     parts_path: &Path,
@@ -207,7 +207,7 @@ fn build_svg(tiles: &[(String, Vec<String>)]) -> String {
     )
 }
 
-fn render_to_pixmap(svg: &str) -> Pixmap {
+pub(crate) fn render_to_pixmap(svg: &str) -> Pixmap {
     let tree = Tree::from_str(svg, &Options::default()).expect("failed to parse generated svg");
     let size = tree.size().to_int_size();
     let mut pixmap = Pixmap::new(size.width(), size.height()).expect("invalid pixmap size");
@@ -261,7 +261,7 @@ fn base_sprite_pattern(sprite: BaseSprite) -> String {
 
 /// Renders `sprite` as a `TopSprite { .. }` struct pattern using the actual Rust variant
 /// names, for use as a `match` arm in generated code.
-fn top_sprite_pattern(sprite: TopSprite) -> String {
+pub(crate) fn top_sprite_pattern(sprite: TopSprite) -> String {
     format!(
         "TopSprite {{ center: TopSpriteCenter::{}, south: TopSpriteSouth::{}, south_east: TopSpriteSouthEast::{}, east: TopSpriteEast::{} }}",
         top_center_ident(sprite.center),
@@ -354,7 +354,7 @@ fn top_east_ident(east: TopSpriteEast) -> &'static str {
     }
 }
 
-fn center_label(center: BaseSpriteCenter) -> &'static str {
+pub(crate) fn center_label(center: BaseSpriteCenter) -> &'static str {
     match center {
         BaseSpriteCenter::None => "CenterNone",
         BaseSpriteCenter::WallCorner => "CenterWallCorner",
@@ -373,14 +373,14 @@ fn center_label(center: BaseSpriteCenter) -> &'static str {
     }
 }
 
-fn south_label(south: BaseSpriteSouth) -> &'static str {
+pub(crate) fn south_label(south: BaseSpriteSouth) -> &'static str {
     match south {
         BaseSpriteSouth::None => "SouthNone",
         BaseSpriteSouth::Door => "SouthDoor",
     }
 }
 
-fn east_label(east: BaseSpriteEast) -> &'static str {
+pub(crate) fn east_label(east: BaseSpriteEast) -> &'static str {
     match east {
         BaseSpriteEast::None => "EastNone",
         BaseSpriteEast::Door => "EastDoor",
@@ -389,7 +389,7 @@ fn east_label(east: BaseSpriteEast) -> &'static str {
     }
 }
 
-fn center_top_label(center: TopSpriteCenter) -> &'static str {
+pub(crate) fn center_top_label(center: TopSpriteCenter) -> &'static str {
     match center {
         TopSpriteCenter::None => "CenterNone",
         TopSpriteCenter::WallCorner => "CenterWallCorner",
@@ -403,7 +403,7 @@ fn center_top_label(center: TopSpriteCenter) -> &'static str {
     }
 }
 
-fn south_top_label(south: TopSpriteSouth) -> &'static str {
+pub(crate) fn south_top_label(south: TopSpriteSouth) -> &'static str {
     match south {
         TopSpriteSouth::None => "SouthNone",
         TopSpriteSouth::Door => "SouthDoor",
@@ -418,7 +418,7 @@ fn south_top_label(south: TopSpriteSouth) -> &'static str {
     }
 }
 
-fn south_east_top_label(south_east: TopSpriteSouthEast) -> &'static str {
+pub(crate) fn south_east_top_label(south_east: TopSpriteSouthEast) -> &'static str {
     match south_east {
         TopSpriteSouthEast::None => "SouthEastNone",
         TopSpriteSouthEast::StairN => "SouthEastStairN",
@@ -427,7 +427,7 @@ fn south_east_top_label(south_east: TopSpriteSouthEast) -> &'static str {
     }
 }
 
-fn east_top_label(east: TopSpriteEast) -> &'static str {
+pub(crate) fn east_top_label(east: TopSpriteEast) -> &'static str {
     match east {
         TopSpriteEast::None => "EastNone",
         TopSpriteEast::Door => "EastDoor",
@@ -447,7 +447,7 @@ fn escape_xml_attribute(value: &str) -> String {
 
 /// Collects every named part group (`inkscape:label`) keyed by that label, forcing each
 /// to render since the source file hides all but one part per layer with `display:none`.
-fn extract_labeled_parts(svg: &str) -> HashMap<String, String> {
+pub(crate) fn extract_labeled_parts(svg: &str) -> HashMap<String, String> {
     let doc = roxmltree::Document::parse(svg).expect("failed to parse parts svg");
     let mut parts = HashMap::new();
 
