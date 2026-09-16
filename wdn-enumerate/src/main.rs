@@ -110,18 +110,18 @@ fn main() {
     )
     .expect("failed to generate sprite ids");
 
-    contiguity::report_redundant_top_fields(
-        &unique_pairs,
-        Path::new("assets/image/wall_base_parts.svg"),
-        Path::new("assets/image/wall_top_parts.svg"),
-    )
-    .expect("failed to check top sprite contiguity");
+    // contiguity::report_redundant_top_fields(
+    //     &unique_pairs,
+    //     Path::new("assets/image/wall_base_parts.svg"),
+    //     Path::new("assets/image/wall_top_parts.svg"),
+    // )
+    // .expect("failed to check top sprite contiguity");
 
-    contiguity::generate_simplify(
-        &unique_pairs,
-        Path::new("assets/image/wall_base_parts.svg"),
-        Path::new("assets/image/wall_top_parts.svg"),
-        Path::new("wdn-enumerate/src/topsprite_simplify.rs"),
-    )
-    .expect("failed to generate TopSprite::simplify");
+    // contiguity::generate_simplify(
+    //     &unique_pairs,
+    //     Path::new("assets/image/wall_base_parts.svg"),
+    //     Path::new("assets/image/wall_top_parts.svg"),
+    //     Path::new("wdn-enumerate/src/topsprite_simplify.rs"),
+    // )
+    // .expect("failed to generate TopSprite::simplify");
 }

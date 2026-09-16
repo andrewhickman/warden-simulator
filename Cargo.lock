@@ -5487,7 +5487,6 @@ dependencies = [
  "bevy_transform",
  "bytemuck",
  "tracing",
- "wdn-enumerate",
  "wdn-physics",
  "wdn-tasks",
  "wdn-world",
