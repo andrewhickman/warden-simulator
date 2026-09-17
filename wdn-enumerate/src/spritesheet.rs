@@ -294,6 +294,8 @@ fn base_south_ident(south: BaseSpriteSouth) -> &'static str {
     match south {
         BaseSpriteSouth::None => "None",
         BaseSpriteSouth::Door => "Door",
+        BaseSpriteSouth::StairN => "StairN",
+        BaseSpriteSouth::StairNFull => "StairNFull",
     }
 }
 
@@ -339,8 +341,6 @@ fn top_south_east_ident(south_east: TopSpriteSouthEast) -> &'static str {
     match south_east {
         TopSpriteSouthEast::None => "None",
         TopSpriteSouthEast::StairN => "StairN",
-        TopSpriteSouthEast::StairW => "StairW",
-        TopSpriteSouthEast::StairWFull => "StairWFull",
     }
 }
 
@@ -348,9 +348,6 @@ fn top_east_ident(east: TopSpriteEast) -> &'static str {
     match east {
         TopSpriteEast::None => "None",
         TopSpriteEast::Door => "Door",
-        TopSpriteEast::StairW => "StairW",
-        TopSpriteEast::StairWFull => "StairWFull",
-        TopSpriteEast::StairSFull => "StairSFull",
     }
 }
 
@@ -377,6 +374,8 @@ pub(crate) fn south_label(south: BaseSpriteSouth) -> &'static str {
     match south {
         BaseSpriteSouth::None => "SouthNone",
         BaseSpriteSouth::Door => "SouthDoor",
+        BaseSpriteSouth::StairN => "SouthStairN",
+        BaseSpriteSouth::StairNFull => "SouthStairNFull",
     }
 }
 
@@ -422,8 +421,6 @@ pub(crate) fn south_east_top_label(south_east: TopSpriteSouthEast) -> &'static s
     match south_east {
         TopSpriteSouthEast::None => "SouthEastNone",
         TopSpriteSouthEast::StairN => "SouthEastStairN",
-        TopSpriteSouthEast::StairW => "SouthEastStairW",
-        TopSpriteSouthEast::StairWFull => "SouthEastStairWFull",
     }
 }
 
@@ -431,9 +428,6 @@ pub(crate) fn east_top_label(east: TopSpriteEast) -> &'static str {
     match east {
         TopSpriteEast::None => "EastNone",
         TopSpriteEast::Door => "EastDoor",
-        TopSpriteEast::StairW => "EastStairW",
-        TopSpriteEast::StairWFull => "EastStairWFull",
-        TopSpriteEast::StairSFull => "EastStairSFull",
     }
 }
 

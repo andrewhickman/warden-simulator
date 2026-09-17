@@ -5,7 +5,7 @@ use std::io::Write;
 use std::path::Path;
 use std::{collections::HashSet, io::BufWriter};
 
-use wdn_enumerate::{TileVariant, resolve_sprites};
+use wdn_enumerate::{BaseSprite, TileVariant, TopSprite, resolve_sprites};
 
 mod contiguity;
 mod spritesheet;
@@ -21,9 +21,7 @@ fn main() {
     let mut top_csv = BufWriter::new(File::create("top.csv").expect("failed to create top.csv"));
 
     let mut base_consts =
-        BufWriter::new(File::create("base_consts.rs").expect("failed to create base_consts.rs"));
-    let mut top_consts =
-        BufWriter::new(File::create("top_consts.rs").expect("failed to create top_consts.rs"));
+        BufWriter::new(File::create("consts.rs").expect("failed to create base_consts.rs"));
 
     writeln!(base_csv, "result,center,east,south_east,south").unwrap();
     writeln!(top_csv, "result,center,east,south_east,south").unwrap();
@@ -40,7 +38,7 @@ fn main() {
                         south_east,
                         south,
                     );
-                    let simplified_top = top.simplify();
+                    let simplified_top = top/*.simplify()*/;
 
                     for north in TileVariant::values() {
                         for north_east in TileVariant::values() {
@@ -51,8 +49,16 @@ fn main() {
                         }
                     }
 
-                    let basestr = format!("BASE_{:?}", base).to_uppercase();
-                    let topstr = format!("TOP_{:?}", simplified_top).to_uppercase();
+                    let basestr = if base == BaseSprite::EMPTY {
+                        "EMPTY".to_owned()
+                    } else {
+                        format!("BASE_{:?}", base).to_uppercase()
+                    };
+                    let topstr = if simplified_top == TopSprite::EMPTY {
+                        "EMPTY".to_owned()
+                    } else {
+                        format!("TOP_{:?}", simplified_top).to_uppercase()
+                    };
                     writeln!(
                         top_csv,
                         "{},{:?},{:?},{:?},{:?}",
@@ -73,22 +79,44 @@ fn main() {
                     unique_pairs.insert((base, top));
 
                     if unique_base_sprites.insert(base) {
-                        writeln!(base_consts, "const {}: u16 = {};", basestr, base.id()).unwrap();
+                        // writeln!(base_consts, "const {}: u16 = {};", basestr, base.id()).unwrap();
                         ordered_base_sprites.push(base);
                     }
                     if unique_top_sprites.insert(simplified_top) {
-                        writeln!(
-                            top_consts,
-                            "const {}: u16 = {};",
-                            topstr,
-                            simplified_top.id()
-                        )
-                        .unwrap();
+                        // writeln!(
+                        //     top_consts,
+                        //     "const {}: u16 = {};",
+                        //     topstr,
+                        //     simplified_top.id()
+                        // )
+                        // .unwrap();
                         ordered_top_sprites.push(simplified_top);
                     }
                 }
             }
         }
+    }
+
+    writeln!(base_consts, "const {}: u16 = {};", "EMPTY", 0).unwrap();
+    for (i, base) in ordered_base_sprites.iter().enumerate() {
+        if base == &BaseSprite::EMPTY {
+            continue;
+        }
+        let basestr = format!("BASE_{:?}", base).to_uppercase();
+        writeln!(base_consts, "const {}: u16 = {};", basestr, i).unwrap();
+    }
+    for (i, top) in ordered_top_sprites.iter().enumerate() {
+        if top == &TopSprite::EMPTY {
+            continue;
+        }
+        let topstr = format!("TOP_{:?}", top).to_uppercase();
+        writeln!(
+            base_consts,
+            "const {}: u16 = {};",
+            topstr,
+            i + ordered_base_sprites.len() - 1
+        )
+        .unwrap();
     }
 
     println!("{:?} unique base sprites", unique_base_sprites.len());
