@@ -28,12 +28,12 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="px"
      showgrid="true"
-     inkscape:zoom="0.25"
-     inkscape:cx="1268"
-     inkscape:cy="1226"
+     inkscape:zoom="6.14"
+     inkscape:cx="1528.6645"
+     inkscape:cy="1550.0814"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
-     inkscape:window-x="1912"
+     inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer2"
@@ -7250,8 +7250,8 @@
          transform="translate(-800,-400)"
          style="display:inline">
         <path
-           d="m 800,596.00001 v 50 h 200 v -50 z"
-           style="fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 800,543.99995 v 79.99999 h 200 v -79.99999 z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
            id="path1-6-9-2-5-6-6-1-0-1"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
@@ -7263,7 +7263,7 @@
          style="display:inline;fill:#333c43;fill-opacity:1">
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-           d="m 320,240 80,160 h -80 z"
+           d="m 320,224 80,176 h -80 z"
            id="path265-4"
            transform="translate(-120,-120)"
            inkscape:label="Right"
@@ -7271,32 +7271,32 @@
         <path
            id="rect1-1"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="M 200,246.00001 H 320 V 400 H 200 Z"
+           d="M 200,224 H 320 V 400 H 200 Z"
            sodipodi:nodetypes="ccccc"
            inkscape:label="Top"
            transform="translate(-120,-120)" />
       </g>
       <g
-         id="g5-5-4"
+         id="g285"
          inkscape:label="SouthEastStairN"
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="rect2-3-1-8"
+           id="path267"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h 60 v -50 z m 10,72 v 10 h 50 v -10 z"
+           d="m 2538.75,326 v 40 H 2600 v -40 z m 8.75,62 v 12 h 52.5 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="rect2-9-0-8"
+           id="path268"
            style="fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h 60 v -22 z m 10,72 10,22 h 50 v -22 z"
+           d="m 2530,304 10,22 h 60 v -22 z m 8.75,62 8.75,22 h 52.5 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h 70 v -50 z"
+           d="m 2530,224 v 80 h 70 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path1-6-9-2"
+           id="path269"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -7316,33 +7316,33 @@
          transform="translate(-800,-400)"
          style="display:inline">
         <path
-           d="m 800,596.00001 v 50 h 200 v -50 z"
-           style="fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 800,543.99995 v 79.99999 h 200 v -79.99999 z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
            id="path1-5"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g5-5-4-1-8"
+         id="g181-2"
          inkscape:label="SouthStairNFull"
          transform="translate(-2400)"
          style="display:inline;stroke-width:1">
         <path
-           id="rect2-3-1-8-7-9"
+           id="path179-2-5"
            style="fill:#73797a;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,318 v 50 h -200 v -50 z m 0,72 v 10 h -200 v -10 z"
+           d="m 2600,326 v 40 h -200 v -40 z m 0,62 v 12 h -200 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="rect2-9-0-8-1-2"
+           id="path180-5-8"
            style="fill:#576166;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,296 v 22 h -200 v -22 z m 0,72 v 22 h -200 v -22 z"
+           d="m 2600,304 v 22 h -200 v -22 z m 0,62 v 22 h -200 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2600,246 v 50 h -200 v -50 z"
+           d="m 2600,224 v 80 h -200 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path1-6-9-2-1-7"
+           id="path181-8-6"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -7367,9 +7367,9 @@
          transform="translate(-800,-400)"
          style="display:inline">
         <path
-           d="m 800,596.00001 v 50 h 200 v -50 z"
-           style="fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path4-9"
+           d="M 800,543.99995 V 704 h 200 V 543.99995 Z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path4-6"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -7381,7 +7381,7 @@
         <path
            id="rect1-9"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1056,-170 h 200 v 154 h -200 z"
+           d="m 1056,-112 h 200 v 96 h -200 z"
            sodipodi:nodetypes="ccccc"
            inkscape:label="Top" />
       </g>
@@ -7406,33 +7406,33 @@
          transform="translate(-800,-400)"
          style="display:inline">
         <path
-           d="m 800,596.00001 v 50 h 200 v -50 z"
-           style="fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path9-9"
+           d="m 800,543.99995 v 79.99999 h 200 v -79.99999 z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path9-8"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g5-5-4-1"
+         id="g200-28"
          inkscape:label="SouthStairN"
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="rect2-3-1-8-7"
+           id="path198-2-9"
            style="display:inline;fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h -115 v -50 z m 10,72 v 10 h -125 v -10 z"
+           d="m 2538.75,326 v 40 H 2425 v -40 z m 8.75,62 v 12 H 2425 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="rect2-9-0-8-1"
+           id="path199-6-0"
            style="display:inline;fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h -115 v -22 z m 10,72 10,22 h -125 v -22 z"
+           d="m 2538.75,366 8.75,22 H 2425 v -22 z m -8.75,-62 8.75,22 H 2425 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h -105 v -50 z"
+           d="m 2530,224 v 80 h -105 v -80 z"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path1-6-9-2-1"
+           id="path200-5-7"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -7457,9 +7457,9 @@
          transform="translate(-800,-400)"
          style="display:inline">
         <path
-           d="m 800,596.00001 v 50 h 200 v -50 z"
-           style="fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path13-8"
+           d="m 800,543.99995 v 79.99999 h 200 v -79.99999 z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path13-0"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -7470,15 +7470,15 @@
          style="display:inline;fill:#333c43;fill-opacity:1">
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-           d="m 320,246.00001 80,96 V 400 h -80 z"
-           id="path14-1"
+           d="m 320,223.99994 80,96 V 400 h -80 z"
+           id="path14-7"
            transform="translate(-120,-120)"
            inkscape:label="Right"
            sodipodi:nodetypes="ccccc" />
         <path
-           id="path15-8"
+           id="path15-7"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="M 200,246.00001 H 320 V 400 H 200 Z"
+           d="M 200,223.99994 H 320 V 400 H 200 Z"
            sodipodi:nodetypes="ccccc"
            inkscape:label="Top"
            transform="translate(-120,-120)" />
@@ -7497,18 +7497,18 @@
     <g
        inkscape:label="StairS_SouthWallCorner_SouthEastStairN"
        transform="translate(2200,1200)"
-       id="g24-2">
+       id="g24-4">
       <g
-         id="g6-7-2"
          inkscape:label="CenterStairS"
-         transform="matrix(1.14286,0,0,1,-942.86003,-400)"
-         style="display:inline;stroke-width:0.935413">
+         id="g225-6"
+         style="display:inline">
         <path
-           d="m 825.00046,595.99999 0,108.00001 h 104.99956 l 0,-108.00001 z"
-           style="fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path1-6-9-2-5-6-6-1-0-4-3"
+           d="m 825.00046,544.00001 0,159.99999 h 104.99956 l 0,-159.99999 z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path1-6-9-2-5-6-6-1-0-4-4"
            inkscape:label="Top"
-           sodipodi:nodetypes="ccccc" />
+           sodipodi:nodetypes="ccccc"
+           transform="matrix(1.14286,0,0,1,-942.86003,-400)" />
       </g>
       <g
          id="g19"
@@ -7517,13 +7517,13 @@
          style="display:inline;fill:#333c43;fill-opacity:1">
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-           d="m 320,246 80,154 h -80 z"
-           id="path18-6"
+           d="m 320,224 80,176 h -80 z"
+           id="path18-3"
            transform="translate(-120,-120)"
            inkscape:label="Right"
            sodipodi:nodetypes="cccc" />
         <path
-           id="path19-6"
+           id="path19-1"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 200,304 h 120 v 96 H 200 Z"
            sodipodi:nodetypes="ccccc"
@@ -7538,19 +7538,19 @@
         <path
            id="path20"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h 60 v -50 z m 10,72 v 10 h 50 v -10 z"
+           d="m 2538.75,326 v 40 H 2600 v -40 z m 8.75,62 v 12 h 52.5 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path21-0"
+           id="path21-3"
            style="fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h 60 v -22 z m 10,72 10,22 h 50 v -22 z"
+           d="m 2530,304 10,22 h 60 v -22 z m 8.75,62 8.75,22 h 52.5 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h 70 v -50 z"
+           d="m 2530,224 v 80 h 70 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path22-3"
+           id="path22-6"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -7563,18 +7563,18 @@
     <g
        inkscape:label="StairS_SouthStairNFull"
        transform="translate(2000,1200)"
-       id="g30-8">
+       id="g30-3">
       <g
-         id="g25"
          inkscape:label="CenterStairS"
-         transform="matrix(1.14286,0,0,1,-942.86003,-400)"
-         style="display:inline;stroke-width:0.935413">
+         id="g25"
+         style="display:inline">
         <path
-           d="M 825.00046,595.99999 V 646 h 104.99956 v -50.00001 z"
-           style="fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 825.00046,544.00001 v 80 h 104.99956 v -80 z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
            id="path24-0"
            inkscape:label="Top"
-           sodipodi:nodetypes="ccccc" />
+           sodipodi:nodetypes="ccccc"
+           transform="matrix(1.14286,0,0,1,-942.86003,-400)" />
       </g>
       <g
          id="g27"
@@ -7584,29 +7584,29 @@
         <path
            id="path25-1"
            style="fill:#73797a;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,318 v 50 h -200 v -50 z m 0,72 v 10 h -200 v -10 z"
+           d="m 2600,326 v 40 h -200 v -40 z m 0,62 v 12 h -200 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path26-2"
+           id="path26-9"
            style="fill:#576166;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,296 v 22 h -200 v -22 z m 0,72 v 22 h -200 v -22 z"
+           d="m 2600,304 v 22 h -200 v -22 z m 0,62 v 22 h -200 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2600,246 v 50 h -200 v -50 z"
+           d="m 2600,224 v 80 h -200 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path27-5"
+           id="path27-0"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g28-0"
+         id="g28-4"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g29-9"
+         id="g29-2"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -7614,38 +7614,38 @@
     <g
        inkscape:label="StairS_SouthWallHorizontal"
        transform="translate(1800,1200)"
-       id="g35-4">
+       id="g35-9">
       <g
-         id="g31-7"
          inkscape:label="CenterStairS"
-         transform="matrix(1.14286,0,0,1,-942.86003,-400)"
-         style="display:inline;stroke-width:0.935413">
+         id="g31-3"
+         style="display:inline">
         <path
-           d="m 825.00046,595.99999 0,108.00001 h 104.99956 l 0,-108.00001 z"
-           style="fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path30-8"
+           d="m 825.00046,544.00001 0,159.99999 h 104.99956 l 0,-159.99999 z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path30-1"
            inkscape:label="Top"
-           sodipodi:nodetypes="ccccc" />
+           sodipodi:nodetypes="ccccc"
+           transform="matrix(1.14286,0,0,1,-942.86003,-400)" />
       </g>
       <g
-         id="g32-3"
+         id="g32-4"
          transform="translate(-1056,416)"
          inkscape:label="SouthHorizontal"
          style="display:inline">
         <path
-           id="path31-5"
+           id="path31-8"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 1056,-112 h 200 v 96 h -200 z"
            sodipodi:nodetypes="ccccc"
            inkscape:label="Top" />
       </g>
       <g
-         id="g33-1"
+         id="g33-2"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g34-2"
+         id="g34-0"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -7655,16 +7655,16 @@
        transform="translate(1600,1200)"
        id="g41">
       <g
-         id="g36"
          inkscape:label="CenterStairS"
-         transform="matrix(1.14286,0,0,1,-942.86003,-400)"
-         style="display:inline;stroke-width:0.935413">
+         id="g36"
+         style="display:inline">
         <path
-           d="M 825.00046,595.99999 V 646 h 104.99956 v -50.00001 z"
-           style="fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path35-0"
+           d="m 825.00046,544.00001 v 80 h 104.99956 v -80 z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path35-5"
            inkscape:label="Top"
-           sodipodi:nodetypes="ccccc" />
+           sodipodi:nodetypes="ccccc"
+           transform="matrix(1.14286,0,0,1,-942.86003,-400)" />
       </g>
       <g
          id="g38"
@@ -7672,21 +7672,21 @@
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="path36-1"
+           id="path36-5"
            style="display:inline;fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h -115 v -50 z m 10,72 v 10 h -125 v -10 z"
+           d="m 2538.75,326 v 40 H 2425 v -40 z m 8.75,62 v 12 H 2425 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path37-6"
+           id="path37-9"
            style="display:inline;fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h -115 v -22 z m 10,72 10,22 h -125 v -22 z"
+           d="m 2538.75,366 8.75,22 H 2425 v -22 z m -8.75,-62 8.75,22 H 2425 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h -105 v -50 z"
+           d="m 2530,224 v 80 h -105 v -80 z"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path38-4"
+           id="path38-3"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -7706,16 +7706,16 @@
        transform="translate(1400,1200)"
        id="g46">
       <g
-         id="g42"
          inkscape:label="CenterStairS"
-         transform="matrix(1.14286,0,0,1,-942.86003,-400)"
-         style="display:inline;stroke-width:0.935413">
+         id="g42"
+         style="display:inline">
         <path
-           d="m 825.00046,595.99999 0,108.00001 h 104.99956 l 0,-108.00001 z"
-           style="fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path41-0"
+           d="m 825.00046,544.00001 v 80 h 104.99956 v -80 z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path41-2"
            inkscape:label="Top"
-           sodipodi:nodetypes="ccccc" />
+           sodipodi:nodetypes="ccccc"
+           transform="matrix(1.14286,0,0,1,-942.86003,-400)" />
       </g>
       <g
          id="g43"
@@ -7724,15 +7724,15 @@
          style="display:inline;fill:#333c43;fill-opacity:1">
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-           d="m 319.99979,195.99999 80,96 L 400,400 h -80 z"
-           id="path42-6"
+           d="m 320,224 80,96 -3e-5,80 H 320 Z"
+           id="path42-8"
            transform="translate(-120,-120)"
            inkscape:label="Right"
            sodipodi:nodetypes="ccccc" />
         <path
-           id="path43-1"
+           id="path43-7"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 200,304 h 120 v 96 H 200 Z"
+           d="M 200,224 H 320 V 400 H 200 Z"
            sodipodi:nodetypes="ccccc"
            inkscape:label="Top"
            transform="translate(-120,-120)" />
@@ -7772,11 +7772,11 @@
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="m 320,304 80,96 h -80 z"
-           id="path46-8"
+           id="path46-4"
            transform="translate(-120,-120)"
            inkscape:label="Right" />
         <path
-           id="path47-9"
+           id="path47-8"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 200,304 h 120 v 96 H 200 Z"
            sodipodi:nodetypes="ccccc"
@@ -7789,21 +7789,21 @@
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="path48-8"
+           id="path48-1"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h 60 v -50 z m 10,72 v 10 h 50 v -10 z"
+           d="m 2538.75,326 v 40 H 2600 v -40 z m 8.75,62 v 12 h 52.5 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
            id="path49-4"
            style="fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h 60 v -22 z m 10,72 10,22 h 50 v -22 z"
+           d="m 2530,304 10,22 h 60 v -22 z m 8.75,62 8.75,22 h 52.5 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h 70 v -50 z"
+           d="m 2530,224 v 80 h 70 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path50-1"
+           id="path50-3"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -7823,7 +7823,7 @@
          inkscape:label="CenterDoor"
          style="display:inline">
         <path
-           id="path52-4"
+           id="path52-5"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            inkscape:label="Top"
            d="m 1080,504 v 80 h 24 v -80 z"
@@ -7835,7 +7835,7 @@
          inkscape:label="SouthHorizontal"
          style="display:inline">
         <path
-           id="path53-3"
+           id="path53-5"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 1056,-112 h 200 v 96 h -200 z"
            sodipodi:nodetypes="ccccc"
@@ -7862,7 +7862,7 @@
          inkscape:label="CenterDoor"
          style="display:inline">
         <path
-           id="path57-9"
+           id="path57-2"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            inkscape:label="Top"
            d="m 1080,504 v 80 h 24 v -80 z"
@@ -7876,7 +7876,7 @@
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="m 320,304 80,96 h -80 z"
-           id="path58-8"
+           id="path58-6"
            transform="translate(-120,-120)"
            inkscape:label="Right" />
         <path
@@ -7924,11 +7924,11 @@
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="m 320,304 80,96 h -80 z"
-           id="path62-0"
+           id="path62-9"
            transform="translate(-120,-120)"
            inkscape:label="Right" />
         <path
-           id="path63-8"
+           id="path63-2"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 200,304 h 120 v 96 H 200 Z"
            sodipodi:nodetypes="ccccc"
@@ -7941,33 +7941,33 @@
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="path64-7"
+           id="path64-9"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h 60 v -50 z m 10,72 v 10 h 50 v -10 z"
+           d="m 2538.75,326 v 40 H 2600 v -40 z m 8.75,62 v 12 h 52.5 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path65-7"
+           id="path65-5"
            style="fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h 60 v -22 z m 10,72 10,22 h 50 v -22 z"
+           d="m 2530,304 10,22 h 60 v -22 z m 8.75,62 8.75,22 h 52.5 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h 70 v -50 z"
+           d="m 2530,224 v 80 h 70 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path66-8"
+           id="path66-9"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g3-8-8-4-7-2"
-         transform="translate(-880,120)"
+         id="g237-8"
+         transform="matrix(1,0,0,0.89908257,-880,75.669717)"
          inkscape:label="EastStairS"
-         style="display:inline">
+         style="display:inline;stroke-width:1.05463">
         <path
-           d="M 1000,76.000001 V 126 h 80 V 76.000001 Z"
-           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path1-6-9-2-5-6-6-1-4"
+           d="M 1000,76.000001 V 164.9796 h 80 V 76.000001 Z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.21853;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path236-4-1"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -7996,21 +7996,21 @@
          transform="translate(-2400)"
          style="display:inline;stroke-width:1">
         <path
-           id="path68-3"
+           id="path68-4"
            style="fill:#73797a;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,318 v 50 h -200 v -50 z m 0,72 v 10 h -200 v -10 z"
+           d="m 2600,326 v 40 h -200 v -40 z m 0,62 v 12 h -200 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path69-8"
+           id="path69-5"
            style="fill:#576166;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,296 v 22 h -200 v -22 z m 0,72 v 22 h -200 v -22 z"
+           d="m 2600,304 v 22 h -200 v -22 z m 0,62 v 22 h -200 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2600,246 v 50 h -200 v -50 z"
+           d="m 2600,224 v 80 h -200 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path70-3"
+           id="path70-0"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -8021,13 +8021,13 @@
          style="display:inline" />
       <g
          id="g72"
-         transform="translate(-880,120)"
+         transform="matrix(1,0,0,0.89908257,-880,75.669717)"
          inkscape:label="EastStairS"
-         style="display:inline">
+         style="display:inline;stroke-width:1.05463">
         <path
-           d="M 1000,76.000001 V 126 h 80 V 76.000001 Z"
-           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path71-7"
+           d="M 1000,76.000001 V 164.9796 h 80 V 76.000001 Z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.21853;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path71-5"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -8056,7 +8056,7 @@
          inkscape:label="SouthHorizontal"
          style="display:inline">
         <path
-           id="path74-1"
+           id="path74-8"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 1056,-112 h 200 v 96 h -200 z"
            sodipodi:nodetypes="ccccc"
@@ -8069,13 +8069,13 @@
          style="display:inline" />
       <g
          id="g77"
-         transform="translate(-880,120)"
+         transform="matrix(1,0,0,0.89908257,-880,75.669717)"
          inkscape:label="EastStairS"
-         style="display:inline">
+         style="display:inline;stroke-width:1.05463">
         <path
-           d="M 1000,76.000001 V 126 h 80 V 76.000001 Z"
-           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path76-0"
+           d="M 1000,76.000001 V 164.9796 h 80 V 76.000001 Z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.21853;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path76-8"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -8083,7 +8083,7 @@
     <g
        inkscape:label="WallCorner_SouthStairEFull_EastStairS"
        transform="translate(0,1200)"
-       id="g82">
+       id="g81">
       <g
          id="g3-8-10-4"
          transform="translate(-480,120)"
@@ -8100,37 +8100,37 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g79"
+         id="g79-7"
          inkscape:label="SouthStairEFull"
-         transform="matrix(-1,0,0,1.14286,1200,1314.2886)"
+         transform="matrix(-1,0,0,1.14286,1200,1314.2887)"
          style="display:inline;stroke-width:0.935413">
         <path
-           id="rect7"
+           id="rect7-6"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1000,-800 h 200 v -128 h -50 v -32 h -50 v -32 h -100 z"
+           d="M 1080,-800.00052 1200,-800 v -140.00017 h -40 v -27.99993 h -40 v -27.99993 h -40 z"
            sodipodi:nodetypes="ccccccccc"
            inkscape:label="StairTop" />
         <path
-           d="m 1000,-1024.0001 v 223.99952 h 50 v -223.99952 z"
+           d="m 1000,-1024 v 223.99942 h 80 V -1024 Z"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path1-6-9-2-1-7-3-7"
+           id="path1-6-9-2-1-7-3-7-1"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g80"
+         id="g79"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g81"
-         transform="translate(-880,120)"
+         id="g80"
+         transform="matrix(1,0,0,0.89908257,-880,75.669717)"
          inkscape:label="EastStairS"
-         style="display:inline">
+         style="display:inline;stroke-width:1.05463">
         <path
-           d="M 1030,76.000001 V 126 h 50 V 76.000001 Z"
-           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path80-7"
+           d="M 1000,76.000001 V 164.9796 h 80 V 76.000001 Z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.21853;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path79-0"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -8138,15 +8138,15 @@
     <g
        inkscape:label="WallVertical_SouthStairN_EastStairS"
        transform="translate(3000,800)"
-       id="g88">
+       id="g87">
       <g
-         id="g83"
+         id="g82"
          transform="translate(-880,120)"
          inkscape:label="CenterWallVertical"
          style="display:inline">
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect82"
+           id="rect81"
            width="120"
            height="400"
            x="880"
@@ -8154,43 +8154,43 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g85"
+         id="g84"
          inkscape:label="SouthStairN"
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="path83-3"
+           id="path82-1"
            style="display:inline;fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h -115 v -50 z m 10,72 v 10 h -125 v -10 z"
+           d="m 2538.75,326 v 40 H 2425 v -40 z m 8.75,62 v 12 H 2425 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path84-4"
+           id="path83-3"
            style="display:inline;fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h -115 v -22 z m 10,72 10,22 h -125 v -22 z"
+           d="m 2538.75,366 8.75,22 H 2425 v -22 z m -8.75,-62 8.75,22 H 2425 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h -105 v -50 z"
+           d="m 2530,224 v 80 h -105 v -80 z"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path85-9"
+           id="path84-2"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g86"
+         id="g85"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g87"
-         transform="translate(-880,120)"
+         id="g86"
+         transform="matrix(1,0,0,0.89908257,-880,75.669717)"
          inkscape:label="EastStairS"
-         style="display:inline">
+         style="display:inline;stroke-width:1.05463">
         <path
-           d="M 1000,76.000001 V 126 h 80 V 76.000001 Z"
-           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path86-6"
+           d="M 1000,76.000001 V 164.9796 h 80 V 76.000001 Z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.21853;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path85-2"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -8198,15 +8198,15 @@
     <g
        inkscape:label="WallVertical_SouthWallCorner_SouthEastStairN_EastDoor"
        transform="translate(2800,800)"
-       id="g94">
+       id="g93">
       <g
-         id="g89"
+         id="g88"
          transform="translate(-880,120)"
          inkscape:label="CenterWallVertical"
          style="display:inline">
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect88"
+           id="rect87"
            width="120"
            height="400"
            x="880"
@@ -8214,18 +8214,18 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g90"
+         id="g89"
          transform="translate(-80,120)"
          inkscape:label="SouthCorner"
          style="display:inline;fill:#333c43;fill-opacity:1">
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="m 320,304 80,96 h -80 z"
-           id="path89-5"
+           id="path88-2"
            transform="translate(-120,-120)"
            inkscape:label="Right" />
         <path
-           id="path90-1"
+           id="path89-7"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 200,304 h 120 v 96 H 200 Z"
            sodipodi:nodetypes="ccccc"
@@ -8233,26 +8233,26 @@
            transform="translate(-120,-120)" />
       </g>
       <g
-         id="g93"
+         id="g92"
          inkscape:label="SouthEastStairN"
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="path91-0"
+           id="path90-0"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h 60 v -50 z m 10,72 v 10 h 50 v -10 z"
+           d="m 2538.75,326 v 40 H 2600 v -40 z m 8.75,62 v 12 h 52.5 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path92-9"
+           id="path91-3"
            style="fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h 60 v -22 z m 10,72 10,22 h 50 v -22 z"
+           d="m 2530,304 10,22 h 60 v -22 z m 8.75,62 8.75,22 h 52.5 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h 70 v -50 z"
+           d="m 2530,224 v 80 h 70 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path93-9"
+           id="path92-1"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
@@ -8272,15 +8272,15 @@
     <g
        inkscape:label="WallVertical_SouthStairNFull_EastDoor"
        transform="translate(2600,800)"
-       id="g100">
+       id="g99">
       <g
-         id="g95"
+         id="g94"
          transform="translate(-880,120)"
          inkscape:label="CenterWallVertical"
          style="display:inline">
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect94"
+           id="rect93"
            width="120"
            height="400"
            x="880"
@@ -8288,41 +8288,41 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g97"
+         id="g96"
          inkscape:label="SouthStairNFull"
          transform="translate(-2400)"
          style="display:inline;stroke-width:1">
         <path
-           id="path95-6"
+           id="path94-3"
            style="fill:#73797a;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,318 v 50 h -200 v -50 z m 0,72 v 10 h -200 v -10 z"
+           d="m 2600,326 v 40 h -200 v -40 z m 0,62 v 12 h -200 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path96-8"
+           id="path95-3"
            style="fill:#576166;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,296 v 22 h -200 v -22 z m 0,72 v 22 h -200 v -22 z"
+           d="m 2600,304 v 22 h -200 v -22 z m 0,62 v 22 h -200 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2600,246 v 50 h -200 v -50 z"
+           d="m 2600,224 v 80 h -200 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path97-3"
+           id="path96-7"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g98"
+         id="g97"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g99"
+         id="g98"
          transform="translate(-1680,120)"
          inkscape:label="EastDoor"
          style="display:inline">
         <path
-           id="path98-4"
+           id="path97-0"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            inkscape:label="Top"
            d="m 1800,-120 v 48 h 80 v -48 z"
@@ -8332,15 +8332,15 @@
     <g
        inkscape:label="WallVertical_SouthWallHorizontal_EastDoor"
        transform="translate(2400,800)"
-       id="g105">
+       id="g104">
       <g
-         id="g101"
+         id="g100"
          transform="translate(-880,120)"
          inkscape:label="CenterWallVertical"
          style="display:inline">
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect100"
+           id="rect99"
            width="120"
            height="400"
            x="880"
@@ -8348,29 +8348,29 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g102"
+         id="g101"
          transform="translate(-1056,416)"
          inkscape:label="SouthHorizontal"
          style="display:inline">
         <path
-           id="path101-8"
+           id="path100-9"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 1056,-112 h 200 v 96 h -200 z"
            sodipodi:nodetypes="ccccc"
            inkscape:label="Top" />
       </g>
       <g
-         id="g103"
+         id="g102"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g104"
+         id="g103"
          transform="translate(-1680,120)"
          inkscape:label="EastDoor"
          style="display:inline">
         <path
-           id="path103-4"
+           id="path102-5"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            inkscape:label="Top"
            d="m 1800,-120 v 48 h 80 v -48 z"
@@ -8380,15 +8380,15 @@
     <g
        inkscape:label="WallVertical_SouthStairN_EastDoor"
        transform="translate(2200,800)"
-       id="g111">
+       id="g110">
       <g
-         id="g106"
+         id="g105"
          transform="translate(-880,120)"
          inkscape:label="CenterWallVertical"
          style="display:inline">
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect105"
+           id="rect104"
            width="120"
            height="400"
            x="880"
@@ -8396,41 +8396,41 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g108"
+         id="g107"
          inkscape:label="SouthStairN"
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="path106-9"
+           id="path105-5"
            style="display:inline;fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h -115 v -50 z m 10,72 v 10 h -125 v -10 z"
+           d="m 2538.75,326 v 40 H 2425 v -40 z m 8.75,62 v 12 H 2425 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path107-9"
+           id="path106-8"
            style="display:inline;fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h -115 v -22 z m 10,72 10,22 h -125 v -22 z"
+           d="m 2538.75,366 8.75,22 H 2425 v -22 z m -8.75,-62 8.75,22 H 2425 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h -105 v -50 z"
+           d="m 2530,224 v 80 h -105 v -80 z"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path108-2"
+           id="path107-3"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g109"
+         id="g108"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g110"
+         id="g109"
          transform="translate(-1680,120)"
          inkscape:label="EastDoor"
          style="display:inline">
         <path
-           id="path109-5"
+           id="path108-7"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            inkscape:label="Top"
            d="m 1800,-120 v 48 h 80 v -48 z"
@@ -8440,7 +8440,7 @@
     <g
        inkscape:label="WallFull_SouthStairN"
        transform="translate(2000,800)"
-       id="g116">
+       id="g115">
       <g
          id="g3-8-20-4"
          transform="translate(-3280,920)"
@@ -8456,36 +8456,36 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g113"
+         id="g112"
          inkscape:label="SouthStairN"
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="path111-5"
+           id="path110-8"
            style="display:inline;fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h -115 v -50 z m 10,72 v 10 h -125 v -10 z"
+           d="m 2538.75,326 v 40 H 2425 v -40 z m 8.75,62 v 12 H 2425 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path112-3"
+           id="path111-3"
            style="display:inline;fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h -115 v -22 z m 10,72 10,22 h -125 v -22 z"
+           d="m 2538.75,366 8.75,22 H 2425 v -22 z m -8.75,-62 8.75,22 H 2425 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h -105 v -50 z"
+           d="m 2530,224 v 80 h -105 v -80 z"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path113-3"
+           id="path112-7"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g114"
+         id="g113"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g115"
+         id="g114"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -8493,15 +8493,15 @@
     <g
        inkscape:label="WallFull_SouthWallCorner_SouthEastStairN"
        transform="translate(1800,800)"
-       id="g123">
+       id="g122">
       <g
-         id="g117"
+         id="g116"
          transform="translate(-3280,920)"
          inkscape:label="CenterWallFull"
          style="display:inline">
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect116"
+           id="rect115"
            width="200"
            height="400"
            x="3280"
@@ -8509,18 +8509,18 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g118"
+         id="g117"
          transform="translate(-80,120)"
          inkscape:label="SouthCorner"
          style="display:inline;fill:#333c43;fill-opacity:1">
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="m 320,304 80,96 h -80 z"
-           id="path117-3"
+           id="path116-9"
            transform="translate(-120,-120)"
            inkscape:label="Right" />
         <path
-           id="path118-7"
+           id="path117-3"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 200,304 h 120 v 96 H 200 Z"
            sodipodi:nodetypes="ccccc"
@@ -8528,31 +8528,31 @@
            transform="translate(-120,-120)" />
       </g>
       <g
-         id="g121"
+         id="g120"
          inkscape:label="SouthEastStairN"
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="path119-4"
+           id="path118-9"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h 60 v -50 z m 10,72 v 10 h 50 v -10 z"
+           d="m 2538.75,326 v 40 H 2600 v -40 z m 8.75,62 v 12 h 52.5 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path120-3"
+           id="path119-1"
            style="fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h 60 v -22 z m 10,72 10,22 h 50 v -22 z"
+           d="m 2530,304 10,22 h 60 v -22 z m 8.75,62 8.75,22 h 52.5 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h 70 v -50 z"
+           d="m 2530,224 v 80 h 70 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path121-8"
+           id="path120-8"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g122"
+         id="g121"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -8560,15 +8560,15 @@
     <g
        inkscape:label="WallFull_SouthStairNFull"
        transform="translate(1600,800)"
-       id="g129">
+       id="g128">
       <g
-         id="g124"
+         id="g123"
          transform="translate(-3280,920)"
          inkscape:label="CenterWallFull"
          style="display:inline">
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect123"
+           id="rect122"
            width="200"
            height="400"
            x="3280"
@@ -8576,36 +8576,36 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g126"
+         id="g125"
          inkscape:label="SouthStairNFull"
          transform="translate(-2400)"
          style="display:inline;stroke-width:1">
         <path
-           id="path124-0"
+           id="path123-2"
            style="fill:#73797a;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,318 v 50 h -200 v -50 z m 0,72 v 10 h -200 v -10 z"
+           d="m 2600,326 v 40 h -200 v -40 z m 0,62 v 12 h -200 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path125-8"
+           id="path124-8"
            style="fill:#576166;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,296 v 22 h -200 v -22 z m 0,72 v 22 h -200 v -22 z"
+           d="m 2600,304 v 22 h -200 v -22 z m 0,62 v 22 h -200 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2600,246 v 50 h -200 v -50 z"
+           d="m 2600,224 v 80 h -200 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path126-8"
+           id="path125-0"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g127"
+         id="g126"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g128"
+         id="g127"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -8613,7 +8613,7 @@
     <g
        inkscape:label="WallHorizontal_SouthStairEFull"
        transform="translate(1400,800)"
-       id="g133">
+       id="g132">
       <g
          id="g3-8-78-1"
          transform="matrix(1.6666667,0,0,1,-1706.6667,56)"
@@ -8629,30 +8629,30 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g130"
+         id="g129"
          inkscape:label="SouthStairEFull"
-         transform="matrix(-1,0,0,1.14286,1200,1314.2886)"
+         transform="matrix(-1,0,0,1.14286,1200,1314.2887)"
          style="display:inline;stroke-width:0.935413">
         <path
-           id="path129-0"
+           id="path128-1"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1000,-800 h 200 v -128 h -50 v -32 h -50 v -32 h -100 z"
+           d="M 1080,-800.00052 1200,-800 v -140.00017 h -40 v -27.99993 h -40 v -27.99993 h -40 z"
            sodipodi:nodetypes="ccccccccc"
            inkscape:label="StairTop" />
         <path
-           d="m 1000,-1024.0001 v 223.99952 h 50 v -223.99952 z"
+           d="m 1000,-1024 v 223.99942 h 80 V -1024 Z"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path130-6"
+           id="path129-8"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g131"
+         id="g130"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g132"
+         id="g131"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -8660,7 +8660,7 @@
     <g
        inkscape:label="WallInverseCorner_SouthStairN"
        transform="translate(1200,800)"
-       id="g138">
+       id="g137">
       <g
          id="g3-8-4-5"
          transform="translate(-1080,120)"
@@ -8674,36 +8674,36 @@
            sodipodi:nodetypes="ccccccc" />
       </g>
       <g
-         id="g135"
+         id="g134"
          inkscape:label="SouthStairN"
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="path133-8"
+           id="path132-4"
            style="display:inline;fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h -115 v -50 z m 10,72 v 10 h -125 v -10 z"
+           d="m 2538.75,326 v 40 H 2425 v -40 z m 8.75,62 v 12 H 2425 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path134-1"
+           id="path133-8"
            style="display:inline;fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h -115 v -22 z m 10,72 10,22 h -125 v -22 z"
+           d="m 2538.75,366 8.75,22 H 2425 v -22 z m -8.75,-62 8.75,22 H 2425 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h -105 v -50 z"
+           d="m 2530,224 v 80 h -105 v -80 z"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path135-9"
+           id="path134-6"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g136"
+         id="g135"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g137"
+         id="g136"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -8711,15 +8711,15 @@
     <g
        inkscape:label="WallVertical_SouthWallCorner_SouthEastStairN"
        transform="translate(1000,800)"
-       id="g145">
+       id="g144">
       <g
-         id="g139"
+         id="g138"
          transform="translate(-880,120)"
          inkscape:label="CenterWallVertical"
          style="display:inline">
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect138"
+           id="rect137"
            width="120"
            height="400"
            x="880"
@@ -8727,18 +8727,18 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g140"
+         id="g139"
          transform="translate(-80,120)"
          inkscape:label="SouthCorner"
          style="display:inline;fill:#333c43;fill-opacity:1">
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="m 320,304 80,96 h -80 z"
-           id="path139-8"
+           id="path138-0"
            transform="translate(-120,-120)"
            inkscape:label="Right" />
         <path
-           id="path140-9"
+           id="path139-9"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 200,304 h 120 v 96 H 200 Z"
            sodipodi:nodetypes="ccccc"
@@ -8746,31 +8746,31 @@
            transform="translate(-120,-120)" />
       </g>
       <g
-         id="g143"
+         id="g142"
          inkscape:label="SouthEastStairN"
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="path141-7"
+           id="path140-3"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h 60 v -50 z m 10,72 v 10 h 50 v -10 z"
+           d="m 2538.75,326 v 40 H 2600 v -40 z m 8.75,62 v 12 h 52.5 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path142-2"
+           id="path141-0"
            style="fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h 60 v -22 z m 10,72 10,22 h 50 v -22 z"
+           d="m 2530,304 10,22 h 60 v -22 z m 8.75,62 8.75,22 h 52.5 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h 70 v -50 z"
+           d="m 2530,224 v 80 h 70 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path143-2"
+           id="path142-0"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g144"
+         id="g143"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -8778,15 +8778,15 @@
     <g
        inkscape:label="WallVertical_SouthStairNFull"
        transform="translate(800,800)"
-       id="g151">
+       id="g150">
       <g
-         id="g146"
+         id="g145"
          transform="translate(-880,120)"
          inkscape:label="CenterWallVertical"
          style="display:inline">
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect145"
+           id="rect144"
            width="120"
            height="400"
            x="880"
@@ -8794,36 +8794,36 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g148"
+         id="g147"
          inkscape:label="SouthStairNFull"
          transform="translate(-2400)"
          style="display:inline;stroke-width:1">
         <path
-           id="path146-8"
+           id="path145-8"
            style="fill:#73797a;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,318 v 50 h -200 v -50 z m 0,72 v 10 h -200 v -10 z"
+           d="m 2600,326 v 40 h -200 v -40 z m 0,62 v 12 h -200 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path147-2"
+           id="path146-7"
            style="fill:#576166;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,296 v 22 h -200 v -22 z m 0,72 v 22 h -200 v -22 z"
+           d="m 2600,304 v 22 h -200 v -22 z m 0,62 v 22 h -200 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2600,246 v 50 h -200 v -50 z"
+           d="m 2600,224 v 80 h -200 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path148-8"
+           id="path147-6"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g149"
+         id="g148"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g150"
+         id="g149"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -8831,15 +8831,15 @@
     <g
        inkscape:label="WallVertical_SouthWallHorizontal"
        transform="translate(600,800)"
-       id="g156">
+       id="g155">
       <g
-         id="g152"
+         id="g151"
          transform="translate(-880,120)"
          inkscape:label="CenterWallVertical"
          style="display:inline">
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect151"
+           id="rect150"
            width="120"
            height="400"
            x="880"
@@ -8847,24 +8847,24 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g153"
+         id="g152"
          transform="translate(-1056,416)"
          inkscape:label="SouthHorizontal"
          style="display:inline">
         <path
-           id="path152-9"
+           id="path151-3"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 1056,-112 h 200 v 96 h -200 z"
            sodipodi:nodetypes="ccccc"
            inkscape:label="Top" />
       </g>
       <g
-         id="g154"
+         id="g153"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g155"
+         id="g154"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -8872,30 +8872,30 @@
     <g
        inkscape:label="Empty_SouthStairWFull"
        transform="translate(400,800)"
-       id="g160">
+       id="g159">
       <g
-         id="g157"
+         id="g156"
          inkscape:label="CenterNone"
          style="display:inline" />
       <g
-         id="g7-0"
+         id="g7-0-2"
          inkscape:label="SouthStairWFull"
-         transform="matrix(1,0,0,1.14286,-1400,1314.2883)"
+         transform="matrix(1,0,0,1.14286,-1400,1314.288)"
          style="display:inline;stroke-width:0.935413">
         <path
-           id="rect7-1"
+           id="rect7-1-3"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1550,-800 v -32 h -50 v -32 h -50 v -32 h -50 v 96 z"
-           sodipodi:nodetypes="ccccccccc"
+           d="m 1560,-800 v -28.00045 h -40 v -27.99993 h -40 v -27.99993 h -40 v -27.99993 h -40 v 111.99972 z"
+           sodipodi:nodetypes="ccccccccccc"
            inkscape:label="StairTop" />
       </g>
       <g
-         id="g158"
+         id="g157"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g159"
+         id="g158"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -8903,36 +8903,36 @@
     <g
        inkscape:label="Empty_SouthStairEFull"
        transform="translate(200,800)"
-       id="g165">
+       id="g164">
       <g
-         id="g161"
+         id="g160"
          inkscape:label="CenterNone"
          style="display:inline" />
       <g
-         id="g162"
+         id="g161"
          inkscape:label="SouthStairEFull"
-         transform="matrix(-1,0,0,1.14286,1200,1314.2886)"
+         transform="matrix(-1,0,0,1.14286,1200,1314.2887)"
          style="display:inline;stroke-width:0.935413">
         <path
-           id="path161-0"
+           id="path160-5"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1000,-800 h 200 v -128 h -50 v -32 h -50 v -32 h -100 z"
+           d="M 1080,-800.00052 1200,-800 v -140.00017 h -40 v -27.99993 h -40 v -27.99993 h -40 z"
            sodipodi:nodetypes="ccccccccc"
            inkscape:label="StairTop" />
         <path
-           d="m 1000,-1024.0001 v 223.99952 h 50 v -223.99952 z"
+           d="m 1000,-1024 v 223.99942 h 80 V -1024 Z"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path162-7"
+           id="path161-6"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g163"
+         id="g162"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g164"
+         id="g163"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -8940,15 +8940,15 @@
     <g
        inkscape:label="WallVertical_SouthStairN"
        transform="translate(0,800)"
-       id="g171">
+       id="g170">
       <g
-         id="g166"
+         id="g165"
          transform="translate(-880,120)"
          inkscape:label="CenterWallVertical"
          style="display:inline">
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect165"
+           id="rect164"
            width="120"
            height="400"
            x="880"
@@ -8956,36 +8956,36 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g168"
+         id="g167"
          inkscape:label="SouthStairN"
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="path166-8"
+           id="path165-5"
            style="display:inline;fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h -115 v -50 z m 10,72 v 10 h -125 v -10 z"
+           d="m 2538.75,326 v 40 H 2425 v -40 z m 8.75,62 v 12 H 2425 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path167-1"
+           id="path166-8"
            style="display:inline;fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h -115 v -22 z m 10,72 10,22 h -125 v -22 z"
+           d="m 2538.75,366 8.75,22 H 2425 v -22 z m -8.75,-62 8.75,22 H 2425 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h -105 v -50 z"
+           d="m 2530,224 v 80 h -105 v -80 z"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path168-5"
+           id="path167-3"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g169"
+         id="g168"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g170"
+         id="g169"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -8993,24 +8993,24 @@
     <g
        inkscape:label="Empty_SouthWallCorner_SouthEastStairN"
        transform="translate(3000,400)"
-       id="g178">
+       id="g177">
       <g
-         id="g172"
+         id="g171"
          inkscape:label="CenterNone"
          style="display:inline" />
       <g
-         id="g173"
+         id="g172"
          transform="translate(-80,120)"
          inkscape:label="SouthCorner"
          style="display:inline;fill:#333c43;fill-opacity:1">
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="m 320,304 80,96 h -80 z"
-           id="path172-8"
+           id="path171-9"
            transform="translate(-120,-120)"
            inkscape:label="Right" />
         <path
-           id="path173-6"
+           id="path172-4"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 200,304 h 120 v 96 H 200 Z"
            sodipodi:nodetypes="ccccc"
@@ -9018,31 +9018,31 @@
            transform="translate(-120,-120)" />
       </g>
       <g
-         id="g176"
+         id="g175"
          inkscape:label="SouthEastStairN"
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="path174-1"
+           id="path173-8"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h 60 v -50 z m 10,72 v 10 h 50 v -10 z"
+           d="m 2538.75,326 v 40 H 2600 v -40 z m 8.75,62 v 12 h 52.5 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path175-2"
+           id="path174-3"
            style="fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h 60 v -22 z m 10,72 10,22 h 50 v -22 z"
+           d="m 2530,304 10,22 h 60 v -22 z m 8.75,62 8.75,22 h 52.5 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h 70 v -50 z"
+           d="m 2530,224 v 80 h 70 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path176-4"
+           id="path175-9"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g177"
+         id="g176"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -9050,42 +9050,42 @@
     <g
        inkscape:label="Empty_SouthStairNFull"
        transform="translate(2800,400)"
-       id="g184">
+       id="g183">
       <g
-         id="g179"
+         id="g178"
          inkscape:label="CenterNone"
          style="display:inline" />
       <g
-         id="g181"
+         id="g180"
          inkscape:label="SouthStairNFull"
          transform="translate(-2400)"
          style="display:inline;stroke-width:1">
         <path
-           id="path179-2"
+           id="path178-7"
            style="fill:#73797a;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,318 v 50 h -200 v -50 z m 0,72 v 10 h -200 v -10 z"
+           d="m 2600,326 v 40 h -200 v -40 z m 0,62 v 12 h -200 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path180-5"
+           id="path179-6"
            style="fill:#576166;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,296 v 22 h -200 v -22 z m 0,72 v 22 h -200 v -22 z"
+           d="m 2600,304 v 22 h -200 v -22 z m 0,62 v 22 h -200 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2600,246 v 50 h -200 v -50 z"
+           d="m 2600,224 v 80 h -200 v -80 z"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path181-8"
+           id="path180-4"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g182"
+         id="g181"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g183"
+         id="g182"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -9093,30 +9093,30 @@
     <g
        inkscape:label="Empty_SouthWallHorizontal"
        transform="translate(2600,400)"
-       id="g189">
+       id="g188">
       <g
-         id="g185"
+         id="g184"
          inkscape:label="CenterNone"
          style="display:inline" />
       <g
-         id="g186"
+         id="g185"
          transform="translate(-1056,416)"
          inkscape:label="SouthHorizontal"
          style="display:inline">
         <path
-           id="path185-6"
+           id="path184-5"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 1056,-112 h 200 v 96 h -200 z"
            sodipodi:nodetypes="ccccc"
            inkscape:label="Top" />
       </g>
       <g
-         id="g187"
+         id="g186"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g188"
+         id="g187"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -9124,30 +9124,30 @@
     <g
        inkscape:label="Empty_SouthStairW"
        transform="translate(2400,400)"
-       id="g193">
+       id="g192">
       <g
-         id="g190"
+         id="g189"
          inkscape:label="CenterNone"
          style="display:inline" />
       <g
-         id="g7-0-4-0"
+         id="g7-0-4-0-6"
          inkscape:label="SouthStairW"
          transform="matrix(1,0,0,1.14286,-1200,1314.288)"
          style="display:inline;stroke-width:0.935413">
         <path
-           id="rect7-1-88-2"
+           id="rect7-1-88-2-5"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1350,-800 v -12 h -50 v -12 h -50 v -12 h -50 v 36 z"
-           sodipodi:nodetypes="ccccccccc"
+           d="m 1360,-800 v -10.49997 h -40 v -10.49998 h -40 v -10.49997 h -40 v -10.49998 h -40 V -800 Z"
+           sodipodi:nodetypes="ccccccccccc"
            inkscape:label="StairTop" />
       </g>
       <g
-         id="g191"
+         id="g190"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g192"
+         id="g191"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -9155,36 +9155,36 @@
     <g
        inkscape:label="Empty_SouthStairE"
        transform="translate(2200,400)"
-       id="g197">
+       id="g196">
       <g
-         id="g194"
+         id="g193"
          inkscape:label="CenterNone"
          style="display:inline" />
       <g
-         id="g7-17-6"
+         id="g7-17-6-6"
          inkscape:label="SouthStairE"
          transform="matrix(-1,0,0,1.14286,1200,1314.2882)"
          style="display:inline;stroke-width:0.935413">
         <path
-           id="rect7-11-5"
+           id="rect7-11-5-7"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1000,-800 h 200 v -48 h -50 v -12 h -50 v -12 h -100 z"
+           d="m 1080,-800 h 120 v -52.49987 h -40 v -10.49997 h -40 v -10.49998 h -40 z"
            sodipodi:nodetypes="ccccccccc"
            inkscape:label="StairTop" />
         <path
-           d="m 1000,-883.99998 v 83.99983 h 50 v -83.99983 z"
+           d="m 1000,-883.99998 v 83.99983 h 80 v -83.99983 z"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path1-6-9-2-1-7-3"
+           id="path1-6-9-2-1-7-3-9"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g195"
+         id="g194"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g196"
+         id="g195"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -9192,42 +9192,42 @@
     <g
        inkscape:label="Empty_SouthStairN"
        transform="translate(2000,400)"
-       id="g203">
+       id="g202">
       <g
-         id="g198"
+         id="g197"
          inkscape:label="CenterNone"
          style="display:inline" />
       <g
-         id="g200"
+         id="g199"
          inkscape:label="SouthStairN"
          transform="matrix(1.1428571,0,0,1,-2771.4285,0)"
          style="display:inline;stroke-width:0.935414">
         <path
-           id="path198-2"
+           id="path197-8"
            style="display:inline;fill:#73797a;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2540,318 v 50 h -115 v -50 z m 10,72 v 10 h -125 v -10 z"
+           d="m 2538.75,326 v 40 H 2425 v -40 z m 8.75,62 v 12 H 2425 v -12 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path199-6"
+           id="path198-6"
            style="display:inline;fill:#576166;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2530,296 10,22 h -115 v -22 z m 10,72 10,22 h -125 v -22 z"
+           d="m 2538.75,366 8.75,22 H 2425 v -22 z m -8.75,-62 8.75,22 H 2425 v -22 z"
            sodipodi:nodetypes="cccccccccc"
            inkscape:label="StairFront" />
         <path
-           d="m 2530,246 v 50 h -105 v -50 z"
+           d="m 2530,224 v 80 h -105 v -80 z"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path200-5"
+           id="path199-1"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g201"
+         id="g200"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g202"
+         id="g201"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -9235,24 +9235,24 @@
     <g
        inkscape:label="Empty_SouthWallCorner"
        transform="translate(1800,400)"
-       id="g208">
+       id="g207">
       <g
-         id="g204"
+         id="g203"
          inkscape:label="CenterNone"
          style="display:inline" />
       <g
-         id="g205"
+         id="g204"
          transform="translate(-80,120)"
          inkscape:label="SouthCorner"
          style="display:inline;fill:#333c43;fill-opacity:1">
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="m 320,304 80,96 h -80 z"
-           id="path204-3"
+           id="path203-5"
            transform="translate(-120,-120)"
            inkscape:label="Right" />
         <path
-           id="path205-9"
+           id="path204-5"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 200,304 h 120 v 96 H 200 Z"
            sodipodi:nodetypes="ccccc"
@@ -9260,12 +9260,12 @@
            transform="translate(-120,-120)" />
       </g>
       <g
-         id="g206"
+         id="g205"
          transform="translate(-88,-440)"
          inkscape:label="SouthEastNone"
          style="display:inline" />
       <g
-         id="g207"
+         id="g206"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -9278,18 +9278,19 @@
     <g
        inkscape:label="StairWFull"
        transform="translate(1600,400)"
-       id="g209">
+       id="g208">
       <g
-         id="g7-0-9-9"
          inkscape:label="CenterStairWFull"
-         transform="matrix(-1,0,0,1,1350,800)"
-         style="display:inline">
+         transform="scale(1.0666667,1)"
+         id="g209-3"
+         style="display:inline;stroke-width:0.968246">
         <path
-           id="rect7-1-8-8"
-           style="fill:#73797a;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="rect7-1-8-8-9"
+           style="display:inline;fill:#73797a;fill-opacity:1;stroke-width:3.87298;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 1200,-400 h 150 v -400 h -150 z"
            sodipodi:nodetypes="ccccc"
-           inkscape:label="StairTop" />
+           inkscape:label="StairTop"
+           transform="matrix(-1,0,0,1,1350,800)" />
       </g>
       <g
          id="g3-8-1-0-9-2-2"
@@ -9305,26 +9306,27 @@
     <g
        inkscape:label="StairW"
        transform="translate(1400,400)"
-       id="g212">
+       id="g211">
       <g
-         id="g7-0-9"
          inkscape:label="CenterStairW"
-         transform="matrix(1,0,0,1.14286,-1200,857.14432)"
-         style="display:inline;stroke-width:0.935413">
+         transform="matrix(-1.0666667,0,0,1,224,-8)"
+         id="g212-7"
+         style="display:inline;stroke-width:0.968246">
         <path
-           id="rect7-1-8"
-           style="fill:#73797a;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1200,-528 v 32 h 50 v 32 h 50 v 32 h 50 v -317.99941 h -150 z"
-           sodipodi:nodetypes="cccccccccc"
-           inkscape:label="StairTop" />
+           id="rect7-1-8-3"
+           style="display:inline;fill:#73797a;fill-opacity:1;stroke-width:3.62284;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 1237.5,-512 v 27.99993 h 37.5 v 27.99993 h 37.5 v 27.99993 h 37.5 v -321.9992 H 1200 V -512 Z"
+           sodipodi:nodetypes="ccccccccccc"
+           inkscape:label="StairTop"
+           transform="matrix(-1,0,0,1.14286,1410,865.14433)" />
       </g>
       <g
-         id="g210"
+         id="g209"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g211"
+         id="g210"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -9332,32 +9334,34 @@
     <g
        inkscape:label="StairEFull"
        transform="translate(1200,400)"
-       id="g215">
+       id="g214">
       <g
-         id="g7-1-7"
          inkscape:label="CenterStairEFull"
-         transform="translate(-1000,800)"
+         transform="translate(0,4e-5)"
+         id="g215-0"
          style="display:inline">
         <path
-           id="rect7-8-8"
-           style="fill:#73797a;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1000,-800 v 400 h 200 v -400 z"
+           id="rect7-8-8-6"
+           style="display:inline;fill:#73797a;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 1000,-800 v 400 h 120 v -400 z"
            sodipodi:nodetypes="ccccc"
-           inkscape:label="StairTop" />
+           inkscape:label="StairTop"
+           transform="translate(-1000,800)" />
         <path
-           d="m 1150,-800.00004 v 400 h 50 v -400 z"
+           d="m 1120,-800.00004 v 400 h 80 v -400 z"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00002;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path1-6-9-2-5-6-6-1-0-5-1"
+           id="path1-6-9-2-5-6-6-1-0-5-1-1"
            inkscape:label="Top"
-           sodipodi:nodetypes="ccccc" />
+           sodipodi:nodetypes="ccccc"
+           transform="translate(-1000,800)" />
       </g>
       <g
-         id="g213"
+         id="g212"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g214"
+         id="g213"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -9365,32 +9369,33 @@
     <g
        inkscape:label="StairE"
        transform="translate(1000,400)"
-       id="g218">
+       id="g217">
       <g
-         id="g7-1"
          inkscape:label="CenterStairE"
-         transform="matrix(-1,0,0,1.14286,1200,857.14464)"
-         style="display:inline;stroke-width:0.935413">
+         id="g218-2"
+         style="display:inline">
         <path
-           id="rect7-8"
-           style="fill:#73797a;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="M 1050,-749.99969 V -624 v 32 h 50 v 32 h 50 v 32 h 50 v -221.99969 z"
-           sodipodi:nodetypes="cccccccccc"
-           inkscape:label="StairTop" />
+           id="rect7-8-0"
+           style="display:inline;fill:#73797a;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 1080,-749.99969 v 153.99962 h 40 v 27.99993 h 40 v 27.99993 h 40 v -209.99948 z"
+           sodipodi:nodetypes="ccccccccc"
+           inkscape:label="StairTop"
+           transform="matrix(-1,0,0,1.14286,1200,857.14464)" />
         <path
-           d="m 1050,-749.99969 v 125.99968 h -50 v -125.99968 z"
+           d="m 1080,-749.99969 v 125.99968 h -80 v -125.99968 z"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74166;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path1-6-9-2-5-6-6-1-0-5"
+           id="path1-6-9-2-5-6-6-1-0-5-16"
            inkscape:label="Top"
-           sodipodi:nodetypes="ccccc" />
+           sodipodi:nodetypes="ccccc"
+           transform="matrix(-1,0,0,1.14286,1200,857.14464)" />
       </g>
       <g
-         id="g216"
+         id="g215"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g217"
+         id="g216"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -9398,32 +9403,33 @@
     <g
        inkscape:label="StairSFull"
        transform="translate(800,400)"
-       id="g222">
+       id="g220">
       <g
-         id="g219"
          inkscape:label="CenterStairSFull"
-         transform="translate(-800,-400)"
+         id="g222-3"
          style="display:inline">
         <path
-           id="rect6"
-           style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="M 800,427.99999 V 596 h 200 V 427.99999 Z"
+           id="rect6-37"
+           style="display:inline;fill:#73797a;fill-opacity:1;stroke:none;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 800,417.99999 v 126 h 200 v -126 z"
            sodipodi:nodetypes="ccccc"
-           inkscape:label="StairTop" />
+           inkscape:label="StairTop"
+           transform="translate(-800,-400)" />
         <path
-           d="m 800,596.00001 v 50 h 200 v -50 z"
-           style="fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path1-6-9-2-5-6-6-1-0"
+           d="m 800,543.99999 v 80 h 200 v -80 z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path1-6-9-2-5-6-6-1-0-43"
            inkscape:label="Top"
-           sodipodi:nodetypes="ccccc" />
+           sodipodi:nodetypes="ccccc"
+           transform="translate(-800,-400)" />
       </g>
       <g
-         id="g220"
+         id="g218"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g221"
+         id="g219"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -9431,38 +9437,40 @@
     <g
        inkscape:label="StairS"
        transform="translate(600,400)"
-       id="g225">
+       id="g224">
       <g
-         id="g6-7"
          inkscape:label="CenterStairS"
-         transform="matrix(1.14286,0,0,1,-942.86003,-400)"
-         style="display:inline;stroke-width:0.935413">
+         transform="translate(3e-5)"
+         id="g221"
+         style="display:inline">
         <path
-           id="rect6-3"
-           style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="M 825.00044,428 V 596 H 930 v 22 h 10 v -28 h 10 v -28 h 10 v -28 h 10 v -28 h 10 v -28 h 10 v -50 z"
+           id="rect6-3-3"
+           style="display:inline;fill:#73797a;fill-opacity:1;stroke:none;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="M 825.00046,418 V 566.00001 L 938.75018,566 v -18 h 8.74998 v -18 h 8.74998 v -18.00003 h 8.74997 V 494 h 8.74998 v -18 h 8.74998 v -18 h 8.74998 v -40 z"
            sodipodi:nodetypes="ccccccccccccccccc"
-           inkscape:label="StairTop" />
+           inkscape:label="StairTop"
+           transform="matrix(1.14286,0,0,1,-942.86003,-400)" />
         <path
-           d="M 825.00046,595.99999 V 646 h 104.99956 v -50.00001 z"
-           style="fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path1-6-9-2-5-6-6-1-0-4"
+           d="m 825.00046,544.00001 v 80 h 104.99956 v -80 z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.74164;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path220-1"
            inkscape:label="Top"
-           sodipodi:nodetypes="ccccc" />
+           sodipodi:nodetypes="ccccc"
+           transform="matrix(1.14286,0,0,1,-942.86003,-400)" />
         <path
-           id="path20-9"
-           style="fill:#404d55;fill-opacity:1;stroke:none;stroke-width:0.935413px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-           d="m 990,428 v 22 h 10 z m -10,28 v 22 h 10 z m -10,28 v 22 h 10 z m -10,28 v 22 h 10 z m -10,28 v 22 h 10 z m -10,28 v 22 h 10 z m -10,28 v 22 h 10 z"
+           id="path20-9-8"
+           style="display:inline;fill:#404d55;fill-opacity:1;stroke:none;stroke-width:0.935413px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            inkscape:label="StairBack"
-           sodipodi:nodetypes="cccccccccccccccccccccccccccc" />
+           d="m 991.25005,418 v 22 H 1000 Z m -8.74998,18 v 22 h 8.74998 z m -8.74998,18 v 22 h 8.74998 z m -8.74998,18 v 22 h 8.74998 z m -8.74997,18 v 22 h 8.74997 z m -8.74998,18 v 22 h 8.74998 z m -8.74998,18 v 22 h 8.74998 z m -8.74998,18 v 22 h 8.74998 z"
+           transform="matrix(1.14286,0,0,1,-942.86003,-400)" />
       </g>
       <g
-         id="g223"
+         id="g222"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g224"
+         id="g223"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -9470,32 +9478,33 @@
     <g
        inkscape:label="StairNFull"
        transform="translate(400,400)"
-       id="g228">
+       id="g227">
       <g
-         id="g5-5-2"
          inkscape:label="CenterStairNFull"
-         transform="matrix(-1,0,0,1,2800,-400)"
+         id="g228-0"
          style="display:inline">
         <path
-           id="rect2-3-1-7"
-           style="fill:#73797a;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,400 v 40 h 200 v -40 z m 0,62 v 50 h 200 v -50 z m 0,72 v 50 h 200 v -50 z m 0,72 v 50 h 200 v -50 z m 0,72 v 50 h 200 v -50 z"
-           sodipodi:nodetypes="ccccccccccccccccccccccccc"
-           inkscape:label="StairTop" />
+           id="rect2-3-1-7-5"
+           style="display:inline;fill:#73797a;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 2600,450 v 40 h 200 v -40 z m 0,62 v 40 h 200 v -40 z m 0,62 v 40 h 200 v -40 z m 0,62 v 40 h 200 v -40 z m 0,62 v 40 h 200 v -40 z m 0,-298 v 28 h 200 v -28 z"
+           sodipodi:nodetypes="cccccccccccccccccccccccccccccc"
+           inkscape:label="StairTop"
+           transform="matrix(-1,0,0,1,2800,-400)" />
         <path
-           id="rect2-9-0-6"
-           style="fill:#576166;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2600,440 v 22 h 200 v -22 z m 0,72 v 22 h 200 v -22 z m 0,72 v 22 h 200 v -22 z m 0,72 v 22 h 200 v -22 z m 0,72 v 22 h 200 v -22 z"
-           sodipodi:nodetypes="ccccccccccccccccccccccccc"
-           inkscape:label="StairFront" />
+           id="rect2-9-0-6-4"
+           style="display:inline;fill:#576166;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 2600,490 v 22 h 200 v -22 z m 0,62 v 22 h 200 v -22 z m 0,62 v 22 h 200 v -22 z m 0,62 v 22 h 200 v -22 z m 0,62 v 22 h 200 v -22 z m 0,-310 v 22 h 200 v -22 z"
+           sodipodi:nodetypes="cccccccccccccccccccccccccccccc"
+           inkscape:label="StairFront"
+           transform="matrix(-1,0,0,1,2800,-400)" />
       </g>
       <g
-         id="g226"
+         id="g225"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g227"
+         id="g226"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -9503,34 +9512,34 @@
     <g
        inkscape:label="StairN"
        transform="translate(200,400)"
-       id="g231">
+       id="g230">
       <g
-         id="g1-7-3-2"
          inkscape:label="CenterStairN"
-         transform="matrix(1.14286,0,0,1,-3000.008,0)"
-         style="display:inline;stroke-width:0.935413">
+         transform="translate(4.2856e-5)"
+         id="g231-0"
+         style="display:inline">
         <path
-           id="rect2-3-7-4-1-4-6"
-           style="fill:#73797a;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2550,400 v 40 h -124.9996 v -40 z m 10,62 v 50 h -134.9996 v -50 z m 10,72 v 50 h -144.9996 v -50 z m 10,72 v 50 h -154.9996 v -50 z m 10,72 v 50 h -164.9996 v -50 z"
-           sodipodi:nodetypes="ccccccccccccccccccccccccc"
+           id="rect2-3-7-4-1-4-6-5"
+           style="display:inline;fill:#73797a;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 2556.2501,450 v 40 h -131.2497 v -40 z m 8.75,62 v 40 h -139.9997 v -40 z m 8.75,62 v 40 h -148.7497 v -40 z m 8.7499,62 v 40 h -157.4996 v -40 z m 8.75,62 v 40 h -166.2496 v -40 z m -43.7499,-298 v 28 h -122.4997 v -28 z"
+           sodipodi:nodetypes="cccccccccccccccccccccccccccccc"
            inkscape:label="StairTop"
-           transform="translate(200,-400)" />
+           transform="matrix(1.14286,0,0,1,-2771.436,-400)" />
         <path
-           id="rect2-9-8-1-0-1-0"
-           style="fill:#576166;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 2550,440 10,22 h -134.9996 v -22 z m 10,72 10,22 h -144.9996 v -22 z m 10,72 10,22 h -154.9996 v -22 z m 10,72 10,22 h -164.9996 v -22 z m 10,72 10,22 h -174.9996 v -22 z"
-           sodipodi:nodetypes="ccccccccccccccccccccccccc"
+           id="rect2-9-8-1-0-1-0-3"
+           style="display:inline;fill:#576166;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 2556.2501,490 8.75,22 h -139.9997 v -22 z m 8.75,62 8.75,22 h -148.7497 v -22 z m 8.75,62 8.7499,22 h -157.4996 v -22 z m 8.7499,62 8.75,22 h -166.2496 v -22 z m 8.75,62 8.75,22 h -174.9996 v -22 z m -43.7499,-310 8.75,22 h -131.2497 v -22 z"
+           sodipodi:nodetypes="cccccccccccccccccccccccccccccc"
            inkscape:label="StairFront"
-           transform="translate(200,-400)" />
+           transform="matrix(1.14286,0,0,1,-2771.436,-400)" />
       </g>
       <g
-         id="g229"
+         id="g228"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g230"
+         id="g229"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -9538,9 +9547,9 @@
     <g
        inkscape:label="WallCorner_EastStairS_SouthDoor"
        transform="translate(0,400)"
-       id="g234">
+       id="g233">
       <g
-         id="g232"
+         id="g231"
          transform="translate(-480,120)"
          inkscape:label="CenterWallCorner"
          style="display:inline">
@@ -9558,7 +9567,7 @@
            inkscape:label="Right" />
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect231"
+           id="rect230"
            width="120"
            height="144"
            x="600"
@@ -9585,30 +9594,30 @@
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g233"
-         transform="translate(-880,120)"
+         id="g232"
+         transform="matrix(1,0,0,0.89908257,-880,75.669717)"
          inkscape:label="EastStairS"
-         style="display:inline">
+         style="display:inline;stroke-width:1.05463">
         <path
-           d="M 1000,76.000001 V 126 h 80 V 76.000001 Z"
-           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path232-2"
+           d="M 1000,76.000001 V 164.9796 h 80 V 76.000001 Z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.21853;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path231-9"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
         <path
-           id="rect3-0-3-6"
-           style="display:inline;fill:#73797a;fill-opacity:1;stroke:none;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1068.5714,-92.000003 v 28 h -11.4286 V -36 h -11.4286 v 28 h -11.4285 v 28 h -11.4286 v 28 h -11.4286 V 76 H 1080 V -92.000003 Z"
-           sodipodi:nodetypes="ccccccccccccccc"
+           id="path237-6-9"
+           style="display:inline;fill:#73797a;fill-opacity:1;stroke:none;stroke-width:4.21852;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 1060,-44.122444 v 20.020409 h -10 v 20.0204077 h -10 V 15.938781 h -10 v 20.020408 h -10 v 20.020408 h -10 V 76 h 70 V -64.142852 h -10 v 20.020408 z"
+           sodipodi:nodetypes="ccccccccccccccccc"
            inkscape:label="StairTop" />
       </g>
     </g>
     <g
        inkscape:label="WallVertical_EastStairS"
        transform="translate(3000)"
-       id="g238">
+       id="g237">
       <g
-         id="g235"
+         id="g234"
          transform="translate(-880,120)"
          inkscape:label="CenterWallVertical"
          style="display:inline">
@@ -9620,7 +9629,7 @@
            sodipodi:nodetypes="ccccc" />
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect234"
+           id="rect233"
            width="120"
            height="400"
            x="880"
@@ -9628,40 +9637,40 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g236"
+         id="g235"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g237"
-         transform="translate(-880,120)"
+         id="g236"
+         transform="matrix(1,0,0,0.89908257,-880,75.669717)"
          inkscape:label="EastStairS"
-         style="display:inline">
+         style="display:inline;stroke-width:1.05463">
         <path
-           d="M 1000,76.000001 V 126 h 80 V 76.000001 Z"
-           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path236-4"
+           d="M 1000,76.000001 V 164.9796 h 80 V 76.000001 Z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.21853;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path235-6"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
         <path
-           id="path237-6"
-           style="display:inline;fill:#73797a;fill-opacity:1;stroke:none;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1068.5714,-92.000003 v 28 h -11.4286 V -36 h -11.4286 v 28 h -11.4285 v 28 h -11.4286 v 28 h -11.4286 V 76 H 1080 V -92.000003 Z"
-           sodipodi:nodetypes="ccccccccccccccc"
+           id="path236-4"
+           style="display:inline;fill:#73797a;fill-opacity:1;stroke:none;stroke-width:4.21852;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 1060,-44.122444 v 20.020409 h -10 v 20.0204077 h -10 V 15.938781 h -10 v 20.020408 h -10 v 20.020408 h -10 V 76 h 70 V -64.142852 h -10 v 20.020408 z"
+           sodipodi:nodetypes="ccccccccccccccccc"
            inkscape:label="StairTop" />
       </g>
     </g>
     <g
        inkscape:label="WallCorner_EastStairS"
        transform="translate(2800)"
-       id="g242">
+       id="g241">
       <g
-         id="g239"
+         id="g238"
          transform="translate(-480,120)"
          inkscape:label="CenterWallCorner"
          style="display:inline">
         <path
-           id="path238-1"
+           id="path237-5"
            style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="M 480,24 H 680.00003 L 680,280 H 480 Z"
            sodipodi:nodetypes="ccccc"
@@ -9669,12 +9678,12 @@
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="M 800,400 V 0 h -80 v 144 z"
-           id="path239-8"
+           id="path238-4"
            transform="translate(-120,-120)"
            inkscape:label="Right" />
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect239"
+           id="rect238"
            width="120"
            height="144"
            x="600"
@@ -9683,40 +9692,40 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g240"
+         id="g239"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g241"
-         transform="translate(-880,120)"
+         id="g240"
+         transform="matrix(1,0,0,0.89908257,-880,75.669717)"
          inkscape:label="EastStairS"
-         style="display:inline">
+         style="display:inline;stroke-width:1.05463">
         <path
-           d="M 1000,76.000001 V 126 h 80 V 76.000001 Z"
-           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.00001;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="path240-2"
+           d="M 1000,76.000001 V 164.9796 h 80 V 76.000001 Z"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4.21853;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="path239-2"
            inkscape:label="Top"
            sodipodi:nodetypes="ccccc" />
         <path
-           id="path241-1"
-           style="display:inline;fill:#73797a;fill-opacity:1;stroke:none;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1068.5714,-92.000003 v 28 h -11.4286 V -36 h -11.4286 v 28 h -11.4285 v 28 h -11.4286 v 28 h -11.4286 V 76 H 1080 V -92.000003 Z"
-           sodipodi:nodetypes="ccccccccccccccc"
+           id="path240-5"
+           style="display:inline;fill:#73797a;fill-opacity:1;stroke:none;stroke-width:4.21852;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 1060,-44.122444 v 20.020409 h -10 v 20.0204077 h -10 V 15.938781 h -10 v 20.020408 h -10 v 20.020408 h -10 V 76 h 70 V -64.142852 h -10 v 20.020408 z"
+           sodipodi:nodetypes="ccccccccccccccccc"
            inkscape:label="StairTop" />
       </g>
     </g>
     <g
        inkscape:label="WallCorner_EastStairN_SouthDoor"
        transform="translate(2600)"
-       id="g246">
+       id="g245">
       <g
-         id="g243"
+         id="g242"
          transform="translate(-480,120)"
          inkscape:label="CenterWallCorner"
          style="display:inline">
         <path
-           id="path242-1"
+           id="path241-3"
            style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="M 480,24 H 680.00003 L 680,280 H 480 Z"
            sodipodi:nodetypes="ccccc"
@@ -9724,12 +9733,12 @@
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="M 800,400 V 0 h -80 v 144 z"
-           id="path243-9"
+           id="path242-2"
            transform="translate(-120,-120)"
            inkscape:label="Right" />
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect243"
+           id="rect242"
            width="120"
            height="144"
            x="600"
@@ -9738,60 +9747,60 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g245"
+         id="g244"
          transform="translate(-280,-280)"
          inkscape:label="SouthDoor"
          style="display:inline">
         <path
-           id="path244-7"
+           id="path243-6"
            style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 280,424 h 24 l -3e-5,256 H 280 Z"
            sodipodi:nodetypes="ccccc"
            inkscape:label="Front" />
         <path
-           id="path245-6"
+           id="path244-8"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            inkscape:label="Top"
            d="m 280,424 v 80 h 24 v -80 z"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g3-8-8-4-7"
+         id="g253-1"
          transform="matrix(1.14286,0,0,1,-1034.2888,120)"
          inkscape:label="EastStairN"
          style="display:inline;stroke-width:0.935413">
         <path
-           id="rect2-3-1-8-1-6-2"
+           id="path252-0-6"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1030,-120 v 40 h 50 v -40 z m 10,62 v 50 h 40 v -50 z m 10,72 v 50 h 30 V 14 Z m 10,72 v 50 h 20 V 86 Z m 10,72 v 50 h 10 v -50 z"
-           sodipodi:nodetypes="ccccccccccccccccccccccccc"
+           d="m 1036.2501,-70 v 40 H 1080 v -40 z m 8.75,62 V 32 H 1080 V -8 Z m 8.75,62 V 94 H 1080 V 54 Z m 8.7499,62 v 40 h 17.5 v -40 z m 8.75,62 v 40 h 8.75 v -40 z m -43.7499,-298 v 28 H 1080 v -28 z"
+           sodipodi:nodetypes="cccccccccccccccccccccccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="rect2-9-0-8-1-6-0"
+           id="path253-3-8"
            style="fill:#576166;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1030,-80 10,22 h 40 v -22 z m 10,72 10,22 h 30 V -8 Z m 10,72 10,22 h 20 V 64 Z m 10,72 10,22 h 10 v -22 z m 10,72 10,22 v -22 z"
-           sodipodi:nodetypes="cccccccccccccccccccccccc"
+           d="m 1036.2501,-30 8.75,22 H 1080 v -22 z m 8.75,62 8.75,22 H 1080 V 32 Z m 8.75,62 8.7499,22 H 1080 V 94 Z m 8.7499,62 8.75,22 h 8.75 v -22 z m 8.75,62 8.75,22 v -22 z m -43.7499,-310 8.75,22 H 1080 v -22 z"
+           sodipodi:nodetypes="ccccccccccccccccccccccccccccc"
            inkscape:label="StairFront" />
       </g>
     </g>
     <g
        inkscape:label="WallVertical_EastStairN"
        transform="translate(2400)"
-       id="g250">
+       id="g249">
       <g
-         id="g247"
+         id="g246"
          transform="translate(-880,120)"
          inkscape:label="CenterWallVertical"
          style="display:inline">
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="m 1080,280 v -400 h -80 v 400 z"
-           id="path246-2"
+           id="path245-2"
            inkscape:label="Right"
            sodipodi:nodetypes="ccccc" />
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect246"
+           id="rect245"
            width="120"
            height="400"
            x="880"
@@ -9799,40 +9808,40 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g248"
+         id="g247"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g249"
+         id="g248"
          transform="matrix(1.14286,0,0,1,-1034.2888,120)"
          inkscape:label="EastStairN"
          style="display:inline;stroke-width:0.935413">
         <path
-           id="path248-9"
+           id="path247-6"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1030,-120 v 40 h 50 v -40 z m 10,62 v 50 h 40 v -50 z m 10,72 v 50 h 30 V 14 Z m 10,72 v 50 h 20 V 86 Z m 10,72 v 50 h 10 v -50 z"
-           sodipodi:nodetypes="ccccccccccccccccccccccccc"
+           d="m 1036.2501,-70 v 40 H 1080 v -40 z m 8.75,62 V 32 H 1080 V -8 Z m 8.75,62 V 94 H 1080 V 54 Z m 8.7499,62 v 40 h 17.5 v -40 z m 8.75,62 v 40 h 8.75 v -40 z m -43.7499,-298 v 28 H 1080 v -28 z"
+           sodipodi:nodetypes="cccccccccccccccccccccccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path249-5"
+           id="path248-6"
            style="fill:#576166;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1030,-80 10,22 h 40 v -22 z m 10,72 10,22 h 30 V -8 Z m 10,72 10,22 h 20 V 64 Z m 10,72 10,22 h 10 v -22 z m 10,72 10,22 v -22 z"
-           sodipodi:nodetypes="cccccccccccccccccccccccc"
+           d="m 1036.2501,-30 8.75,22 H 1080 v -22 z m 8.75,62 8.75,22 H 1080 V 32 Z m 8.75,62 8.7499,22 H 1080 V 94 Z m 8.7499,62 8.75,22 h 8.75 v -22 z m 8.75,62 8.75,22 v -22 z m -43.7499,-310 8.75,22 H 1080 v -22 z"
+           sodipodi:nodetypes="ccccccccccccccccccccccccccccc"
            inkscape:label="StairFront" />
       </g>
     </g>
     <g
        inkscape:label="WallCorner_EastStairN"
        transform="translate(2200)"
-       id="g254">
+       id="g253">
       <g
-         id="g251"
+         id="g250"
          transform="translate(-480,120)"
          inkscape:label="CenterWallCorner"
          style="display:inline">
         <path
-           id="path250-2"
+           id="path249-3"
            style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="M 480,24 H 680.00003 L 680,280 H 480 Z"
            sodipodi:nodetypes="ccccc"
@@ -9840,12 +9849,12 @@
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="M 800,400 V 0 h -80 v 144 z"
-           id="path251-0"
+           id="path250-9"
            transform="translate(-120,-120)"
            inkscape:label="Right" />
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect251"
+           id="rect250"
            width="120"
            height="144"
            x="600"
@@ -9854,40 +9863,40 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g252"
+         id="g251"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g253"
+         id="g252"
          transform="matrix(1.14286,0,0,1,-1034.2888,120)"
          inkscape:label="EastStairN"
          style="display:inline;stroke-width:0.935413">
         <path
-           id="path252-0"
+           id="path251-4"
            style="fill:#73797a;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1030,-120 v 40 h 50 v -40 z m 10,62 v 50 h 40 v -50 z m 10,72 v 50 h 30 V 14 Z m 10,72 v 50 h 20 V 86 Z m 10,72 v 50 h 10 v -50 z"
-           sodipodi:nodetypes="ccccccccccccccccccccccccc"
+           d="m 1036.2501,-70 v 40 H 1080 v -40 z m 8.75,62 V 32 H 1080 V -8 Z m 8.75,62 V 94 H 1080 V 54 Z m 8.7499,62 v 40 h 17.5 v -40 z m 8.75,62 v 40 h 8.75 v -40 z m -43.7499,-298 v 28 H 1080 v -28 z"
+           sodipodi:nodetypes="cccccccccccccccccccccccccccccc"
            inkscape:label="StairTop" />
         <path
-           id="path253-3"
+           id="path252-5"
            style="fill:#576166;fill-opacity:1;stroke-width:3.74165;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 1030,-80 10,22 h 40 v -22 z m 10,72 10,22 h 30 V -8 Z m 10,72 10,22 h 20 V 64 Z m 10,72 10,22 h 10 v -22 z m 10,72 10,22 v -22 z"
-           sodipodi:nodetypes="cccccccccccccccccccccccc"
+           d="m 1036.2501,-30 8.75,22 H 1080 v -22 z m 8.75,62 8.75,22 H 1080 V 32 Z m 8.75,62 8.7499,22 H 1080 V 94 Z m 8.7499,62 8.75,22 h 8.75 v -22 z m 8.75,62 8.75,22 v -22 z m -43.7499,-310 8.75,22 H 1080 v -22 z"
+           sodipodi:nodetypes="ccccccccccccccccccccccccccccc"
            inkscape:label="StairFront" />
       </g>
     </g>
     <g
        inkscape:label="WallCorner_EastDoor_SouthDoor"
        transform="translate(2000)"
-       id="g259">
+       id="g258">
       <g
-         id="g255"
+         id="g254"
          transform="translate(-480,120)"
          inkscape:label="CenterWallCorner"
          style="display:inline">
         <path
-           id="path254-9"
+           id="path253-6"
            style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="M 480,24 H 680.00003 L 680,280 H 480 Z"
            sodipodi:nodetypes="ccccc"
@@ -9895,12 +9904,12 @@
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="M 800,400 V 0 h -80 v 144 z"
-           id="path255-1"
+           id="path254-2"
            transform="translate(-120,-120)"
            inkscape:label="Right" />
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect255"
+           id="rect254"
            width="120"
            height="144"
            x="600"
@@ -9909,25 +9918,25 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g257"
+         id="g256"
          transform="translate(-280,-280)"
          inkscape:label="SouthDoor"
          style="display:inline">
         <path
-           id="path256-8"
+           id="path255-5"
            style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 280,424 h 24 l -3e-5,256 H 280 Z"
            sodipodi:nodetypes="ccccc"
            inkscape:label="Front" />
         <path
-           id="path257-1"
+           id="path256-3"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            inkscape:label="Top"
            d="m 280,424 v 80 h 24 v -80 z"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g258"
+         id="g257"
          transform="translate(-1680,120)"
          inkscape:label="EastDoor"
          style="display:inline">
@@ -9938,7 +9947,7 @@
            sodipodi:nodetypes="cccc"
            inkscape:label="Front" />
         <path
-           id="path258-9"
+           id="path257-5"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            inkscape:label="Top"
            d="m 1800,-120 v 48 h 80 v -48 z"
@@ -9948,21 +9957,21 @@
     <g
        inkscape:label="WallVertical_EastDoor"
        transform="translate(1800)"
-       id="g263">
+       id="g262">
       <g
-         id="g260"
+         id="g259"
          transform="translate(-880,120)"
          inkscape:label="CenterWallVertical"
          style="display:inline">
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="m 1080,280 v -400 h -80 v 400 z"
-           id="path259-5"
+           id="path258-6"
            inkscape:label="Right"
            sodipodi:nodetypes="ccccc" />
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect259"
+           id="rect258"
            width="120"
            height="400"
            x="880"
@@ -9970,23 +9979,23 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g261"
+         id="g260"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g262"
+         id="g261"
          transform="translate(-1680,120)"
          inkscape:label="EastDoor"
          style="display:inline">
         <path
-           id="path261-3"
+           id="path260-6"
            style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 1880,-72 h -80 l 80,304 z"
            sodipodi:nodetypes="cccc"
            inkscape:label="Front" />
         <path
-           id="path262-2"
+           id="path261-1"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            inkscape:label="Top"
            d="m 1800,-120 v 48 h 80 v -48 z"
@@ -9996,14 +10005,14 @@
     <g
        inkscape:label="WallCorner_EastDoor"
        transform="translate(1600)"
-       id="g267">
+       id="g266">
       <g
-         id="g264"
+         id="g263"
          transform="translate(-480,120)"
          inkscape:label="CenterWallCorner"
          style="display:inline">
         <path
-           id="path263-5"
+           id="path262-4"
            style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="M 480,24 H 680.00003 L 680,280 H 480 Z"
            sodipodi:nodetypes="ccccc"
@@ -10011,12 +10020,12 @@
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="M 800,400 V 0 h -80 v 144 z"
-           id="path264-2"
+           id="path263-4"
            transform="translate(-120,-120)"
            inkscape:label="Right" />
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect264"
+           id="rect263"
            width="120"
            height="144"
            x="600"
@@ -10025,23 +10034,23 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g265"
+         id="g264"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g266"
+         id="g265"
          transform="translate(-1680,120)"
          inkscape:label="EastDoor"
          style="display:inline">
         <path
-           id="path265"
+           id="path264-6"
            style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 1880,-72 h -80 l 80,304 z"
            sodipodi:nodetypes="cccc"
            inkscape:label="Front" />
         <path
-           id="path266"
+           id="path265"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            inkscape:label="Top"
            d="m 1800,-120 v 48 h 80 v -48 z"
@@ -10051,15 +10060,15 @@
     <g
        inkscape:label="WallFull"
        transform="translate(1400)"
-       id="g271">
+       id="g270">
       <g
-         id="g268"
+         id="g267"
          transform="translate(-3280,920)"
          inkscape:label="CenterWallFull"
          style="display:inline">
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect267"
+           id="rect266"
            width="200"
            height="400"
            x="3280"
@@ -10067,12 +10076,12 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g269"
+         id="g268"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g270"
+         id="g269"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -10080,9 +10089,9 @@
     <g
        inkscape:label="WallHorizontal_SouthDoor"
        transform="translate(1200)"
-       id="g275">
+       id="g274">
       <g
-         id="g272"
+         id="g271"
          transform="matrix(1.6666667,0,0,1,-1706.6667,56)"
          inkscape:label="CenterWallHorizontal"
          style="display:inline;stroke-width:0.774597">
@@ -10094,7 +10103,7 @@
            inkscape:label="Front" />
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:3.09839;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect271"
+           id="rect270"
            width="120"
            height="144"
            x="1024"
@@ -10102,25 +10111,25 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g273"
+         id="g272"
          transform="translate(-280,-280)"
          inkscape:label="SouthDoor"
          style="display:inline">
         <path
-           id="path272"
+           id="path271"
            style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 280,424 h 24 l -3e-5,256 H 280 Z"
            sodipodi:nodetypes="ccccc"
            inkscape:label="Front" />
         <path
-           id="path273"
+           id="path272"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            inkscape:label="Top"
            d="m 280,424 v 80 h 24 v -80 z"
            sodipodi:nodetypes="ccccc" />
       </g>
       <g
-         id="g274"
+         id="g273"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -10128,9 +10137,9 @@
     <g
        inkscape:label="WallInverseCorner"
        transform="translate(1000)"
-       id="g279">
+       id="g278">
       <g
-         id="g276"
+         id="g275"
          transform="translate(-1080,120)"
          inkscape:label="CenterWallInverseCorner"
          style="display:inline">
@@ -10147,19 +10156,19 @@
            inkscape:label="Right"
            sodipodi:nodetypes="cccc" />
         <path
-           id="path275"
+           id="path274"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            inkscape:label="Top"
            d="m 1080,-120 v 400 h 120 V 24 h 80 v -144 z"
            sodipodi:nodetypes="ccccccc" />
       </g>
       <g
-         id="g277"
+         id="g276"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g278"
+         id="g277"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -10167,21 +10176,21 @@
     <g
        inkscape:label="WallHorizontal"
        transform="translate(800)"
-       id="g283">
+       id="g282">
       <g
-         id="g280"
+         id="g279"
          transform="matrix(1.6666667,0,0,1,-1706.6667,56)"
          inkscape:label="CenterWallHorizontal"
          style="display:inline;stroke-width:0.774597">
         <path
-           id="path279"
+           id="path278"
            style="fill:#76503f;stroke-width:3.09839;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 1024,88 h 120 v 256 h -120 z"
            sodipodi:nodetypes="ccccc"
            inkscape:label="Front" />
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:3.09839;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect279"
+           id="rect278"
            width="120"
            height="144"
            x="1024"
@@ -10189,12 +10198,12 @@
            inkscape:label="Top" />
       </g>
       <g
-         id="g281"
+         id="g280"
          transform="translate(-88,-440)"
          inkscape:label="SouthNone"
          style="display:inline" />
       <g
-         id="g282"
+         id="g281"
          transform="translate(-88,-440)"
          inkscape:label="EastNone"
          style="display:inline" />
@@ -10204,12 +10213,12 @@
        transform="translate(600)"
        id="g288">
       <g
-         id="g284"
+         id="g283"
          transform="translate(-480,120)"
          inkscape:label="CenterWallCorner"
          style="display:inline">
         <path
-           id="path283"
+           id="path282"
            style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="M 480,24 H 680.00003 L 680,280 H 480 Z"
            sodipodi:nodetypes="ccccc"
@@ -10217,12 +10226,12 @@
         <path
            style="fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            d="M 800,400 V 0 h -80 v 144 z"
-           id="path284-5"
+           id="path283"
            transform="translate(-120,-120)"
            inkscape:label="Right" />
         <rect
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           id="rect284"
+           id="rect283"
            width="120"
            height="144"
            x="600"
@@ -10236,13 +10245,13 @@
          inkscape:label="SouthDoor"
          style="display:inline">
         <path
-           id="path285"
+           id="path284-2"
            style="fill:#76503f;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 280,424 h 24 l -3e-5,256 H 280 Z"
            sodipodi:nodetypes="ccccc"
            inkscape:label="Front" />
         <path
-           id="path286"
+           id="path285"
            style="fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            inkscape:label="Top"
            d="m 280,424 v 80 h 24 v -80 z"
