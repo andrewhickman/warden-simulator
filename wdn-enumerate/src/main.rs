@@ -7,10 +7,20 @@ use std::{collections::HashSet, io::BufWriter};
 
 use wdn_enumerate::{BaseSprite, TileVariant, TopSprite, resolve_sprites};
 
-mod contiguity;
 mod spritesheet;
 
 fn main() {
+    // let (base, top) = resolve_sprites(
+    //     TileVariant::Wall,
+    //     TileVariant::Empty,
+    //     TileVariant::Empty,
+    //     TileVariant::StairS,
+    //     TileVariant::Wall,
+    //     TileVariant::Wall,
+    // );
+    // println!("base: {:?}, top: {:?}", base, top);
+    // return;
+
     let mut unique_base_sprites = HashSet::new();
     let mut ordered_base_sprites = Vec::new();
     let mut unique_top_sprites = HashSet::new();
@@ -130,26 +140,4 @@ fn main() {
         Path::new("assets/image/wall_spritesheet.svg"),
     )
     .expect("failed to generate wall spritesheet");
-
-    spritesheet::generate_sprite_ids(
-        &ordered_base_sprites,
-        &ordered_top_sprites,
-        Path::new("wdn-enumerate/src/sprite_id.rs"),
-    )
-    .expect("failed to generate sprite ids");
-
-    // contiguity::report_redundant_top_fields(
-    //     &unique_pairs,
-    //     Path::new("assets/image/wall_base_parts.svg"),
-    //     Path::new("assets/image/wall_top_parts.svg"),
-    // )
-    // .expect("failed to check top sprite contiguity");
-
-    // contiguity::generate_simplify(
-    //     &unique_pairs,
-    //     Path::new("assets/image/wall_base_parts.svg"),
-    //     Path::new("assets/image/wall_top_parts.svg"),
-    //     Path::new("wdn-enumerate/src/topsprite_simplify.rs"),
-    // )
-    // .expect("failed to generate TopSprite::simplify");
 }

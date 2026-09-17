@@ -1,9 +1,6 @@
 use std::fmt;
 
-use crate::{BaseSpriteCenter::StairNFull, Model::DoorVerticalNorth};
-
-mod sprite_id;
-// mod topsprite_simplify;
+use crate::{BaseSpriteCenter::WallInverseCorner, Model::DoorVerticalNorth};
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
 pub enum TileVariant {
@@ -78,8 +75,6 @@ pub enum BaseSpriteCenter {
 pub enum BaseSpriteSouth {
     None,
     Door,
-    StairN,
-    StairNFull,
 }
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy)]
@@ -129,6 +124,7 @@ pub enum TopSpriteSouth {
 pub enum TopSpriteEast {
     None,
     Door,
+    StairS,
 }
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy)]
@@ -176,12 +172,18 @@ impl Model {
                 north: WallModel::resolve(
                     matches!(north, TileVariant::Wall | TileVariant::StairS),
                     matches!(east, TileVariant::Wall | TileVariant::StairW),
-                    matches!(north_east, TileVariant::Wall),
+                    matches!(
+                        north_east,
+                        TileVariant::Wall | TileVariant::StairW | TileVariant::StairS
+                    ),
                 ),
                 south: WallModel::resolve(
                     matches!(south, TileVariant::Wall | TileVariant::StairN),
                     matches!(east, TileVariant::Wall | TileVariant::StairW),
-                    matches!(south_east, TileVariant::Wall),
+                    matches!(
+                        south_east,
+                        TileVariant::Wall | TileVariant::StairW | TileVariant::StairN
+                    ),
                 ),
             },
             TileVariant::Door => {
@@ -285,8 +287,6 @@ impl Model {
     pub fn north_base_sprite(&self) -> BaseSpriteSouth {
         match self {
             Model::DoorVerticalNorth | Model::DoorVerticalNorthSouth => BaseSpriteSouth::Door,
-            Model::StairN => BaseSpriteSouth::StairN,
-            Model::StairNFull => BaseSpriteSouth::StairNFull,
             _ => BaseSpriteSouth::None,
         }
     }
@@ -354,7 +354,6 @@ impl Model {
             Model::StairN
             | Model::StairS
             | Model::StairNFull
-            | Model::StairSFull
             | Model::StairE
             | Model::StairENorth
             | Model::StairESouth
@@ -363,6 +362,7 @@ impl Model {
             | Model::StairWNorth
             | Model::StairWSouth
             | Model::StairWNorthSouth => TopSpriteEast::None,
+            Model::StairSFull => TopSpriteEast::StairS,
         }
     }
 
@@ -511,8 +511,6 @@ impl fmt::Debug for BaseSpriteSouth {
         match self {
             Self::None => Ok(()),
             Self::Door => write!(f, "_SouthDoor"),
-            Self::StairN => write!(f, "_SouthStairN"),
-            Self::StairNFull => write!(f, "_SouthStairNFull"),
         }
     }
 }
@@ -574,6 +572,7 @@ impl fmt::Debug for TopSpriteEast {
         match self {
             Self::None => Ok(()),
             Self::Door => write!(f, "_EastDoor"),
+            Self::StairS => write!(f, "_EastStairS"),
         }
     }
 }
@@ -599,11 +598,7 @@ impl BaseSprite {
 
     /// Maps a sprite to its canonical, visually-deduplicated form.
     pub fn normalize(self) -> Self {
-        // The east reduction below and the south reductions further down are independent of
-        // each other (they key off disjoint fields), but since a single `match` only applies
-        // one arm, a sprite matching both needs each applied here so this stays a fixed point
-        // in one `normalize()` call.
-        let self_ = match self {
+        match self {
             // The full stair-top already spans the tile, covering where the matching east stair edge would be.
             Self {
                 center: BaseSpriteCenter::StairNFull,
@@ -619,43 +614,6 @@ impl BaseSprite {
                 ..self
             },
             _ => self,
-        };
-
-        match self_ {
-            Self {
-                center: BaseSpriteCenter::WallInverseCorner,
-                south: BaseSpriteSouth::StairNFull,
-                ..
-            } => Self {
-                center: BaseSpriteCenter::WallFull,
-                ..self_
-            },
-            Self {
-                center: BaseSpriteCenter::WallVertical,
-                south: BaseSpriteSouth::StairNFull,
-                east: BaseSpriteEast::None | BaseSpriteEast::StairN | BaseSpriteEast::Door,
-            } => Self {
-                south: BaseSpriteSouth::StairN,
-                ..self_
-            },
-            Self {
-                center:
-                    BaseSpriteCenter::None
-                    | BaseSpriteCenter::StairN
-                    | BaseSpriteCenter::StairNFull
-                    | BaseSpriteCenter::StairS
-                    | BaseSpriteCenter::StairSFull
-                    | BaseSpriteCenter::StairE
-                    | BaseSpriteCenter::StairEFull
-                    | BaseSpriteCenter::StairW
-                    | BaseSpriteCenter::StairWFull,
-                south: BaseSpriteSouth::StairN | BaseSpriteSouth::StairNFull,
-                ..
-            } => Self {
-                south: BaseSpriteSouth::None,
-                ..self_
-            },
-            _ => self_,
         }
     }
 }
@@ -682,121 +640,85 @@ impl TopSprite {
 
     /// Maps a sprite to its canonical, visually-deduplicated form.
     pub fn normalize(self) -> Self {
-        match self {
+        // These two reductions key off disjoint fields and can both apply to the same sprite,
+        // so both are applied here in sequence to keep `normalize()` a fixed point in one call.
+        let this = match self {
+            // A full south-facing stair top already spans the tile, covering the north stair
+            // silhouette that would otherwise share its south-east corner.
             Self {
-                center: TopSpriteCenter::WallInverseCorner,
                 south: TopSpriteSouth::StairNFull,
-                south_east: TopSpriteSouthEast::StairN,
-                east: TopSpriteEast::None,
-            } => Self {
-                center: TopSpriteCenter::WallFull,
-                south: TopSpriteSouth::StairNFull,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None,
-            },
-            // The wall/stair-top already spans the south or south-east edge, hiding the stair sliver.
-            Self {
-                center: TopSpriteCenter::WallVertical,
-                south: TopSpriteSouth::StairNFull,
-                south_east: TopSpriteSouthEast::StairN,
-                east: TopSpriteEast::Door | TopSpriteEast::None,
-            }
-            | Self {
-                center: TopSpriteCenter::None,
-                south: TopSpriteSouth::StairNFull,
-                south_east: TopSpriteSouthEast::StairN,
-                east: TopSpriteEast::None,
+                ..
             } => Self {
                 south_east: TopSpriteSouthEast::None,
                 ..self
             },
-            // The center stair-top is drawn first and is hidden by the north stair silhouette
-            // spanning the same strip, so it's indistinguishable from an empty center.
+            _ => self,
+        };
+
+        let this = match this {
+            // The full south-facing stair top already spans the tile, covering where the
+            // matching east stair edge would be.
             Self {
-                center: TopSpriteCenter::StairS,
-                south: TopSpriteSouth::StairN,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None,
-            }
-            | Self {
-                center: TopSpriteCenter::StairS,
-                south: TopSpriteSouth::StairNFull,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None,
-            }
-            | Self {
                 center: TopSpriteCenter::StairSFull,
-                south: TopSpriteSouth::StairNFull,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None,
+                east: TopSpriteEast::StairS,
+                ..
             } => Self {
-                center: TopSpriteCenter::None,
-                ..self
-            },
-            // As above; the north stair-top is only partial here, so it must also be upgraded to
-            // full, which in turn absorbs the south-east sliver.
-            Self {
-                center: TopSpriteCenter::StairS | TopSpriteCenter::StairSFull,
-                south: TopSpriteSouth::StairNFull,
-                south_east: TopSpriteSouthEast::StairN,
                 east: TopSpriteEast::None,
-            } => Self {
-                center: TopSpriteCenter::None,
-                south_east: TopSpriteSouthEast::None,
-                ..self
+                ..this
             },
-            // The wall's full top plate already spans the tile, hiding the south wall strip,
-            // leaving nothing else drawn.
-            Self {
-                center: TopSpriteCenter::WallFull,
-                south: TopSpriteSouth::WallHorizontal,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None,
-            } => Self::EMPTY,
+            _ => this,
+        };
+
+        let this = match this {
             Self {
                 center: TopSpriteCenter::WallCorner | TopSpriteCenter::WallHorizontal,
+                east: TopSpriteEast::None | TopSpriteEast::Door | TopSpriteEast::StairS,
                 south: TopSpriteSouth::None | TopSpriteSouth::Door,
                 south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None | TopSpriteEast::Door,
             } => Self::EMPTY,
             Self {
                 center: TopSpriteCenter::WallVertical | TopSpriteCenter::WallInverseCorner,
+                east: TopSpriteEast::None | TopSpriteEast::Door | TopSpriteEast::StairS,
                 south: TopSpriteSouth::WallCorner,
                 south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None,
             } => Self::EMPTY,
             Self {
-                center: TopSpriteCenter::WallHorizontal,
-                south: TopSpriteSouth::StairWFull,
-                south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None,
-            } => Self {
-                center: TopSpriteCenter::None,
-                ..self
-            },
-            Self {
                 center: TopSpriteCenter::WallCorner,
+                east: TopSpriteEast::None | TopSpriteEast::Door,
                 south: TopSpriteSouth::StairEFull | TopSpriteSouth::StairWFull,
                 south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None | TopSpriteEast::Door,
             } => Self {
-                center: TopSpriteCenter::None,
-                ..self
+                south: this.south,
+                ..Self::EMPTY
+            },
+            Self {
+                center: TopSpriteCenter::WallHorizontal | TopSpriteCenter::WallCorner,
+                east: TopSpriteEast::None | TopSpriteEast::Door | TopSpriteEast::StairS,
+                south: TopSpriteSouth::StairWFull,
+                south_east: TopSpriteSouthEast::None,
+            } => Self {
+                south: this.south,
+                ..Self::EMPTY
             },
             Self {
                 center: TopSpriteCenter::WallFull,
-                south: TopSpriteSouth::None,
+                east: TopSpriteEast::None | TopSpriteEast::Door,
+                south: TopSpriteSouth::WallHorizontal,
                 south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None,
             } => Self::EMPTY,
             Self {
                 center: TopSpriteCenter::StairS | TopSpriteCenter::StairSFull,
+                east: TopSpriteEast::None,
                 south: TopSpriteSouth::None | TopSpriteSouth::StairE | TopSpriteSouth::StairW,
                 south_east: TopSpriteSouthEast::None,
-                east: TopSpriteEast::None,
-            } => Self::EMPTY,
-            _ => self,
-        }
+            } => Self {
+                south: this.south,
+                ..Self::EMPTY
+            },
+            _ => this,
+        };
+
+        this
     }
 }
 
@@ -820,12 +742,7 @@ mod tests {
         BaseSpriteCenter::StairW,
         BaseSpriteCenter::StairWFull,
     ];
-    const BASE_SOUTHS: [BaseSpriteSouth; 4] = [
-        BaseSpriteSouth::None,
-        BaseSpriteSouth::Door,
-        BaseSpriteSouth::StairN,
-        BaseSpriteSouth::StairNFull,
-    ];
+    const BASE_SOUTHS: [BaseSpriteSouth; 2] = [BaseSpriteSouth::None, BaseSpriteSouth::Door];
     const BASE_EASTS: [BaseSpriteEast; 4] = [
         BaseSpriteEast::None,
         BaseSpriteEast::Door,
@@ -858,7 +775,11 @@ mod tests {
     ];
     const TOP_SOUTH_EASTS: [TopSpriteSouthEast; 2] =
         [TopSpriteSouthEast::None, TopSpriteSouthEast::StairN];
-    const TOP_EASTS: [TopSpriteEast; 2] = [TopSpriteEast::None, TopSpriteEast::Door];
+    const TOP_EASTS: [TopSpriteEast; 3] = [
+        TopSpriteEast::None,
+        TopSpriteEast::Door,
+        TopSpriteEast::StairS,
+    ];
 
     /// `normalize()` must reach its fixed point in a single match, i.e. re-normalizing an
     /// already-normalized sprite must be a no-op, for every possible sprite.
