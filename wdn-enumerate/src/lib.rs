@@ -692,6 +692,15 @@ impl TopSprite {
                 ..Self::EMPTY
             },
             Self {
+                center: TopSpriteCenter::WallCorner,
+                east: TopSpriteEast::StairS,
+                south: TopSpriteSouth::StairEFull,
+                south_east: TopSpriteSouthEast::None,
+            } => Self {
+                south: TopSpriteSouth::StairEFull,
+                ..Self::EMPTY
+            },
+            Self {
                 center: TopSpriteCenter::WallHorizontal | TopSpriteCenter::WallCorner,
                 east: TopSpriteEast::None | TopSpriteEast::Door | TopSpriteEast::StairS,
                 south: TopSpriteSouth::StairWFull,
