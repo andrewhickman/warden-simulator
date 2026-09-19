@@ -221,7 +221,9 @@ fn resolve_top(
     match (center, east, south_east, south) {
         (_, _, _, Door | Empty | StairS)
         | (Wall, _, Door | Empty | StairE | StairS, Wall)
-        | (Wall, StairW | Wall, StairW | Wall, Wall) => EMPTY,
+        | (Wall, StairW | Wall, StairW | Wall, Wall)
+        | (StairE, _, _, StairE)
+        | (StairW, _, _, StairW) => EMPTY,
         (
             Empty | StairE | StairN | StairW,
             Door | Empty | StairE | StairN | StairS | StairW,
@@ -263,9 +265,8 @@ fn resolve_top(
         (Wall, Empty | StairE | StairN, Door | Empty | StairE | StairS | StairW, StairN) => {
             TOP_WALLVERTICAL_SOUTHSTAIRN
         }
-        (StairE | Wall, Door | Empty | StairE | StairN | StairS, _, StairE)
-        | (StairE, StairW | Wall, _, StairE) => TOP_EMPTY_SOUTHSTAIREFULL,
-        (StairW | Wall, _, _, StairW) => TOP_EMPTY_SOUTHSTAIRWFULL,
+        (Wall, Door | Empty | StairE | StairN | StairS, _, StairE) => TOP_EMPTY_SOUTHSTAIREFULL,
+        (Wall, _, _, StairW) => TOP_EMPTY_SOUTHSTAIRWFULL,
         (Wall, Empty | StairE | StairN, StairW | Wall, Wall) => {
             TOP_WALLVERTICAL_SOUTHWALLHORIZONTAL
         }
