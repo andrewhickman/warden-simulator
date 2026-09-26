@@ -2,10 +2,9 @@
 
 use std::fs::File;
 use std::io::Write;
-use std::path::Path;
 use std::{collections::HashSet, io::BufWriter};
 
-use wdn_enumerate::{BaseSprite, TileVariant, TopSprite, TopSpriteEast};
+use wdn_enumerate::{BaseSprite, TileVariant, TopSprite};
 
 fn main() {
     let mut unique_base_sprites = HashSet::new();
@@ -61,18 +60,16 @@ fn main() {
         if base == &BaseSprite::Empty {
             continue;
         }
-        let basestr = format!("BASE_{:?}", base).to_uppercase();
-        writeln!(base_consts, "const {}: u16 = {};", basestr, i).unwrap();
+        writeln!(base_consts, "const {}: u16 = {};", base, i).unwrap();
     }
     for (i, top) in ordered_top_sprites.iter().enumerate() {
         if top == &TopSprite::EMPTY {
             continue;
         }
-        let topstr = format!("TOP_{:?}", top).to_uppercase();
         writeln!(
             base_consts,
             "const {}: u16 = {};",
-            topstr,
+            top,
             i + ordered_base_sprites.len() - 1
         )
         .unwrap();

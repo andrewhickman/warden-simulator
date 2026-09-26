@@ -16,23 +16,23 @@ pub enum TileVariant {
 pub enum BaseSprite {
     Empty,
     Wall {
-        adjacency: BaseAdjacency,
+        adjacency: Adjacency,
         east: BaseSpriteEast,
         south: BaseSpriteSouth,
     },
     StairN {
-        adjacency: BaseAdjacency,
+        adjacency: Adjacency,
     },
     StairS {
-        adjacency: BaseAdjacency,
+        adjacency: Adjacency,
         south: BaseSpriteSouth,
     },
     StairE {
-        adjacency: BaseAdjacency,
+        adjacency: Adjacency,
         east: BaseSpriteEast,
     },
     StairW {
-        adjacency: BaseAdjacency,
+        adjacency: Adjacency,
     },
 }
 
@@ -51,7 +51,7 @@ pub enum BaseSpriteSouth {
 }
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
-pub enum BaseAdjacency {
+pub enum Adjacency {
     Corner,
     Horizontal,
     Vertical,
@@ -65,28 +65,21 @@ pub enum TopSprite {
         east: TopSpriteEast,
     },
     Wall {
-        adjacency: TopAdjacency,
+        adjacency: Adjacency,
         east: TopSpriteEast,
         north: TopSpriteNorth,
     },
     StairN {
-        adjacency: TopAdjacency,
+        adjacency: Adjacency,
         north: TopSpriteNorth,
     },
     StairE {
-        full: bool,
-        adjacency: TopAdjacency,
+        adjacency: Adjacency,
         east: TopSpriteEast,
     },
     StairW {
-        full: bool,
+        adjacency: Adjacency,
     },
-}
-
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
-pub enum TopAdjacency {
-    Corner,
-    Horizontal,
 }
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
@@ -126,7 +119,7 @@ impl BaseSprite {
         match center {
             TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV => BaseSprite::Empty,
             TileVariant::Wall => BaseSprite::Wall {
-                adjacency: BaseAdjacency::resolve(
+                adjacency: Adjacency::resolve(
                     matches!(south, TileVariant::Wall | TileVariant::StairN),
                     matches!(east, TileVariant::Wall | TileVariant::StairW),
                     matches!(
@@ -138,7 +131,7 @@ impl BaseSprite {
                 south: BaseSpriteSouth::resolve(south),
             },
             TileVariant::StairN => BaseSprite::StairN {
-                adjacency: BaseAdjacency::resolve(
+                adjacency: Adjacency::resolve(
                     false,
                     matches!(
                         east,
@@ -148,7 +141,7 @@ impl BaseSprite {
                 ),
             },
             TileVariant::StairS => BaseSprite::StairS {
-                adjacency: BaseAdjacency::resolve(
+                adjacency: Adjacency::resolve(
                     matches!(south, TileVariant::Wall | TileVariant::StairN),
                     matches!(
                         east,
@@ -162,7 +155,7 @@ impl BaseSprite {
                 south: BaseSpriteSouth::resolve(south),
             },
             TileVariant::StairE => BaseSprite::StairE {
-                adjacency: BaseAdjacency::resolve(
+                adjacency: Adjacency::resolve(
                     matches!(
                         south,
                         TileVariant::Wall | TileVariant::StairN | TileVariant::StairE
@@ -176,7 +169,7 @@ impl BaseSprite {
                 east: BaseSpriteEast::resolve(east),
             },
             TileVariant::StairW => BaseSprite::StairW {
-                adjacency: BaseAdjacency::resolve(
+                adjacency: Adjacency::resolve(
                     matches!(
                         south,
                         TileVariant::Wall | TileVariant::StairN | TileVariant::StairW
@@ -219,14 +212,14 @@ impl BaseSpriteSouth {
     }
 }
 
-impl BaseAdjacency {
-    pub fn resolve(south: bool, east: bool, south_east: bool) -> BaseAdjacency {
+impl Adjacency {
+    pub fn resolve(south: bool, east: bool, south_east: bool) -> Adjacency {
         match (south, east, south_east) {
-            (false, false, _) => BaseAdjacency::Corner,
-            (false, true, _) => BaseAdjacency::Horizontal,
-            (true, false, _) => BaseAdjacency::Vertical,
-            (true, true, false) => BaseAdjacency::InverseCorner,
-            (true, true, true) => BaseAdjacency::Full,
+            (false, false, _) => Adjacency::Corner,
+            (false, true, _) => Adjacency::Horizontal,
+            (true, false, _) => Adjacency::Vertical,
+            (true, true, false) => Adjacency::InverseCorner,
+            (true, true, true) => Adjacency::Full,
         }
     }
 }
@@ -238,7 +231,7 @@ impl TopSprite {
 
     pub fn resolve(
         north: TileVariant,
-        _: TileVariant,
+        north_east: TileVariant,
         center: TileVariant,
         east: TileVariant,
     ) -> TopSprite {
@@ -248,34 +241,51 @@ impl TopSprite {
                     east: TopSpriteEast::resolve(center, east),
                 }
             }
-            TileVariant::StairE | TileVariant::StairW if center == north => TopSprite::Empty {
-                east: TopSpriteEast::resolve(center, east),
-            },
+            TileVariant::StairE | TileVariant::StairW | TileVariant::Wall if center == north => {
+                TopSprite::Empty {
+                    east: TopSpriteEast::resolve(center, east),
+                }
+            }
             TileVariant::Wall => TopSprite::Wall {
-                adjacency: TopAdjacency::resolve(matches!(
-                    east,
-                    TileVariant::Wall | TileVariant::StairW
-                )),
+                adjacency: Adjacency::resolve(
+                    false,
+                    matches!(east, TileVariant::Wall | TileVariant::StairW),
+                    false,
+                ),
                 north: TopSpriteNorth::resolve(north),
                 east: TopSpriteEast::resolve(center, east),
             },
             TileVariant::StairN => TopSprite::StairN {
-                adjacency: TopAdjacency::resolve(matches!(
-                    east,
-                    TileVariant::Wall | TileVariant::StairW | TileVariant::StairN
-                )),
+                adjacency: Adjacency::resolve(
+                    matches!(north, TileVariant::Wall | TileVariant::StairS),
+                    matches!(
+                        east,
+                        TileVariant::Wall | TileVariant::StairW | TileVariant::StairN
+                    ),
+                    matches!(
+                        north_east,
+                        TileVariant::Wall | TileVariant::StairW | TileVariant::StairS
+                    ),
+                ),
                 north: TopSpriteNorth::resolve(north),
             },
             TileVariant::StairE => TopSprite::StairE {
-                full: matches!(north, TileVariant::Wall),
-                adjacency: TopAdjacency::resolve(matches!(
-                    east,
-                    TileVariant::Wall | TileVariant::StairW
-                )),
+                adjacency: Adjacency::resolve(
+                    matches!(north, TileVariant::Wall | TileVariant::StairS),
+                    matches!(east, TileVariant::Wall | TileVariant::StairW),
+                    matches!(
+                        north_east,
+                        TileVariant::Wall | TileVariant::StairW | TileVariant::StairS
+                    ),
+                ),
                 east: TopSpriteEast::resolve(center, east),
             },
             TileVariant::StairW => TopSprite::StairW {
-                full: matches!(north, TileVariant::Wall),
+                adjacency: Adjacency::resolve(
+                    matches!(north, TileVariant::Wall | TileVariant::StairS),
+                    false,
+                    false,
+                ),
             },
         }
     }
@@ -307,15 +317,6 @@ impl TopSpriteNorth {
     }
 }
 
-impl TopAdjacency {
-    pub fn resolve(east: bool) -> TopAdjacency {
-        match east {
-            false => TopAdjacency::Corner,
-            true => TopAdjacency::Horizontal,
-        }
-    }
-}
-
 impl fmt::Display for BaseSprite {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -335,14 +336,14 @@ impl fmt::Display for BaseSprite {
     }
 }
 
-impl fmt::Display for BaseAdjacency {
+impl fmt::Display for Adjacency {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            BaseAdjacency::Corner => write!(f, "CORNER"),
-            BaseAdjacency::Horizontal => write!(f, "HORIZONTAL"),
-            BaseAdjacency::Vertical => write!(f, "VERTICAL"),
-            BaseAdjacency::InverseCorner => write!(f, "INVERSECORNER"),
-            BaseAdjacency::Full => write!(f, "FULL"),
+            Adjacency::Corner => write!(f, "CORNER"),
+            Adjacency::Horizontal => write!(f, "HORIZONTAL"),
+            Adjacency::Vertical => write!(f, "VERTICAL"),
+            Adjacency::InverseCorner => write!(f, "INVERSECORNER"),
+            Adjacency::Full => write!(f, "FULL"),
         }
     }
 }
@@ -380,18 +381,8 @@ impl fmt::Display for TopSprite {
                 north,
             } => write!(f, "TOP_WALL{adjacency}{east}{north}"),
             TopSprite::StairN { adjacency, north } => write!(f, "TOP_STAIRNORTH{adjacency}{north}"),
-            TopSprite::StairE {
-                adjacency,
-                east,
-                full: false,
-            } => write!(f, "TOP_STAIREAST{adjacency}{east}"),
-            TopSprite::StairW { full: false } => write!(f, "TOP_STAIRWEST"),
-            TopSprite::StairE {
-                adjacency,
-                east,
-                full: true,
-            } => write!(f, "TOP_STAIREASTFULL{adjacency}{east}"),
-            TopSprite::StairW { full: true } => write!(f, "TOP_STAIRWESTFULL"),
+            TopSprite::StairE { adjacency, east } => write!(f, "TOP_STAIREAST{adjacency}{east}"),
+            TopSprite::StairW { adjacency } => write!(f, "TOP_STAIRWEST{adjacency}"),
         }
     }
 }
@@ -410,15 +401,6 @@ impl fmt::Display for TopSpriteNorth {
         match self {
             TopSpriteNorth::None => write!(f, ""),
             TopSpriteNorth::Door => write!(f, "_NORTHDOOR"),
-        }
-    }
-}
-
-impl fmt::Display for TopAdjacency {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            TopAdjacency::Corner => write!(f, "CORNER"),
-            TopAdjacency::Horizontal => write!(f, "HORIZONTAL"),
         }
     }
 }
