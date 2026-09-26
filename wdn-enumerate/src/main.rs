@@ -83,4 +83,18 @@ fn main() {
 
     println!("{:?} unique base sprites", unique_base_sprites.len());
     println!("{:?} unique top sprites", unique_top_sprites.len());
+
+    println!("match base: ");
+    for (i, base) in ordered_base_sprites.iter().enumerate() {
+        println!("{:?} => {},", base, i);
+    }
+
+    println!("match top: ");
+    for (i, top) in ordered_top_sprites.iter().enumerate() {
+        if top == &TopSprite::EMPTY {
+            println!("{:?} => {},", top, 0);
+            continue;
+        }
+        println!("{:?} => {},", top, i + ordered_base_sprites.len() - 1);
+    }
 }

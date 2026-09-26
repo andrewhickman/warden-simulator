@@ -1,3 +1,5 @@
+mod ids;
+
 use std::fmt;
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
@@ -231,7 +233,7 @@ impl TopSprite {
 
     pub fn resolve(
         north: TileVariant,
-        north_east: TileVariant,
+        _: TileVariant,
         center: TileVariant,
         east: TileVariant,
     ) -> TopSprite {
