@@ -28,15 +28,15 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="px"
      showgrid="true"
-     inkscape:zoom="0.2329033"
-     inkscape:cx="2013.7113"
-     inkscape:cy="1019.7365"
+     inkscape:zoom="0.329375"
+     inkscape:cx="1552.9412"
+     inkscape:cy="976.09108"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
-     inkscape:window-x="-8"
+     inkscape:window-x="1912"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer6"
+     inkscape:current-layer="layer3"
      inkscape:export-bgcolor="#00000000"
      showguides="true">
     <inkscape:grid
@@ -7350,7 +7350,8 @@
          id="path180-4-8-9-5"
          style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
          inkscape:label="Top"
-         d="m 80,144 v 256 h 40 v -56 h 80 V 304 H 120 V 144 Z" />
+         d="m 80,144 v 256 h 40 v -56 h 80 V 144 Z"
+         sodipodi:nodetypes="ccccccc" />
       <path
          id="path269-6-8-8"
          style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -7382,8 +7383,8 @@
          id="path180-4-8"
          style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
          inkscape:label="Top"
-         d="M 80,144 V 400 H 200 V 304 H 120 V 144 Z"
-         sodipodi:nodetypes="ccccccc" />
+         d="M 80,144 V 400 H 200 V 144 Z"
+         sodipodi:nodetypes="ccccc" />
       <path
          id="path288-9-9"
          style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:0.999997px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -7404,7 +7405,7 @@
       <path
          id="path180-4-8-5"
          style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-         d="m 760.00003,984 h 200 v 40 h -200 z"
+         d="m 760.00003,824 h 200 l 0,200 h -200 z"
          sodipodi:nodetypes="ccccc"
          inkscape:label="Top" />
     </g>
@@ -7668,7 +7669,7 @@
          sodipodi:nodetypes="ccccccccc" />
     </g>
     <g
-       inkscape:label="BASE_STAIREASTCORNER_EASTSTAIRNORTH"
+       inkscape:label="BASE_STAIREASTCORNER_EASTSTAIRSOUTH"
        transform="translate(600,800)"
        id="g220-0-4-3-6-7">
       <path
@@ -7860,7 +7861,7 @@
          transform="translate(-200)" />
     </g>
     <g
-       inkscape:label="BASE_WALLINVERSECORNER"
+       inkscape:label="BASE_STAIREASTINVERSECORNER"
        transform="translate(2600,400)"
        id="g276-1">
       <path

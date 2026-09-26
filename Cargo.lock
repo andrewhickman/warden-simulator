@@ -5443,6 +5443,7 @@ dependencies = [
 name = "wdn-enumerate"
 version = "0.1.0"
 dependencies = [
+ "image",
  "resvg",
  "roxmltree 0.20.0",
 ]
