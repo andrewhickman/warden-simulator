@@ -29,14 +29,14 @@
      inkscape:document-units="px"
      showgrid="true"
      inkscape:zoom="1.8632264"
-     inkscape:cx="2686.2007"
-     inkscape:cy="1102.6572"
+     inkscape:cx="2283.6731"
+     inkscape:cy="1471.3725"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer5"
+     inkscape:current-layer="g192-9-89"
      inkscape:export-bgcolor="#00000000"
      showguides="true">
     <inkscape:grid
@@ -8694,6 +8694,217 @@
        id="path270"
        style="fill:#73797a;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
        d="M 529.82422 2000 L 400 2000 L 400 2400 L 600 2400 L 529.82422 2000 z " />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer6"
+     inkscape:label="Row4">
+    <g
+       inkscape:label="TOP_WALLCORNER_EASTSTAIRNORTH_NORTHDOOR"
+       transform="translate(200,1200)"
+       id="g192-9-89">
+      <path
+         style="display:inline;fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 1520,1504 80,96 h -80 z"
+         id="path58-3-4-3"
+         inkscape:label="Right"
+         transform="translate(600,-1200)" />
+      <path
+         id="path180-4-8-6-7-3"
+         style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="m 2200,1424 v 176 h 120 v -56 h 80 v -40 h -176 v -80 z"
+         sodipodi:nodetypes="ccccccccc"
+         transform="translate(-200,-1200)" />
+      <path
+         id="path269-6-8-88-5"
+         style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 2120,344 9.8242,56 H 2200 v -56 z"
+         inkscape:label="StairTop" />
+    </g>
+    <g
+       inkscape:label="TOP_STAIRNORTHHORIZONTAL_NORTHDOOR"
+       transform="translate(200,1200)"
+       id="g192-9-2">
+      <path
+         id="path273-9-5-4"
+         style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 1800,344 v 56 h 200 v -56 z"
+         inkscape:label="StairTop"
+         sodipodi:nodetypes="ccccc" />
+      <path
+         id="path52-1-5-7"
+         style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="m 1800,224 v 120 h 200 v -40 h -176 v -80 z"
+         sodipodi:nodetypes="ccccccc" />
+    </g>
+    <g
+       inkscape:label="TOP_WALLHORIZONTAL_NORTHDOOR"
+       transform="translate(200,1200)"
+       id="g192-9-26">
+      <path
+         id="path52-1-5"
+         style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="m 1600,224 v 176 h 200 v -96 h -176 v -80 z"
+         sodipodi:nodetypes="ccccccc" />
+    </g>
+    <g
+       inkscape:label="TOP_STAIRNORTHCORNER_NORTHDOOR"
+       transform="translate(400,1240)"
+       id="g192-9-46">
+      <path
+         style="display:inline;fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 1520,1464 80,96 h -80 z"
+         id="path58-3-40"
+         inkscape:label="Right"
+         transform="translate(-200,-1200)" />
+      <path
+         id="path269-6-8-88"
+         style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 1320,304 9.8242,56 H 1400 v -56 z"
+         inkscape:label="StairTop" />
+      <path
+         id="path180-4-8-6-7"
+         style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="m 1200,184 v 176 h 120 v -56 h 80 v -40 h -176 v -80 z"
+         sodipodi:nodetypes="ccccccccc" />
+    </g>
+    <g
+       inkscape:label="TOP_WALLCORNER_NORTHDOOR"
+       transform="translate(200,1200)"
+       id="g192-9-1">
+      <path
+         style="display:inline;fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 1520,1504 80,96 h -80 z"
+         id="path58-3-4"
+         inkscape:label="Right"
+         transform="translate(-200,-1200)" />
+      <path
+         id="path57-3-9"
+         style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="m 1400,1424 v 176 h 120 v -96 h -96 v -80 z"
+         sodipodi:nodetypes="ccccccc"
+         transform="translate(-200,-1200)" />
+    </g>
+    <g
+       inkscape:label="TOP_STAIREASTVERTICAL_EASTSTAIRNORTH"
+       transform="translate(1200,1200)"
+       id="g192-9-8-6">
+      <path
+         id="path288-9-93"
+         style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:0.999997px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 200,1417.1426 V 1600 h 80 v -256 z"
+         transform="translate(-200,-1200)"
+         inkscape:label="StairTop" />
+      <path
+         style="display:inline;fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 120,304 80,96 h -80 z"
+         id="path199-7-4-81-6"
+         inkscape:label="Right" />
+      <path
+         id="path180-4-8-9-5"
+         style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="m 80,144 v 256 h 40 v -56 h 80 V 304 H 120 V 144 Z" />
+      <path
+         id="path269-6-8-8"
+         style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 120,344 9.8242,56 H 200 v -56 z"
+         inkscape:label="StairTop" />
+    </g>
+    <g
+       inkscape:label="TOP_EMPTY_EASTSTAIRNORTH"
+       transform="translate(200,1200)"
+       id="g192-9-4">
+      <path
+         id="path269-6-8"
+         style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m -1680,744 9.8242,56 H -1600 v -56 z"
+         inkscape:label="StairTop"
+         transform="translate(2600,-400)" />
+      <path
+         id="path180-4-8-6"
+         style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         d="m 920,304 h 80 v 40 h -80 z"
+         sodipodi:nodetypes="ccccc"
+         inkscape:label="Top" />
+    </g>
+    <g
+       inkscape:label="TOP_STAIREASTFULL"
+       transform="translate(800,1200)"
+       id="g192-9-8-2">
+      <path
+         id="path180-4-8"
+         style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         inkscape:label="Top"
+         d="M 80,144 V 400 H 200 V 304 H 120 V 144 Z"
+         sodipodi:nodetypes="ccccccc" />
+      <path
+         id="path288-9-9"
+         style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:0.999997px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 200,1417.1426 V 1600 h 80 v -256 z"
+         transform="translate(-200,-1200)"
+         inkscape:label="StairTop" />
+    </g>
+    <g
+       id="g273-1-9"
+       inkscape:label="TOP_STAIRNORTHFULL"
+       transform="translate(-160,520)">
+      <path
+         id="path273-9-5"
+         style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 760,1024 v 56 h 200 v -56 z"
+         inkscape:label="StairTop"
+         sodipodi:nodetypes="ccccc" />
+      <path
+         id="path180-4-8-5"
+         style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         d="m 760.00003,984 h 200 v 40 h -200 z"
+         sodipodi:nodetypes="ccccc"
+         inkscape:label="Top" />
+    </g>
+    <g
+       inkscape:label="TOP_STAIRWESTVERTICAL"
+       transform="translate(200,1200)"
+       id="g192-9-0">
+      <path
+         id="path285-3"
+         style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:0.999997px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 400,1417.1426 600,1600 H 400 Z"
+         transform="translate(-200,-1200)"
+         inkscape:label="StairTop" />
+    </g>
+    <g
+       inkscape:label="TOP_STAIREASTVERTICAL"
+       transform="translate(200,1200)"
+       id="g192-9-8">
+      <path
+         id="path288-9"
+         style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:0.999997px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 200,1417.1426 V 1600 h 80 v -256 z"
+         transform="translate(-200,-1200)"
+         inkscape:label="StairTop" />
+      <path
+         id="path180-4-8-9"
+         style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         d="M 79.999999,144 H 120 V 400.00001 H 79.999999 Z"
+         sodipodi:nodetypes="ccccc"
+         inkscape:label="Top" />
+    </g>
+    <g
+       id="g273-1"
+       inkscape:label="TOP_STAIRNORTHVERTICAL"
+       transform="translate(-1600,400)">
+      <path
+         id="path273-9"
+         style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 1600,1144 v 56 h 129.8242 L 1720,1144 Z"
+         inkscape:label="StairTop" />
+    </g>
   </g>
   <g
      inkscape:groupmode="layer"

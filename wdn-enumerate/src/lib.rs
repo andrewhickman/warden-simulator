@@ -12,7 +12,7 @@ pub enum TileVariant {
     StairW,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub enum BaseSprite {
     Empty,
     Wall {
@@ -36,7 +36,7 @@ pub enum BaseSprite {
     },
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub enum BaseSpriteEast {
     None,
     Door,
@@ -44,13 +44,13 @@ pub enum BaseSpriteEast {
     StairS,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub enum BaseSpriteSouth {
     None,
     Door,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub enum Adjacency {
     Corner,
     Horizontal,
@@ -59,7 +59,7 @@ pub enum Adjacency {
     Full,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub enum TopSprite {
     Empty {
         east: TopSpriteEast,
@@ -82,13 +82,13 @@ pub enum TopSprite {
     },
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub enum TopSpriteNorth {
     None,
     Door,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
 pub enum TopSpriteEast {
     None,
     StairN,
@@ -262,10 +262,7 @@ impl TopSprite {
                         east,
                         TileVariant::Wall | TileVariant::StairW | TileVariant::StairN
                     ),
-                    matches!(
-                        north_east,
-                        TileVariant::Wall | TileVariant::StairW | TileVariant::StairS
-                    ),
+                    true,
                 ),
                 north: TopSpriteNorth::resolve(north),
             },
@@ -273,10 +270,7 @@ impl TopSprite {
                 adjacency: Adjacency::resolve(
                     matches!(north, TileVariant::Wall | TileVariant::StairS),
                     matches!(east, TileVariant::Wall | TileVariant::StairW),
-                    matches!(
-                        north_east,
-                        TileVariant::Wall | TileVariant::StairW | TileVariant::StairS
-                    ),
+                    true,
                 ),
                 east: TopSpriteEast::resolve(center, east),
             },
@@ -284,7 +278,7 @@ impl TopSprite {
                 adjacency: Adjacency::resolve(
                     matches!(north, TileVariant::Wall | TileVariant::StairS),
                     false,
-                    false,
+                    true,
                 ),
             },
         }
@@ -336,6 +330,42 @@ impl fmt::Display for BaseSprite {
     }
 }
 
+impl fmt::Debug for BaseSprite {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BaseSprite::Empty => write!(f, "BaseSprite::Empty"),
+            BaseSprite::Wall {
+                adjacency,
+                east,
+                south,
+            } => f
+                .debug_struct("BaseSprite::Wall")
+                .field("adjacency", adjacency)
+                .field("east", east)
+                .field("south", south)
+                .finish(),
+            BaseSprite::StairN { adjacency } => f
+                .debug_struct("BaseSprite::StairN")
+                .field("adjacency", adjacency)
+                .finish(),
+            BaseSprite::StairS { adjacency, south } => f
+                .debug_struct("BaseSprite::StairS")
+                .field("adjacency", adjacency)
+                .field("south", south)
+                .finish(),
+            BaseSprite::StairE { adjacency, east } => f
+                .debug_struct("BaseSprite::StairE")
+                .field("adjacency", adjacency)
+                .field("east", east)
+                .finish(),
+            BaseSprite::StairW { adjacency } => f
+                .debug_struct("BaseSprite::StairW")
+                .field("adjacency", adjacency)
+                .finish(),
+        }
+    }
+}
+
 impl fmt::Display for Adjacency {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -344,6 +374,18 @@ impl fmt::Display for Adjacency {
             Adjacency::Vertical => write!(f, "VERTICAL"),
             Adjacency::InverseCorner => write!(f, "INVERSECORNER"),
             Adjacency::Full => write!(f, "FULL"),
+        }
+    }
+}
+
+impl fmt::Debug for Adjacency {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Adjacency::Corner => write!(f, "Adjacency::Corner"),
+            Adjacency::Horizontal => write!(f, "Adjacency::Horizontal"),
+            Adjacency::Vertical => write!(f, "Adjacency::Vertical"),
+            Adjacency::InverseCorner => write!(f, "Adjacency::InverseCorner"),
+            Adjacency::Full => write!(f, "Adjacency::Full"),
         }
     }
 }
@@ -359,11 +401,31 @@ impl fmt::Display for BaseSpriteEast {
     }
 }
 
+impl fmt::Debug for BaseSpriteEast {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BaseSpriteEast::None => write!(f, "BaseSpriteEast::None"),
+            BaseSpriteEast::Door => write!(f, "BaseSpriteEast::Door"),
+            BaseSpriteEast::StairN => write!(f, "BaseSpriteEast::StairN"),
+            BaseSpriteEast::StairS => write!(f, "BaseSpriteEast::StairS"),
+        }
+    }
+}
+
 impl fmt::Display for BaseSpriteSouth {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             BaseSpriteSouth::None => write!(f, ""),
             BaseSpriteSouth::Door => write!(f, "_SOUTHDOOR"),
+        }
+    }
+}
+
+impl fmt::Debug for BaseSpriteSouth {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BaseSpriteSouth::None => write!(f, "BaseSpriteSouth::None"),
+            BaseSpriteSouth::Door => write!(f, "BaseSpriteSouth::Door"),
         }
     }
 }
@@ -387,6 +449,41 @@ impl fmt::Display for TopSprite {
     }
 }
 
+impl fmt::Debug for TopSprite {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TopSprite::Empty { east } => f
+                .debug_struct("TopSprite::Empty")
+                .field("east", east)
+                .finish(),
+            TopSprite::Wall {
+                adjacency,
+                east,
+                north,
+            } => f
+                .debug_struct("TopSprite::Wall")
+                .field("adjacency", adjacency)
+                .field("east", east)
+                .field("north", north)
+                .finish(),
+            TopSprite::StairN { adjacency, north } => f
+                .debug_struct("TopSprite::StairN")
+                .field("adjacency", adjacency)
+                .field("north", north)
+                .finish(),
+            TopSprite::StairE { adjacency, east } => f
+                .debug_struct("TopSprite::StairE")
+                .field("adjacency", adjacency)
+                .field("east", east)
+                .finish(),
+            TopSprite::StairW { adjacency } => f
+                .debug_struct("TopSprite::StairW")
+                .field("adjacency", adjacency)
+                .finish(),
+        }
+    }
+}
+
 impl fmt::Display for TopSpriteEast {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -396,11 +493,29 @@ impl fmt::Display for TopSpriteEast {
     }
 }
 
+impl fmt::Debug for TopSpriteEast {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TopSpriteEast::None => write!(f, "TopSpriteEast::None"),
+            TopSpriteEast::StairN => write!(f, "TopSpriteEast::StairN"),
+        }
+    }
+}
+
 impl fmt::Display for TopSpriteNorth {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             TopSpriteNorth::None => write!(f, ""),
             TopSpriteNorth::Door => write!(f, "_NORTHDOOR"),
+        }
+    }
+}
+
+impl fmt::Debug for TopSpriteNorth {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TopSpriteNorth::None => write!(f, "TopSpriteNorth::None"),
+            TopSpriteNorth::Door => write!(f, "TopSpriteNorth::Door"),
         }
     }
 }

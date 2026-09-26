@@ -15,7 +15,7 @@ fn main() {
     let mut base_csv = BufWriter::new(File::create("base.csv").expect("failed to create base.csv"));
     let mut top_csv = BufWriter::new(File::create("top.csv").expect("failed to create top.csv"));
 
-    let mut base_consts =
+    let mut consts =
         BufWriter::new(File::create("consts.rs").expect("failed to create base_consts.rs"));
 
     writeln!(base_csv, "result,center,east,south_east,south").unwrap();
@@ -55,19 +55,25 @@ fn main() {
         }
     }
 
-    writeln!(base_consts, "const {}: u16 = {};", "EMPTY", 0).unwrap();
+    writeln!(consts, "const {}: u16 = {};", "EMPTY", 0).unwrap();
     for (i, base) in ordered_base_sprites.iter().enumerate() {
         if base == &BaseSprite::Empty {
             continue;
         }
-        writeln!(base_consts, "const {}: u16 = {};", base, i).unwrap();
+        if i % 16 == 0 {
+            writeln!(consts).unwrap();
+        }
+        writeln!(consts, "const {}: u16 = {};", base, i).unwrap();
     }
     for (i, top) in ordered_top_sprites.iter().enumerate() {
         if top == &TopSprite::EMPTY {
             continue;
         }
+        if (i + ordered_base_sprites.len() - 1) % 16 == 0 {
+            writeln!(consts).unwrap();
+        }
         writeln!(
-            base_consts,
+            consts,
             "const {}: u16 = {};",
             top,
             i + ordered_base_sprites.len() - 1
