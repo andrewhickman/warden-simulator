@@ -622,6 +622,107 @@ impl OverlapBase {
             _ => OverlapBase::None,
         }
     }
+
+    /// The base sprite this overlap category was derived from.
+    pub fn base_sprite(self) -> BaseSprite {
+        match self {
+            OverlapBase::None => BaseSprite::Empty,
+            OverlapBase::WallCorner => BaseSprite::Wall {
+                adjacency: Adjacency::Corner,
+                east: BaseSpriteEast::None,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::WallHorizontal => BaseSprite::Wall {
+                adjacency: Adjacency::Horizontal,
+                east: BaseSpriteEast::None,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::WallVertical => BaseSprite::Wall {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::None,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::WallFull => BaseSprite::Wall {
+                adjacency: Adjacency::Full,
+                east: BaseSpriteEast::None,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::WallCornerEastDoor => BaseSprite::Wall {
+                adjacency: Adjacency::Corner,
+                east: BaseSpriteEast::Door,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::WallCornerEastStairN => BaseSprite::Wall {
+                adjacency: Adjacency::Corner,
+                east: BaseSpriteEast::StairN,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::WallCornerEastStairS => BaseSprite::Wall {
+                adjacency: Adjacency::Corner,
+                east: BaseSpriteEast::StairS,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::WallVerticalEastDoor => BaseSprite::Wall {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::Door,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::WallVerticalEastStairN => BaseSprite::Wall {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::StairN,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::WallVerticalEastStairS => BaseSprite::Wall {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::StairS,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::StairSouthCorner => BaseSprite::StairS {
+                adjacency: Adjacency::Corner,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::StairSouthHorizontal => BaseSprite::StairS {
+                adjacency: Adjacency::Horizontal,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::StairSouthVertical => BaseSprite::StairS {
+                adjacency: Adjacency::Vertical,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::StairSouthFull => BaseSprite::StairS {
+                adjacency: Adjacency::Full,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::StairSouthInverseCorner => BaseSprite::StairS {
+                adjacency: Adjacency::InverseCorner,
+                south: BaseSpriteSouth::None,
+            },
+            OverlapBase::StairEastVertical => BaseSprite::StairE {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::None,
+            },
+            OverlapBase::StairEastInverseCorner => BaseSprite::StairE {
+                adjacency: Adjacency::InverseCorner,
+                east: BaseSpriteEast::None,
+            },
+            OverlapBase::StairEastFull => BaseSprite::StairE {
+                adjacency: Adjacency::Full,
+                east: BaseSpriteEast::None,
+            },
+            OverlapBase::StairEastVerticalEastDoor => BaseSprite::StairE {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::Door,
+            },
+            OverlapBase::StairEastVerticalEastStairN => BaseSprite::StairE {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::StairN,
+            },
+            OverlapBase::StairEastVerticalEastStairS => BaseSprite::StairE {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::StairS,
+            },
+        }
+    }
 }
 
 impl fmt::Display for BaseSprite {
