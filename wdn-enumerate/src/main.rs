@@ -127,6 +127,54 @@ fn main() {
     }
 
     render_overlaps(&sprite_mask, &ordered_top_sprites, &top_overlapping_bases);
+    report_duplicate_patches(&sprite_mask, &ordered_top_sprites, &top_overlapping_bases);
+}
+
+/// Generates the patched top sprite for every overlapping (base, top) pair and reports
+/// which pairs produce pixel-identical patches, since those don't need distinct sprites.
+fn report_duplicate_patches(
+    sprite_mask: &SpriteMask,
+    ordered_top_sprites: &[TopSprite],
+    top_overlapping_bases: &HashMap<TopSprite, Vec<BaseSprite>>,
+) {
+    let mut groups: HashMap<Vec<u8>, Vec<(TopSprite, BaseSprite)>> = HashMap::new();
+
+    for top in ordered_top_sprites {
+        let Some(bases) = top_overlapping_bases.get(top) else {
+            continue;
+        };
+        for base in bases {
+            let patched = sprite_mask.patch_top(base.id() as usize, top.id());
+            groups
+                .entry(patched.into_raw())
+                .or_default()
+                .push((*top, *base));
+        }
+    }
+
+    println!("duplicate patched top sprites:");
+    let mut grouped_tops: HashSet<TopSprite> = HashSet::new();
+    for pairs in groups.values() {
+        if pairs.len() < 2 {
+            continue;
+        }
+        println!("  duplicate group:");
+        for (top, base) in pairs {
+            println!("    {top} over {base}");
+            grouped_tops.insert(*top);
+        }
+
+        let normalized: HashSet<TopSprite> = pairs.iter().map(|(top, _)| top.normalize()).collect();
+        if normalized.len() != 1 {
+            println!("    !! normalize() did not collapse this group: {normalized:?}");
+        }
+    }
+
+    for top in ordered_top_sprites {
+        if !grouped_tops.contains(top) && top.normalize() != *top {
+            println!("!! normalize() unexpectedly changed {top} outside any duplicate group");
+        }
+    }
 }
 
 /// Renders every overlapping (base, top) pair into a square-ish grid PNG.

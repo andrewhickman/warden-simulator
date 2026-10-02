@@ -273,7 +273,7 @@ impl TopSprite {
         base: BaseSprite,
     ) -> TopSprite {
         let overlap = OverlapBase::resolve(base);
-        match center {
+        let sprite = match center {
             TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV | TileVariant::StairS => {
                 TopSprite::Empty {
                     east: TopSpriteEast::resolve(center, east),
@@ -325,6 +325,173 @@ impl TopSprite {
                 ),
                 overlap,
             },
+        };
+
+        sprite.normalize()
+    }
+
+    /// Reduces overlap variants that `wdn-enumerate`'s patch analysis found to be
+    /// pixel-identical down to a single canonical representative.
+    pub fn normalize(self) -> TopSprite {
+        match self {
+            TopSprite::Empty {
+                east: TopSpriteEast::StairN,
+                overlap,
+            } => TopSprite::Empty {
+                east: TopSpriteEast::StairN,
+                overlap: match overlap {
+                    OverlapBase::StairEastFull => OverlapBase::WallFull,
+                    OverlapBase::WallVerticalEastDoor
+                    | OverlapBase::WallVerticalEastStairN
+                    | OverlapBase::WallVerticalEastStairS
+                    | OverlapBase::StairEastVertical
+                    | OverlapBase::StairEastVerticalEastDoor
+                    | OverlapBase::StairEastVerticalEastStairN
+                    | OverlapBase::StairEastVerticalEastStairS => OverlapBase::WallVertical,
+                    other => other,
+                },
+            },
+            TopSprite::Wall {
+                adjacency: Adjacency::Corner,
+                east: TopSpriteEast::None,
+                north,
+                overlap,
+            } => TopSprite::Wall {
+                adjacency: Adjacency::Corner,
+                east: TopSpriteEast::None,
+                north,
+                overlap: match overlap {
+                    OverlapBase::StairEastInverseCorner
+                    | OverlapBase::StairEastVerticalEastDoor
+                    | OverlapBase::StairEastVerticalEastStairN
+                    | OverlapBase::StairEastVerticalEastStairS => OverlapBase::StairEastVertical,
+                    OverlapBase::StairSouthInverseCorner => OverlapBase::StairSouthVertical,
+                    other => other,
+                },
+            },
+            TopSprite::Wall {
+                adjacency: Adjacency::Horizontal,
+                east: TopSpriteEast::None,
+                north,
+                overlap,
+            } => TopSprite::Wall {
+                adjacency: Adjacency::Horizontal,
+                east: TopSpriteEast::None,
+                north,
+                overlap: match overlap {
+                    OverlapBase::StairEastVerticalEastDoor
+                    | OverlapBase::StairEastVerticalEastStairN
+                    | OverlapBase::StairEastVerticalEastStairS => OverlapBase::StairEastVertical,
+                    other => other,
+                },
+            },
+            TopSprite::Wall {
+                adjacency: Adjacency::Corner,
+                east: TopSpriteEast::StairN,
+                north,
+                overlap,
+            } => TopSprite::Wall {
+                adjacency: Adjacency::Corner,
+                east: TopSpriteEast::StairN,
+                north,
+                overlap: match overlap {
+                    OverlapBase::StairEastVerticalEastDoor
+                    | OverlapBase::StairEastVerticalEastStairN
+                    | OverlapBase::StairEastVerticalEastStairS => OverlapBase::StairEastVertical,
+                    other => other,
+                },
+            },
+            TopSprite::StairN {
+                adjacency: Adjacency::Full,
+                north,
+                overlap,
+            } => TopSprite::StairN {
+                adjacency: Adjacency::Full,
+                north,
+                overlap: match overlap {
+                    OverlapBase::StairSouthFull => OverlapBase::WallFull,
+                    OverlapBase::WallVerticalEastDoor
+                    | OverlapBase::WallVerticalEastStairN
+                    | OverlapBase::StairSouthVertical => OverlapBase::WallVertical,
+                    other => other,
+                },
+            },
+            TopSprite::StairN {
+                adjacency: Adjacency::Horizontal,
+                north,
+                overlap,
+            } => TopSprite::StairN {
+                adjacency: Adjacency::Horizontal,
+                north,
+                overlap: match overlap {
+                    OverlapBase::StairEastVerticalEastDoor
+                    | OverlapBase::StairEastVerticalEastStairN
+                    | OverlapBase::StairEastVerticalEastStairS => OverlapBase::StairEastVertical,
+                    other => other,
+                },
+            },
+            TopSprite::StairN {
+                adjacency: Adjacency::Corner,
+                north,
+                overlap,
+            } => TopSprite::StairN {
+                adjacency: Adjacency::Corner,
+                north,
+                overlap: match overlap {
+                    OverlapBase::StairEastInverseCorner
+                    | OverlapBase::StairEastVerticalEastDoor
+                    | OverlapBase::StairEastVerticalEastStairN
+                    | OverlapBase::StairEastVerticalEastStairS => OverlapBase::StairEastVertical,
+                    other => other,
+                },
+            },
+            TopSprite::StairE {
+                adjacency: Adjacency::Vertical,
+                east: TopSpriteEast::None,
+                overlap,
+            } => TopSprite::StairE {
+                adjacency: Adjacency::Vertical,
+                east: TopSpriteEast::None,
+                overlap: match overlap {
+                    OverlapBase::None => OverlapBase::None,
+                    _ => OverlapBase::WallCorner,
+                },
+            },
+            TopSprite::StairE {
+                adjacency: Adjacency::Full,
+                east: TopSpriteEast::None,
+                overlap,
+            } => TopSprite::StairE {
+                adjacency: Adjacency::Full,
+                east: TopSpriteEast::None,
+                overlap: match overlap {
+                    OverlapBase::WallCornerEastDoor
+                    | OverlapBase::WallCornerEastStairN
+                    | OverlapBase::StairSouthCorner => OverlapBase::WallCorner,
+                    OverlapBase::WallCornerEastStairS | OverlapBase::StairSouthHorizontal => {
+                        OverlapBase::WallHorizontal
+                    }
+                    other => other,
+                },
+            },
+            TopSprite::StairE {
+                adjacency: Adjacency::Vertical,
+                east: TopSpriteEast::StairN,
+                overlap,
+            } => TopSprite::StairE {
+                adjacency: Adjacency::Vertical,
+                east: TopSpriteEast::StairN,
+                overlap: match overlap {
+                    OverlapBase::WallCornerEastStairS | OverlapBase::StairSouthHorizontal => {
+                        OverlapBase::WallHorizontal
+                    }
+                    OverlapBase::WallCornerEastDoor
+                    | OverlapBase::WallCornerEastStairN
+                    | OverlapBase::StairSouthCorner => OverlapBase::WallCorner,
+                    other => other,
+                },
+            },
+            other => other,
         }
     }
 }

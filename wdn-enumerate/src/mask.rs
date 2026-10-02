@@ -68,11 +68,11 @@ impl SpriteMask {
         self.tiles[id][(y * TILE_WIDTH + x) as usize]
     }
 
-    fn touches_base(&self, base_id: usize, x: u32, y: u32) -> bool {
-        (x > 0 && self.pixel(base_id, x - 1, y))
-            || (y > 0 && self.pixel(base_id, x, y - 1))
-            || (x + 1 < TILE_WIDTH && self.pixel(base_id, x + 1, y))
-            || (y + 1 < TILE_HEIGHT && self.pixel(base_id, x, y + 1))
+    fn touches(&self, id: usize, x: u32, y: u32) -> bool {
+        (x > 0 && self.pixel(id, x - 1, y))
+            || (y > 0 && self.pixel(id, x, y - 1))
+            || (x + 1 < TILE_WIDTH && self.pixel(id, x + 1, y))
+            || (y + 1 < TILE_HEIGHT && self.pixel(id, x, y + 1))
     }
 
     pub fn classify(&self, base_id: usize, top_id: usize) -> Classification {
@@ -89,7 +89,7 @@ impl SpriteMask {
 
                 if self.pixel(base_id, x, y) {
                     overlap_count += 1;
-                } else if !touching && self.touches_base(base_id, x, y) {
+                } else if !touching && self.touches(base_id, x, y) {
                     touching = true;
                 }
             }
@@ -106,7 +106,10 @@ impl SpriteMask {
 
     fn tile_origin(&self, id: usize) -> (u32, u32) {
         let id = id as u32;
-        ((id % self.columns) * TILE_WIDTH, (id / self.columns) * TILE_HEIGHT)
+        (
+            (id % self.columns) * TILE_WIDTH,
+            (id / self.columns) * TILE_HEIGHT,
+        )
     }
 
     /// Composites the original (unmasked) base tile with the top tile drawn over it.
@@ -122,6 +125,33 @@ impl SpriteMask {
                 tile.put_pixel(x, y, over(top, base));
             }
         }
+        tile
+    }
+
+    /// Patches the original top tile with whichever masked base pixels are 4-connected
+    /// (including directly overlapping) to the top's masked pixels.
+    pub fn patch_top(&self, base_id: usize, top_id: usize) -> RgbaImage {
+        let (base_x, base_y) = self.tile_origin(base_id);
+        let (top_x, top_y) = self.tile_origin(top_id);
+
+        let mut tile = RgbaImage::new(TILE_WIDTH, TILE_HEIGHT);
+        for y in 0..TILE_HEIGHT {
+            for x in 0..TILE_WIDTH {
+                tile.put_pixel(x, y, *self.source.get_pixel(top_x + x, top_y + y));
+            }
+        }
+
+        for y in 0..TILE_HEIGHT {
+            for x in 0..TILE_WIDTH {
+                if !self.pixel(base_id, x, y) {
+                    continue;
+                }
+                if self.pixel(top_id, x, y) || self.touches(top_id, x, y) {
+                    tile.put_pixel(x, y, *self.source.get_pixel(base_x + x, base_y + y));
+                }
+            }
+        }
+
         tile
     }
 }
