@@ -2,12 +2,8 @@
 
 use std::fs::File;
 use std::io::Write;
-use std::{
-    collections::{HashMap, HashSet},
-    io::BufWriter,
-};
+use std::{collections::HashSet, io::BufWriter};
 
-use wdn_enumerate::mask::{Classification, SpriteMask, TILE_HEIGHT, TILE_WIDTH};
 use wdn_enumerate::{BaseSprite, TileVariant, TopSprite};
 
 fn main() {
@@ -15,26 +11,15 @@ fn main() {
     let mut ordered_base_sprites = Vec::new();
     let mut unique_top_sprites = HashSet::new();
     let mut ordered_top_sprites = Vec::new();
-    let mut unique_pairs = HashSet::new();
-
-    let sprite_mask = SpriteMask::load("assets/image/walls.png", "masked_walls.png");
 
     let mut base_csv = BufWriter::new(File::create("base.csv").expect("failed to create base.csv"));
     let mut top_csv = BufWriter::new(File::create("top.csv").expect("failed to create top.csv"));
-    let mut overlap_csv =
-        BufWriter::new(File::create("overlap.csv").expect("failed to create overlap.csv"));
 
     let mut consts =
         BufWriter::new(File::create("consts.rs").expect("failed to create base_consts.rs"));
 
     writeln!(base_csv, "result,center,east,south_east,south").unwrap();
     writeln!(top_csv, "result,center,east,south_east,south").unwrap();
-    writeln!(overlap_csv, "base,top,classification").unwrap();
-
-    let mut empty_count = 0usize;
-    let mut disjoint_count = 0usize;
-    let mut overlap_count = 0usize;
-    let mut top_overlapping_bases: HashMap<TopSprite, Vec<BaseSprite>> = HashMap::new();
 
     for center in TileVariant::values() {
         for east in TileVariant::values() {
@@ -58,20 +43,6 @@ fn main() {
                         basestr, center, east, south_east, south
                     )
                     .unwrap();
-
-                    if unique_pairs.insert((base, top)) {
-                        let classification = sprite_mask.classify(base.id() as usize, top.id());
-                        writeln!(overlap_csv, "{basestr},{topstr},{classification:?}").unwrap();
-                        match classification {
-                            Classification::Empty => empty_count += 1,
-                            Classification::Disjoint => disjoint_count += 1,
-                            Classification::Overlap => overlap_count += 1,
-                        }
-
-                        if classification == Classification::Overlap {
-                            top_overlapping_bases.entry(top).or_default().push(base);
-                        }
-                    }
 
                     if unique_base_sprites.insert(base.clone()) {
                         ordered_base_sprites.push(base);
@@ -112,100 +83,4 @@ fn main() {
 
     println!("{:?} unique base sprites", unique_base_sprites.len());
     println!("{:?} unique top sprites", unique_top_sprites.len());
-    println!("{:?} unique base/top pairs", unique_pairs.len());
-    println!("{empty_count} empty, {disjoint_count} disjoint, {overlap_count} overlap");
-
-    println!("top sprites that ever overlap with a base sprite:");
-    for top in &ordered_top_sprites {
-        let Some(bases) = top_overlapping_bases.get(top) else {
-            continue;
-        };
-        println!("  {top}");
-        for base in bases {
-            println!("    {base}");
-        }
-    }
-
-    render_overlaps(&sprite_mask, &ordered_top_sprites, &top_overlapping_bases);
-    report_duplicate_patches(&sprite_mask, &ordered_top_sprites, &top_overlapping_bases);
-}
-
-/// Generates the patched top sprite for every overlapping (base, top) pair and reports
-/// which pairs produce pixel-identical patches, since those don't need distinct sprites.
-fn report_duplicate_patches(
-    sprite_mask: &SpriteMask,
-    ordered_top_sprites: &[TopSprite],
-    top_overlapping_bases: &HashMap<TopSprite, Vec<BaseSprite>>,
-) {
-    let mut groups: HashMap<Vec<u8>, Vec<(TopSprite, BaseSprite)>> = HashMap::new();
-
-    for top in ordered_top_sprites {
-        let Some(bases) = top_overlapping_bases.get(top) else {
-            continue;
-        };
-        for base in bases {
-            let patched = sprite_mask.patch_top(base.id() as usize, top.id());
-            groups
-                .entry(patched.into_raw())
-                .or_default()
-                .push((*top, *base));
-        }
-    }
-
-    println!("duplicate patched top sprites:");
-    let mut grouped_tops: HashSet<TopSprite> = HashSet::new();
-    for pairs in groups.values() {
-        if pairs.len() < 2 {
-            continue;
-        }
-        println!("  duplicate group:");
-        for (top, base) in pairs {
-            println!("    {top} over {base}");
-            grouped_tops.insert(*top);
-        }
-
-        let normalized: HashSet<TopSprite> = pairs.iter().map(|(top, _)| top.normalize()).collect();
-        if normalized.len() != 1 {
-            println!("    !! normalize() did not collapse this group: {normalized:?}");
-        }
-    }
-
-    for top in ordered_top_sprites {
-        if !grouped_tops.contains(top) && top.normalize() != *top {
-            println!("!! normalize() unexpectedly changed {top} outside any duplicate group");
-        }
-    }
-}
-
-/// Renders every overlapping (base, top) pair into a square-ish grid PNG.
-fn render_overlaps(
-    sprite_mask: &SpriteMask,
-    ordered_top_sprites: &[TopSprite],
-    top_overlapping_bases: &HashMap<TopSprite, Vec<BaseSprite>>,
-) {
-    let tiles: Vec<(&TopSprite, &BaseSprite)> = ordered_top_sprites
-        .iter()
-        .filter_map(|top| top_overlapping_bases.get(top).map(|bases| (top, bases)))
-        .flat_map(|(top, bases)| bases.iter().map(move |base| (top, base)))
-        .collect();
-
-    let columns = (tiles.len() as f64).sqrt().ceil() as u32;
-    let rows = tiles.len().div_ceil(columns as usize) as u32;
-
-    let mut canvas = image::RgbaImage::new(columns * TILE_WIDTH, rows * TILE_HEIGHT);
-    for (index, (top, base)) in tiles.iter().enumerate() {
-        let column = index as u32 % columns;
-        let row = index as u32 / columns;
-        let tile = sprite_mask.composite(base.id() as usize, top.id());
-        image::imageops::replace(
-            &mut canvas,
-            &tile,
-            column as i64 * TILE_WIDTH as i64,
-            row as i64 * TILE_HEIGHT as i64,
-        );
-    }
-
-    canvas
-        .save("overlaps.png")
-        .expect("failed to write overlaps.png");
 }
