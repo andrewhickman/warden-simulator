@@ -41,7 +41,7 @@ fn main() {
             for south_east in TileVariant::values() {
                 for south in TileVariant::values() {
                     let base = BaseSprite::resolve(center, east, south, south_east);
-                    let top = TopSprite::resolve(center, east, south, south_east);
+                    let top = TopSprite::resolve(center, east, south, south_east, base);
 
                     let basestr = base.to_string();
                     let topstr = top.to_string();
@@ -129,30 +129,32 @@ fn main() {
     render_overlaps(&sprite_mask, &ordered_top_sprites, &top_overlapping_bases);
 }
 
-/// Renders every overlapping (base, top) pair into a grid PNG, one row per top sprite.
+/// Renders every overlapping (base, top) pair into a square-ish grid PNG.
 fn render_overlaps(
     sprite_mask: &SpriteMask,
     ordered_top_sprites: &[TopSprite],
     top_overlapping_bases: &HashMap<TopSprite, Vec<BaseSprite>>,
 ) {
-    let rows: Vec<(&TopSprite, &Vec<BaseSprite>)> = ordered_top_sprites
+    let tiles: Vec<(&TopSprite, &BaseSprite)> = ordered_top_sprites
         .iter()
         .filter_map(|top| top_overlapping_bases.get(top).map(|bases| (top, bases)))
+        .flat_map(|(top, bases)| bases.iter().map(move |base| (top, base)))
         .collect();
-    let columns = rows.iter().map(|(_, bases)| bases.len()).max().unwrap_or(0) as u32;
-    let row_count = rows.len() as u32;
 
-    let mut canvas = image::RgbaImage::new(columns * TILE_WIDTH, row_count * TILE_HEIGHT);
-    for (row, (top, bases)) in rows.iter().enumerate() {
-        for (column, base) in bases.iter().enumerate() {
-            let tile = sprite_mask.composite(base.id() as usize, top.id());
-            image::imageops::replace(
-                &mut canvas,
-                &tile,
-                column as i64 * TILE_WIDTH as i64,
-                row as i64 * TILE_HEIGHT as i64,
-            );
-        }
+    let columns = (tiles.len() as f64).sqrt().ceil() as u32;
+    let rows = tiles.len().div_ceil(columns as usize) as u32;
+
+    let mut canvas = image::RgbaImage::new(columns * TILE_WIDTH, rows * TILE_HEIGHT);
+    for (index, (top, base)) in tiles.iter().enumerate() {
+        let column = index as u32 % columns;
+        let row = index as u32 / columns;
+        let tile = sprite_mask.composite(base.id() as usize, top.id());
+        image::imageops::replace(
+            &mut canvas,
+            &tile,
+            column as i64 * TILE_WIDTH as i64,
+            row as i64 * TILE_HEIGHT as i64,
+        );
     }
 
     canvas

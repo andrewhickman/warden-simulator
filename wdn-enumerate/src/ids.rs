@@ -178,93 +178,115 @@ impl TopSprite {
         match self {
             TopSprite::Empty {
                 east: TopSpriteEast::None,
+                overlap: _,
             } => 0,
             TopSprite::Wall {
                 adjacency: Adjacency::Corner,
                 east: TopSpriteEast::None,
                 north: TopSpriteNorth::None,
+                overlap: _,
             } => 39,
             TopSprite::StairN {
                 adjacency: Adjacency::Corner,
                 north: TopSpriteNorth::None,
+                overlap: _,
             } => 40,
             TopSprite::StairE {
                 adjacency: Adjacency::Corner,
                 east: TopSpriteEast::None,
+                overlap: _,
             } => 41,
             TopSprite::StairW {
                 adjacency: Adjacency::Corner,
+                overlap: _,
             } => 42,
             TopSprite::Wall {
                 adjacency: Adjacency::Horizontal,
                 east: TopSpriteEast::None,
                 north: TopSpriteNorth::None,
+                overlap: _,
             } => 43,
             TopSprite::StairN {
                 adjacency: Adjacency::Horizontal,
                 north: TopSpriteNorth::None,
+                overlap: _,
             } => 44,
             TopSprite::StairE {
                 adjacency: Adjacency::Horizontal,
                 east: TopSpriteEast::None,
+                overlap: _,
             } => 45,
             TopSprite::Wall {
                 adjacency: Adjacency::Corner,
                 east: TopSpriteEast::StairN,
                 north: TopSpriteNorth::None,
+                overlap: _,
             } => 46,
             TopSprite::StairE {
                 adjacency: Adjacency::Corner,
                 east: TopSpriteEast::StairN,
+                overlap: _,
             } => 47,
             TopSprite::StairN {
                 adjacency: Adjacency::Vertical,
                 north: TopSpriteNorth::None,
+                overlap: _,
             } => 48,
             TopSprite::StairE {
                 adjacency: Adjacency::Vertical,
                 east: TopSpriteEast::None,
+                overlap: _,
             } => 49,
             TopSprite::StairW {
                 adjacency: Adjacency::Vertical,
+                overlap: _,
             } => 50,
             TopSprite::StairN {
                 adjacency: Adjacency::Full,
                 north: TopSpriteNorth::None,
+                overlap: _,
             } => 51,
             TopSprite::StairE {
                 adjacency: Adjacency::Full,
                 east: TopSpriteEast::None,
+                overlap: _,
             } => 52,
             TopSprite::Empty {
                 east: TopSpriteEast::StairN,
+                overlap: _,
             } => 53,
             TopSprite::StairE {
                 adjacency: Adjacency::Vertical,
                 east: TopSpriteEast::StairN,
+                overlap: _,
             } => 54,
             TopSprite::Wall {
                 adjacency: Adjacency::Corner,
                 east: TopSpriteEast::None,
                 north: TopSpriteNorth::Door,
+                overlap: _,
             } => 55,
             TopSprite::StairN {
                 adjacency: Adjacency::Corner,
                 north: TopSpriteNorth::Door,
+                overlap: _,
             } => 56,
             TopSprite::Wall {
                 adjacency: Adjacency::Horizontal,
                 east: TopSpriteEast::None,
                 north: TopSpriteNorth::Door,
+                overlap: _,
             } => 57,
             TopSprite::StairN {
                 adjacency: Adjacency::Horizontal,
                 north: TopSpriteNorth::Door,
+                overlap: _,
             } => 58,
             TopSprite::Wall {
                 adjacency: Adjacency::Corner,
                 east: TopSpriteEast::StairN,
                 north: TopSpriteNorth::Door,
+                overlap: _,
             } => 59,
             _ => unimplemented!("unimplemented TopSprite {:?}", self),
         }

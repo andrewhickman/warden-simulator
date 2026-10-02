@@ -66,22 +66,27 @@ pub enum Adjacency {
 pub enum TopSprite {
     Empty {
         east: TopSpriteEast,
+        overlap: OverlapBase,
     },
     Wall {
         adjacency: Adjacency,
         east: TopSpriteEast,
         north: TopSpriteNorth,
+        overlap: OverlapBase,
     },
     StairN {
         adjacency: Adjacency,
         north: TopSpriteNorth,
+        overlap: OverlapBase,
     },
     StairE {
         adjacency: Adjacency,
         east: TopSpriteEast,
+        overlap: OverlapBase,
     },
     StairW {
         adjacency: Adjacency,
+        overlap: OverlapBase,
     },
 }
 
@@ -95,6 +100,33 @@ pub enum TopSpriteNorth {
 pub enum TopSpriteEast {
     None,
     StairN,
+}
+
+/// The base sprite a top sprite visually overlaps with, as found by `wdn-enumerate`'s mask analysis.
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
+pub enum OverlapBase {
+    None,
+    WallCorner,
+    WallHorizontal,
+    WallVertical,
+    WallFull,
+    WallCornerEastDoor,
+    WallCornerEastStairN,
+    WallCornerEastStairS,
+    WallVerticalEastDoor,
+    WallVerticalEastStairN,
+    WallVerticalEastStairS,
+    StairSouthCorner,
+    StairSouthHorizontal,
+    StairSouthVertical,
+    StairSouthFull,
+    StairSouthInverseCorner,
+    StairEastVertical,
+    StairEastInverseCorner,
+    StairEastFull,
+    StairEastVerticalEastDoor,
+    StairEastVerticalEastStairN,
+    StairEastVerticalEastStairS,
 }
 
 impl TileVariant {
@@ -230,6 +262,7 @@ impl Adjacency {
 impl TopSprite {
     pub const EMPTY: TopSprite = TopSprite::Empty {
         east: TopSpriteEast::None,
+        overlap: OverlapBase::None,
     };
 
     pub fn resolve(
@@ -237,16 +270,20 @@ impl TopSprite {
         _: TileVariant,
         center: TileVariant,
         east: TileVariant,
+        base: BaseSprite,
     ) -> TopSprite {
+        let overlap = OverlapBase::resolve(base);
         match center {
             TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV | TileVariant::StairS => {
                 TopSprite::Empty {
                     east: TopSpriteEast::resolve(center, east),
+                    overlap,
                 }
             }
             TileVariant::StairE | TileVariant::StairW | TileVariant::Wall if center == north => {
                 TopSprite::Empty {
                     east: TopSpriteEast::resolve(center, east),
+                    overlap,
                 }
             }
             TileVariant::Wall => TopSprite::Wall {
@@ -257,6 +294,7 @@ impl TopSprite {
                 ),
                 north: TopSpriteNorth::resolve(north),
                 east: TopSpriteEast::resolve(center, east),
+                overlap,
             },
             TileVariant::StairN => TopSprite::StairN {
                 adjacency: Adjacency::resolve(
@@ -268,6 +306,7 @@ impl TopSprite {
                     true,
                 ),
                 north: TopSpriteNorth::resolve(north),
+                overlap,
             },
             TileVariant::StairE => TopSprite::StairE {
                 adjacency: Adjacency::resolve(
@@ -276,6 +315,7 @@ impl TopSprite {
                     true,
                 ),
                 east: TopSpriteEast::resolve(center, east),
+                overlap,
             },
             TileVariant::StairW => TopSprite::StairW {
                 adjacency: Adjacency::resolve(
@@ -283,6 +323,7 @@ impl TopSprite {
                     false,
                     true,
                 ),
+                overlap,
             },
         }
     }
@@ -310,6 +351,109 @@ impl TopSpriteNorth {
             | TileVariant::StairW
             | TileVariant::StairE => TopSpriteNorth::None,
             TileVariant::DoorV => TopSpriteNorth::Door,
+        }
+    }
+}
+
+impl OverlapBase {
+    /// Maps a base sprite to the overlap category it belongs to, if any.
+    pub fn resolve(base: BaseSprite) -> OverlapBase {
+        match base {
+            BaseSprite::Wall {
+                adjacency: Adjacency::Corner,
+                east: BaseSpriteEast::None,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::WallCorner,
+            BaseSprite::Wall {
+                adjacency: Adjacency::Horizontal,
+                east: BaseSpriteEast::None,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::WallHorizontal,
+            BaseSprite::Wall {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::None,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::WallVertical,
+            BaseSprite::Wall {
+                adjacency: Adjacency::Full,
+                east: BaseSpriteEast::None,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::WallFull,
+            BaseSprite::Wall {
+                adjacency: Adjacency::Corner,
+                east: BaseSpriteEast::Door,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::WallCornerEastDoor,
+            BaseSprite::Wall {
+                adjacency: Adjacency::Corner,
+                east: BaseSpriteEast::StairN,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::WallCornerEastStairN,
+            BaseSprite::Wall {
+                adjacency: Adjacency::Corner,
+                east: BaseSpriteEast::StairS,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::WallCornerEastStairS,
+            BaseSprite::Wall {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::Door,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::WallVerticalEastDoor,
+            BaseSprite::Wall {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::StairN,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::WallVerticalEastStairN,
+            BaseSprite::Wall {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::StairS,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::WallVerticalEastStairS,
+            BaseSprite::StairS {
+                adjacency: Adjacency::Corner,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::StairSouthCorner,
+            BaseSprite::StairS {
+                adjacency: Adjacency::Horizontal,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::StairSouthHorizontal,
+            BaseSprite::StairS {
+                adjacency: Adjacency::Vertical,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::StairSouthVertical,
+            BaseSprite::StairS {
+                adjacency: Adjacency::Full,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::StairSouthFull,
+            BaseSprite::StairS {
+                adjacency: Adjacency::InverseCorner,
+                south: BaseSpriteSouth::None,
+            } => OverlapBase::StairSouthInverseCorner,
+            BaseSprite::StairE {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::None,
+            } => OverlapBase::StairEastVertical,
+            BaseSprite::StairE {
+                adjacency: Adjacency::InverseCorner,
+                east: BaseSpriteEast::None,
+            } => OverlapBase::StairEastInverseCorner,
+            BaseSprite::StairE {
+                adjacency: Adjacency::Full,
+                east: BaseSpriteEast::None,
+            } => OverlapBase::StairEastFull,
+            BaseSprite::StairE {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::Door,
+            } => OverlapBase::StairEastVerticalEastDoor,
+            BaseSprite::StairE {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::StairN,
+            } => OverlapBase::StairEastVerticalEastStairN,
+            BaseSprite::StairE {
+                adjacency: Adjacency::Vertical,
+                east: BaseSpriteEast::StairS,
+            } => OverlapBase::StairEastVerticalEastStairS,
+            _ => OverlapBase::None,
         }
     }
 }
@@ -438,16 +582,28 @@ impl fmt::Display for TopSprite {
         match self {
             TopSprite::Empty {
                 east: TopSpriteEast::None,
+                overlap: OverlapBase::None,
             } => write!(f, "EMPTY"),
-            TopSprite::Empty { east } => write!(f, "TOP_EMPTY{east}"),
+            TopSprite::Empty { east, overlap } => write!(f, "TOP_EMPTY{east}{overlap}"),
             TopSprite::Wall {
                 adjacency,
                 east,
                 north,
-            } => write!(f, "TOP_WALL{adjacency}{east}{north}"),
-            TopSprite::StairN { adjacency, north } => write!(f, "TOP_STAIRNORTH{adjacency}{north}"),
-            TopSprite::StairE { adjacency, east } => write!(f, "TOP_STAIREAST{adjacency}{east}"),
-            TopSprite::StairW { adjacency } => write!(f, "TOP_STAIRWEST{adjacency}"),
+                overlap,
+            } => write!(f, "TOP_WALL{adjacency}{east}{north}{overlap}"),
+            TopSprite::StairN {
+                adjacency,
+                north,
+                overlap,
+            } => write!(f, "TOP_STAIRNORTH{adjacency}{north}{overlap}"),
+            TopSprite::StairE {
+                adjacency,
+                east,
+                overlap,
+            } => write!(f, "TOP_STAIREAST{adjacency}{east}{overlap}"),
+            TopSprite::StairW { adjacency, overlap } => {
+                write!(f, "TOP_STAIRWEST{adjacency}{overlap}")
+            }
         }
     }
 }
@@ -455,33 +611,47 @@ impl fmt::Display for TopSprite {
 impl fmt::Debug for TopSprite {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            TopSprite::Empty { east } => f
+            TopSprite::Empty { east, overlap } => f
                 .debug_struct("TopSprite::Empty")
                 .field("east", east)
+                .field("overlap", overlap)
                 .finish(),
             TopSprite::Wall {
                 adjacency,
                 east,
                 north,
+                overlap,
             } => f
                 .debug_struct("TopSprite::Wall")
                 .field("adjacency", adjacency)
                 .field("east", east)
                 .field("north", north)
+                .field("overlap", overlap)
                 .finish(),
-            TopSprite::StairN { adjacency, north } => f
+            TopSprite::StairN {
+                adjacency,
+                north,
+                overlap,
+            } => f
                 .debug_struct("TopSprite::StairN")
                 .field("adjacency", adjacency)
                 .field("north", north)
+                .field("overlap", overlap)
                 .finish(),
-            TopSprite::StairE { adjacency, east } => f
+            TopSprite::StairE {
+                adjacency,
+                east,
+                overlap,
+            } => f
                 .debug_struct("TopSprite::StairE")
                 .field("adjacency", adjacency)
                 .field("east", east)
+                .field("overlap", overlap)
                 .finish(),
-            TopSprite::StairW { adjacency } => f
+            TopSprite::StairW { adjacency, overlap } => f
                 .debug_struct("TopSprite::StairW")
                 .field("adjacency", adjacency)
+                .field("overlap", overlap)
                 .finish(),
         }
     }
@@ -519,6 +689,82 @@ impl fmt::Debug for TopSpriteNorth {
         match self {
             TopSpriteNorth::None => write!(f, "TopSpriteNorth::None"),
             TopSpriteNorth::Door => write!(f, "TopSpriteNorth::Door"),
+        }
+    }
+}
+
+impl fmt::Display for OverlapBase {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            OverlapBase::None => write!(f, ""),
+            OverlapBase::WallCorner => write!(f, "_OVERWALLCORNER"),
+            OverlapBase::WallHorizontal => write!(f, "_OVERWALLHORIZONTAL"),
+            OverlapBase::WallVertical => write!(f, "_OVERWALLVERTICAL"),
+            OverlapBase::WallFull => write!(f, "_OVERWALLFULL"),
+            OverlapBase::WallCornerEastDoor => write!(f, "_OVERWALLCORNEREASTDOOR"),
+            OverlapBase::WallCornerEastStairN => write!(f, "_OVERWALLCORNEREASTSTAIRNORTH"),
+            OverlapBase::WallCornerEastStairS => write!(f, "_OVERWALLCORNEREASTSTAIRSOUTH"),
+            OverlapBase::WallVerticalEastDoor => write!(f, "_OVERWALLVERTICALEASTDOOR"),
+            OverlapBase::WallVerticalEastStairN => write!(f, "_OVERWALLVERTICALEASTSTAIRNORTH"),
+            OverlapBase::WallVerticalEastStairS => write!(f, "_OVERWALLVERTICALEASTSTAIRSOUTH"),
+            OverlapBase::StairSouthCorner => write!(f, "_OVERSTAIRSOUTHCORNER"),
+            OverlapBase::StairSouthHorizontal => write!(f, "_OVERSTAIRSOUTHHORIZONTAL"),
+            OverlapBase::StairSouthVertical => write!(f, "_OVERSTAIRSOUTHVERTICAL"),
+            OverlapBase::StairSouthFull => write!(f, "_OVERSTAIRSOUTHFULL"),
+            OverlapBase::StairSouthInverseCorner => write!(f, "_OVERSTAIRSOUTHINVERSECORNER"),
+            OverlapBase::StairEastVertical => write!(f, "_OVERSTAIREASTVERTICAL"),
+            OverlapBase::StairEastInverseCorner => write!(f, "_OVERSTAIREASTINVERSECORNER"),
+            OverlapBase::StairEastFull => write!(f, "_OVERSTAIREASTFULL"),
+            OverlapBase::StairEastVerticalEastDoor => write!(f, "_OVERSTAIREASTVERTICALEASTDOOR"),
+            OverlapBase::StairEastVerticalEastStairN => {
+                write!(f, "_OVERSTAIREASTVERTICALEASTSTAIRNORTH")
+            }
+            OverlapBase::StairEastVerticalEastStairS => {
+                write!(f, "_OVERSTAIREASTVERTICALEASTSTAIRSOUTH")
+            }
+        }
+    }
+}
+
+impl fmt::Debug for OverlapBase {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            OverlapBase::None => write!(f, "OverlapBase::None"),
+            OverlapBase::WallCorner => write!(f, "OverlapBase::WallCorner"),
+            OverlapBase::WallHorizontal => write!(f, "OverlapBase::WallHorizontal"),
+            OverlapBase::WallVertical => write!(f, "OverlapBase::WallVertical"),
+            OverlapBase::WallFull => write!(f, "OverlapBase::WallFull"),
+            OverlapBase::WallCornerEastDoor => write!(f, "OverlapBase::WallCornerEastDoor"),
+            OverlapBase::WallCornerEastStairN => write!(f, "OverlapBase::WallCornerEastStairN"),
+            OverlapBase::WallCornerEastStairS => write!(f, "OverlapBase::WallCornerEastStairS"),
+            OverlapBase::WallVerticalEastDoor => write!(f, "OverlapBase::WallVerticalEastDoor"),
+            OverlapBase::WallVerticalEastStairN => {
+                write!(f, "OverlapBase::WallVerticalEastStairN")
+            }
+            OverlapBase::WallVerticalEastStairS => {
+                write!(f, "OverlapBase::WallVerticalEastStairS")
+            }
+            OverlapBase::StairSouthCorner => write!(f, "OverlapBase::StairSouthCorner"),
+            OverlapBase::StairSouthHorizontal => write!(f, "OverlapBase::StairSouthHorizontal"),
+            OverlapBase::StairSouthVertical => write!(f, "OverlapBase::StairSouthVertical"),
+            OverlapBase::StairSouthFull => write!(f, "OverlapBase::StairSouthFull"),
+            OverlapBase::StairSouthInverseCorner => {
+                write!(f, "OverlapBase::StairSouthInverseCorner")
+            }
+            OverlapBase::StairEastVertical => write!(f, "OverlapBase::StairEastVertical"),
+            OverlapBase::StairEastInverseCorner => {
+                write!(f, "OverlapBase::StairEastInverseCorner")
+            }
+            OverlapBase::StairEastFull => write!(f, "OverlapBase::StairEastFull"),
+            OverlapBase::StairEastVerticalEastDoor => {
+                write!(f, "OverlapBase::StairEastVerticalEastDoor")
+            }
+            OverlapBase::StairEastVerticalEastStairN => {
+                write!(f, "OverlapBase::StairEastVerticalEastStairN")
+            }
+            OverlapBase::StairEastVerticalEastStairS => {
+                write!(f, "OverlapBase::StairEastVerticalEastStairS")
+            }
         }
     }
 }
