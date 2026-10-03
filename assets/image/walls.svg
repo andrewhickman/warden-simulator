@@ -28,15 +28,15 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="px"
      showgrid="true"
-     inkscape:zoom="1.3175"
-     inkscape:cx="110.05692"
-     inkscape:cy="-168.88045"
+     inkscape:zoom="0.65875001"
+     inkscape:cx="233.77609"
+     inkscape:cy="6.8311194"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer6"
+     inkscape:current-layer="layer3"
      inkscape:export-bgcolor="#00000000"
      showguides="true">
     <inkscape:grid
@@ -7245,7 +7245,7 @@
        inkscape:label="TOP_WALLCORNER_EASTSTAIRNORTH_NORTHDOOR"
        transform="translate(-2000,-400)"
        id="g192-9-89"
-       style="display:none">
+       style="display:inline">
       <path
          style="display:inline;fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          d="m 1520,1504 80,96 h -80 z"
@@ -7269,7 +7269,7 @@
        inkscape:label="TOP_STAIRNORTHHORIZONTAL_NORTHDOOR"
        transform="translate(-1800,-400)"
        id="g192-9-2"
-       style="display:none">
+       style="display:inline">
       <path
          id="path273-9-5-4"
          style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -7287,7 +7287,7 @@
        inkscape:label="TOP_WALLHORIZONTAL_NORTHDOOR"
        transform="translate(-1600,-400)"
        id="g192-9-26"
-       style="display:none">
+       style="display:inline">
       <path
          id="path52-1-5"
          style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
@@ -7299,7 +7299,7 @@
        inkscape:label="TOP_STAIRNORTHCORNER_NORTHDOOR"
        transform="translate(-1200,-360)"
        id="g192-9-46"
-       style="display:none">
+       style="display:inline">
       <path
          style="display:inline;fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          d="m 1520,1464 80,96 h -80 z"
@@ -7322,7 +7322,7 @@
        inkscape:label="TOP_WALLCORNER_NORTHDOOR"
        transform="translate(-1200,-400)"
        id="g192-9-1"
-       style="display:none">
+       style="display:inline">
       <path
          style="display:inline;fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          d="m 1520,1504 80,96 h -80 z"
@@ -7341,7 +7341,7 @@
        inkscape:label="TOP_STAIREASTVERTICAL_EASTSTAIRNORTH"
        transform="translate(0,-400)"
        id="g192-9-8-6"
-       style="display:none">
+       style="display:inline">
       <path
          id="path288-9-93"
          style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:0.999997px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -7369,7 +7369,7 @@
        inkscape:label="TOP_EMPTY_EASTSTAIRNORTH"
        transform="translate(-920,-400)"
        id="g192-9-4"
-       style="display:none">
+       style="display:inline">
       <path
          id="path269-6-8"
          style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -7386,7 +7386,7 @@
        inkscape:label="TOP_STAIREASTFULL"
        transform="translate(0,-400)"
        id="g192-9-8-2"
-       style="display:none">
+       style="display:inline">
       <path
          id="path180-4-8"
          style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
@@ -7422,7 +7422,7 @@
        inkscape:label="TOP_STAIRWESTVERTICAL"
        transform="translate(-200,-400)"
        id="g192-9-0"
-       style="display:none">
+       style="display:inline">
       <path
          id="path285-3"
          style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:0.999997px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -7434,7 +7434,7 @@
        inkscape:label="TOP_STAIREASTVERTICAL"
        transform="translate(0,-400.00001)"
        id="g192-9-8"
-       style="display:none">
+       style="display:inline">
       <path
          id="path288-9"
          style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:0.999997px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -7452,7 +7452,7 @@
        id="g273-1"
        inkscape:label="TOP_STAIRNORTHVERTICAL"
        transform="translate(-1600,-1200)"
-       style="display:none">
+       style="display:inline">
       <path
          id="path273-9"
          style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -7464,7 +7464,7 @@
      inkscape:groupmode="layer"
      id="layer5"
      inkscape:label="Row3"
-     style="display:none">
+     style="display:inline">
     <g
        inkscape:label="TOP_STAIREASTCORNER_EASTSTAIRNORTH"
        transform="translate(0,-400)"
@@ -7520,13 +7520,13 @@
        style="display:inline">
       <path
          d="m -2400,-896.00002 v 96.00005 h -120 v -96.00005 z"
-         style="display:none;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+         style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
          id="path1-6-9-2-1-7-3-9-1"
          inkscape:label="Top"
          sodipodi:nodetypes="ccccc" />
       <path
          id="path283-2-01"
-         style="display:none;fill:#73797a;fill-opacity:1;stroke:none;stroke-width:0.999997px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         style="display:inline;fill:#73797a;fill-opacity:1;stroke:none;stroke-width:0.999997px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          d="m -2520,-895.99997 -80,27.4277 v 68.5723 h 80 z"
          inkscape:label="StairTop" />
     </g>
@@ -7836,7 +7836,7 @@
      inkscape:groupmode="layer"
      id="layer4"
      inkscape:label="Row2"
-     style="display:none">
+     style="display:inline">
     <g
        inkscape:label="BASE_STAIREASTCORNER_EASTDOOR"
        id="g220-0-4-3-0"
@@ -8243,7 +8243,7 @@
      inkscape:groupmode="layer"
      id="layer3"
      inkscape:label="Row1"
-     style="display:none">
+     style="display:inline">
     <g
        inkscape:label="BASE_WALLVERTICAL_EASTSTAIRSOUTH"
        id="g232"

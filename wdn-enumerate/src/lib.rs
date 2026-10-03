@@ -284,7 +284,20 @@ impl TopSprite {
                     },
                 }
             }
-            TileVariant::StairE | TileVariant::StairW | TileVariant::Wall if center == north => {
+            TileVariant::StairE | TileVariant::StairW if center == north => {
+                let east = TopSpriteEast::resolve(center, east);
+                TopSprite::Empty {
+                    east,
+                    overlap: if east == TopSpriteEast::None {
+                        OverlapBase::None
+                    } else {
+                        overlap
+                    },
+                }
+            }
+            TileVariant::Wall
+                if center == north && !matches!(east, TileVariant::Wall | TileVariant::StairW) =>
+            {
                 let east = TopSpriteEast::resolve(center, east);
                 TopSprite::Empty {
                     east,
