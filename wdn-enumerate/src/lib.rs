@@ -437,7 +437,6 @@ impl TopSprite {
                 adjacency: Adjacency::Full,
                 north,
                 overlap: match overlap {
-                    OverlapBase::StairSouthFull => OverlapBase::WallFull,
                     OverlapBase::WallVerticalEastDoor
                     | OverlapBase::WallVerticalEastStairN
                     | OverlapBase::StairSouthVertical => OverlapBase::WallVertical,

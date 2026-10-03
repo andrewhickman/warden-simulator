@@ -87,7 +87,7 @@ fn main() {
     println!("{:?} unique top sprites", unique_top_sprites.len());
 
     generate_ids(&ordered_base_sprites, &ordered_top_sprites);
-    spritesheet::generate(&ordered_base_sprites, &ordered_top_sprites);
+    // spritesheet::generate(&ordered_base_sprites, &ordered_top_sprites);
 }
 
 /// Writes `ids.rs` with `id()` match arms using the same numbering as `consts.rs`.
