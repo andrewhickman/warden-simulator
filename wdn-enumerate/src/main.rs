@@ -6,6 +6,8 @@ use std::{collections::HashSet, io::BufWriter};
 
 use wdn_enumerate::{BaseSprite, TileVariant, TopSprite};
 
+mod spritesheet;
+
 fn main() {
     let mut unique_base_sprites = HashSet::new();
     let mut ordered_base_sprites = Vec::new();
@@ -83,4 +85,58 @@ fn main() {
 
     println!("{:?} unique base sprites", unique_base_sprites.len());
     println!("{:?} unique top sprites", unique_top_sprites.len());
+
+    generate_ids(&ordered_base_sprites, &ordered_top_sprites);
+    spritesheet::generate(&ordered_base_sprites, &ordered_top_sprites);
+}
+
+/// Writes `ids.rs` with `id()` match arms using the same numbering as `consts.rs`.
+fn generate_ids(ordered_base_sprites: &[BaseSprite], ordered_top_sprites: &[TopSprite]) {
+    let mut ids = BufWriter::new(
+        File::create("wdn-enumerate/src/ids.rs")
+            .expect("failed to create wdn-enumerate/src/ids.rs"),
+    );
+
+    writeln!(ids, "use super::*;").unwrap();
+    writeln!(ids).unwrap();
+
+    writeln!(ids, "impl BaseSprite {{").unwrap();
+    writeln!(ids, "    pub fn id(&self) -> u16 {{").unwrap();
+    writeln!(ids, "        match self {{").unwrap();
+    writeln!(ids, "            BaseSprite::Empty => 0,").unwrap();
+    for (i, base) in ordered_base_sprites.iter().enumerate() {
+        if base == &BaseSprite::Empty {
+            continue;
+        }
+        writeln!(ids, "            {base:?} => {i},").unwrap();
+    }
+    writeln!(
+        ids,
+        "            _ => unreachable!(\"id() called on a sprite not produced by the enumerator: {{self:?}}\"),"
+    )
+    .unwrap();
+    writeln!(ids, "        }}").unwrap();
+    writeln!(ids, "    }}").unwrap();
+    writeln!(ids, "}}").unwrap();
+    writeln!(ids).unwrap();
+
+    writeln!(ids, "impl TopSprite {{").unwrap();
+    writeln!(ids, "    pub fn id(&self) -> usize {{").unwrap();
+    writeln!(ids, "        match self {{").unwrap();
+    for (i, top) in ordered_top_sprites.iter().enumerate() {
+        let id = if top == &TopSprite::EMPTY {
+            0
+        } else {
+            i + ordered_base_sprites.len() - 1
+        };
+        writeln!(ids, "            {top:?} => {id},").unwrap();
+    }
+    writeln!(
+        ids,
+        "            _ => unreachable!(\"id() called on a sprite not produced by the enumerator: {{self:?}}\"),"
+    )
+    .unwrap();
+    writeln!(ids, "        }}").unwrap();
+    writeln!(ids, "    }}").unwrap();
+    writeln!(ids, "}}").unwrap();
 }

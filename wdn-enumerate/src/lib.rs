@@ -274,15 +274,25 @@ impl TopSprite {
         let overlap = OverlapBase::resolve(base);
         let sprite = match center {
             TileVariant::Empty | TileVariant::DoorH | TileVariant::DoorV | TileVariant::StairS => {
+                let east = TopSpriteEast::resolve(center, east);
                 TopSprite::Empty {
-                    east: TopSpriteEast::resolve(center, east),
-                    overlap,
+                    east,
+                    overlap: if east == TopSpriteEast::None {
+                        OverlapBase::None
+                    } else {
+                        overlap
+                    },
                 }
             }
             TileVariant::StairE | TileVariant::StairW | TileVariant::Wall if center == north => {
+                let east = TopSpriteEast::resolve(center, east);
                 TopSprite::Empty {
-                    east: TopSpriteEast::resolve(center, east),
-                    overlap,
+                    east,
+                    overlap: if east == TopSpriteEast::None {
+                        OverlapBase::None
+                    } else {
+                        overlap
+                    },
                 }
             }
             TileVariant::Wall => TopSprite::Wall {
@@ -295,18 +305,25 @@ impl TopSprite {
                 east: TopSpriteEast::resolve(center, east),
                 overlap,
             },
-            TileVariant::StairN => TopSprite::StairN {
-                adjacency: Adjacency::resolve(
+            TileVariant::StairN => {
+                let adjacency = Adjacency::resolve(
                     matches!(north, TileVariant::Wall | TileVariant::StairS),
                     matches!(
                         east,
                         TileVariant::Wall | TileVariant::StairW | TileVariant::StairN
                     ),
                     true,
-                ),
-                north: TopSpriteNorth::resolve(north),
-                overlap,
-            },
+                );
+                TopSprite::StairN {
+                    adjacency,
+                    north: TopSpriteNorth::resolve(north),
+                    overlap: if adjacency == Adjacency::Vertical {
+                        OverlapBase::None
+                    } else {
+                        overlap
+                    },
+                }
+            }
             TileVariant::StairE => TopSprite::StairE {
                 adjacency: Adjacency::resolve(
                     matches!(north, TileVariant::Wall | TileVariant::StairS),
@@ -322,7 +339,7 @@ impl TopSprite {
                     false,
                     true,
                 ),
-                overlap,
+                overlap: OverlapBase::None,
             },
         };
 
@@ -491,6 +508,56 @@ impl TopSprite {
                 },
             },
             other => other,
+        }
+    }
+
+    /// The overlap category stored on this sprite, regardless of its variant.
+    pub fn overlap(self) -> OverlapBase {
+        match self {
+            TopSprite::Empty { overlap, .. }
+            | TopSprite::Wall { overlap, .. }
+            | TopSprite::StairN { overlap, .. }
+            | TopSprite::StairE { overlap, .. }
+            | TopSprite::StairW { overlap, .. } => overlap,
+        }
+    }
+
+    /// This sprite with its overlap category cleared, i.e. the original pre-`OverlapBase` shape.
+    pub fn without_overlap(self) -> TopSprite {
+        match self {
+            TopSprite::Empty { east, .. } => TopSprite::Empty {
+                east,
+                overlap: OverlapBase::None,
+            },
+            TopSprite::Wall {
+                adjacency,
+                east,
+                north,
+                ..
+            } => TopSprite::Wall {
+                adjacency,
+                east,
+                north,
+                overlap: OverlapBase::None,
+            },
+            TopSprite::StairN {
+                adjacency, north, ..
+            } => TopSprite::StairN {
+                adjacency,
+                north,
+                overlap: OverlapBase::None,
+            },
+            TopSprite::StairE {
+                adjacency, east, ..
+            } => TopSprite::StairE {
+                adjacency,
+                east,
+                overlap: OverlapBase::None,
+            },
+            TopSprite::StairW { adjacency, .. } => TopSprite::StairW {
+                adjacency,
+                overlap: OverlapBase::None,
+            },
         }
     }
 }
