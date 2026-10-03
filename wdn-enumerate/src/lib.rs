@@ -372,7 +372,6 @@ impl TopSprite {
                     OverlapBase::StairEastFull => OverlapBase::WallFull,
                     OverlapBase::WallVerticalEastDoor
                     | OverlapBase::WallVerticalEastStairN
-                    | OverlapBase::WallVerticalEastStairS
                     | OverlapBase::StairEastVertical
                     | OverlapBase::StairEastVerticalEastDoor
                     | OverlapBase::StairEastVerticalEastStairN

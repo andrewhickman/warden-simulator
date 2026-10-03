@@ -26,15 +26,15 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      showgrid="true"
-     inkscape:zoom="5.6568544"
-     inkscape:cx="342.23967"
-     inkscape:cy="1266.5166"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="558.61434"
+     inkscape:cy="1778.02"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
-     inkscape:window-x="-8"
+     inkscape:window-x="1912"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g101">
+     inkscape:current-layer="layer5">
     <inkscape:grid
        id="grid199"
        units="px"
@@ -70,7 +70,7 @@
      inkscape:label="Row 6">
     <g
        inkscape:label="TOP_WALLCORNER_EASTSTAIRNORTH_OVERSTAIREASTFULL"
-       transform="translate(400,2400)"
+       transform="translate(600,2400)"
        id="g3">
       <g
          transform="translate(0,-400)"
@@ -102,7 +102,7 @@
     </g>
     <g
        inkscape:label="TOP_STAIRNORTHHORIZONTAL_OVERSTAIREASTFULL"
-       transform="translate(200,2400)"
+       transform="translate(400,2400)"
        id="g6">
       <g
          transform="translate(40,-432)"
@@ -130,7 +130,7 @@
     </g>
     <g
        inkscape:label="TOP_WALLHORIZONTAL_OVERSTAIREASTFULL"
-       transform="translate(0,2400)"
+       transform="translate(200,2400)"
        id="g9">
       <g
          transform="translate(0,-400)"
@@ -153,14 +153,9 @@
            y="0" />
       </g>
     </g>
-  </g>
-  <g
-     inkscape:groupmode="layer"
-     id="layer5"
-     inkscape:label="Row 5">
     <g
        inkscape:label="TOP_WALLCORNER_EASTSTAIRNORTH_OVERSTAIREASTVERTICAL"
-       transform="translate(3000,2000)"
+       transform="translate(0,2400)"
        id="g13">
       <g
          transform="translate(0,-400)"
@@ -190,9 +185,14 @@
            y="0" />
       </g>
     </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="Row 5">
     <g
        inkscape:label="TOP_STAIRNORTHHORIZONTAL_OVERSTAIREASTVERTICAL"
-       transform="translate(2800,2000)"
+       transform="translate(3000,2000)"
        id="g16">
       <g
          transform="translate(40,-432)"
@@ -220,7 +220,7 @@
     </g>
     <g
        inkscape:label="TOP_WALLHORIZONTAL_OVERSTAIREASTVERTICAL"
-       transform="translate(2600,2000)"
+       transform="translate(2800,2000)"
        id="g19">
       <g
          transform="translate(0,-400)"
@@ -245,7 +245,7 @@
     </g>
     <g
        inkscape:label="TOP_STAIRNORTHCORNER_OVERSTAIREASTVERTICAL"
-       transform="translate(2400,2000)"
+       transform="translate(2600,2000)"
        id="g22">
       <g
          transform="translate(-1600,-1200)"
@@ -277,7 +277,7 @@
     </g>
     <g
        inkscape:label="TOP_WALLCORNER_OVERSTAIREASTVERTICAL"
-       transform="translate(2200,2000)"
+       transform="translate(2400,2000)"
        id="g25">
       <g
          transform="translate(0,-400)"
@@ -307,7 +307,7 @@
     </g>
     <g
        inkscape:label="TOP_WALLCORNER_EASTSTAIRNORTH_OVERSTAIRSOUTHFULL"
-       transform="translate(2000,2000)"
+       transform="translate(2200,2000)"
        id="g29">
       <g
          transform="translate(0,-400)"
@@ -336,7 +336,7 @@
     </g>
     <g
        inkscape:label="TOP_WALLHORIZONTAL_OVERSTAIRSOUTHFULL"
-       transform="translate(1800,2000)"
+       transform="translate(2000,2000)"
        id="g32">
       <g
          transform="translate(0,-400)"
@@ -358,7 +358,7 @@
     </g>
     <g
        inkscape:label="TOP_WALLCORNER_EASTSTAIRNORTH_OVERSTAIRSOUTHVERTICAL"
-       transform="translate(1600,2000)"
+       transform="translate(1800,2000)"
        id="g36">
       <g
          transform="translate(0,-400)"
@@ -387,7 +387,7 @@
     </g>
     <g
        inkscape:label="TOP_WALLHORIZONTAL_OVERSTAIRSOUTHVERTICAL"
-       transform="translate(1400,2000)"
+       transform="translate(1600,2000)"
        id="g39">
       <g
          transform="translate(0,-400)"
@@ -409,7 +409,7 @@
     </g>
     <g
        inkscape:label="TOP_WALLCORNER_OVERSTAIRSOUTHVERTICAL"
-       transform="translate(1200,2000)"
+       transform="translate(1400,2000)"
        id="g42">
       <g
          transform="translate(0,-400)"
@@ -436,7 +436,7 @@
     </g>
     <g
        inkscape:label="TOP_WALLCORNER_EASTSTAIRNORTH_NORTHDOOR"
-       transform="translate(1000,2000)"
+       transform="translate(1200,2000)"
        id="g44">
       <g
          transform="translate(-2000,-400)"
@@ -459,7 +459,7 @@
     </g>
     <g
        inkscape:label="TOP_STAIRNORTHHORIZONTAL_NORTHDOOR"
-       transform="translate(800,2000)"
+       transform="translate(1000,2000)"
        id="g46">
       <g
          transform="translate(-1800,-400)"
@@ -476,7 +476,7 @@
     </g>
     <g
        inkscape:label="TOP_WALLHORIZONTAL_NORTHDOOR"
-       transform="translate(600,2000)"
+       transform="translate(800,2000)"
        id="g48">
       <g
          transform="translate(-1600,-400)"
@@ -489,7 +489,7 @@
     </g>
     <g
        inkscape:label="TOP_STAIRNORTHCORNER_NORTHDOOR"
-       transform="translate(400,2000)"
+       transform="translate(600,2000)"
        id="g50">
       <g
          transform="translate(-1200,-360)"
@@ -511,7 +511,7 @@
     </g>
     <g
        inkscape:label="TOP_WALLCORNER_NORTHDOOR"
-       transform="translate(200,2000)"
+       transform="translate(400,2000)"
        id="g52">
       <g
          transform="translate(-1200,-400)"
@@ -526,6 +526,34 @@
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
            d="m 1400,1424 v 176 h 120 v -96 h -96 v -80 z"
            transform="translate(-200,-1200)" />
+      </g>
+    </g>
+    <g
+       inkscape:label="TOP_EMPTY_EASTSTAIRNORTH_OVERWALLVERTICAL"
+       transform="translate(200,2000)"
+       id="g87-1">
+      <g
+         transform="translate(-920,-400)"
+         id="g85-5">
+        <path
+           id="path84-2"
+           style="fill:#73797a;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 1040,344 9.8242,56 H 1120 v -56 z" />
+        <path
+           id="path85-7"
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:3.99999;stroke-linejoin:round;paint-order:stroke fill markers"
+           d="m 1040,104 h 80 v 240 h -80 z" />
+      </g>
+      <g
+         transform="translate(0,-400)"
+         id="g86-6">
+        <rect
+           style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+           id="rect286-1"
+           width="120"
+           height="296"
+           x="0"
+           y="104" />
       </g>
     </g>
     <g
