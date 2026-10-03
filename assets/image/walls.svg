@@ -26,15 +26,15 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      showgrid="true"
-     inkscape:zoom="1.4142136"
-     inkscape:cx="843.57837"
-     inkscape:cy="1437.1945"
+     inkscape:zoom="5.6568544"
+     inkscape:cx="342.23967"
+     inkscape:cy="1266.5166"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer4">
+     inkscape:current-layer="g101">
     <inkscape:grid
        id="grid199"
        units="px"
@@ -983,6 +983,10 @@
            height="144"
            x="200"
            y="0" />
+        <path
+           style="display:inline;fill:#5d4942;fill-opacity:1;stroke:none;stroke-width:0.999997px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="M 400,400 V 0 h -80 v 400 z"
+           id="path286-3-5-8" />
       </g>
     </g>
     <g

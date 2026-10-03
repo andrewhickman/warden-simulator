@@ -169,10 +169,7 @@ impl BaseSprite {
                     false,
                     matches!(
                         east,
-                        TileVariant::Wall
-                            | TileVariant::StairW
-                            | TileVariant::StairE
-                            | TileVariant::StairN
+                        TileVariant::Wall | TileVariant::StairW | TileVariant::StairN
                     ),
                     false,
                 ),
