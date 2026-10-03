@@ -26,15 +26,15 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      showgrid="true"
-     inkscape:zoom="4.0000001"
-     inkscape:cx="2274.2499"
-     inkscape:cy="1938.6249"
-     inkscape:window-width="1920"
-     inkscape:window-height="1017"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="g29-2">
+     inkscape:zoom="1"
+     inkscape:cx="57.499998"
+     inkscape:cy="1799.5"
+     inkscape:window-width="1127"
+     inkscape:window-height="703"
+     inkscape:window-x="516"
+     inkscape:window-y="298"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer5">
     <inkscape:grid
        id="grid199"
        units="px"
@@ -586,8 +586,9 @@
         <path
            id="rect228"
            style="display:inline;fill:#333c43;fill-opacity:1;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
-           d="m 880,-120 v 400 h 120 V 24 h 80 v -40 h -80 v -104 z"
-           transform="translate(-880,120)" />
+           d="m 880,-120 v 344 h 120 V 24 h 80 v -40 h -80 v -104 z"
+           transform="translate(-880,120)"
+           sodipodi:nodetypes="ccccccccc" />
       </g>
     </g>
   </g>
