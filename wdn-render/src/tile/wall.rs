@@ -219,8 +219,8 @@ fn resolve_base(
         }
         (Wall, StairS, _, StairN | Wall) => BASE_WALLVERTICAL_EASTSTAIRSOUTH,
         (Wall, StairS, _, DoorV) => BASE_WALLCORNER_EASTSTAIRSOUTH_SOUTHDOOR,
-        (StairN, DoorH | DoorV | Empty | StairN | StairS, _, _) => BASE_STAIRNORTHCORNER,
-        (StairN, StairE | StairW | Wall, _, _) => BASE_STAIRNORTHHORIZONTAL,
+        (StairN, DoorH | DoorV | Empty | StairS, _, _) => BASE_STAIRNORTHCORNER,
+        (StairN, StairE | StairN | StairW | Wall, _, _) => BASE_STAIRNORTHHORIZONTAL,
         (
             StairS,
             DoorH | DoorV | Empty | StairE | StairN,
