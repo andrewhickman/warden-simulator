@@ -7,8 +7,8 @@ use bevy_camera::prelude::*;
 use bevy_ecs::{prelude::*, system::SystemParam};
 use bevy_image::prelude::*;
 use bevy_log::prelude::*;
-use bevy_math::prelude::*;
 use bevy_mesh::prelude::*;
+use bevy_shape::prelude::*;
 use bevy_sprite_render::prelude::*;
 use bevy_transform::prelude::*;
 

@@ -38,7 +38,7 @@ impl Plugin for LayerPlugin {
 }
 
 pub fn on_add_layer(
-    trigger: On<Insert, Layer>,
+    trigger: On<Insert<Layer>>,
     mut layers: Query<(&Layer, &mut Transform)>,
 ) -> Result {
     let (layer, mut transform) = layers.get_mut(trigger.entity)?;

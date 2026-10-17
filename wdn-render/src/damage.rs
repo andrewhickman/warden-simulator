@@ -2,8 +2,8 @@ use std::time::Duration;
 
 use bevy_app::prelude::*;
 use bevy_color::{Color, Mix};
+use bevy_curve::{Curve, easing::ExponentialInCurve};
 use bevy_ecs::prelude::*;
-use bevy_math::{Curve, curve::ExponentialInCurve};
 use bevy_sprite::prelude::*;
 use bevy_time::{common_conditions::paused, prelude::*};
 use wdn_world::combat::Damaged;

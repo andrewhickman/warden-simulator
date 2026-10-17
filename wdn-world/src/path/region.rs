@@ -180,7 +180,11 @@ pub fn update_region_tiles(
 
     regions
         .par_iter_many_unique_mut(added_regions.iter())
-        .for_each(|(region, mut region_tiles)| {
+        .for_each(|item| {
+            let Ok((region, mut region_tiles)) = item else {
+                return;
+            };
+
             for (chunk_id, section_offset) in region.sections() {
                 let (chunk, chunk_sections) = chunks.get(chunk_id).expect("invalid chunk");
                 let section = chunk_sections.section(section_offset.chunk_offset());
@@ -213,8 +217,10 @@ pub fn update_region_doors(
     added_regions: Res<AddedRegions>,
     mut added_flow_fields: ResMut<AddedFlowFields>,
 ) {
-    regions.iter_many_unique_mut(added_regions.iter()).for_each(
-        |(region_id, region, mut region_tiles)| {
+    regions
+        .iter_many_unique_mut(added_regions.iter())
+        .matched()
+        .for_each(|(region_id, region, mut region_tiles)| {
             let RegionTiles {
                 ref mut tiles,
                 ref mut doors,
@@ -248,8 +254,7 @@ pub fn update_region_doors(
 
                 added_flow_fields.insert(door.flow_field);
             }
-        },
-    );
+        });
 }
 
 pub fn regions_added(changes: Res<AddedRegions>) -> bool {
@@ -261,7 +266,7 @@ pub fn clear_added_regions(mut changes: ResMut<AddedRegions>) {
 }
 
 pub fn on_add_region(
-    trigger: On<Add, Region>,
+    trigger: On<Add<Region>>,
     regions: Query<&Region>,
     mut chunks: Query<&mut TileChunkSections>,
 ) -> Result {
@@ -557,7 +562,7 @@ impl AddedRegions {
         !self.added_regions.is_empty()
     }
 
-    pub fn iter(&'_ self) -> hash_set::Iter<'_> {
+    pub fn iter(&'_ self) -> hash_set::Iter<'_, Entity> {
         self.added_regions.iter()
     }
 }

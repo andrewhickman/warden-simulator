@@ -1,6 +1,6 @@
 use bevy::{
     camera_controller::pan_camera::{PanCamera, PanCameraPlugin},
-    dev_tools::fps_overlay::FpsOverlayPlugin,
+    dev_tools::{fps_overlay::FpsOverlayPlugin, render_debug::RenderDebugOverlayPlugin},
     ecs::batching::BatchingStrategy,
     log::{error, info},
     prelude::*,
@@ -45,7 +45,9 @@ struct RegionLegendEntry {
 pub fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins.set(window()),
+            DefaultPlugins
+                .set(window())
+                .disable::<RenderDebugOverlayPlugin>(),
             FpsOverlayPlugin::default(),
             PanCameraPlugin,
             WdnPhysicsPlugin,

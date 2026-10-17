@@ -37,7 +37,7 @@ pub struct TileChunkPosition {
 pub struct TileChunkOffset(u16);
 
 pub fn on_insert_tile_position(
-    trigger: On<Insert, TilePosition>,
+    trigger: On<Insert<TilePosition>>,
     mut tiles: Query<(
         &TilePosition,
         Option<&mut TileMaterial>,

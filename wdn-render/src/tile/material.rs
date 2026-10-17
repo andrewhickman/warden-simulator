@@ -7,7 +7,9 @@ use bevy_mesh::MeshVertexBufferLayoutRef;
 use bevy_reflect::TypePath;
 use bevy_render::render_resource::*;
 use bevy_shader::{ShaderDefVal, ShaderRef};
-use bevy_sprite_render::{AlphaMode2d, Material2d, Material2dKey, Material2dPlugin};
+use bevy_sprite_render::{
+    AlphaMode2d, Material2d, Material2dKey, Material2dPipeline, Material2dPlugin,
+};
 use bytemuck::{Pod, Zeroable};
 use wdn_physics::tile::{CHUNK_SIZE, CHUNK_SIZE_SQUARED};
 
@@ -15,7 +17,7 @@ pub struct TileChunkMaterialPlugin;
 
 impl Plugin for TileChunkMaterialPlugin {
     fn build(&self, app: &mut App) {
-        embedded_asset!(app, "tile.wgsl");
+        embedded_asset!(app, "tile.wesl");
 
         app.add_plugins(Material2dPlugin::<TileChunkMaterial>::default());
     }
@@ -34,7 +36,7 @@ pub struct TileChunkMaterial {
 impl Material2d for TileChunkMaterial {
     fn fragment_shader() -> ShaderRef {
         ShaderRef::Path(
-            AssetPath::from_path_buf(embedded_path!("tile.wgsl")).with_source("embedded"),
+            AssetPath::from_path_buf(embedded_path!("tile.wesl")).with_source("embedded"),
         )
     }
 
@@ -43,6 +45,7 @@ impl Material2d for TileChunkMaterial {
     }
 
     fn specialize(
+        _: &Material2dPipeline,
         descriptor: &mut RenderPipelineDescriptor,
         _: &MeshVertexBufferLayoutRef,
         _: Material2dKey<Self>,

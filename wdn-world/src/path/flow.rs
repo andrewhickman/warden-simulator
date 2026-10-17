@@ -95,7 +95,11 @@ pub fn update_flow_fields(
 
     flow_fields
         .par_iter_many_unique_mut(added_flow_fields.iter())
-        .for_each(|(parent, mut flow)| {
+        .for_each(|item| {
+            let Ok((parent, mut flow)) = item else {
+                return;
+            };
+
             let tiles = regions.get(parent.parent()).expect("invalid region");
             flow.populate_flow(tiles);
         });
@@ -244,7 +248,7 @@ impl AddedFlowFields {
         !self.added_flow_fields.is_empty()
     }
 
-    pub fn iter(&'_ self) -> hash_set::Iter<'_> {
+    pub fn iter(&'_ self) -> hash_set::Iter<'_, Entity> {
         self.added_flow_fields.iter()
     }
 }

@@ -43,30 +43,34 @@ pub fn update_ground(
     mut chunks: Query<(&mut TileChunk, &TileChunkSections)>,
     added_regions: Res<AddedRegions>,
 ) {
-    regions.iter_many(added_regions.iter()).for_each(|region| {
-        let ground_flags = if region.outside() {
-            TileMaterialFlags::GROUND_OUTSIDE
-        } else {
-            TileMaterialFlags::GROUND_INSIDE
-        };
+    regions
+        .iter_many(added_regions.iter())
+        .matched()
+        .for_each(|region| {
+            let ground_flags = if region.outside() {
+                TileMaterialFlags::GROUND_OUTSIDE
+            } else {
+                TileMaterialFlags::GROUND_INSIDE
+            };
 
-        for (chunk_id, section_id) in region.sections() {
-            let (mut chunk, sections) = chunks.get_mut(chunk_id).unwrap();
-            let section = sections.section(section_id.chunk_offset());
+            for (chunk_id, section_id) in region.sections() {
+                let (mut chunk, sections) = chunks.get_mut(chunk_id).unwrap();
+                let section = sections.section(section_id.chunk_offset());
 
-            for &tile in section.tiles() {
-                let material = chunk.get(tile).material();
-                debug_assert!(matches!(
-                    material.kind(),
-                    TileKind::Empty | TileKind::Stairs
-                ));
-                if material.flags() & TileMaterialFlags::GROUND_INSIDE_MASK != ground_flags {
-                    chunk.set_material(
-                        tile,
-                        material.with_flags(TileMaterialFlags::GROUND_INSIDE_MASK, ground_flags),
-                    );
+                for &tile in section.tiles() {
+                    let material = chunk.get(tile).material();
+                    debug_assert!(matches!(
+                        material.kind(),
+                        TileKind::Empty | TileKind::Stairs
+                    ));
+                    if material.flags() & TileMaterialFlags::GROUND_INSIDE_MASK != ground_flags {
+                        chunk.set_material(
+                            tile,
+                            material
+                                .with_flags(TileMaterialFlags::GROUND_INSIDE_MASK, ground_flags),
+                        );
+                    }
                 }
             }
-        }
-    });
+        });
 }

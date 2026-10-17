@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use bevy::{
-    app::TaskPoolThreadAssignmentPolicy,
+    app::{PluginGroupBuilder, RunFixedMainLoop, TaskPoolThreadAssignmentPolicy},
     camera_controller::pan_camera::{PanCamera, PanCameraPlugin},
     ecs::schedule::{LogLevel, ScheduleBuildSettings},
     prelude::*,
@@ -62,6 +62,15 @@ pub fn main() {
             ambiguity_detection: LogLevel::Error,
             report_sets: true,
             ..default()
+        })
+        // `PanCameraPlugin` adds `run_pan_to_cursor_on_zoom` without ordering it relative to
+        // `run_fixed_main_schedule`, and it is not public so the ambiguity cannot be resolved here.
+        .edit_schedule(RunFixedMainLoop, |schedule| {
+            schedule.set_build_settings(ScheduleBuildSettings {
+                ambiguity_detection: LogLevel::Warn,
+                report_sets: true,
+                ..default()
+            });
         })
         .run();
 }

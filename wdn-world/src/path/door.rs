@@ -24,6 +24,7 @@ pub fn update_door_regions(
 ) {
     regions
         .iter_many_unique(added_regions.iter())
+        .matched()
         .for_each(|(region_id, region_tiles)| {
             let dead_end = region_tiles.door_count() == 1;
             for region_door in region_tiles.doors() {
@@ -39,7 +40,7 @@ pub fn update_door_regions(
 }
 
 pub fn on_remove_region(
-    trigger: On<Remove, RegionTiles>,
+    trigger: On<Remove<RegionTiles>>,
     regions: Query<&RegionTiles>,
     mut doors: Query<&mut DoorRegions>,
 ) -> Result {
