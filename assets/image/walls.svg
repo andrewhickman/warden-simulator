@@ -27,15 +27,15 @@
      inkscape:deskcolor="#d1d1d1"
      showgrid="true"
      inkscape:export-bgcolor="#00000000"
-     inkscape:zoom="0.64032445"
-     inkscape:cx="2210.5981"
-     inkscape:cy="247.53076"
+     inkscape:zoom="1.811111"
+     inkscape:cx="2298.589"
+     inkscape:cy="1105.1227"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer2">
+     inkscape:current-layer="svg331">
     <inkscape:grid
        id="grid331"
        units="px"
@@ -1550,6 +1550,13 @@
        d="m 1788.5723,-385.14258 v 14.85742 h -11.4297 v 14.85743 h -11.4278 v 14.85546 h -11.4296 v 14.85743 h -11.4278 v 14.85742 h -11.4297 V -296 H 1800 v -89.14258 z"
        sodipodi:nodetypes="ccccccccccccccc" />
   </g>
+  <rect
+     style="fill:#7649c5;fill-opacity:0.762626;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill markers"
+     id="rect2"
+     width="16"
+     height="16"
+     x="2312"
+     y="1136" />
   <g
      inkscape:groupmode="layer"
      id="layer4"
