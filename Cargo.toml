@@ -43,7 +43,8 @@ features = [
     "default_platform", 
     "2d_bevy_render", 
     "ui_bevy_render", 
-    "pan_camera"
+    "pan_camera",
+    "file_watcher"
 ]
 
 [dev-dependencies]

@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use bevy::{
-    app::{PluginGroupBuilder, RunFixedMainLoop, TaskPoolThreadAssignmentPolicy},
+    app::{RunFixedMainLoop, TaskPoolThreadAssignmentPolicy},
     camera_controller::pan_camera::{PanCamera, PanCameraPlugin},
     ecs::schedule::{LogLevel, ScheduleBuildSettings},
     prelude::*,
