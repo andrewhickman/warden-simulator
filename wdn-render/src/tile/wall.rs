@@ -235,6 +235,12 @@ fn resolve_top(
 
     match (center, east, south, south_east) {
         (_, _, DoorHorizontal | DoorVertical | Empty | StairSouth, _)
+        | (
+            StairSouth | Wall,
+            _,
+            Wall,
+            DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth,
+        )
         | (StairWest, _, StairWest, _) => 0,
         (
             DoorHorizontal | Empty | StairNorth | StairWest,
@@ -243,7 +249,7 @@ fn resolve_top(
             DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth,
         ) => 42,
         (
-            DoorHorizontal | Empty | StairEast | StairNorth | StairWest,
+            DoorHorizontal | Empty | StairEast | StairNorth | StairSouth | StairWest | Wall,
             DoorHorizontal | DoorVertical | Empty | StairEast | StairNorth,
             Wall,
             StairWest | Wall,
@@ -255,7 +261,7 @@ fn resolve_top(
             StairWest | Wall,
         ) => 43,
         (
-            DoorHorizontal | Empty | StairEast | StairNorth | StairWest,
+            DoorHorizontal | Empty | StairEast | StairNorth | StairSouth | StairWest | Wall,
             DoorHorizontal | DoorVertical | Empty | StairEast | StairNorth,
             Wall,
             StairNorth,
@@ -273,7 +279,7 @@ fn resolve_top(
             DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth,
         ) => 45,
         (
-            DoorHorizontal | Empty | StairEast | StairNorth | StairWest,
+            DoorHorizontal | Empty | StairEast | StairNorth | StairSouth | StairWest | Wall,
             DoorHorizontal | DoorVertical | Empty | StairEast | StairNorth,
             StairNorth,
             StairNorth | StairWest | Wall,
@@ -285,14 +291,24 @@ fn resolve_top(
             StairNorth | StairWest | Wall,
         ) => 46,
         (
-            DoorHorizontal | DoorVertical | Empty | StairWest,
+            DoorHorizontal | DoorVertical | Empty | StairNorth | StairWest,
             _,
             StairEast,
             DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth,
         ) => 47,
-        (DoorHorizontal | DoorVertical | Empty | StairWest, _, StairEast, StairWest | Wall) => 48,
-        (DoorHorizontal | DoorVertical | Empty | StairWest, _, StairEast, StairNorth) => 49,
-        (DoorHorizontal | DoorVertical | Empty | StairNorth | StairEast, _, StairWest, _) => 50,
+        (
+            DoorHorizontal | DoorVertical | Empty | StairNorth | StairWest,
+            _,
+            StairEast,
+            StairWest | Wall,
+        ) => 48,
+        (
+            DoorHorizontal | DoorVertical | Empty | StairNorth | StairWest,
+            _,
+            StairEast,
+            StairNorth,
+        ) => 49,
+        (DoorHorizontal | DoorVertical | Empty | StairEast | StairNorth, _, StairWest, _) => 50,
         (DoorVertical, _, Wall, DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth) => {
             51
         }
@@ -308,105 +324,61 @@ fn resolve_top(
         (
             StairSouth | Wall,
             _,
-            Wall,
+            StairNorth,
             DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth,
         ) => 56,
         (
-            StairSouth | Wall,
+            StairEast | StairSouth | Wall,
             DoorHorizontal | DoorVertical | Empty | StairEast | StairNorth,
-            Wall,
-            StairWest | Wall,
+            StairEast,
+            DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth,
+        )
+        | (
+            StairEast,
+            StairSouth | StairWest | Wall,
+            StairEast,
+            DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth,
         ) => 57,
         (
-            StairSouth | Wall,
+            StairEast | StairSouth | Wall,
             DoorHorizontal | DoorVertical | Empty | StairEast | StairNorth,
-            Wall,
-            StairNorth,
+            StairEast,
+            StairWest | Wall,
         ) => 58,
         (
+            StairEast | StairSouth | Wall,
+            DoorHorizontal | DoorVertical | Empty | StairEast | StairNorth,
+            StairEast,
+            StairNorth,
+        ) => 59,
+        (StairSouth | Wall, _, StairWest, _) => 60,
+        (StairSouth | Wall, StairSouth | StairWest | Wall, Wall, StairWest | Wall) => 61,
+        (StairSouth | Wall, StairSouth | StairWest | Wall, Wall, StairNorth) => 62,
+        (
             StairSouth | Wall,
+            StairSouth | StairWest | Wall,
+            StairNorth,
+            StairNorth | StairWest | Wall,
+        ) => 63,
+        (
+            StairSouth | Wall,
+            StairSouth | StairWest | Wall,
+            StairEast,
+            DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth,
+        ) => 64,
+        (StairSouth | Wall, StairSouth | StairWest | Wall, StairEast, StairWest | Wall) => 65,
+        (StairSouth | Wall, StairSouth | StairWest | Wall, StairEast, StairNorth) => 66,
+        (StairEast, _, Wall, DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth) => 67,
+        (
+            StairEast,
             _,
             StairNorth,
-            DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth,
-        ) => 59,
-        (
-            StairSouth | Wall,
-            DoorHorizontal | DoorVertical | Empty | StairEast | StairNorth,
-            StairNorth,
-            StairNorth | StairWest | Wall,
-        ) => 60,
-        (
-            StairSouth | Wall,
-            DoorHorizontal | DoorVertical | Empty | StairEast | StairNorth,
-            StairEast,
-            DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth,
-        ) => 61,
-        (
-            StairSouth | Wall,
-            DoorHorizontal | DoorVertical | Empty | StairEast | StairNorth,
-            StairEast,
-            StairWest | Wall,
-        ) => 62,
-        (
-            StairSouth | Wall,
-            DoorHorizontal | DoorVertical | Empty | StairEast | StairNorth,
-            StairEast,
-            StairNorth,
-        ) => 63,
-        (StairSouth | Wall, _, StairWest, _) => 64,
-        (StairSouth | Wall, StairSouth | StairWest | Wall, Wall, StairWest | Wall) => 65,
-        (StairSouth | Wall, StairSouth | StairWest | Wall, Wall, StairNorth) => 66,
-        (
-            StairSouth | Wall,
-            StairSouth | StairWest | Wall,
-            StairNorth,
-            StairNorth | StairWest | Wall,
-        ) => 67,
-        (
-            StairSouth | Wall,
-            StairSouth | StairWest | Wall,
-            StairEast,
             DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth,
         ) => 68,
-        (StairSouth | Wall, StairSouth | StairWest | Wall, StairEast, StairWest | Wall) => 69,
-        (StairSouth | Wall, StairSouth | StairWest | Wall, StairEast, StairNorth) => 70,
-        (
-            StairNorth,
-            _,
-            StairEast,
-            DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth,
-        ) => 71,
-        (StairNorth, _, StairEast, StairWest | Wall) => 72,
-        (StairNorth, _, StairEast, StairNorth) => 73,
-        (StairEast, _, Wall, DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth) => 74,
-        (
-            StairEast,
-            _,
-            StairNorth,
-            DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth,
-        ) => 75,
-        (
-            StairEast,
-            _,
-            StairEast,
-            DoorHorizontal | DoorVertical | Empty | StairEast | StairSouth,
-        ) => 76,
-        (
-            StairEast,
-            DoorHorizontal | DoorVertical | Empty | StairEast | StairNorth,
-            StairEast,
-            StairWest | Wall,
-        ) => 77,
-        (
-            StairEast,
-            DoorHorizontal | DoorVertical | Empty | StairEast | StairNorth,
-            StairEast,
-            StairNorth,
-        ) => 78,
-        (StairEast, StairSouth | StairWest | Wall, Wall, StairWest | Wall) => 79,
-        (StairEast, StairSouth | StairWest | Wall, Wall, StairNorth) => 80,
-        (StairEast, StairSouth | StairWest | Wall, StairNorth, StairNorth | StairWest | Wall) => 81,
-        (StairEast, StairSouth | StairWest | Wall, StairEast, StairWest | Wall) => 82,
-        (StairEast, StairSouth | StairWest | Wall, StairEast, StairNorth) => 83,
+        (StairEast, StairSouth | StairWest | Wall, Wall, StairWest | Wall) => 69,
+        (StairEast, StairSouth | StairWest | Wall, Wall, StairNorth) => 70,
+        (StairEast, StairSouth | StairWest | Wall, StairNorth, StairNorth | StairWest | Wall) => 71,
+        (StairEast, StairSouth | StairWest | Wall, StairEast, StairWest | Wall) => 72,
+        (StairEast, StairSouth | StairWest | Wall, StairEast, StairNorth) => 73,
     }
 }
